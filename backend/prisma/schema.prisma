@@ -12,3 +12,115 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BattleStatus {
+  WAITING
+  ONGOING
+  FINISHED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum SubmissionStatus {
+  PENDING
+  PASSED
+  FAILED
+  ERROR
+  TIMEOUT
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+
+  battlesAsPlayer1 Battle[] @relation("player1")
+  battlesAsPlayer2 Battle[] @relation("player2")
+
+  submissions Submission[]
+
+  rankPoints Int @default(1000)
+  wins       Int @default(0)
+  losses     Int @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+model Battle {
+  id         String   @id @default(uuid())
+
+  player1   User @relation("player1", fields: [player1Id], references: [id])
+  player1Id String
+
+  player2   User? @relation("player2", fields: [player2Id], references: [id])
+  player2Id String?
+
+  problem   Problem @relation(fields: [problemId], references: [id])
+  problemId String
+
+  status    BattleStatus @default(WAITING)
+
+  winnerId  String?
+
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+}
+
+model Problem {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  difficulty  Difficulty
+
+  timeLimitMs Int @default(2000)
+
+  testcases   TestCase[]
+  battles     Battle[]
+
+  createdAt   DateTime @default(now())
+}
+
+model TestCase {
+  id        String   @id @default(uuid())
+  problem   Problem @relation(fields: [problemId], references: [id])
+  problemId String
+
+  input     String
+  output    String
+
+  isHidden  Boolean @default(true)
+}
+
+model Submission {
+  id        String   @id @default(uuid())
+
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String
+
+  battle    Battle @relation(fields: [battleId], references: [id])
+  battleId  String
+
+  code      String
+  language  String
+
+  status    SubmissionStatus @default(PENDING)
+
+  executionTimeMs Int?
+
+  createdAt DateTime @default(now())
+}
