@@ -1,0 +1,1 @@
+// Handles trimming spaces, newline differences
