@@ -4,6 +4,7 @@ import problemRoutes from "./routes/problem.route.js";
 import testcaseRoutes from "./routes/testcase.route.js";
 import submissionRoutes from "./routes/submission.route.js";
 import battleRoutes from "./routes/battle.route.js";
+import leaderboardRoutes from "./routes/leaderboard.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -21,4 +22,6 @@ app.use("/problem", problemRoutes);
 app.use("/testcase", testcaseRoutes);
 app.use("/submissions", submissionRoutes);
 app.use("/battle", battleRoutes);
+app.use("/leaderboard", leaderboardRoutes);
+
 export default app;

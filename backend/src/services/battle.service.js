@@ -1,6 +1,7 @@
 // Controls battle rules:
 
 import prisma from "../config/db.js";
+import { updateRanks } from "./ranking.service.js";
 
 // • Start timer
 // • Assign problem
@@ -8,7 +9,7 @@ import prisma from "../config/db.js";
 // • Decide winner
 
 export async function createBattleRandomQuestionService(player1Id){
-    
+
     const problems = await prisma.problem.findMany();
     const randomProblem = problems[Math.floor(Math.random() * problems.length)];
 
@@ -78,7 +79,15 @@ export async function getBattle(battleId){
 }
 
 export async function finishBattleService(battleId, winnerId){
-    const battle = await prisma.battle.update({
+    const battle= await prisma.battle.findUnique({
+        where: { id: battleId },
+    });
+
+    const loserId = (battle.player1Id === winnerId) ? battle.player2Id : battle.player1Id;
+
+    await updateRanks(winnerId, loserId);
+    
+    const battleResult = await prisma.battle.update({
         where: { id: battleId },
         data: {
             status: "FINISHED",
@@ -86,6 +95,6 @@ export async function finishBattleService(battleId, winnerId){
             winnerId,
         }
     });
-    return battle;
+    return battleResult;
 }
 
