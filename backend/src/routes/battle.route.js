@@ -16,6 +16,11 @@ router.post("/create/selected", authMiddleware, battleController.createBattleWit
 router.post("/join/:battleId", authMiddleware, battleController.joinBattleController);
 router.get("/:battleId", authMiddleware, battleController.getBattleController);
 router.post("/:battleId/submit", authMiddleware, battleController.submitBattleCodeController);
+router.get(
+  "/history",
+  authMiddleware,
+  battleController.battleHistory
+);
 
 
 export default router;

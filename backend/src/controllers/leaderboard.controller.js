@@ -3,10 +3,13 @@
 import { getLeaderboard } from "../services/leaderboard.service.js";
 
 export async function fetchLeaderboard(req, res) {
-  try {
-    const leaderboard = await getLeaderboard();
-    res.json(leaderboard);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    try {
+        const leaderboard = await getLeaderboard(page, limit);
+        res.json(leaderboard);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 }

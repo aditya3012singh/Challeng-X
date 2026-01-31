@@ -6,7 +6,7 @@ import prisma from "../config/db.js";
 // • Generate random ones (later)
 
 export async function addTestcaseService(problemId, testcases) {
-    return prisma.testCase.createMany({
+    const testCase = await prisma.testCase.createMany({
         data: testcases.map(tc => ({
             problemId: problemId,
             input: tc.input,
@@ -14,4 +14,8 @@ export async function addTestcaseService(problemId, testcases) {
             isHidden: tc.isHidden || true,
         }))
     });
+
+    await redis.del(`problem:${problemId}`);
+
+    return testCase;
 }

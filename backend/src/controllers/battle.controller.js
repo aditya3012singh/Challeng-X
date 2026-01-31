@@ -75,3 +75,21 @@ export async function submitBattleCodeController(req, res) {
     }   
 }
 
+export async function battleHistory(req, res) {
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+
+  try {
+    const history = await battleService.getBattleHistory(
+      req.user.id,
+      page,
+      limit
+    );
+
+    res.json(history);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}

@@ -1,5 +1,6 @@
 // Controls battle rules:
 
+import redis from "../cache/redis.client.js";
 import prisma from "../config/db.js";
 import { updateRanks } from "./ranking.service.js";
 
@@ -86,7 +87,7 @@ export async function finishBattleService(battleId, winnerId){
     const loserId = (battle.player1Id === winnerId) ? battle.player2Id : battle.player1Id;
 
     await updateRanks(winnerId, loserId);
-    
+
     const battleResult = await prisma.battle.update({
         where: { id: battleId },
         data: {
@@ -95,6 +96,57 @@ export async function finishBattleService(battleId, winnerId){
             winnerId,
         }
     });
+    await redis.flushall(); 
     return battleResult;
 }
 
+export async function getBattleHistory(userId, page = 1, limit = 10) {
+
+  const skip = (page - 1) * limit;
+
+  const battles = await prisma.battle.findMany({
+    where: {
+      OR: [
+        { player1Id: userId },
+        { player2Id: userId }
+      ],
+      status: "FINISHED"
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      endedAt: "desc"
+    },
+    include: {
+      problem: {
+        select: {
+          title: true,
+          difficulty: true
+        }
+      },
+      player1: {
+        select: { username: true }
+      },
+      player2: {
+        select: { username: true }
+      }
+    }
+  });
+
+  const total = await prisma.battle.count({
+    where: {
+      OR: [
+        { player1Id: userId },
+        { player2Id: userId }
+      ],
+      status: "FINISHED"
+    }
+  });
+
+  return {
+    data: battles,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit)
+  };
+}

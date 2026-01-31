@@ -1,6 +1,7 @@
 
 // create problems service
 
+import redis from "../cache/redis.client.js";
 import prisma from "../config/db.js"
 
 export async function createProblemService(data) {
@@ -13,24 +14,44 @@ export async function createProblemService(data) {
             // memoryLimitMb: data.memoryLimitMb || 256,
         }
     })
+    await redis.del("problems:all");
     return problem;
 }
 
 export async function getAllProblemsService() {
-    return await prisma.problem.findMany({
+    const key= "problems:all";
+
+    const cached = await redis.get(key);
+
+    if(cached){
+        return JSON.parse(cached);
+    }   
+
+    const problems= await prisma.problem.findMany({
         select: {
             id: true,
             title: true,
             difficulty: true,
         }
     });
+    await redis.set(key, JSON.stringify(problems), 'EX', 3600); 
+    return problems;
 }
 
 export async function getProblemByIdService(problemId) {
-    return await prisma.problem.findUnique({
+    const key= `problem:${problemId}`;
+
+    const cached = await redis.get(key);
+    if(cached){
+        return JSON.parse(cached);
+    }
+
+    const problem = await prisma.problem.findUnique({
         where: { id: problemId },
         include: {
             testcases: true,
         }
     });
+    await redis.set(key, JSON.stringify(problem), 'EX', 3600); 
+    return problem;
 }
