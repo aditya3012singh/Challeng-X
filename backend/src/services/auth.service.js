@@ -56,7 +56,7 @@ export const loginService = async (email, password) => {
     data: { refreshTokenHash },
   });
 
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken, user };
 };
 
 
@@ -86,7 +86,7 @@ export const registerService = async (email, username, password) => {
 };
 
 
-export const refresh = async (req, res) => {
+export const refreshTokenService = async (req, res) => {
   const token = req.cookies.refreshToken;
   if (!token) return res.sendStatus(401);
 
@@ -144,11 +144,14 @@ export const refresh = async (req, res) => {
     data: { refreshTokenHash: newHash },
   });
 
+  const { accessCookieOptions, refreshCookieOptions } = await import("../utils/cookies.js");
+
   res
     .cookie("accessToken", newAccessToken, accessCookieOptions)
     .cookie("refreshToken", newRefreshToken, refreshCookieOptions)
     .json({ message: "Token refreshed" });
 };
+
 
 
 // logout, reset password, reset named user, etc. can be added similarly

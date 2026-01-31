@@ -11,17 +11,18 @@ import dotenv from "dotenv";
 dotenv.config();
 const app = express();
 
-app.use(cors({ // frontend
+app.use(cors({
+  origin: "http://localhost:5173", // frontend
   credentials: true,               // 🔥 REQUIRED for cookies
 }));
 
 app.use(express.json());
 app.use(cookieParser());
-app.use("/auth", authRoutes);   
-app.use("/problem", problemRoutes);
-app.use("/testcase", testcaseRoutes);
-app.use("/submissions", submissionRoutes);
-app.use("/battle", battleRoutes);
-app.use("/leaderboard", leaderboardRoutes);
+app.use("/api/auth", authRoutes);   
+app.use("/api/problem", problemRoutes);
+app.use("/api/testcase", testcaseRoutes);
+app.use("/api/submissions", submissionRoutes);
+app.use("/api/battle", battleRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 export default app;

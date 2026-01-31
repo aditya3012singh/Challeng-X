@@ -1,13 +1,56 @@
-import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { useEffect } from 'react'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Home from './pages/Home'
+import Navbar from './components/Navbar'
+import { fetchUserProfile } from '../store/api/auth.thunk'
 import './App.css'
 
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
+  
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
 function App() {
-  const [count, setCount] = useState(0)
+  const dispatch = useDispatch();
+  const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
+
+  // Fetch user profile on app load
+  useEffect(() => {
+    // Only fetch if not already authenticated and not currently loading
+    if (!isAuthenticated && !profileLoading) {
+      dispatch(fetchUserProfile());
+    }
+  }, [dispatch]);
 
   return (
-    <div  className='bg-blue-800'>
-      hello
-    </div>
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </Router>
   )
 }
 
