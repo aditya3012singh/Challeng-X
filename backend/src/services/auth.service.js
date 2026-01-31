@@ -150,3 +150,5 @@ export const refresh = async (req, res) => {
     .json({ message: "Token refreshed" });
 };
 
+
+// logout, reset password, reset named user, etc. can be added similarly
