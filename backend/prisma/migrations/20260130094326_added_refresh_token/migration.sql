@@ -20,6 +20,9 @@ CREATE TABLE "User" (
     "rankPoints" INTEGER NOT NULL DEFAULT 1000,
     "wins" INTEGER NOT NULL DEFAULT 0,
     "losses" INTEGER NOT NULL DEFAULT 0,
+    "refreshTokenHash" TEXT,
+    "failedLoginCount" INTEGER NOT NULL DEFAULT 0,
+    "lockUntil" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
