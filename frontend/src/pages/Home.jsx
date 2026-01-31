@@ -18,7 +18,7 @@ const Home = () => {
             <div className="text-left space-y-2">
               <p><span className="font-medium">Email:</span> {user.email}</p>
               <p><span className="font-medium">Role:</span> {user.role}</p>
-              <p><span className="font-medium">Rating:</span> {user.rating || 'N/A'}</p>
+              <p><span className="font-medium">Rating:</span> {user.rankPoints || 'N/A'}</p>
             </div>
           </div>
         )}

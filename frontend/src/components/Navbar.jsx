@@ -19,7 +19,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-blue-600 text-white shadow-lg">
+    <nav className="bg-black/90 text-white shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="text-2xl font-bold">
@@ -29,7 +29,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <span className="text-sm">Welcome, {user?.username || 'User'}</span>
+                {/* <span className="text-sm">Welcome, {user?.username || 'User'}</span> */}
                 <Link to="/" className="hover:text-blue-200">
                   Home
                 </Link>

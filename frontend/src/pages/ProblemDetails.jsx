@@ -7,7 +7,7 @@ import { createBattleSelected } from "../../store/api/battle.thunk";
 export const ProblemDetail = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const  id  = useParams();
+    const id  = useParams();
     const [creatingBattle, setCreatingBattle] = useState(false);
     
     const {

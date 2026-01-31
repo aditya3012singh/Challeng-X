@@ -9,6 +9,7 @@ import { fetchUserProfile } from '../store/api/auth.thunk'
 import './App.css'
 import { Problem } from './pages/Problem'
 import { ProblemDetail } from './pages/ProblemDetails'
+import Ide from './pages/Ide'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -59,6 +60,11 @@ function App() {
         <Route path='/problem/:id' element={
           <ProtectedRoute>
             <ProblemDetail/>
+          </ProtectedRoute>
+        } />
+        <Route path='/ide' element={
+          <ProtectedRoute>
+            <Ide/>
           </ProtectedRoute>
         } />
       </Routes>
