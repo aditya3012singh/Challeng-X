@@ -42,7 +42,7 @@ export async function joinBattleController(req, res) {
 export async function getBattleController(req, res) {
     const { battleId } = req.params;
     try {
-        const battle = await battleService.getBattleService(battleId);
+        const battle = await battleService.getBattle(battleId);
         res.status(200).json(battle);
     } catch (error) {
         res.status(500).json({ message: error.message });

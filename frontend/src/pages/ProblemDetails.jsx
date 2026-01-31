@@ -30,9 +30,10 @@ export const ProblemDetail = () => {
             const result = await dispatch(createBattleSelected({ problemId: currentProblem.id })).unwrap();
             // Navigate to battle page or show success message
             // Assuming the battle response has a battle ID
-            if (result?.battleId) {
-                navigate(`/battle/${result.battleId}`);
-            } else {
+            if (result?.id) {
+                navigate(`/battle/${result.id}/ide`);
+            }
+            else {
                 alert("Battle created successfully!");
             }
         } catch (error) {

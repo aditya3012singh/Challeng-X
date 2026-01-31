@@ -5,7 +5,7 @@ export default function EditorToolbar({
   status,
 }) {
   return (
-    <div className="h-12 bg-slate-900 border-b border-slate-700 flex items-center px-4 gap-4">
+    <div className="h-12 bg-black/20 border-b border-slate-700 flex items-center px-4 gap-4">
       <select
         value={language}
         onChange={(e) => onLanguageChange(e.target.value)}

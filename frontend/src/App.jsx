@@ -62,7 +62,7 @@ function App() {
             <ProblemDetail/>
           </ProtectedRoute>
         } />
-        <Route path='/ide' element={
+        <Route path='/battle/:battleId/ide' element={
           <ProtectedRoute>
             <Ide/>
           </ProtectedRoute>

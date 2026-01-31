@@ -1,79 +1,89 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import EditorToolbar from "../components/EditorToolbar";
 import EditorPane from "../components/EditorPane";
 import CodeEditor from "../components/CodeEditor";
 import OutputPanel from "../components/OutputPanel";
 
+import { getBattle, submitBattleCode } from "../../store/api/battle.thunk";
+
 const LANGUAGES = {
-  javascript: {
-    monaco: "javascript",
-    defaultCode: `console.log("Hello JavaScript");`,
-  },
-  python: {
-    monaco: "python",
-    defaultCode: `print("Hello Python")`,
-  },
+  javascript: { monaco: "javascript", defaultCode: `console.log("Hello");` },
+  python: { monaco: "python", defaultCode: `print("Hello")` },
   java: {
     monaco: "java",
     defaultCode: `public class Main {
   public static void main(String[] args) {
-    System.out.println("Hello Java");
+    System.out.println("Hello");
   }
 }`,
   },
 };
 
 export default function Ide() {
+  const { battleId } = useParams();
+  const dispatch = useDispatch();
+
+  const { currentBattle, submissionResult } = useSelector(
+    (state) => state.battle
+  );
+
   const [language, setLanguage] = useState("python");
   const [code, setCode] = useState(LANGUAGES.python.defaultCode);
-  const [output, setOutput] = useState("");
-  const [error, setError] = useState("");
   const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
 
-  const runCode = async () => {
-    setStatus("running");
-    setOutput("");
-    setError("");
+  // 🔥 Load battle
+  useEffect(() => {
+    dispatch(getBattle({ battleId }));
+  }, [battleId]);
 
-    try {
-      const res = await fetch("http://localhost:5000/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
+  // 🔥 Poll battle every 3s to check opponent
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(getBattle({ battleId }));
+    }, 6000);
 
-      const data = await res.json();
-      console.log("RUN RESPONSE:", data, typeof data.output);
-      if (data.error) {
-        setError(data.error);
-        setStatus("error");
-      } else {
-        setOutput(data.output);
-        setStatus("success");
-      }
-    } catch (e) {
-      setError("Failed to reach backend");
-      setStatus("error");
+    return () => clearInterval(interval);
+  }, [battleId]);
+
+  // 🔥 Watch for battle result
+  useEffect(() => {
+    if (!currentBattle) return;
+
+    if (currentBattle.status === "FINISHED") {
+      setMessage(`🏆 Winner: ${currentBattle.winnerName}`);
+      setStatus("finished");
+    } else if (submissionResult) {
+      setMessage("✅ Code submitted. Waiting for opponent...");
+      setStatus("waiting");
     }
+  }, [currentBattle, submissionResult]);
+
+  const handleSubmit = async () => {
+    setStatus("running");
+    setMessage("");
+
+    await dispatch(
+      submitBattleCode({ battleId, code, language })
+    );
+
+    setStatus("submitted");
   };
 
   const handleLanguageChange = (lang) => {
     setLanguage(lang);
     setCode(LANGUAGES[lang].defaultCode);
-    setOutput("");
-    setError("");
-    setStatus("idle");
   };
 
   return (
     <div className="h-screen flex overflow-hidden">
-      {/* <Sidebar /> */}
-
       <EditorPane>
         <EditorToolbar
           language={language}
           onLanguageChange={handleLanguageChange}
-          onRun={runCode}
+          onRun={handleSubmit}
           status={status}
         />
 
@@ -87,8 +97,8 @@ export default function Ide() {
           </div>
 
           <OutputPanel
-            output={output}
-            error={error}
+            output={message}
+            error={""}
             status={status}
           />
         </div>
