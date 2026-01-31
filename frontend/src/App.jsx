@@ -7,6 +7,8 @@ import Home from './pages/Home'
 import Navbar from './components/Navbar'
 import { fetchUserProfile } from '../store/api/auth.thunk'
 import './App.css'
+import { Problem } from './pages/Problem'
+import { ProblemDetail } from './pages/ProblemDetails'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -33,7 +35,7 @@ function App() {
     if (!isAuthenticated && !profileLoading) {
       dispatch(fetchUserProfile());
     }
-  }, [dispatch]);
+  }, []);
 
   return (
     <Router>
@@ -49,6 +51,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/problems" element={
+          <ProtectedRoute>
+            <Problem/>
+          </ProtectedRoute>
+        } />
+        <Route path='/problem/:id' element={
+          <ProtectedRoute>
+            <ProblemDetail/>
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   )

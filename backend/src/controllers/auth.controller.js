@@ -92,7 +92,9 @@ export const getProfile = async (req, res) => {
                 username: true,
                 email: true,
                 role: true,
-                rating: true,
+                rankPoints: true,
+                losses: true, 
+                wins: true,
                 createdAt: true
             }
         });
