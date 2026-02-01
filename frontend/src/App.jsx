@@ -10,6 +10,7 @@ import './App.css'
 import { Problem } from './pages/Problem'
 import { ProblemDetail } from './pages/ProblemDetails'
 import Ide from './pages/Ide'
+import Battle from './pages/Battle'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -65,6 +66,11 @@ function App() {
         <Route path='/battle/:battleId/ide' element={
           <ProtectedRoute>
             <Ide/>
+          </ProtectedRoute>
+        } />
+        <Route path='/battles' element={
+          <ProtectedRoute>
+            <Battle/>
           </ProtectedRoute>
         } />
       </Routes>

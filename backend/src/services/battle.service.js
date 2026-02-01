@@ -33,6 +33,7 @@ export async function createBattleWithSelectedQuestionService(player1Id, problem
             status: "WAITING",
         }
     });
+    console.log("Battle created with selected question:", battle);
     return battle;
 }
 
@@ -73,7 +74,11 @@ export async function getBattle(battleId){
     const battle = await prisma.battle.findUnique({
         where: { id: battleId },
         include: {
-            problem: true,
+            problem: {
+              select:{
+                id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: true
+              }
+            }
         }
     });
     return battle;

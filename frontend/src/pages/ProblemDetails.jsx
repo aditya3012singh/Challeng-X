@@ -9,7 +9,7 @@ export const ProblemDetail = () => {
     const navigate = useNavigate();
     const id  = useParams();
     const [creatingBattle, setCreatingBattle] = useState(false);
-    
+
     const {
         currentProblem = null,
         loading = false,
