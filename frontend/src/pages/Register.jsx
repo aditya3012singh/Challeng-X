@@ -17,7 +17,6 @@ const Register = () => {
 
   const [validationError, setValidationError] = useState("");
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/");
@@ -34,8 +33,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Client-side validation
+
     if (formData.password !== formData.confirmPassword) {
       setValidationError("Passwords do not match");
       return;
@@ -47,39 +45,39 @@ const Register = () => {
     }
 
     try {
-      const result = await dispatch(
+      await dispatch(
         register({
           username: formData.username,
           email: formData.email,
           password: formData.password,
         })
       ).unwrap();
-      
-      // Registration successful - redirect to login
+
       navigate("/login");
     } catch (err) {
-      // Error is handled by Redux state
       console.error("Registration failed:", err);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-950">
+      <div className="max-w-md w-full space-y-8 p-8 bg-gray-900 rounded-xl shadow-2xl border border-gray-800">
         <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="text-center text-3xl font-extrabold text-white">
             Create your account
           </h2>
         </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {(error || validationError) && (
-            <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <div className="bg-red-900/40 border border-red-600 text-red-400 px-4 py-3 rounded">
               {validationError || error.message || error}
             </div>
           )}
-          <div className="rounded-md shadow-sm space-y-4">
+
+          <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-300">
                 Username
               </label>
               <input
@@ -87,14 +85,15 @@ const Register = () => {
                 name="username"
                 type="text"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                 placeholder="Choose a username"
                 value={formData.username}
                 onChange={handleChange}
               />
             </div>
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 Email address
               </label>
               <input
@@ -102,14 +101,15 @@ const Register = () => {
                 name="email"
                 type="email"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
+
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Password
               </label>
               <input
@@ -118,14 +118,15 @@ const Register = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                 placeholder="Choose a password"
                 value={formData.password}
                 onChange={handleChange}
               />
             </div>
+
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
                 Confirm Password
               </label>
               <input
@@ -134,7 +135,7 @@ const Register = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
@@ -146,16 +147,16 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 px-4 rounded-md text-white font-medium bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50"
             >
               {loading ? "Creating account..." : "Sign up"}
             </button>
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-400">
               Already have an account?{" "}
-              <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link to="/login" className="font-medium text-blue-500 hover:text-blue-400">
                 Sign in
               </Link>
             </p>
