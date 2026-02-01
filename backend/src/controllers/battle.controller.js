@@ -22,7 +22,7 @@ export async function createBattleWithSelectedQuestionController(req, res) {
     const { problemId } = req.body;
     try {
         const battle = await battleService.createBattleWithSelectedQuestionService(userId, problemId);
-        console.log("Created battle with selected question:", battle);
+        //  console.log("Created battle with selected question:", battle);
         res.status(201).json(battle);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -44,7 +44,7 @@ export async function getBattleController(req, res) {
     const { battleId } = req.params;
     try {
         const battle = await battleService.getBattle(battleId);
-        console.log("Fetched battle details:", battle);
+        // console.log("Fetched battle details:", battle);
         res.status(200).json(battle);
     } catch (error) {
         res.status(500).json({ message: error.message });

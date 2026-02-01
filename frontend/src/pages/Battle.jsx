@@ -41,34 +41,41 @@ export const Battle = () => {
     }, [activeTab, dispatch]);
 
     // Navigate to battle IDE when battle is created/joined
-    useEffect(() => {
-        if (currentBattle?.id) {
-            navigate(`/battle/${currentBattle.id}/ide`);
-        }
-    }, [currentBattle, navigate]);
+    // useEffect(() => {
+    //     if (currentBattle?.id) {
+    //         navigate(`/battle/${currentBattle.id}/ide`);
+    //     }
+    // }, [currentBattle, navigate]);
 
-    const handleCreateRandom = async () => {
-        dispatch(createBattleRandom());
-    };
+   const handleCreateRandom = async () => {
+    const res = await dispatch(createBattleRandom()).unwrap();
+    navigate(`/battle/${res.id}/ide`);
+};
 
-    const handleCreateSelected = async (e) => {
+
+     const handleCreateSelected = async (e) => {
         e.preventDefault();
-        if (!selectedProblemId) {
-            alert("Please select a problem");
-            return;
-        }
-        dispatch(createBattleSelected({ problemId: selectedProblemId }));
+        if (!selectedProblemId) return;
+
+        const res = await dispatch(
+            createBattleSelected({ problemId: selectedProblemId })
+        ).unwrap();
+
+        navigate(`/battle/${res.id}/ide`);
     };
+
 
     const handleJoinBattle = async (e) => {
-        e.preventDefault();
-        if (!battleId.trim()) {
-            alert("Please enter a battle ID");
-            return;
-        }
-        dispatch(joinBattle({ battleId: battleId.trim() }));
-        navigate(`/battle/${battleId.trim()}/ide`);
-    };
+    e.preventDefault();
+    if (!battleId.trim()) return;
+
+    const res = await dispatch(
+        joinBattle({ battleId: battleId.trim() })
+    ).unwrap();
+
+    navigate(`/battle/${res.id}/ide`);
+};
+
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">

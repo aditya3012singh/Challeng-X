@@ -54,9 +54,9 @@ function App() {
           }
         />
         <Route path="/problems" element={
-          <ProtectedRoute>
+          
             <Problem/>
-          </ProtectedRoute>
+          
         } />
         <Route path='/problem/:id' element={
           <ProtectedRoute>
