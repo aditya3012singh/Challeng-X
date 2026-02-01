@@ -42,8 +42,8 @@ export const Battle = () => {
 
     // Navigate to battle IDE when battle is created/joined
     useEffect(() => {
-        if (currentBattle?.battleId) {
-            navigate(`/battle/${currentBattle.battleId}/ide`);
+        if (currentBattle?.id) {
+            navigate(`/battle/${currentBattle.id}/ide`);
         }
     }, [currentBattle, navigate]);
 
@@ -87,7 +87,7 @@ export const Battle = () => {
                     >
                         Random Battle
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => setActiveTab("selected")}
                         className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
                             activeTab === "selected"
@@ -96,7 +96,7 @@ export const Battle = () => {
                         }`}
                     >
                         Select Problem
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => setActiveTab("join")}
                         className={`px-6 py-3 rounded-lg font-semibold transition-colors ${

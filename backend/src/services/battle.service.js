@@ -33,7 +33,7 @@ export async function createBattleWithSelectedQuestionService(player1Id, problem
             status: "WAITING",
         }
     });
-    console.log("Battle created with selected question:", battle);
+    
     return battle;
 }
 

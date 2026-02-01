@@ -8,9 +8,9 @@ import { processSubmission } from "../services/submission.service.js";
 
 export async function createBattleRandomQuestionController(req, res) {
     const  userId  = req.user.id;
-    console.log("Creating battle for user:", userId);
     try {
         const battle = await battleService.createBattleRandomQuestionService(userId);
+        // console.log("Created battle with random question:", battle);
         res.status(201).json(battle);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -22,7 +22,7 @@ export async function createBattleWithSelectedQuestionController(req, res) {
     const { problemId } = req.body;
     try {
         const battle = await battleService.createBattleWithSelectedQuestionService(userId, problemId);
-        console.log("Battle created with selected question:", battle);
+        console.log("Created battle with selected question:", battle);
         res.status(201).json(battle);
     } catch (error) {
         res.status(500).json({ message: error.message });
