@@ -1,12 +1,15 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../lib/axios";
 
-
 export const createTeamBattle = createAsyncThunk(
   "teamBattle/create",
-  async (battleData, { rejectWithValue }) => {
+  async ({ team1Id, team2Id, maxTeamSize }, { rejectWithValue }) => {
     try {
-      const { data } = await api.post("/team-battle", battleData);
+      const { data } = await api.post("/team-battle", {
+        team1Id,
+        team2Id,
+        maxTeamSize,
+      });
       return data?.data;
     } catch (error) {
       return rejectWithValue(
@@ -48,9 +51,7 @@ export const startTeamBattle = createAsyncThunk(
   "teamBattle/start",
   async (battleCode, { rejectWithValue }) => {
     try {
-      const { data } = await api.post(
-        `/team-battle/${battleCode}/start`
-      );
+      const { data } = await api.post(`/team-battle/${battleCode}/start`);
       return data?.data;
     } catch (error) {
       return rejectWithValue(
@@ -60,12 +61,12 @@ export const startTeamBattle = createAsyncThunk(
   }
 );
 
-export const submitTeamBattleSolution = createAsyncThunk(
-  "teamBattle/submit",
-  async ({ battleCode, code, language, output }, { rejectWithValue }) => {
+export const submitMatchSolution = createAsyncThunk(
+  "teamBattle/submitMatch",
+  async ({ battleCode, matchId, code, language, output }, { rejectWithValue }) => {
     try {
       const { data } = await api.post(
-        `/team-battle/${battleCode}/submit`,
+        `/team-battle/${battleCode}/${matchId}/submit`,
         { code, language, output }
       );
       return data?.data;
@@ -77,17 +78,17 @@ export const submitTeamBattleSolution = createAsyncThunk(
   }
 );
 
-export const getTeamBattleSubmissions = createAsyncThunk(
-  "teamBattle/getSubmissions",
-  async (battleCode, { rejectWithValue }) => {
+export const determineMatchWinner = createAsyncThunk(
+  "teamBattle/determineWinner",
+  async ({ matchId, winnerId }, { rejectWithValue }) => {
     try {
-      const { data } = await api.get(
-        `/team-battle/${battleCode}/submissions`
-      );
+      const { data } = await api.post(`/team-battle/${matchId}/winner`, {
+        winnerId,
+      });
       return data?.data;
     } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message || "Failed to fetch submissions"
+        error?.response?.data?.message || "Failed to determine winner"
       );
     }
   }
@@ -95,12 +96,9 @@ export const getTeamBattleSubmissions = createAsyncThunk(
 
 export const completeTeamBattle = createAsyncThunk(
   "teamBattle/complete",
-  async ({ battleCode, winnerTeamId }, { rejectWithValue }) => {
+  async (battleCode, { rejectWithValue }) => {
     try {
-      const { data } = await api.post(
-        `/team-battle/${battleCode}/complete`,
-        { winnerTeamId }
-      );
+      const { data } = await api.post(`/team-battle/${battleCode}/complete`);
       return data?.data;
     } catch (error) {
       return rejectWithValue(

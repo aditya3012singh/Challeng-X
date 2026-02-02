@@ -53,6 +53,9 @@ model User {
 
   submissions Submission[]
   teamBattleSubmissions TeamBattleSubmission[]
+  
+  teamBattleMatchesAsPlayer1 TeamBattleMatch[] @relation("match_player1")
+  teamBattleMatchesAsPlayer2 TeamBattleMatch[] @relation("match_player2")
 
   rankPoints Int @default(1000)
   wins       Int @default(0)
@@ -104,7 +107,7 @@ model Problem {
 
   testcases   TestCase[]
   battles     Battle[]
-  teamBattles TeamBattle[]
+  teamBattleMatches TeamBattleMatch[]
 
   createdAt   DateTime @default(now())
 
@@ -184,15 +187,54 @@ model TeamBattle {
   team2   Team? @relation("team2", fields: [team2Id], references: [id])
   team2Id String?
 
+  maxTeamSize Int // 2, 3, 4, or 5
+  status      BattleStatus @default(WAITING)
+
+  // Individual matches between paired team members
+  matches TeamBattleMatch[]
+  submissions TeamBattleSubmission[]
+
+  team1Wins Int @default(0)
+  team2Wins Int @default(0)
+  winnerTeamId String?
+
+  startedAt DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Individual 1v1 battle between paired team members
+model TeamBattleMatch {
+  id String @id @default(uuid())
+
+  teamBattle   TeamBattle @relation(fields: [teamBattleId], references: [id], onDelete: Cascade)
+  teamBattleId String
+
+  // Team 1 player
+  player1   User   @relation("match_player1", fields: [player1Id], references: [id])
+  player1Id String
+
+  // Team 2 player  
+  player2   User   @relation("match_player2", fields: [player2Id], references: [id])
+  player2Id String
+
+  // Problem for this specific match
   problem   Problem @relation(fields: [problemId], references: [id])
   problemId String
 
-  maxTeamSize Int // 2, 3, 4, or 5
-  status      BattleStatus @default(WAITING)
-  currentRound Int @default(1)
-  winnerTeamId String?
+  player1Submission String?
+  player2Submission String?
 
-  submissions TeamBattleSubmission[]
+  player1Language String?
+  player2Language String?
+
+  player1Output String?
+  player2Output String?
+
+  status     BattleStatus @default(WAITING)
+  winnerId   String? // The user ID of the winner
 
   startedAt DateTime?
   completedAt DateTime?

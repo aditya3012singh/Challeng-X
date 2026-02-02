@@ -4,8 +4,8 @@ import {
   getTeamBattle,
   getTeamBattles,
   startTeamBattle,
-  submitTeamBattleSolution,
-  getTeamBattleSubmissions,
+  submitMatchSolution,
+  determineMatchWinner,
   completeTeamBattle,
   getActiveTeamBattles,
 } from "../api/teamBattle.thunk";
@@ -14,7 +14,7 @@ const initialState = {
   currentBattle: null,
   teamBattles: [],
   activeBattles: [],
-  submissions: [],
+  currentMatches: [],
   loading: false,
   error: null,
   successMessage: null,
@@ -32,6 +32,7 @@ const teamBattleSlice = createSlice({
     },
     setCurrentBattle: (state, action) => {
       state.currentBattle = action.payload;
+      state.currentMatches = action.payload?.matches || [];
     },
   },
   extraReducers: (builder) => {
@@ -44,7 +45,8 @@ const teamBattleSlice = createSlice({
       .addCase(createTeamBattle.fulfilled, (state, action) => {
         state.loading = false;
         state.currentBattle = action.payload;
-        state.successMessage = "Team battle created successfully!";
+        state.currentMatches = action.payload?.matches || [];
+        state.successMessage = "Tournament battle created! Matches are ready.";
       })
       .addCase(createTeamBattle.rejected, (state, action) => {
         state.loading = false;
@@ -60,6 +62,7 @@ const teamBattleSlice = createSlice({
       .addCase(getTeamBattle.fulfilled, (state, action) => {
         state.loading = false;
         state.currentBattle = action.payload;
+        state.currentMatches = action.payload?.matches || [];
       })
       .addCase(getTeamBattle.rejected, (state, action) => {
         state.loading = false;
@@ -90,40 +93,59 @@ const teamBattleSlice = createSlice({
       .addCase(startTeamBattle.fulfilled, (state, action) => {
         state.loading = false;
         state.currentBattle = action.payload;
-        state.successMessage = "Team battle started!";
+        state.currentMatches = action.payload?.matches || [];
+        state.successMessage = "Battle started! All matches are live.";
       })
       .addCase(startTeamBattle.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
 
-    // Submit Solution
+    // Submit Match Solution
     builder
-      .addCase(submitTeamBattleSolution.pending, (state) => {
+      .addCase(submitMatchSolution.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(submitTeamBattleSolution.fulfilled, (state, action) => {
+      .addCase(submitMatchSolution.fulfilled, (state, action) => {
         state.loading = false;
-        state.submissions.push(action.payload);
-        state.successMessage = "Solution submitted!";
+        // Update the specific match
+        const matchIndex = state.currentMatches.findIndex(
+          (m) => m.id === action.payload.id
+        );
+        if (matchIndex !== -1) {
+          state.currentMatches[matchIndex] = action.payload;
+        }
+        state.successMessage = "Solution submitted for match!";
       })
-      .addCase(submitTeamBattleSolution.rejected, (state, action) => {
+      .addCase(submitMatchSolution.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
 
-    // Get Submissions
+    // Determine Match Winner
     builder
-      .addCase(getTeamBattleSubmissions.pending, (state) => {
+      .addCase(determineMatchWinner.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getTeamBattleSubmissions.fulfilled, (state, action) => {
+      .addCase(determineMatchWinner.fulfilled, (state, action) => {
         state.loading = false;
-        state.submissions = action.payload || [];
+        // Update the specific match
+        const matchIndex = state.currentMatches.findIndex(
+          (m) => m.id === action.payload.id
+        );
+        if (matchIndex !== -1) {
+          state.currentMatches[matchIndex] = action.payload;
+        }
+        // Update team win counts in current battle
+        if (state.currentBattle) {
+          state.currentBattle.team1Wins = action.payload.teamBattle?.team1Wins || 0;
+          state.currentBattle.team2Wins = action.payload.teamBattle?.team2Wins || 0;
+        }
+        state.successMessage = "Match winner determined!";
       })
-      .addCase(getTeamBattleSubmissions.rejected, (state, action) => {
+      .addCase(determineMatchWinner.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
@@ -137,7 +159,7 @@ const teamBattleSlice = createSlice({
       .addCase(completeTeamBattle.fulfilled, (state, action) => {
         state.loading = false;
         state.currentBattle = action.payload;
-        state.successMessage = "Team battle completed!";
+        state.successMessage = `Tournament completed! ${action.payload.winnerTeamId === action.payload.team1Id ? action.payload.team1?.name : action.payload.team2?.name} won!`;
       })
       .addCase(completeTeamBattle.rejected, (state, action) => {
         state.loading = false;
