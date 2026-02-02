@@ -7,6 +7,7 @@ import leaderboardReducer from "./slices/leaderboard.slice";
 import problemReducer from "./slices/problem.slice";
 import submissionReducer from "./slices/submission.slice";
 import testcaseReducer from "./slices/testcase.slice";
+import matchmakingReducer from "./slices/matchmaking.slice";
 
 // Configure which parts of auth state to persist
 const persistConfig = {
@@ -26,6 +27,7 @@ export const store = configureStore({
         problem: problemReducer,
         submission: submissionReducer,
         testcase: testcaseReducer,
+        matchmaking: matchmakingReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
