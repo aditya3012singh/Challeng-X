@@ -10,7 +10,8 @@ const JoinRoom = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const value = e.target.value.trim();
+    // Only allow numbers, max 6 digits
+    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
     setCode(value);
   };
 
@@ -20,7 +21,7 @@ const JoinRoom = () => {
 
     try {
       setLoading(true);
-      const res = await dispatch(joinBattle({ battleId: code })).unwrap();
+      const res = await dispatch(joinBattle({ battleCode: code })).unwrap();
       navigate(`/battle/${res.id}/ide`);
     } catch (err) {
       alert(err.message || "Invalid Room Code");
@@ -35,7 +36,7 @@ const JoinRoom = () => {
 
         <h1 className="text-4xl font-bold text-white mb-4">🎮 Join Room</h1>
         <p className="text-gray-400 mb-8">
-          Enter the battle ID to join the room
+          Enter the 6-digit battle code to join the room
         </p>
 
         <form onSubmit={handleJoin} className="space-y-6">
@@ -43,13 +44,13 @@ const JoinRoom = () => {
             type="text"
             value={code}
             onChange={handleChange}
-            placeholder="Enter Battle ID"
-            className="w-full text-center text-lg py-4 rounded-xl bg-[#0f0f12] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+            placeholder="••••••"
+            className="w-full text-center tracking-[12px] text-3xl py-4 rounded-xl bg-[#0f0f12] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
 
           <button
             type="submit"
-            disabled={loading || !code.trim()}
+            disabled={loading || code.length !== 6}
             className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? "Joining..." : "Enter Battle"}
@@ -57,7 +58,7 @@ const JoinRoom = () => {
         </form>
 
         <p className="text-gray-500 text-sm mt-6">
-          Get the battle ID from your friend who created the room
+          Battle codes are 6 digits and expire after the battle ends
         </p>
       </div>
     </div>

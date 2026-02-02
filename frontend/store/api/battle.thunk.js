@@ -30,9 +30,9 @@ export const createBattleSelected = createAsyncThunk(
 // Join battle
 export const joinBattle = createAsyncThunk(
     "battle/join",
-    async ({ battleId }, { rejectWithValue }) => {
+    async ({ battleCode }, { rejectWithValue }) => {
         try {
-            const res = await api.post(`/battle/join/${battleId}`);
+            const res = await api.post(`/battle/join`, { battleCode });
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data || { message: err.message });

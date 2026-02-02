@@ -162,7 +162,7 @@ export default function Ide() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-yellow-800">⏳ Waiting for opponent...</p>
-                    <p className="text-xs text-yellow-700">Share battle ID: <span className="font-mono font-bold">{battleId}</span></p>
+                    <p className="text-xs text-yellow-700">Share battle code: <span className="font-mono font-bold text-lg">{currentBattle?.battleCode}</span></p>
                   </div>
                   <p className="text-xs text-yellow-700">You can practice while waiting!</p>
                 </div>

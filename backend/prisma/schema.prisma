@@ -67,6 +67,7 @@ model User {
 
 model Battle {
   id         String   @id @default(uuid())
+  battleCode String   @unique // 6-digit code for easy sharing
 
   player1   User @relation("player1", fields: [player1Id], references: [id])
   player1Id String

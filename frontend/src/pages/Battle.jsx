@@ -70,7 +70,7 @@ export const Battle = () => {
     if (!battleId.trim()) return;
 
     const res = await dispatch(
-        joinBattle({ battleId: battleId.trim() })
+        joinBattle({ battleCode: battleId.trim() })
     ).unwrap();
 
     navigate(`/battle/${res.id}/ide`);

@@ -3,7 +3,8 @@
 import redis from "../cache/redis.client.js";
 import prisma from "../config/db.js";
 import { updateRanks } from "./ranking.service.js";
-import { emitToBattle } from "../config/socket.js"
+import { emitToBattle } from "../config/socket.js";
+import { generateBattleCode } from "../utils/battleCode.js";
 // • Start timer
 // • Assign problem
 // • End match
@@ -14,11 +15,14 @@ export async function createBattleRandomQuestionService(player1Id){
     const problems = await prisma.problem.findMany();
     const randomProblem = problems[Math.floor(Math.random() * problems.length)];
 
+    const battleCode = await generateBattleCode();
+
     const battle = await prisma.battle.create({
         data: {
             player1Id,
             problemId: randomProblem.id,
             status: "WAITING",
+            battleCode,
         }
     });
 
@@ -26,21 +30,24 @@ export async function createBattleRandomQuestionService(player1Id){
 }
 
 export async function createBattleWithSelectedQuestionService(player1Id, problemId){
+    const battleCode = await generateBattleCode();
+
     const battle = await prisma.battle.create({
         data: {
             player1Id,
             problemId,
             status: "WAITING",
+            battleCode,
         }
     });
     
     return battle;
 }
 
-export async function joinBattleService(battleId, player2Id){
+export async function joinBattleService(battleCode, player2Id){
 
     const battleExists = await prisma.battle.findUnique({
-        where: { id: battleId }
+        where: { battleCode }
     });
 
     if(!battleExists){
@@ -60,7 +67,7 @@ export async function joinBattleService(battleId, player2Id){
     }
 
     const battle = await prisma.battle.update({
-        where: { id: battleId },
+        where: { battleCode },
         data: {
             player2Id,
             status: "ONGOING",
@@ -68,16 +75,46 @@ export async function joinBattleService(battleId, player2Id){
         }
     });
 
-    emitToBattle(battleId, "playerJoined", {
+    emitToBattle(battle.id, "playerJoined", {
       playerId: player2Id
     });
 
-    emitToBattle(battleId, "battleStarted", {
+    emitToBattle(battle.id, "battleStarted", {
       startedAt: new Date()
     });
 
     return battle;
 }
+//         throw new Error("Cannot join your own battle");
+//     }
+
+//     if(battleExists.status !== "WAITING"){
+//         throw new Error("Battle already started");
+//     }
+
+//     if(battleExists.player2Id){
+//         throw new Error("Battle already has two players");
+//     }
+
+//     const battle = await prisma.battle.update({
+//         where: { id: battleId },
+//         data: {
+//             player2Id,
+//             status: "ONGOING",
+//             startedAt: new Date(),
+//         }
+//     });
+
+//     emitToBattle(battleId, "playerJoined", {
+//       playerId: player2Id
+//     });
+
+//     emitToBattle(battleId, "battleStarted", {
+//       startedAt: new Date()
+//     });
+
+//     return battle;
+// }
 
 export async function getBattle(battleId){
     const battle = await prisma.battle.findUnique({

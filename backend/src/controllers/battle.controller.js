@@ -31,9 +31,9 @@ export async function createBattleWithSelectedQuestionController(req, res) {
 
 export async function joinBattleController(req, res) {
     const  userId  = req.user.id;
-    const { battleId } = req.params;
+    const { battleCode } = req.body;
     try {
-        const battle = await battleService.joinBattleService(battleId, userId);
+        const battle = await battleService.joinBattleService(battleCode, userId);
         res.status(200).json(battle);
     } catch (error) {
         res.status(500).json({ message: error.message });
