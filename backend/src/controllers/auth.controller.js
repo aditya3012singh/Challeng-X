@@ -116,3 +116,42 @@ export const refreshToken = async (req, res) => {
         res.status(500).json({ message: "Token refresh failed" });
     }
 }
+
+export const getPublicProfile = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                username: true,
+                role: true,
+                rankPoints: true,
+                losses: true, 
+                wins: true,
+                createdAt: true,
+                // Exclude sensitive information like email and password
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Calculate additional stats
+        const totalBattles = user.wins + user.losses;
+        const winRate = totalBattles > 0 ? ((user.wins / totalBattles) * 100).toFixed(2) : 0;
+
+        res.json({ 
+            user: {
+                ...user,
+                totalBattles,
+                winRate: parseFloat(winRate)
+            }
+        });
+    } catch (error) {
+        console.error("Get public profile error:", error);
+        res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+}

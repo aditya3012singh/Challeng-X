@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { login, register, logoutUser, fetchUserProfile, refreshAccessToken } from "../api/auth.thunk";
+import { login, register, logoutUser, fetchUserProfile, refreshAccessToken, getPublicProfile } from "../api/auth.thunk";
 
 const initialState = {
     user: null,
@@ -7,6 +7,9 @@ const initialState = {
     error: null,
     isAuthenticated: false,
     profileLoading: false,
+    publicProfile: null,
+    publicProfileLoading: false,
+    publicProfileError: null,
 }
 
 const authSlice = createSlice({
@@ -18,6 +21,10 @@ const authSlice = createSlice({
         },
         setAuthenticated: (state, action) => {
             state.isAuthenticated = action.payload;
+        },
+        clearPublicProfile: (state) => {
+            state.publicProfile = null;
+            state.publicProfileError = null;
         },
     },
     extraReducers: (builder) => {
@@ -92,9 +99,24 @@ const authSlice = createSlice({
                 // Token refresh failed, user needs to login again
                 state.isAuthenticated = false;
                 state.user = null;
+            })
+            // Get Public Profile
+            .addCase(getPublicProfile.pending, (state) => {
+                state.publicProfileLoading = true;
+                state.publicProfileError = null;
+            })
+            .addCase(getPublicProfile.fulfilled, (state, action) => {
+                state.publicProfileLoading = false;
+                state.publicProfile = action.payload.user;
+                state.publicProfileError = null;
+            })
+            .addCase(getPublicProfile.rejected, (state, action) => {
+                state.publicProfileLoading = false;
+                state.publicProfileError = action.payload?.message || "Failed to load profile";
             });
     },
 })
 
-export const { clearError, setAuthenticated } = authSlice.actions;
+export const { clearError, setAuthenticated, clearPublicProfile } = authSlice.actions;
+
 export default authSlice.reducer;

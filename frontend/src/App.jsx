@@ -16,6 +16,7 @@ import JoinRoom from './pages/JoinRoom'
 import { FindMatch } from './pages/FindMatch'
 import { TeamBatlle } from './pages/TeamBattle'
 import { SquidMode } from './pages/SquidMode'
+// import Profile from './pages/Profile'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -104,6 +105,11 @@ function App() {
             <SquidMode/>
           </ProtectedRoute>
         } />
+        {/* <Route path='/profile/:userId' element={
+          <ProtectedRoute>
+            <Profile/>
+          </ProtectedRoute>
+        } /> */}
       </Routes>
     </Router>
   )

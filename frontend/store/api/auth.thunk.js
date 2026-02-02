@@ -61,3 +61,15 @@ export const refreshAccessToken = createAsyncThunk(
         }
     }
 )
+
+export const getPublicProfile = createAsyncThunk(
+    "auth/getPublicProfile",
+    async (userId, {rejectWithValue}) => {
+        try{
+            const res = await api.get(`/auth/user/${userId}`);
+            return res.data;
+        }catch(err){
+            return rejectWithValue(err.response?.data || { message: "Failed to fetch user profile" });
+        }
+    }
+)

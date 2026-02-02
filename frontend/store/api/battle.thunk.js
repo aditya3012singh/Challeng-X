@@ -9,7 +9,7 @@ export const createBattleRandom = createAsyncThunk(
             const res = await api.post("/battle/create/random");
             return res.data;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { message: err.message });
         }
     }
 );
@@ -22,7 +22,7 @@ export const createBattleSelected = createAsyncThunk(
             const res = await api.post("/battle/create/selected", { problemId });
             return res.data;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { message: err.message });
         }
     }
 );
@@ -35,7 +35,7 @@ export const joinBattle = createAsyncThunk(
             const res = await api.post(`/battle/join/${battleId}`);
             return res.data;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { message: err.message });
         }
     }
 );
@@ -48,7 +48,7 @@ export const getBattle = createAsyncThunk(
             const res = await api.get(`/battle/${battleId}`);
             return res.data;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { message: err.message });
         }
     }
 );
@@ -61,7 +61,7 @@ export const submitBattleCode = createAsyncThunk(
             const res = await api.post(`/battle/${battleId}/submit`, { code, language });
             return res.data;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { message: err.message });
         }
     }
 );
@@ -74,7 +74,7 @@ export const getBattleHistory = createAsyncThunk(
             const res = await api.get(`/battle/history`, { params: { page, limit } });
             return res.data;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { message: err.message });
         }
     }
 );

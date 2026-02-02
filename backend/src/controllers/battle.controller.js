@@ -59,20 +59,35 @@ export async function submitBattleCodeController(req, res) {
     try {
         const battle= await battleService.getBattle(battleId);
 
-        if(battle.status !== "ONGOING"){
-            return res.status(404).json({ message: "Battle not active" });
+        if(!battle){
+            return res.status(404).json({ message: "Battle not found" });
         }
+
+        if(battle.status === "FINISHED"){
+            return res.status(400).json({ message: "Battle has already ended" });
+        }
+
+        // Allow submission if battle is WAITING or ONGOING
+        if(battle.status !== "ONGOING" && battle.status !== "WAITING"){
+            return res.status(400).json({ message: "Battle not active" });
+        }
+
         const submissionResult = await processSubmission({
             userId,
             problemId: battle.problemId,
             code,
-            language
+            language,
+            battleId
         });
-        if(submissionResult.status === "PASSED"){
+
+        // Only finish battle if it's ONGOING (both players present)
+        if(submissionResult.status === "PASSED" && battle.status === "ONGOING"){
             await battleService.finishBattleService(battleId, userId);
         }
+
         res.status(200).json(submissionResult);
     } catch (error) {
+        console.error("Submit battle code error:", error);
         res.status(500).json({ message: error.message });
     }   
 }

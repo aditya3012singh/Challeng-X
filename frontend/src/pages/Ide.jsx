@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { getSocket } from "../../lib/socket";
 import EditorToolbar from "../components/EditorToolbar";
 import EditorPane from "../components/EditorPane";
 import CodeEditor from "../components/CodeEditor";
@@ -62,19 +63,43 @@ export default function Ide() {
     dispatch(getBattle({ battleId }));
   }, [battleId]);
 
+  // Socket.io connection for real-time updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      dispatch(getBattle({ battleId }));
-    }, 6000);
+    const socket = getSocket();
 
-    return () => clearInterval(interval);
-  }, [battleId]);
+    // Join the battle room
+    socket.emit("joinBattle", battleId);
+
+    // Listen for player joined event
+    socket.on("playerJoined", () => {
+      console.log("Player joined the battle");
+      dispatch(getBattle({ battleId }));
+    });
+
+    // Listen for battle started event
+    socket.on("battleStarted", () => {
+      console.log("Battle started");
+      dispatch(getBattle({ battleId }));
+    });
+
+    // Listen for battle finished event
+    socket.on("battleFinished", ({ winnerId }) => {
+      console.log("Battle finished, winner:", winnerId);
+      dispatch(getBattle({ battleId }));
+    });
+
+    return () => {
+      socket.off("playerJoined");
+      socket.off("battleStarted");
+      socket.off("battleFinished");
+    };
+  }, [battleId, dispatch]);
 
   useEffect(() => {
     if (!currentBattle) return;
 
     if (currentBattle.status === "FINISHED") {
-      setMessage(`🏆 Winner: ${currentBattle.winnerName}`);
+      setMessage(`🏆 Winner: ${currentBattle.winnerId}`);
       setStatus("finished");
     } else if (submissionResult) {
       setMessage("✅ Code submitted. Waiting for opponent...");
@@ -86,9 +111,27 @@ export default function Ide() {
     setStatus("running");
     setMessage("");
 
-    await dispatch(submitBattleCode({ battleId, code, language }));
-
-    setStatus("submitted");
+    try {
+      const result = await dispatch(submitBattleCode({ battleId, code, language })).unwrap();
+      setStatus("submitted");
+      
+      if (result.status === "PASSED") {
+        if (currentBattle?.status === "WAITING") {
+          setMessage("✅ All test cases passed! Waiting for opponent to join...");
+        } else {
+          setMessage("✅ All test cases passed! You won the battle!");
+        }
+      } else if (result.status === "FAILED") {
+        setMessage(`❌ Some test cases failed`);
+      } else if (result.status === "ERROR") {
+        setMessage(`❌ Compilation/Runtime Error: ${result.error || ''}`);
+      } else {
+        setMessage(`⚠️ ${result.status}: ${result.message || ''}`);
+      }
+    } catch (error) {
+      setStatus("error");
+      setMessage(`❌ Error: ${error.message || 'Submission failed'}`);
+    }
   };
 
   const handleLanguageChange = (lang) => {
@@ -111,29 +154,42 @@ export default function Ide() {
             <Skeleton className="h-[60%] w-full" />
             <Skeleton className="h-24 w-full" />
           </div>
-        ) : isWaitingForOpponent ? (
-          <WaitingForOpponent battleId={battleId} />
         ) : (
-          <EditorPane>
-            <EditorToolbar
-              language={language}
-              onLanguageChange={handleLanguageChange}
-              onRun={handleSubmit}
-              status={status}
-            />
-
-            <div className="flex flex-col h-[calc(100%-3rem)]">
-              <div className="flex-1">
-                <CodeEditor
-                  language={LANGUAGES[language].monaco}
-                  value={code}
-                  onChange={(v) => setCode(v || "")}
-                />
+          <>
+            {/* Waiting for opponent banner */}
+            {isWaitingForOpponent && (
+              <div className="bg-yellow-100 border-b border-yellow-300 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-yellow-800">⏳ Waiting for opponent...</p>
+                    <p className="text-xs text-yellow-700">Share battle ID: <span className="font-mono font-bold">{battleId}</span></p>
+                  </div>
+                  <p className="text-xs text-yellow-700">You can practice while waiting!</p>
+                </div>
               </div>
+            )}
 
-              <OutputPanel output={message} error={""} status={status} />
-            </div>
-          </EditorPane>
+            <EditorPane>
+              <EditorToolbar
+                language={language}
+                onLanguageChange={handleLanguageChange}
+                onRun={handleSubmit}
+                status={status}
+              />
+
+              <div className="flex flex-col h-[calc(100%-3rem)]">
+                <div className="flex-1">
+                  <CodeEditor
+                    language={LANGUAGES[language].monaco}
+                    value={code}
+                    onChange={(v) => setCode(v || "")}
+                  />
+                </div>
+
+                <OutputPanel output={message} error={""} status={status} />
+              </div>
+            </EditorPane>
+          </>
         )}
       </div>
     </div>

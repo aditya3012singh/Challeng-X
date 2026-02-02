@@ -9,8 +9,9 @@ import { emitToBattle } from "../config/socket.js";
  * @param {string} params.problemId
  * @param {string} params.code
  * @param {string} params.language
+ * @param {string} [params.battleId] - Optional battleId for battle submissions
  */
-export async function processSubmission({ userId, problemId, code, language }) {
+export async function processSubmission({ userId, problemId, code, language, battleId }) {
   // Create submission with PENDING status
   const submission = await prisma.submission.create({
     data: {
@@ -53,9 +54,14 @@ export async function processSubmission({ userId, problemId, code, language }) {
     where: { id: submission.id },
     data: { status: finalStatus }
   });
-  emitToBattle(battleId, "submissionResult", {
-    userId,
-    status: finalStatus
-  });
+
+  // Emit socket event if this is a battle submission
+  if (battleId) {
+    emitToBattle(battleId, "submissionResult", {
+      userId,
+      status: finalStatus
+    });
+  }
+
   return { status: finalStatus };
 }
