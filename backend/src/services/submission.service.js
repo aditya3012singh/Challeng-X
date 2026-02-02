@@ -1,7 +1,7 @@
 import prisma from "../config/db.js";
 import { compareOutput } from "../utils/compareOutput.js";
 import { runCode } from "./judge.service.js";
-
+import { emitToBattle } from "../config/socket.js";
 /**
  * Process a code submission
  * @param {object} params
@@ -53,6 +53,9 @@ export async function processSubmission({ userId, problemId, code, language }) {
     where: { id: submission.id },
     data: { status: finalStatus }
   });
-
+  emitToBattle(battleId, "submissionResult", {
+    userId,
+    status: finalStatus
+  });
   return { status: finalStatus };
 }

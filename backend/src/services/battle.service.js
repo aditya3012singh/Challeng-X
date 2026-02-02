@@ -3,7 +3,7 @@
 import redis from "../cache/redis.client.js";
 import prisma from "../config/db.js";
 import { updateRanks } from "./ranking.service.js";
-
+import { emitToBattle } from "../config/socket.js"
 // • Start timer
 // • Assign problem
 // • End match
@@ -67,6 +67,15 @@ export async function joinBattleService(battleId, player2Id){
             startedAt: new Date(),
         }
     });
+
+    emitToBattle(battleId, "playerJoined", {
+      playerId: player2Id
+    });
+
+    emitToBattle(battleId, "battleStarted", {
+      startedAt: new Date()
+    });
+
     return battle;
 }
 
@@ -101,6 +110,10 @@ export async function finishBattleService(battleId, winnerId){
             winnerId,
         }
     });
+    emitToBattle(battleId, "battleFinished", {
+      winnerId
+    });
+
     await redis.flushall(); 
     return battleResult;
 }

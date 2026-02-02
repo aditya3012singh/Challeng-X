@@ -7,7 +7,7 @@ export const fetchLeaderboard = createAsyncThunk(
     async ({ page = 1, limit = 20 }, { rejectWithValue }) => {
         try {
             const res = await api.get("/leaderboard", { params: { page, limit } });
-            return res.data;
+            return res.data.data;
         } catch (err) {
             return rejectWithValue(err.response.data);
         }

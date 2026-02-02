@@ -26,9 +26,11 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "http": "^0.0.1-security",
     "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.3",
     "prisma": "^6.19.2",
+    "socket.io": "^4.8.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -1,16 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { useEffect } from 'react'
-import Login from './pages/Login'
-import Register from './pages/Register'
+import Login from './auth/Login'
+import Register from './auth/Register'
 import Home from './pages/Home'
 import Navbar from './components/Navbar'
 import { fetchUserProfile } from '../store/api/auth.thunk'
 import './App.css'
-import { Problem } from './pages/Problem'
-import { ProblemDetail } from './pages/ProblemDetails'
+import { Problem } from './components/Problem'
+import { ProblemDetail } from './components/ProblemDetails'
 import Ide from './pages/Ide'
 import Battle from './pages/Battle'
+import { Leaderboard } from './pages/Leaderboard'
+import JoinRoom from './pages/JoinRoom'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -72,8 +74,18 @@ function App() {
           <ProtectedRoute>
             <Ide/>
           </ProtectedRoute>
+        } /> 
+        <Route path='/leaderboard' element={
+          <ProtectedRoute>
+            <Leaderboard/>
+          </ProtectedRoute>
         } />
         
+        <Route path="/join-room" element={
+          <ProtectedRoute>
+            <JoinRoom />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   )
