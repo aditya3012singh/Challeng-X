@@ -13,6 +13,9 @@ import Ide from './pages/Ide'
 import Battle from './pages/Battle'
 import { Leaderboard } from './pages/Leaderboard'
 import JoinRoom from './pages/JoinRoom'
+import { FindMatch } from './pages/FindMatch'
+import { TeamBatlle } from './pages/TeamBattle'
+import { SquidMode } from './pages/SquidMode'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -84,6 +87,21 @@ function App() {
         <Route path="/join-room" element={
           <ProtectedRoute>
             <JoinRoom />
+          </ProtectedRoute>
+        } />
+        <Route path='/matchmaking' element={
+          <ProtectedRoute>
+            <FindMatch/>
+          </ProtectedRoute>
+        } />
+        <Route path='/team-battle' element={
+          <ProtectedRoute>
+            <TeamBatlle/>
+          </ProtectedRoute>
+        } />
+        <Route path='/squid-mode' element={
+          <ProtectedRoute>
+            <SquidMode/>
           </ProtectedRoute>
         } />
       </Routes>

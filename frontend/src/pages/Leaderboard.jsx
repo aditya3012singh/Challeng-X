@@ -47,7 +47,7 @@ export const Leaderboard = () => {
 
     if (loading) {
         return (
-            <div className="max-w-screen-2xl mx-auto px-6 py-8">
+            <div className="max-w-screen-2xl  mx-auto px-6 py-8">
                 <div className="flex justify-center items-center min-h-[60vh]">
                     <div className="text-xl text-gray-400">Loading leaderboard...</div>
                 </div>
@@ -57,7 +57,7 @@ export const Leaderboard = () => {
 
     if (error) {
         return (
-            <div className="max-w-screen-2xl mx-auto px-6 py-8">
+            <div className="max-w-screen-2xl  mx-auto px-6 py-8">
                 <div className="flex justify-center items-center min-h-[60vh]">
                     <div className="text-xl text-red-400">Error: {error}</div>
                 </div>
