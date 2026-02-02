@@ -79,7 +79,7 @@ export const FindMatch = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0f0f12] text-white flex items-center justify-center px-4">
       <div className="max-w-2xl w-full">
         {matchFound ? (
           // Match Found Screen
@@ -120,7 +120,7 @@ export const FindMatch = () => {
           </div>
         ) : (
           // Selection Screen
-          <div className="bg-gray-800 rounded-3xl p-10 shadow-2xl border border-gray-700">
+          <div className="bg-[#15151a] border border-gray-800 rounded-3xl p-10 shadow-2xl">
             <h1 className="text-4xl font-bold text-center mb-8">⚔️ Find Match</h1>
 
             <div className="mb-8">

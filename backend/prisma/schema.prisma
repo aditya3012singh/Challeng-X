@@ -48,7 +48,11 @@ model User {
   battlesAsPlayer1 Battle[] @relation("player1")
   battlesAsPlayer2 Battle[] @relation("player2")
 
+  teamMemberships TeamMember[]
+  teamsCreated    Team[]       @relation("creator")
+
   submissions Submission[]
+  teamBattleSubmissions TeamBattleSubmission[]
 
   rankPoints Int @default(1000)
   wins       Int @default(0)
@@ -100,6 +104,7 @@ model Problem {
 
   testcases   TestCase[]
   battles     Battle[]
+  teamBattles TeamBattle[]
 
   createdAt   DateTime @default(now())
 
@@ -135,6 +140,81 @@ model Submission {
   status    SubmissionStatus @default(PENDING)
 
   executionTimeMs Int?
+
+  createdAt DateTime @default(now())
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  teamCode  String   @unique // 6-digit code for easy sharing
+
+  creator   User @relation("creator", fields: [creatorId], references: [id])
+  creatorId String
+
+  members   TeamMember[]
+
+  teamBattlesAsTeam1 TeamBattle[] @relation("team1")
+  teamBattlesAsTeam2 TeamBattle[] @relation("team2")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeamMember {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String
+
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, teamId])
+}
+
+model TeamBattle {
+  id        String   @id @default(uuid())
+  battleCode String  @unique
+
+  team1   Team @relation("team1", fields: [team1Id], references: [id])
+  team1Id String
+
+  team2   Team? @relation("team2", fields: [team2Id], references: [id])
+  team2Id String?
+
+  problem   Problem @relation(fields: [problemId], references: [id])
+  problemId String
+
+  maxTeamSize Int // 2, 3, 4, or 5
+  status      BattleStatus @default(WAITING)
+  currentRound Int @default(1)
+  winnerTeamId String?
+
+  submissions TeamBattleSubmission[]
+
+  startedAt DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeamBattleSubmission {
+  id        String   @id @default(uuid())
+
+  teamBattle   TeamBattle @relation(fields: [teamBattleId], references: [id], onDelete: Cascade)
+  teamBattleId String
+
+  submittedBy   User   @relation(fields: [submittedById], references: [id])
+  submittedById String
+
+  code     String
+  language String
+  output   String?
+
+  status SubmissionStatus @default(PENDING)
 
   createdAt DateTime @default(now())
 }

@@ -6,6 +6,8 @@ import submissionRoutes from "./routes/submission.route.js";
 import battleRoutes from "./routes/battle.route.js";
 import leaderboardRoutes from "./routes/leaderboard.route.js";
 import matchmakingRoutes from "./routes/matchmaking.route.js";
+import teamRoutes from "./routes/team.route.js";
+import teamBattleRoutes from "./routes/teamBattle.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -26,5 +28,7 @@ app.use("/api/submissions", submissionRoutes);
 app.use("/api/battle", battleRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/matchmaking", matchmakingRoutes);
+app.use("/api/team", teamRoutes);
+app.use("/api/team-battle", teamBattleRoutes);
 
 export default app;
