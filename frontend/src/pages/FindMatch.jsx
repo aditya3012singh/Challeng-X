@@ -83,7 +83,7 @@ export const FindMatch = () => {
       <div className="max-w-2xl w-full">
         {matchFound ? (
           // Match Found Screen
-          <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-3xl p-12 text-center shadow-2xl animate-pulse">
+          <div className="bg-linear-to-br from-green-500 to-green-700 rounded-3xl p-12 text-center shadow-2xl animate-pulse">
             <div className="text-6xl mb-6">🎯</div>
             <h1 className="text-4xl font-bold mb-4">Match Found!</h1>
             <p className="text-xl mb-2">Opponent: <span className="font-bold">{opponent}</span></p>
@@ -153,7 +153,7 @@ export const FindMatch = () => {
             <button
               onClick={handleJoinQueue}
               disabled={loading}
-              className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl font-semibold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full py-4 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl font-semibold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
               {loading ? "Joining..." : "Start Matchmaking"}
             </button>

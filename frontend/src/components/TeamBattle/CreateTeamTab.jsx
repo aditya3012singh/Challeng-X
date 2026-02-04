@@ -41,7 +41,7 @@ export const CreateTeamTab = ({ teamName, setTeamName, teamSize, setTeamSize, te
         <button
           type="submit"
           disabled={teamLoading}
-          className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold disabled:opacity-50"
+          className="w-full py-3 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold disabled:opacity-50"
         >
           {teamLoading ? "Creating..." : "Create Team"}
         </button>

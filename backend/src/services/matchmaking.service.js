@@ -16,6 +16,8 @@ const QUEUE_TIMEOUT = 60000; // 60 seconds timeout
  * @param {string} difficulty - EASY, MEDIUM, or HARD
  * @param {string} socketId - Socket connection ID
  */
+
+
 export async function joinQueue(userId, difficulty, socketId) {
   // Get user's rank points
   const user = await prisma.user.findUnique({

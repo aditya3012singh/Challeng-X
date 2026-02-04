@@ -1,5 +1,8 @@
 import {
   createTeamBattleService,
+  createTeamBattleByLeaderService,
+  getAvailableBattlesService,
+  joinBattleWithCodeService,
   getTeamBattleService,
   getTeamBattlesService,
   startTeamBattleService,
@@ -10,37 +13,93 @@ import {
 } from "../services/teamBattleNew.service.js";
 import { logger } from "../utils/logger.js";
 
-// Create a new tournament-style team battle
+/**
+ * POST /team-battle/create
+ * NEW FLOW: Team1 leader creates battle with join code for Team2
+ */
 export const createTeamBattle = async (req, res) => {
+  const userId = req.user.id;
+  const { team1Id, maxTeamSize } = req.body;
+
   try {
-    const { team1Id, team2Id, maxTeamSize } = req.body;
-
-    if (!team1Id || !team2Id || !maxTeamSize) {
+    if (!team1Id || !maxTeamSize) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: team1Id, team2Id, maxTeamSize",
+        message: "Missing required fields: team1Id, maxTeamSize",
       });
     }
 
-    if (![2, 3, 4, 5].includes(maxTeamSize)) {
+    if (![1, 2, 3, 4, 5].includes(maxTeamSize)) {
       return res.status(400).json({
         success: false,
-        message: "maxTeamSize must be 2, 3, 4, or 5",
+        message: "maxTeamSize must be between 1 and 5",
       });
     }
 
-    const teamBattle = await createTeamBattleService(team1Id, team2Id, maxTeamSize);
+    const battle = await createTeamBattleByLeaderService(userId, team1Id, maxTeamSize);
 
     res.status(201).json({
       success: true,
-      message: "Tournament team battle created successfully",
-      data: teamBattle,
+      message: "Battle created! Share the join code with Team2.",
+      data: battle,
     });
   } catch (error) {
     logger.error("Error creating team battle:", error);
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error?.message || "Failed to create team battle",
+    });
+  }
+};
+
+/**
+ * GET /team-battle/available
+ * NEW FLOW: Get all available battles for Team2 to browse
+ */
+export const getAvailableBattles = async (req, res) => {
+  try {
+    const battles = await getAvailableBattlesService();
+    res.status(200).json({
+      success: true,
+      data: battles,
+    });
+  } catch (error) {
+    logger.error("Error fetching available battles:", error);
+    res.status(500).json({
+      success: false,
+      message: error?.message || "Failed to fetch available battles",
+    });
+  }
+};
+
+/**
+ * POST /team-battle/join
+ * NEW FLOW: Team2 leader joins battle using join code
+ */
+export const joinTeamBattle = async (req, res) => {
+  const userId = req.user.id;
+  const { joinCode, team2Id } = req.body;
+
+  try {
+    if (!joinCode || !team2Id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: joinCode, team2Id",
+      });
+    }
+
+    const result = await joinBattleWithCodeService(joinCode, userId, team2Id);
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully joined battle!",
+      data: result,
+    });
+  } catch (error) {
+    logger.error("Error joining team battle:", error);
+    res.status(400).json({
+      success: false,
+      message: error?.message || "Failed to join team battle",
     });
   }
 };

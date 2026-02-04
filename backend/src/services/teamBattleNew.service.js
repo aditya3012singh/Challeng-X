@@ -3,7 +3,216 @@ import prisma from "../config/db.js";
 import { generateBattleCode } from "../utils/battleCode.js";
 import { logger } from "../utils/logger.js";
 
-// Create a new tournament-style team battle with individual matches
+// Generate a unique 6-character join code
+const generateJoinCode = () => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+};
+
+// Create a new team battle by Team1 leader (waiting for Team2 to join)
+export const createTeamBattleByLeaderService = async (userId, team1Id, maxTeamSize) => {
+  try {
+    // Validate team exists and user is a member
+    const team1 = await prisma.team.findUnique({
+      where: { id: team1Id },
+      include: { 
+        members: { 
+          include: { user: true },
+          where: { role: "LEADER" }
+        } 
+      },
+    });
+
+    if (!team1) {
+      throw new Error("Team not found");
+    }
+
+    // Check if user is a leader of this team
+    const isLeader = team1.members.some(m => m.userId === userId && m.role === "LEADER");
+    if (!isLeader) {
+      throw new Error("Only team leaders can create battles");
+    }
+
+    // Generate unique join code
+    let joinCode;
+    let existingBattle;
+    let attempts = 0;
+    do {
+      joinCode = generateJoinCode();
+      existingBattle = await prisma.teamBattle.findUnique({
+        where: { joinCode },
+      });
+      attempts++;
+    } while (existingBattle && attempts < 5);
+
+    if (existingBattle) {
+      throw new Error("Failed to generate unique join code");
+    }
+
+    // Generate unique battle code for reference
+    let battleCode;
+    attempts = 0;
+    do {
+      battleCode = generateBattleCode();
+      existingBattle = await prisma.teamBattle.findUnique({
+        where: { battleCode },
+      });
+      attempts++;
+    } while (existingBattle && attempts < 5);
+
+    if (existingBattle) {
+      throw new Error("Failed to generate unique battle code");
+    }
+
+    // Create the team battle (Team1 auto-joins)
+    const teamBattle = await prisma.teamBattle.create({
+      data: {
+        battleCode,
+        joinCode,
+        team1Id,
+        createdByUserId: userId,
+        maxTeamSize,
+        status: "WAITING", // WAITING = Awaiting Team2 to join
+      },
+    });
+
+    logger.info(`Team battle created by user ${userId}: ${teamBattle.id}`);
+
+    return {
+      id: teamBattle.id,
+      joinCode: teamBattle.joinCode,
+      battleCode: teamBattle.battleCode,
+      team1Id: teamBattle.team1Id,
+      maxTeamSize: teamBattle.maxTeamSize,
+      status: "WAITING_FOR_TEAM2",
+      createdAt: teamBattle.createdAt,
+      message: "Battle created! Share this code with Team2: " + joinCode,
+    };
+  } catch (error) {
+    logger.error(`Error creating team battle: ${error.message}`);
+    throw error;
+  }
+};
+
+// Get available battles for Team2 to browse and join
+export const getAvailableBattlesService = async () => {
+  try {
+    const availableBattles = await prisma.teamBattle.findMany({
+      where: {
+        status: "WAITING", // Only battles waiting for Team2
+        team2Id: null, // Team2 not yet joined
+        joinedByUserId: null, // No one has started joining yet
+      },
+      include: {
+        team1: {
+          include: {
+            members: { include: { user: true } },
+          },
+        },
+        createdByUser: {
+          select: { id: true, username: true, email: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return availableBattles.map(battle => ({
+      id: battle.id,
+      joinCode: battle.joinCode,
+      team1Name: battle.team1?.name,
+      createdBy: battle.createdByUser?.username,
+      maxTeamSize: battle.maxTeamSize,
+      createdAt: battle.createdAt,
+    }));
+  } catch (error) {
+    logger.error(`Error fetching available battles: ${error.message}`);
+    throw error;
+  }
+};
+
+// Join a battle with join code (Team2 action)
+export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
+  try {
+    // Find battle by join code
+    const teamBattle = await prisma.teamBattle.findUnique({
+      where: { joinCode },
+      include: {
+        team1: { include: { members: { include: { user: true } } } },
+        team2: { include: { members: { include: { user: true } } } },
+        createdByUser: { select: { username: true } },
+      },
+    });
+
+    if (!teamBattle) {
+      throw new Error("Invalid join code");
+    }
+
+    if (teamBattle.status !== "WAITING") {
+      throw new Error("This battle is no longer available to join");
+    }
+
+    if (teamBattle.team2Id !== null) {
+      throw new Error("Team2 has already joined this battle");
+    }
+
+    // Validate Team2 exists and user is a member
+    const team2 = await prisma.team.findUnique({
+      where: { id: team2Id },
+      include: { 
+        members: { 
+          include: { user: true },
+          where: { role: "LEADER" }
+        } 
+      },
+    });
+
+    if (!team2) {
+      throw new Error("Team not found");
+    }
+
+    // Check if user is a leader of Team2
+    const isLeader = team2.members.some(m => m.userId === userId && m.role === "LEADER");
+    if (!isLeader) {
+      throw new Error("Only team leaders can join battles");
+    }
+
+    // Validate Team2 has required members
+    const allTeam2Members = await prisma.team.findUnique({
+      where: { id: team2Id },
+      include: { members: true },
+    });
+
+    if (allTeam2Members.members.length < teamBattle.maxTeamSize) {
+      throw new Error(
+        `Team2 must have at least ${teamBattle.maxTeamSize} members`
+      );
+    }
+
+    // Update battle: Team2 joins
+    const updatedBattle = await prisma.teamBattle.update({
+      where: { id: teamBattle.id },
+      data: {
+        team2Id,
+        joinedByUserId: userId,
+        status: "ONGOING", // Status changes to ONGOING when both teams joined
+      },
+    });
+
+    logger.info(`User ${userId} joined battle ${teamBattle.id} with Team2 ${team2Id}`);
+
+    return {
+      id: updatedBattle.id,
+      status: "READY_TO_START",
+      message: "Team2 successfully joined! Battle is ready to start.",
+      team1: teamBattle.team1,
+      team2,
+    };
+  } catch (error) {
+    logger.error(`Error joining battle: ${error.message}`);
+    throw error;
+  }
+};
+
+// Create the old tournament-style team battle with individual matches (keeping for reference)
 export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => {
   try {
     // Validate teams exist and have correct size
@@ -62,6 +271,8 @@ export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => 
         battleCode,
         team1Id,
         team2Id,
+        createdByUserId: null,
+        joinedByUserId: null,
         maxTeamSize,
         status: "WAITING",
       },
@@ -443,6 +654,69 @@ export const getActiveTeamBattlesService = async () => {
     return activeBattles;
   } catch (error) {
     logger.error("Error fetching active team battles:", error);
+    throw error;
+  }
+};
+// Get battle details by ID (for new join-code flow)
+export const getBattleDetailsService = async (battleId) => {
+  try {
+    const battle = await prisma.teamBattle.findUnique({
+      where: { id: battleId },
+      include: {
+        team1: { include: { members: { include: { user: true } } } },
+        team2: { include: { members: { include: { user: true } } } },
+        createdByUser: { select: { username: true } },
+        matches: {
+          include: {
+            player1: { select: { id: true, username: true } },
+            player2: { select: { id: true, username: true } },
+            problem: { select: { id: true, title: true } },
+          },
+        },
+      },
+    });
+
+    if (!battle) {
+      throw new Error("Battle not found");
+    }
+
+    return battle;
+  } catch (error) {
+    logger.error(`Error fetching battle details: ${error.message}`);
+    throw error;
+  }
+};
+
+// Cancel a battle (only by creator before Team2 joins)
+export const cancelBattleService = async (battleId, userId) => {
+  try {
+    const battle = await prisma.teamBattle.findUnique({
+      where: { id: battleId },
+    });
+
+    if (!battle) {
+      throw new Error("Battle not found");
+    }
+
+    if (battle.createdByUserId !== userId) {
+      throw new Error("Only the battle creator can cancel the battle");
+    }
+
+    if (battle.team2Id !== null) {
+      throw new Error("Cannot cancel battle once Team2 has joined");
+    }
+
+    const cancelledBattle = await prisma.teamBattle.delete({
+      where: { id: battleId },
+    });
+
+    logger.info(`Battle ${battleId} cancelled by user ${userId}`);
+    return {
+      success: true,
+      message: "Battle cancelled successfully",
+    };
+  } catch (error) {
+    logger.error(`Error cancelling battle: ${error.message}`);
     throw error;
   }
 };

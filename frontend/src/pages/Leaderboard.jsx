@@ -116,7 +116,7 @@ export const Leaderboard = () => {
 
                   {/* Player */}
                   <td className="py-5 px-6 flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center font-bold text-white">
+                    <div className="w-11 h-11 rounded-full bg-linear-to-br from-blue-600 to-purple-600 flex items-center justify-center font-bold text-white">
                       {player.username.charAt(0).toUpperCase()}
                     </div>
                     <span className="text-white text-lg font-medium">

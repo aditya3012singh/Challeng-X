@@ -56,6 +56,9 @@ model User {
   
   teamBattleMatchesAsPlayer1 TeamBattleMatch[] @relation("match_player1")
   teamBattleMatchesAsPlayer2 TeamBattleMatch[] @relation("match_player2")
+  
+  // Team battles created by this user
+  createdTeamBattles TeamBattle[] @relation("battleCreator")
 
   rankPoints Int @default(1000)
   wins       Int @default(0)
@@ -180,14 +183,22 @@ model TeamMember {
 model TeamBattle {
   id        String   @id @default(uuid())
   battleCode String  @unique
+  joinCode  String   @unique // For Team2 to join
 
+  // Team1: Creator of the battle
   team1   Team @relation("team1", fields: [team1Id], references: [id])
   team1Id String
+  createdBy User @relation("battleCreator", fields: [createdByUserId], references: [id]) // Team1 leader
+  createdByUserId String
 
+  // Team2: Joins with code
   team2   Team? @relation("team2", fields: [team2Id], references: [id])
   team2Id String?
+  joinedByUserId String? // First person from Team2 to join (for tracking)
 
   maxTeamSize Int // 2, 3, 4, or 5
+  
+  // Status: WAITING -> ONGOING -> FINISHED
   status      BattleStatus @default(WAITING)
 
   // Individual matches between paired team members

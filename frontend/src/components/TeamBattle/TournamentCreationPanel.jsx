@@ -9,7 +9,7 @@ export const TournamentCreationPanel = ({
   if (!selectedTeam) return null;
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6">
+    <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-lg p-6">
       <h2 className="text-2xl font-bold mb-4">Create Tournament</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>

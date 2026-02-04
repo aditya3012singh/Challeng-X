@@ -20,7 +20,7 @@ export const JoinTeamTab = ({ joinCode, setJoinCode, teamLoading, onJoinTeam }) 
         <button
           type="submit"
           disabled={teamLoading || joinCode.length !== 6}
-          className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold disabled:opacity-50"
+          className="w-full py-3 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold disabled:opacity-50"
         >
           {teamLoading ? "Joining..." : "Join Team"}
         </button>

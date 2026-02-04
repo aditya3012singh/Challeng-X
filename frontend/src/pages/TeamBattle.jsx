@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  createTeamBattleByLeader,
+  getAvailableBattles,
+  joinTeamBattleWithCode,
   createTeamBattle,
   startTeamBattle,
   submitMatchSolution,
@@ -18,12 +21,14 @@ import { JoinTeamTab } from "../components/TeamBattle/JoinTeamTab";
 import { TournamentCreationPanel } from "../components/TeamBattle/TournamentCreationPanel";
 import { TournamentDisplay } from "../components/TeamBattle/TournamentDisplay";
 import { CodeSubmissionModal } from "../components/TeamBattle/CodeSubmissionModal";
+import { CreateBattleModal } from "../components/TeamBattle/CreateBattleModal";
+import { JoinBattleModal } from "../components/TeamBattle/JoinBattleModal";
 
 // Components
 
 
 export const TeamBattle = () => {
-  // Local state
+  // Local state - LEGACY
   const [activeTab, setActiveTab] = useState("myTeams");
   const [teamName, setTeamName] = useState("");
   const [teamSize, setTeamSize] = useState(2);
@@ -34,6 +39,10 @@ export const TeamBattle = () => {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("cpp");
 
+  // NEW JOIN-CODE FLOW STATE
+  const [showCreateBattleModal, setShowCreateBattleModal] = useState(false);
+  const [showJoinBattleModal, setShowJoinBattleModal] = useState(false);
+
   const dispatch = useDispatch();
   const { userTeams, loading: teamLoading, error: teamError, successMessage: teamSuccess } = useSelector(
     (state) => state.team
@@ -41,6 +50,7 @@ export const TeamBattle = () => {
   const {
     currentBattle,
     currentMatches,
+    availableBattles,
     loading: battleLoading,
     error: battleError,
     successMessage: battleSuccess,
@@ -223,9 +233,29 @@ export const TeamBattle = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-8">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-black text-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-center mb-8">🏆 Team Tournament</h1>
+        {/* Header Section */}
+        <div className="mb-8">
+          <h1 className="text-5xl font-bold text-center mb-2">🏆 Team Tournament Battle</h1>
+          <p className="text-center text-gray-400">Create teams, join battles, and compete with your squad</p>
+        </div>
+
+        {/* Quick Action Buttons */}
+        <div className="flex gap-4 mb-8 justify-center flex-wrap">
+          <button
+            onClick={() => setShowCreateBattleModal(true)}
+            className="px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg font-semibold transition-all shadow-lg"
+          >
+            ➕ Create Battle
+          </button>
+          <button
+            onClick={() => setShowJoinBattleModal(true)}
+            className="px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg font-semibold transition-all shadow-lg"
+          >
+            🔗 Join Battle
+          </button>
+        </div>
 
         {/* Tabs */}
         <TeamTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -314,6 +344,19 @@ export const TeamBattle = () => {
           onSubmitCode={handleSubmitMatchCode}
           onMarkWinner={handleCompleteMatch}
           battleLoading={battleLoading}
+        />
+
+        {/* NEW JOIN-CODE FLOW MODALS */}
+        <CreateBattleModal
+          isOpen={showCreateBattleModal}
+          onClose={() => setShowCreateBattleModal(false)}
+          teams={userTeams}
+        />
+
+        <JoinBattleModal
+          isOpen={showJoinBattleModal}
+          onClose={() => setShowJoinBattleModal(false)}
+          teams={userTeams}
         />
       </div>
     </div>

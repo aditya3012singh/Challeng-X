@@ -1,5 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  createTeamBattleByLeader,
+  getAvailableBattles,
+  joinTeamBattleWithCode,
   createTeamBattle,
   getTeamBattle,
   getTeamBattles,
@@ -11,7 +14,12 @@ import {
 } from "../api/teamBattle.thunk";
 
 const initialState = {
+  // NEW JOIN-CODE FLOW STATE
   currentBattle: null,
+  availableBattles: [],
+  joinCode: null,
+  
+  // LEGACY STATE
   teamBattles: [],
   activeBattles: [],
   currentMatches: [],
@@ -36,6 +44,62 @@ const teamBattleSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // ============================================
+    // NEW JOIN-CODE FLOW HANDLERS
+    // ============================================
+    
+    // Create Team Battle By Leader
+    builder
+      .addCase(createTeamBattleByLeader.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createTeamBattleByLeader.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentBattle = action.payload;
+        state.joinCode = action.payload.joinCode;
+        state.successMessage = `Battle created! Join code: ${action.payload.joinCode}`;
+      })
+      .addCase(createTeamBattleByLeader.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // Get Available Battles
+    builder
+      .addCase(getAvailableBattles.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAvailableBattles.fulfilled, (state, action) => {
+        state.loading = false;
+        state.availableBattles = action.payload || [];
+      })
+      .addCase(getAvailableBattles.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // Join Team Battle With Code
+    builder
+      .addCase(joinTeamBattleWithCode.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(joinTeamBattleWithCode.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentBattle = action.payload;
+        state.successMessage = "Successfully joined battle! Battle is starting...";
+      })
+      .addCase(joinTeamBattleWithCode.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // ============================================
+    // LEGACY TOURNAMENT-STYLE HANDLERS
+    // ============================================
+    
     // Create Team Battle
     builder
       .addCase(createTeamBattle.pending, (state) => {
