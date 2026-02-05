@@ -3,6 +3,7 @@ dotenv.config();
 import app from "./app.js";
 import http from "http";
 import { Server } from "socket.io";
+import { initializeSquidGameSocket } from "./config/squidGameSocket.js";
 
 const server= http.createServer(app);
 
@@ -25,6 +26,9 @@ io.on("connection", (socket) => {
     console.log("🔴 User disconnected");
   });
 });
+
+// Initialize Squid Game socket handlers
+initializeSquidGameSocket(io);
 
 const PORT = process.env.PORT || 4000;
 
