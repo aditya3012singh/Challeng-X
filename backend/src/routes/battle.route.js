@@ -1,9 +1,12 @@
-// POST /battle/create
-// POST /battle/join
-// GET /battle/:id
-// POST /battle/start
+// ===== 1v1 Battle Routes =====
+// POST /battle/create/random - Create a new 1v1 battle with random question
+// POST /battle/create/selected - Create a new 1v1 battle with selected question
+// POST /battle/join - Join an existing 1v1 battle
+// GET /battle/:id - Get battle details
+// POST /battle/:battleId/submit - Submit code solution for 1v1 battle
+// GET /battle/history - Get battle history
 
-// handles game matches between players
+// Handles direct 1v1 game matches between players
 
 import express from "express";
 import * as battleController from "../controllers/battle.controller.js";

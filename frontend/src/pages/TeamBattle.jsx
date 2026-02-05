@@ -233,7 +233,7 @@ export const TeamBattle = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-black text-white py-8">
+    <div className="min-h-screen bg-[#0f0f12] text-white py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header Section */}
         <div className="mb-8">
@@ -245,13 +245,13 @@ export const TeamBattle = () => {
         <div className="flex gap-4 mb-8 justify-center flex-wrap">
           <button
             onClick={() => setShowCreateBattleModal(true)}
-            className="px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg font-semibold transition-all shadow-lg"
+            className="px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl font-semibold transition-all shadow-lg"
           >
             ➕ Create Battle
           </button>
           <button
             onClick={() => setShowJoinBattleModal(true)}
-            className="px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg font-semibold transition-all shadow-lg"
+            className="px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-xl font-semibold transition-all shadow-lg"
           >
             🔗 Join Battle
           </button>

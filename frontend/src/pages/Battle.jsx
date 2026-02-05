@@ -78,228 +78,168 @@ export const Battle = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="container mx-auto px-4 max-w-4xl">
-                <h1 className="text-4xl font-bold text-center mb-8">Battle Arena</h1>
+        <div className="min-h-screen bg-[#0f0f12] text-white py-12 px-4">
+  <div className="max-w-4xl mx-auto">
+    <h1 className="text-4xl font-bold text-center mb-12">⚔️ Battle Arena</h1>
 
-                {/* Tabs */}
-                <div className="flex justify-center mb-8 space-x-2">
-                    <button
-                        onClick={() => setActiveTab("random")}
-                        className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                            activeTab === "random"
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-gray-700 hover:bg-gray-100"
-                        }`}
-                    >
-                        Random Battle
-                    </button>
-                    {/* <button
-                        onClick={() => setActiveTab("selected")}
-                        className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                            activeTab === "selected"
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-gray-700 hover:bg-gray-100"
-                        }`}
-                    >
-                        Select Problem
-                    </button> */}
-                    <button
-                        onClick={() => setActiveTab("join")}
-                        className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                            activeTab === "join"
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-gray-700 hover:bg-gray-100"
-                        }`}
-                    >
-                        Join Battle
-                    </button>
-                </div>
+    {/* Tabs */}
+    <div className="flex justify-center mb-10 space-x-3">
+      <button
+        onClick={() => setActiveTab("random")}
+        className={`px-8 py-3 rounded-xl font-semibold transition-all ${
+          activeTab === "random"
+            ? "bg-blue-600 text-white shadow-lg scale-105"
+            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+        }`}
+      >
+        Random Battle
+      </button>
 
-                {/* Error Display */}
-                {error && (
-                    <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                        <p className="font-semibold">Error</p>
-                        <p>{error}</p>
-                    </div>
-                )}
+      <button
+        onClick={() => setActiveTab("join")}
+        className={`px-8 py-3 rounded-xl font-semibold transition-all ${
+          activeTab === "join"
+            ? "bg-blue-600 text-white shadow-lg scale-105"
+            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+        }`}
+      >
+        Join Battle
+      </button>
+    </div>
 
-                {/* Tab Content */}
-                <div className="bg-white rounded-lg shadow-lg p-8">
-                    {/* Random Battle Tab */}
-                    {activeTab === "random" && (
-                        <div className="text-center">
-                            <div className="mb-6">
-                                <svg
-                                    className="mx-auto h-24 w-24 text-blue-600 mb-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                                    />
-                                </svg>
-                                <h2 className="text-2xl font-bold mb-2">Quick Random Battle</h2>
-                                <p className="text-gray-600">
-                                    Get matched with a random coding problem and challenge yourself!
-                                </p>
-                            </div>
-                            <button
-                                onClick={handleCreateRandom}
-                                disabled={loading}
-                                className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {loading ? "Creating Battle..." : "Start Random Battle"}
-                            </button>
-                        </div>
-                    )}
+    {/* Error */}
+    {error && (
+      <div className="mb-8 p-4 bg-red-500/20 border border-red-500 rounded-xl text-red-300">
+        <p className="font-semibold mb-1">Error</p>
+        <p className="text-sm">{error}</p>
+      </div>
+    )}
 
-                    {/* Selected Problem Tab */}
-                    {activeTab === "selected" && (
-                        <div>
-                            <h2 className="text-2xl font-bold mb-4">Choose Your Challenge</h2>
-                            <p className="text-gray-600 mb-6">
-                                Select a specific problem to battle with
-                            </p>
+    {/* Tab Content Card */}
+    <div className="bg-gray-800 border border-gray-700 rounded-3xl shadow-2xl p-10">
+      {/* Random Battle */}
+      {activeTab === "random" && (
+        <div className="text-center">
+          <div className="mb-8">
+            <div className="text-6xl mb-6">⚡</div>
+            <h2 className="text-3xl font-bold mb-3">Quick Random Battle</h2>
+            <p className="text-gray-400">
+              Get matched with a random coding problem and challenge yourself!
+            </p>
+          </div>
 
-                            <form onSubmit={handleCreateSelected}>
-                                <div className="mb-6">
-                                    <label
-                                        htmlFor="problem-select"
-                                        className="block text-sm font-semibold text-gray-700 mb-2"
-                                    >
-                                        Select Problem
-                                    </label>
-                                    {problemsLoading ? (
-                                        <div className="text-center py-4">
-                                            <p className="text-gray-500">Loading problems...</p>
-                                        </div>
-                                    ) : (
-                                        <select
-                                            id="problem-select"
-                                            value={selectedProblemId}
-                                            onChange={(e) => setSelectedProblemId(e.target.value)}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            required
-                                        >
-                                            <option value="">-- Choose a problem --</option>
-                                            {problems.map((problem) => (
-                                                <option key={problem.id} value={problem.id}>
-                                                    {problem.title} - {problem.difficulty}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    )}
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={loading || !selectedProblemId}
-                                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    {loading ? "Creating Battle..." : "Create Battle"}
-                                </button>
-                            </form>
-                        </div>
-                    )}
-
-                    {/* Join Battle Tab */}
-                    {activeTab === "join" && (
-                        <div>
-                            <div className="text-center mb-6">
-                                <svg
-                                    className="mx-auto h-20 w-20 text-green-600 mb-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                    />
-                                </svg>
-                                <h2 className="text-2xl font-bold mb-2">Join an Existing Battle</h2>
-                                <p className="text-gray-600">
-                                    Enter the battle ID shared by your opponent
-                                </p>
-                            </div>
-
-                            <form onSubmit={handleJoinBattle}>
-                                <div className="mb-6">
-                                    <label
-                                        htmlFor="battle-id"
-                                        className="block text-sm font-semibold text-gray-700 mb-2"
-                                    >
-                                        Battle ID
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="battle-id"
-                                        value={battleId}
-                                        onChange={(e) => setBattleId(e.target.value)}
-                                        placeholder="Enter battle ID (e.g., abc123xyz)"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    <p className="mt-2 text-sm text-gray-500">
-                                        The battle ID is provided by the person who created the battle
-                                    </p>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={loading || !battleId.trim()}
-                                    className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    {loading ? "Joining Battle..." : "Join Battle"}
-                                </button>
-                            </form>
-                        </div>
-                    )}
-                </div>
-
-                {/* Info Section */}
-                <div className="mt-8 bg-blue-50 rounded-lg p-6">
-                    <h3 className="text-lg font-bold text-blue-900 mb-3">How it Works</h3>
-                    <div className="space-y-2 text-blue-800">
-                        <div className="flex items-start">
-                            <span className="font-bold mr-2">1.</span>
-                            <p>
-                                <strong>Random Battle:</strong> Get instantly matched with a random coding
-                                problem
-                            </p>
-                        </div>
-                        <div className="flex items-start">
-                            <span className="font-bold mr-2">2.</span>
-                            <p>
-                                <strong>Select Problem:</strong> Choose a specific problem you want to
-                                battle with
-                            </p>
-                        </div>
-                        <div className="flex items-start">
-                            <span className="font-bold mr-2">3.</span>
-                            <p>
-                                <strong>Join Battle:</strong> Enter a battle ID to join an existing battle
-                                created by others
-                            </p>
-                        </div>
-                        <div className="flex items-start">
-                            <span className="font-bold mr-2">4.</span>
-                            <p>
-                                Once created or joined, you'll be taken to the battle room where you can
-                                solve the problem and compete!
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          <button
+            onClick={handleCreateRandom}
+            disabled={loading}
+            className="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+          >
+            {loading ? "Creating Battle..." : "Start Random Battle"}
+          </button>
         </div>
+      )}
+
+      {/* Selected Problem */}
+      {activeTab === "selected" && (
+        <div>
+          <h2 className="text-3xl font-bold mb-4">Choose Your Challenge</h2>
+          <p className="text-gray-400 mb-8">
+            Select a specific problem to battle with
+          </p>
+
+          <form onSubmit={handleCreateSelected}>
+            <div className="mb-8">
+              <label className="block text-sm font-semibold text-gray-400 mb-3">
+                Select Problem
+              </label>
+
+              {problemsLoading ? (
+                <div className="text-center py-6 text-gray-500">
+                  Loading problems...
+                </div>
+              ) : (
+                <select
+                  value={selectedProblemId}
+                  onChange={(e) => setSelectedProblemId(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  required
+                >
+                  <option value="">-- Choose a problem --</option>
+                  {problems.map((problem) => (
+                    <option key={problem.id} value={problem.id}>
+                      {problem.title} - {problem.difficulty}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !selectedProblemId}
+              className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            >
+              {loading ? "Creating Battle..." : "Create Battle"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Join Battle */}
+      {activeTab === "join" && (
+        <div>
+          <div className="text-center mb-8">
+            <div className="text-6xl mb-6">🤝</div>
+            <h2 className="text-3xl font-bold mb-2">Join an Existing Battle</h2>
+            <p className="text-gray-400">
+              Enter the battle ID shared by your opponent
+            </p>
+          </div>
+
+          <form onSubmit={handleJoinBattle}>
+            <div className="mb-8">
+              <label className="block text-sm font-semibold text-gray-400 mb-3">
+                Battle ID
+              </label>
+              <input
+                type="text"
+                value={battleId}
+                onChange={(e) => setBattleId(e.target.value)}
+                placeholder="Enter battle ID (e.g., abc123xyz)"
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-green-500 focus:outline-none"
+                required
+              />
+              <p className="mt-3 text-sm text-gray-500">
+                The battle ID is provided by the person who created the battle
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !battleId.trim()}
+              className="w-full py-4 bg-green-600 hover:bg-green-700 rounded-xl font-semibold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            >
+              {loading ? "Joining Battle..." : "Join Battle"}
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+
+    {/* Info Section */}
+    <div className="mt-12 bg-gray-800 border border-gray-700 rounded-3xl p-8 shadow-2xl">
+      <h3 className="text-xl font-bold mb-6 flex items-center">
+        ℹ️ <span className="ml-2">How it Works</span>
+      </h3>
+      <div className="space-y-4 text-gray-400 text-sm">
+        <p><strong>1.</strong> Random Battle: Instantly matched with a random coding problem</p>
+        <p><strong>2.</strong> Select Problem: Choose a specific problem to battle with</p>
+        <p><strong>3.</strong> Join Battle: Enter a battle ID to join an existing battle</p>
+        <p><strong>4.</strong> You’ll be taken to the battle room to compete!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
     );
 };
 

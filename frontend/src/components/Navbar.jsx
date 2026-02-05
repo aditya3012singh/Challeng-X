@@ -37,6 +37,13 @@ const Navbar = () => {
               </button>
 
               <button
+                onClick={() => navigate("/battles")}
+                className="hover:text-purple-400 transition"
+              >
+                ⚔️ 1v1 Battle
+              </button>
+
+              <button
                 onClick={() => navigate("/team-battle")}
                 className="hover:text-green-400 transition"
               >
@@ -65,9 +72,9 @@ const Navbar = () => {
             {isAuthenticated && (
               <>
                 {/* Live Online Count */}
-                <div className="hidden lg:flex items-center text-green-400 text-sm font-semibold">
+                {/* <div className="hidden lg:flex items-center text-green-400 text-sm font-semibold">
                   🟢 128 Online
-                </div>
+                </div> */}
 
                 {/* Leaderboard */}
                 <button
