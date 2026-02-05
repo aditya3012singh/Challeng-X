@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { createTeamBattleByLeader } from "../../../store/api/teamBattle.thunk";
 import "./TeamBattleModals.css";
 
 export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.teamBattle);
   const [team1Id, setTeam1Id] = useState("");
   const [maxTeamSize, setMaxTeamSize] = useState(2);
@@ -22,9 +24,10 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
       createTeamBattleByLeader({ team1Id, maxTeamSize })
     );
 
-    if (result.payload?.joinCode) {
-      setJoinCode(result.payload.joinCode);
-      setShowJoinCode(true);
+    if (result.payload?.id) {
+      // Navigate to battle room
+      onClose();
+      navigate(`/battle-room/${result.payload.id}`);
     }
   };
 

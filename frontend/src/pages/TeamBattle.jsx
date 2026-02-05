@@ -303,35 +303,7 @@ export const TeamBattle = () => {
           />
         )}
 
-        {/* Tournaments Tab */}
-        {activeTab === "battle" && (
-          <div className="space-y-6">
-            {/* Tournament Creation Panel */}
-            <TournamentCreationPanel
-              selectedTeam={selectedTeam}
-              selectedOpponent={selectedOpponent}
-              availableTeams={availableTeams}
-              onOpponentChange={setSelectedOpponent}
-              onCreateBattle={handleCreateBattle}
-              battleLoading={battleLoading}
-            />
 
-            {/* Tournament Display */}
-            <TournamentDisplay
-              currentBattle={currentBattle}
-              currentMatches={currentMatches}
-              user={user}
-              onSelectMatch={setSelectedMatch}
-              onStartBattle={handleStartTournament}
-              onCompleteBattle={handleCompleteTournament}
-              onSelectMatchForCode={setSelectedMatch}
-              getMatchStatus={getMatchStatus}
-              isUserInMatch={isUserInMatch}
-              battleLoading={battleLoading}
-              setActiveTab={setActiveTab}
-            />
-          </div>
-        )}
 
         {/* Code Submission Modal */}
         <CodeSubmissionModal

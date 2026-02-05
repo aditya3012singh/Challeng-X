@@ -15,6 +15,7 @@ import { Leaderboard } from './pages/Leaderboard'
 import JoinRoom from './pages/JoinRoom'
 import { FindMatch } from './pages/FindMatch'
 import { TeamBattle } from './pages/TeamBattle'
+import { BattleRoom } from './pages/BattleRoom'
 import { SquidMode } from './pages/SquidMode'
 // import Profile from './pages/Profile'
 
@@ -98,6 +99,11 @@ function App() {
         <Route path='/team-battle' element={
           <ProtectedRoute>
             <TeamBattle/>
+          </ProtectedRoute>
+        } />
+        <Route path='/battle-room/:battleId' element={
+          <ProtectedRoute>
+            <BattleRoom/>
           </ProtectedRoute>
         } />
         <Route path='/squid-mode' element={

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { getAvailableBattles, joinTeamBattleWithCode } from "../../../store/api/teamBattle.thunk";
 import "./TeamBattleModals.css";
 
 export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.teamBattle);
   const { availableBattles } = useSelector((state) => state.teamBattle);
   const [joinCodeInput, setJoinCodeInput] = useState("");
@@ -25,13 +27,17 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
       return;
     }
 
-    await dispatch(
+    const result = await dispatch(
       joinTeamBattleWithCode({
         joinCode: joinCodeInput.toUpperCase(),
         team2Id,
       })
     );
-    onClose();
+    
+    if (result.payload?.id) {
+      onClose();
+      navigate(`/battle-room/${result.payload.id}`);
+    }
   };
 
   const handleJoinBattle = async (battleId) => {
@@ -42,13 +48,17 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
 
     const battle = availableBattles.find((b) => b.id === battleId);
     if (battle) {
-      await dispatch(
+      const result = await dispatch(
         joinTeamBattleWithCode({
           joinCode: battle.joinCode,
           team2Id,
         })
       );
-      onClose();
+      
+      if (result.payload?.id) {
+        onClose();
+        navigate(`/battle-room/${result.payload.id}`);
+      }
     }
   };
 

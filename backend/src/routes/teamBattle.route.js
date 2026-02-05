@@ -25,6 +25,9 @@ router.get("/available", getAvailableBattles);
 // POST /team-battle/join - Team2 leader joins battle with code
 router.post("/join", authMiddleware, joinTeamBattle);
 
+// GET /team-battle/details/:battleId - Get battle details by ID (for battle room)
+router.get("/details/:battleId", getTeamBattle);
+
 // ============================================
 // EXISTING TOURNAMENT-STYLE ROUTES (LEGACY)
 // ============================================

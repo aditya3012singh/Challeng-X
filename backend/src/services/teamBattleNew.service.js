@@ -11,13 +11,12 @@ const generateJoinCode = () => {
 // Create a new team battle by Team1 leader (waiting for Team2 to join)
 export const createTeamBattleByLeaderService = async (userId, team1Id, maxTeamSize) => {
   try {
-    // Validate team exists and user is a member
+    // Validate team exists and user is the creator (leader)
     const team1 = await prisma.team.findUnique({
       where: { id: team1Id },
       include: { 
         members: { 
-          include: { user: true },
-          where: { role: "LEADER" }
+          include: { user: true }
         } 
       },
     });
@@ -26,9 +25,8 @@ export const createTeamBattleByLeaderService = async (userId, team1Id, maxTeamSi
       throw new Error("Team not found");
     }
 
-    // Check if user is a leader of this team
-    const isLeader = team1.members.some(m => m.userId === userId && m.role === "LEADER");
-    if (!isLeader) {
+    // Check if user is the creator (leader) of this team
+    if (team1.creatorId !== userId) {
       throw new Error("Only team leaders can create battles");
     }
 
@@ -49,19 +47,7 @@ export const createTeamBattleByLeaderService = async (userId, team1Id, maxTeamSi
     }
 
     // Generate unique battle code for reference
-    let battleCode;
-    attempts = 0;
-    do {
-      battleCode = generateBattleCode();
-      existingBattle = await prisma.teamBattle.findUnique({
-        where: { battleCode },
-      });
-      attempts++;
-    } while (existingBattle && attempts < 5);
-
-    if (existingBattle) {
-      throw new Error("Failed to generate unique battle code");
-    }
+    const battleCode = await generateBattleCode();
 
     // Create the team battle (Team1 auto-joins)
     const teamBattle = await prisma.teamBattle.create({
@@ -100,7 +86,6 @@ export const getAvailableBattlesService = async () => {
       where: {
         status: "WAITING", // Only battles waiting for Team2
         team2Id: null, // Team2 not yet joined
-        joinedByUserId: null, // No one has started joining yet
       },
       include: {
         team1: {
@@ -108,7 +93,7 @@ export const getAvailableBattlesService = async () => {
             members: { include: { user: true } },
           },
         },
-        createdByUser: {
+        createdBy: {
           select: { id: true, username: true, email: true },
         },
       },
@@ -119,7 +104,7 @@ export const getAvailableBattlesService = async () => {
       id: battle.id,
       joinCode: battle.joinCode,
       team1Name: battle.team1?.name,
-      createdBy: battle.createdByUser?.username,
+      createdBy: battle.createdBy?.username,
       maxTeamSize: battle.maxTeamSize,
       createdAt: battle.createdAt,
     }));
@@ -138,7 +123,7 @@ export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
       include: {
         team1: { include: { members: { include: { user: true } } } },
         team2: { include: { members: { include: { user: true } } } },
-        createdByUser: { select: { username: true } },
+        createdBy: { select: { username: true } },
       },
     });
 
@@ -154,13 +139,12 @@ export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
       throw new Error("Team2 has already joined this battle");
     }
 
-    // Validate Team2 exists and user is a member
+    // Validate Team2 exists and user is the creator (leader)
     const team2 = await prisma.team.findUnique({
       where: { id: team2Id },
       include: { 
         members: { 
-          include: { user: true },
-          where: { role: "LEADER" }
+          include: { user: true }
         } 
       },
     });
@@ -169,9 +153,8 @@ export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
       throw new Error("Team not found");
     }
 
-    // Check if user is a leader of Team2
-    const isLeader = team2.members.some(m => m.userId === userId && m.role === "LEADER");
-    if (!isLeader) {
+    // Check if user is the creator (leader) of Team2
+    if (team2.creatorId !== userId) {
       throw new Error("Only team leaders can join battles");
     }
 
@@ -325,14 +308,21 @@ export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => 
   }
 };
 
-// Get team battle by battle code
-export const getTeamBattleService = async (battleCode) => {
+// Get team battle by battle code or ID
+export const getTeamBattleService = async (identifier) => {
   try {
-    const teamBattle = await prisma.teamBattle.findUnique({
-      where: { battleCode },
+    // Try to find by ID first, then by battleCode
+    const teamBattle = await prisma.teamBattle.findFirst({
+      where: {
+        OR: [
+          { id: identifier },
+          { battleCode: identifier },
+        ],
+      },
       include: {
         team1: { include: { members: { include: { user: true } } } },
         team2: { include: { members: { include: { user: true } } } },
+        createdBy: { select: { id: true, username: true, email: true } },
         matches: {
           include: {
             player1: true,
@@ -665,7 +655,7 @@ export const getBattleDetailsService = async (battleId) => {
       include: {
         team1: { include: { members: { include: { user: true } } } },
         team2: { include: { members: { include: { user: true } } } },
-        createdByUser: { select: { username: true } },
+        createdBy: { select: { username: true } },
         matches: {
           include: {
             player1: { select: { id: true, username: true } },

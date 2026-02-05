@@ -104,19 +104,20 @@ export const joinTeamBattle = async (req, res) => {
   }
 };
 
-// Get team battle by code
+// Get team battle by code or ID
 export const getTeamBattle = async (req, res) => {
   try {
-    const { battleCode } = req.params;
+    const { battleCode, battleId } = req.params;
+    const identifier = battleCode || battleId;
 
-    if (!battleCode) {
+    if (!identifier) {
       return res.status(400).json({
         success: false,
-        message: "Battle code is required",
+        message: "Battle code or ID is required",
       });
     }
 
-    const teamBattle = await getTeamBattleService(battleCode);
+    const teamBattle = await getTeamBattleService(identifier);
 
     res.status(200).json({
       success: true,

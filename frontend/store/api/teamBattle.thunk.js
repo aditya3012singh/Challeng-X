@@ -56,6 +56,21 @@ export const joinTeamBattleWithCode = createAsyncThunk(
   }
 );
 
+// Get battle details by ID (for battle room)
+export const getBattleById = createAsyncThunk(
+  "teamBattle/getById",
+  async (battleId, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(`/team-battle/details/${battleId}`);
+      return data?.data;
+    } catch (error) {
+      return rejectWithValue(
+        error?.response?.data?.message || "Failed to fetch battle details"
+      );
+    }
+  }
+);
+
 // ============================================
 // LEGACY TOURNAMENT-STYLE THUNKS
 // ============================================

@@ -3,7 +3,6 @@ export const TeamTabs = ({ activeTab, setActiveTab }) => {
     { id: "myTeams", label: "My Teams" },
     { id: "create", label: "Create Team" },
     { id: "join", label: "Join Team" },
-    { id: "battle", label: "Active Tournaments" },
   ];
 
   return (
