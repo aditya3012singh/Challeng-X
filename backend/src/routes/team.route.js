@@ -11,11 +11,12 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
+// Define /my route BEFORE /:teamId to avoid matching 'my' as teamId parameter
+router.get("/my", authMiddleware, teamController.getUserTeamsController);
 router.post("/create", authMiddleware, teamController.createTeamController);
 router.get("/:teamId", authMiddleware, teamController.getTeamController);
 router.post("/join", authMiddleware, teamController.joinTeamController);
 router.post("/:teamId/leave", authMiddleware, teamController.leaveTeamController);
 router.post("/:teamId/disband", authMiddleware, teamController.disbandTeamController);
-router.get("/my", authMiddleware, teamController.getUserTeamsController);
 
 export default router;

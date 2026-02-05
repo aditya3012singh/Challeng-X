@@ -240,6 +240,7 @@ export async function disbandTeamService(teamId, userId) {
  * Get user's teams
  */
 export async function getUserTeamsService(userId) {
+    console.log("Fetching teams for user:", userId);
   const teams = await prisma.teamMember.findMany({
     where: { userId },
     include: {
@@ -264,10 +265,12 @@ export async function getUserTeamsService(userId) {
           },
           teamBattlesAsTeam1: {
             where: { status: "ONGOING" },
+            select: { id: true, battleCode: true, status: true },
             take: 1
           },
           teamBattlesAsTeam2: {
             where: { status: "ONGOING" },
+            select: { id: true, battleCode: true, status: true },
             take: 1
           }
         }
@@ -275,5 +278,6 @@ export async function getUserTeamsService(userId) {
     }
   });
 
+  console.log(teams.length, "teams found for user", userId);
   return teams.map(t => t.team);
 }

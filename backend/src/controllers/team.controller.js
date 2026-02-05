@@ -75,6 +75,8 @@ export async function disbandTeamController(req, res) {
 
 export async function getUserTeamsController(req, res) {
   const userId = req.user.id;
+  console.log("you hit the getUserTeamsController");
+  console.log("Controller: Fetching teams for user:", userId);
 
   try {
     const teams = await teamService.getUserTeamsService(userId);
