@@ -32,7 +32,7 @@ const JoinRoom = () => {
 
   return (
     <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center px-4">
-      <div className="bg-[#15151a] border border-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-10 text-center">
+      <div className="bg-[#15151a] border border-gray-400 rounded-2xl shadow-2xl w-full max-w-md p-10 text-center">
 
         <h1 className="text-4xl font-bold text-white mb-4">🎮 Join Room</h1>
         <p className="text-gray-400 mb-8">
