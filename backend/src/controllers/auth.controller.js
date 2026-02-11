@@ -4,13 +4,13 @@
 
 import AuthService from "../services/auth.service.js";
 import CookieOptions from "../utils/cookies.js";
-import { loginSchema, registerSchema } from "../validation/auth.schema.js";
+import AuthSchema from "../validation/auth.schema.js";
 import Database from "../config/db.js";
 
 class AuthController {
     static async login(req, res) {
 
-    const validationResult= loginSchema.safeParse(req.body);
+    const validationResult= AuthSchema.loginSchema.safeParse(req.body);
 
     if (!validationResult.success) {
         return res.status(400).json({
@@ -41,7 +41,7 @@ class AuthController {
     }
 
     static async Register(req, res) {
-    const CheckSchema= registerSchema.safeParse(req.body);
+    const CheckSchema= AuthSchema.registerSchema.safeParse(req.body);
 
     if (!CheckSchema.success) {
         return res.status(400).json({

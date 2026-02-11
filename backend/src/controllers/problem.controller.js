@@ -4,11 +4,11 @@
 
 import ProblemService from "../services/problem.service.js";
 import TestcaseService from "../services/testcase.service.js";
-import { createProblemSchema } from "../validation/createProblem.schema.js";
+import ProblemSchema from "../validation/createProblem.schema.js";
 
 class ProblemController {
     static async createProblem(req, res) {
-    const validation= createProblemSchema.safeParse(req.body);
+    const validation= ProblemSchema.createProblemSchema.safeParse(req.body);
     if (!validation.success) {
         return res.status(400).json({ errors: validation.error.errors });
     }

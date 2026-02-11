@@ -13,24 +13,31 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
-const app = express();
 
-app.use(cors({
-  origin: "http://localhost:5173", // frontend
-  credentials: true,               // 🔥 REQUIRED for cookies
-}));
+class App {
+  static createApp() {
+    const app = express();
 
-app.use(express.json());
-app.use(cookieParser());
-app.use("/api/auth", authRoutes);   
-app.use("/api/problem", problemRoutes);
-app.use("/api/testcase", testcaseRoutes);
-app.use("/api/submissions", submissionRoutes);
-app.use("/api/battle", battleRoutes);
-app.use("/api/leaderboard", leaderboardRoutes);
-app.use("/api/matchmaking", matchmakingRoutes);
-app.use("/api/team", teamRoutes);
-app.use("/api/team-battle", teamBattleRoutes);
-app.use("/api/squid-game", squidGameRoutes);
+    app.use(cors({
+      origin: "http://localhost:5173", // frontend
+      credentials: true,               // 🔥 REQUIRED for cookies
+    }));
 
-export default app;
+    app.use(express.json());
+    app.use(cookieParser());
+    app.use("/api/auth", authRoutes);
+    app.use("/api/problem", problemRoutes);
+    app.use("/api/testcase", testcaseRoutes);
+    app.use("/api/submissions", submissionRoutes);
+    app.use("/api/battle", battleRoutes);
+    app.use("/api/leaderboard", leaderboardRoutes);
+    app.use("/api/matchmaking", matchmakingRoutes);
+    app.use("/api/team", teamRoutes);
+    app.use("/api/team-battle", teamBattleRoutes);
+    app.use("/api/squid-game", squidGameRoutes);
+
+    return app;
+  }
+}
+
+export default App;
