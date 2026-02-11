@@ -6,7 +6,8 @@
 import * as battleService from "../services/battle.service.js";
 import { processSubmission } from "../services/submission.service.js";
 
-export async function createBattleRandomQuestionController(req, res) {
+class BattleController {
+    static async createBattleRandomQuestionController(req, res) {
     const  userId  = req.user.id;
     try {
         const battle = await battleService.createBattleRandomQuestionService(userId);
@@ -15,9 +16,9 @@ export async function createBattleRandomQuestionController(req, res) {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+    }
 
-export async function createBattleWithSelectedQuestionController(req, res) {
+    static async createBattleWithSelectedQuestionController(req, res) {
     const  userId  = req.user.id;
     const { problemId } = req.body;
     try {
@@ -27,9 +28,9 @@ export async function createBattleWithSelectedQuestionController(req, res) {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+    }
 
-export async function joinBattleController(req, res) {
+    static async joinBattleController(req, res) {
     const  userId  = req.user.id;
     const { battleCode } = req.body;
     try {
@@ -38,9 +39,9 @@ export async function joinBattleController(req, res) {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+    }
 
-export async function getBattleController(req, res) {
+    static async getBattleController(req, res) {
     const { battleId } = req.params;
     try {
         const battle = await battleService.getBattle(battleId);
@@ -49,9 +50,9 @@ export async function getBattleController(req, res) {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+    }
 
-export async function submitBattleCodeController(req, res) {
+    static async submitBattleCodeController(req, res) {
     const  userId  = req.user.id;
     const { battleId } = req.params;
     const { code, language } = req.body;
@@ -90,9 +91,9 @@ export async function submitBattleCodeController(req, res) {
         console.error("Submit battle code error:", error);
         res.status(500).json({ message: error.message });
     }   
-}
+    }
 
-export async function battleHistory(req, res) {
+    static async battleHistory(req, res) {
 
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -109,4 +110,7 @@ export async function battleHistory(req, res) {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+    }
 }
+
+export default BattleController;

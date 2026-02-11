@@ -17,6 +17,7 @@ import { FindMatch } from './pages/FindMatch'
 import { TeamBattle } from './pages/TeamBattle'
 import { BattleRoom } from './pages/BattleRoom'
 import { SquidMode } from './pages/SquidMode'
+import Admin from './pages/Admin'
 // import Profile from './pages/Profile'
 
 // Protected Route Component
@@ -111,6 +112,11 @@ function App() {
         <Route path='/squid-mode' element={
           <ProtectedRoute>
             <SquidMode/>
+          </ProtectedRoute>
+        } />
+        <Route path='/admin' element={
+          <ProtectedRoute>
+            <Admin/>
           </ProtectedRoute>
         } />
         {/* <Route path='/profile/:userId' element={

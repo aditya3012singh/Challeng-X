@@ -9,20 +9,20 @@
 // Handles direct 1v1 game matches between players
 
 import express from "express";
-import * as battleController from "../controllers/battle.controller.js";
+import BattleController from "../controllers/battle.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/create/random", authMiddleware, battleController.createBattleRandomQuestionController);
-router.post("/create/selected", authMiddleware, battleController.createBattleWithSelectedQuestionController);
-router.post("/join", authMiddleware, battleController.joinBattleController);
-router.get("/:battleId", authMiddleware, battleController.getBattleController);
-router.post("/:battleId/submit", authMiddleware, battleController.submitBattleCodeController);
+router.post("/create/random", authMiddleware, BattleController.createBattleRandomQuestionController);
+router.post("/create/selected", authMiddleware, BattleController.createBattleWithSelectedQuestionController);
+router.post("/join", authMiddleware, BattleController.joinBattleController);
+router.get("/:battleId", authMiddleware, BattleController.getBattleController);
+router.post("/:battleId/submit", authMiddleware, BattleController.submitBattleCodeController);
 router.get(
   "/history",
   authMiddleware,
-  battleController.battleHistory
+  BattleController.battleHistory
 );
 
 

@@ -2,20 +2,20 @@
 // POST /login
 
 import express from "express";
-import { login, Register, logout, getProfile, refreshToken, getPublicProfile } from "../controllers/auth.controller.js";
+import AuthController from "../controllers/auth.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 
 const router = express.Router();
 
 // 🔐 Auth routes
-router.post("/login", login);
-router.post("/register", Register);
-router.post("/logout", authMiddleware, logout);
-router.get("/profile", authMiddleware, getProfile);
-router.post("/refresh", refreshToken);
+router.post("/login", AuthController.login);
+router.post("/register", AuthController.Register);
+router.post("/logout", authMiddleware, AuthController.logout);
+router.get("/profile", authMiddleware, AuthController.getProfile);
+router.post("/refresh", AuthController.refreshToken);
 
 // 👤 Public profile route (no auth required)
-router.get("/user/:userId", getPublicProfile);
+router.get("/user/:userId", AuthController.getPublicProfile);
 
 export default router;

@@ -3,10 +3,10 @@
 // Shows rankings.
 
 import express from "express";
-import { fetchLeaderboard } from "../controllers/leaderboard.controller.js";
+import LeaderboardController from "../controllers/leaderboard.controller.js";
 
 const router = express.Router();
 
-router.get("/", fetchLeaderboard);
+router.get("/", LeaderboardController.fetchLeaderboard);
 
 export default router;

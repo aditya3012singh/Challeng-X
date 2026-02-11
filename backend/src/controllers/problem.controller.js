@@ -6,7 +6,8 @@ import * as problemService from "../services/problem.service.js";
 import * as testcaseService from "../services/testcase.service.js";
 import { createProblemSchema } from "../validation/createProblem.schema.js";
 
-export const createProblem = async (req, res) => {
+class ProblemController {
+    static async createProblem(req, res) {
     const validation= createProblemSchema.safeParse(req.body);
     if (!validation.success) {
         return res.status(400).json({ errors: validation.error.errors });
@@ -18,9 +19,9 @@ export const createProblem = async (req, res) => {
         console.error("Error creating problem:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
-}
+    }
 
-export const getAllProblems = async (req, res) => {
+    static async getAllProblems(req, res) {
     try {
         const problems = await problemService.getAllProblemsService();
         return res.status(200).json({message: "Problems fetched successfully", problems : problems });
@@ -28,9 +29,9 @@ export const getAllProblems = async (req, res) => {
         console.error("Error fetching problems:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
-}
+    }
 
-export const getProblemById= async (req, res) => {
+    static async getProblemById(req, res) {
     const { id: problemId } = req.params;
     try {
         const problem = await problemService.getProblemByIdService(problemId);
@@ -43,4 +44,7 @@ export const getProblemById= async (req, res) => {
         console.error("Error fetching problem:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
+    }
 }
+
+export default ProblemController;

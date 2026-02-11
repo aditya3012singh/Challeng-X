@@ -5,7 +5,8 @@ import * as squidGameService from "../services/squidGame.service.js";
 /**
  * Create a new Squid Game tournament
  */
-export async function createSquidGameController(req, res) {
+class SquidGameController {
+  static async createSquidGameController(req, res) {
   const { name, maxPlayers = 50 } = req.body;
   const userId = req.user.id;
 
@@ -26,12 +27,12 @@ export async function createSquidGameController(req, res) {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+  }
 
 /**
  * Join a Squid Game tournament
  */
-export async function joinSquidGameController(req, res) {
+  static async joinSquidGameController(req, res) {
   const { squidGameId } = req.body;
   const userId = req.user.id;
 
@@ -52,12 +53,12 @@ export async function joinSquidGameController(req, res) {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-}
+  }
 
 /**
  * Get tournament status
  */
-export async function getSquidGameStatusController(req, res) {
+  static async getSquidGameStatusController(req, res) {
   const { squidGameId } = req.params;
 
   try {
@@ -67,12 +68,12 @@ export async function getSquidGameStatusController(req, res) {
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
-}
+  }
 
 /**
  * Start tournament
  */
-export async function startSquidGameController(req, res) {
+  static async startSquidGameController(req, res) {
   const { squidGameId } = req.body;
 
   try {
@@ -91,12 +92,12 @@ export async function startSquidGameController(req, res) {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-}
+  }
 
 /**
  * Submit solution for Squid Game round
  */
-export async function submitSquidGameSolutionController(req, res) {
+  static async submitSquidGameSolutionController(req, res) {
   const {
     squidGameId,
     code,
@@ -139,12 +140,12 @@ export async function submitSquidGameSolutionController(req, res) {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-}
+  }
 
 /**
  * End round and eliminate players
  */
-export async function endSquidGameRoundController(req, res) {
+  static async endSquidGameRoundController(req, res) {
   const { squidGameId } = req.body;
 
   try {
@@ -158,12 +159,12 @@ export async function endSquidGameRoundController(req, res) {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-}
+  }
 
 /**
  * Get tournament leaderboard
  */
-export async function getSquidGameLeaderboardController(req, res) {
+  static async getSquidGameLeaderboardController(req, res) {
   const { squidGameId } = req.params;
 
   try {
@@ -179,12 +180,12 @@ export async function getSquidGameLeaderboardController(req, res) {
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
-}
+  }
 
 /**
  * Get user's tournament history
  */
-export async function getUserSquidGameHistoryController(req, res) {
+  static async getUserSquidGameHistoryController(req, res) {
   const userId = req.user.id;
 
   try {
@@ -197,4 +198,7 @@ export async function getUserSquidGameHistoryController(req, res) {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+  }
 }
+
+export default SquidGameController;

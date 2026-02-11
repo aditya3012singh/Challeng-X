@@ -13,11 +13,13 @@ import {
 } from "../services/teamBattleNew.service.js";
 import { logger } from "../utils/logger.js";
 
+class TeamBattleNewController {
+
 /**
  * POST /team-battle/create
  * NEW FLOW: Team1 leader creates battle with join code for Team2
  */
-export const createTeamBattle = async (req, res) => {
+  static async createTeamBattle(req, res) {
   const userId = req.user.id;
   const { team1Id, maxTeamSize } = req.body;
 
@@ -50,13 +52,13 @@ export const createTeamBattle = async (req, res) => {
       message: error?.message || "Failed to create team battle",
     });
   }
-};
+  }
 
 /**
  * GET /team-battle/available
  * NEW FLOW: Get all available battles for Team2 to browse
  */
-export const getAvailableBattles = async (req, res) => {
+  static async getAvailableBattles(req, res) {
   try {
     const battles = await getAvailableBattlesService();
     res.status(200).json({
@@ -70,13 +72,13 @@ export const getAvailableBattles = async (req, res) => {
       message: error?.message || "Failed to fetch available battles",
     });
   }
-};
+  }
 
 /**
  * POST /team-battle/join
  * NEW FLOW: Team2 leader joins battle using join code
  */
-export const joinTeamBattle = async (req, res) => {
+  static async joinTeamBattle(req, res) {
   const userId = req.user.id;
   const { joinCode, team2Id } = req.body;
 
@@ -102,10 +104,10 @@ export const joinTeamBattle = async (req, res) => {
       message: error?.message || "Failed to join team battle",
     });
   }
-};
+  }
 
 // Get team battle by code or ID
-export const getTeamBattle = async (req, res) => {
+  static async getTeamBattle(req, res) {
   try {
     const { battleCode, battleId } = req.params;
     const identifier = battleCode || battleId;
@@ -130,10 +132,10 @@ export const getTeamBattle = async (req, res) => {
       message: error?.message || "Failed to fetch team battle",
     });
   }
-};
+  }
 
 // Get team battles for a team
-export const getTeamBattles = async (req, res) => {
+  static async getTeamBattles(req, res) {
   try {
     const { teamId } = req.params;
 
@@ -157,10 +159,10 @@ export const getTeamBattles = async (req, res) => {
       message: error?.message || "Failed to fetch team battles",
     });
   }
-};
+  }
 
 // Start team battle
-export const startTeamBattle = async (req, res) => {
+  static async startTeamBattle(req, res) {
   try {
     const { battleCode } = req.params;
 
@@ -185,10 +187,10 @@ export const startTeamBattle = async (req, res) => {
       message: error?.message || "Failed to start team battle",
     });
   }
-};
+  }
 
 // Submit solution for a specific match
-export const submitMatchSolution = async (req, res) => {
+  static async submitMatchSolution(req, res) {
   try {
     const { battleCode, matchId } = req.params;
     const userId = req.user?.id;
@@ -222,10 +224,10 @@ export const submitMatchSolution = async (req, res) => {
       message: error?.message || "Failed to submit solution",
     });
   }
-};
+  }
 
 // Determine winner of a specific match
-export const determineMatchWinner = async (req, res) => {
+  static async determineMatchWinner(req, res) {
   try {
     const { matchId } = req.params;
     const { winnerId } = req.body;
@@ -251,10 +253,10 @@ export const determineMatchWinner = async (req, res) => {
       message: error?.message || "Failed to determine match winner",
     });
   }
-};
+  }
 
 // Complete team battle (determine overall winner)
-export const completeTeamBattle = async (req, res) => {
+  static async completeTeamBattle(req, res) {
   try {
     const { battleCode } = req.params;
 
@@ -279,10 +281,10 @@ export const completeTeamBattle = async (req, res) => {
       message: error?.message || "Failed to complete team battle",
     });
   }
-};
+  }
 
 // Get active team battles
-export const getActiveTeamBattles = async (req, res) => {
+  static async getActiveTeamBattles(req, res) {
   try {
     const activeBattles = await getActiveTeamBattlesService();
 
@@ -297,4 +299,7 @@ export const getActiveTeamBattles = async (req, res) => {
       message: error?.message || "Failed to fetch active battles",
     });
   }
-};
+  }
+}
+
+export default TeamBattleNewController;

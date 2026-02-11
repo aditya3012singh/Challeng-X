@@ -1,6 +1,7 @@
 import { addTestcaseService } from "../services/testcase.service.js";
 
-export async function addTestCases(req, res) {
+class TestcaseController {
+  static async addTestCases(req, res) {
   try {
     const { id } = req.params;
     const { testcases } = req.body;
@@ -11,4 +12,7 @@ export async function addTestCases(req, res) {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+  }
 }
+
+export default TestcaseController;

@@ -4,7 +4,8 @@
 
 import { processSubmission } from "../services/submission.service.js";
 
-export async function submitCode(req, res) {
+class SubmissionController {
+  static async submitCode(req, res) {
   try {
 
     const { code, language, battleId, problemId } = req.body;
@@ -24,4 +25,7 @@ export async function submitCode(req, res) {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+  }
 }
+
+export default SubmissionController;

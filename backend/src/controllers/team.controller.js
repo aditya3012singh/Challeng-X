@@ -2,7 +2,8 @@
 
 import * as teamService from "../services/team.service.js";
 
-export async function createTeamController(req, res) {
+class TeamController {
+  static async createTeamController(req, res) {
   const userId = req.user.id;
   const { teamName, maxTeamSize } = req.body;
 
@@ -20,9 +21,9 @@ export async function createTeamController(req, res) {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+  }
 
-export async function getTeamController(req, res) {
+  static async getTeamController(req, res) {
   const { teamId } = req.params;
 
   try {
@@ -31,9 +32,9 @@ export async function getTeamController(req, res) {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+  }
 
-export async function joinTeamController(req, res) {
+  static async joinTeamController(req, res) {
   const userId = req.user.id;
   const { teamCode } = req.body;
 
@@ -47,9 +48,9 @@ export async function joinTeamController(req, res) {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+  }
 
-export async function leaveTeamController(req, res) {
+  static async leaveTeamController(req, res) {
   const userId = req.user.id;
   const { teamId } = req.params;
 
@@ -59,9 +60,9 @@ export async function leaveTeamController(req, res) {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+  }
 
-export async function disbandTeamController(req, res) {
+  static async disbandTeamController(req, res) {
   const userId = req.user.id;
   const { teamId } = req.params;
 
@@ -71,9 +72,9 @@ export async function disbandTeamController(req, res) {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+  }
 
-export async function getUserTeamsController(req, res) {
+  static async getUserTeamsController(req, res) {
   const userId = req.user.id;
   console.log("you hit the getUserTeamsController");
   console.log("Controller: Fetching teams for user:", userId);
@@ -84,4 +85,7 @@ export async function getUserTeamsController(req, res) {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+  }
 }
+
+export default TeamController;

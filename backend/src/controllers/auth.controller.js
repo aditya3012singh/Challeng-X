@@ -7,7 +7,8 @@ import { accessCookieOptions, refreshCookieOptions } from "../utils/cookies.js";
 import { loginSchema, registerSchema } from "../validation/auth.schema.js";
 import prisma from "../config/db.js";
 
-export const login = async (req, res) => {
+class AuthController {
+    static async login(req, res) {
 
     const validationResult= loginSchema.safeParse(req.body);
 
@@ -37,9 +38,9 @@ export const login = async (req, res) => {
             message: error.message || "Authentication failed",
     });
   }
-}
+    }
 
-export const Register = async (req, res) => {
+    static async Register(req, res) {
     const CheckSchema= registerSchema.safeParse(req.body);
 
     if (!CheckSchema.success) {
@@ -57,9 +58,9 @@ export const Register = async (req, res) => {
             message: error.message || "Registration failed",
     });
   }
-}
+    }
 
-export const logout = async (req, res) => {
+    static async logout(req, res) {
     try {
         const userId = req.user?.id;
         
@@ -79,9 +80,9 @@ export const logout = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Logout failed" });
     }
-}
+    }
 
-export const getProfile = async (req, res) => {
+    static async getProfile(req, res) {
     try {
         const userId = req.user.id;
         
@@ -107,17 +108,17 @@ export const getProfile = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch profile" });
     }
-}
+    }
 
-export const refreshToken = async (req, res) => {
+    static async refreshToken(req, res) {
     try {
         await refreshTokenService(req, res);
     } catch (error) {
         res.status(500).json({ message: "Token refresh failed" });
     }
-}
+    }
 
-export const getPublicProfile = async (req, res) => {
+    static async getPublicProfile(req, res) {
     try {
         const { userId } = req.params;
         
@@ -154,4 +155,7 @@ export const getPublicProfile = async (req, res) => {
         console.error("Get public profile error:", error);
         res.status(500).json({ message: "Failed to fetch user profile" });
     }
+    }
 }
+
+export default AuthController;

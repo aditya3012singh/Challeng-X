@@ -2,7 +2,8 @@
 
 import * as matchmakingService from "../services/matchmaking.service.js";
 
-export async function joinQueueController(req, res) {
+class MatchmakingController {
+    static async joinQueueController(req, res) {
     const userId = req.user.id;
     const { difficulty, socketId } = req.body;
 
@@ -20,9 +21,9 @@ export async function joinQueueController(req, res) {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+    }
 
-export async function leaveQueueController(req, res) {
+    static async leaveQueueController(req, res) {
     const userId = req.user.id;
 
     try {
@@ -31,9 +32,9 @@ export async function leaveQueueController(req, res) {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+    }
 
-export async function getQueueStatusController(req, res) {
+    static async getQueueStatusController(req, res) {
     const userId = req.user.id;
 
     try {
@@ -42,4 +43,7 @@ export async function getQueueStatusController(req, res) {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+    }
 }
+
+export default MatchmakingController;
