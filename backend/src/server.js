@@ -3,7 +3,7 @@ dotenv.config();
 import App from "./app.js";
 import http from "http";
 import { Server } from "socket.io";
-import { initializeSquidGameSocket } from "./config/squidGameSocket.js";
+import SquidGameSocket from "./config/squidGameSocket.js";
 
 class ServerApp {
   static io = null;
@@ -44,7 +44,7 @@ class ServerApp {
     this.registerBaseSocketHandlers(this.io);
 
     // Initialize Squid Game socket handlers
-    initializeSquidGameSocket(this.io);
+    SquidGameSocket.initializeSquidGameSocket(this.io);
 
     const PORT = process.env.PORT || 4000;
     server.listen(PORT, () => {

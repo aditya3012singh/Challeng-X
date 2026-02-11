@@ -4,12 +4,12 @@
 
 import express from "express";
 import MatchmakingController from "../controllers/matchmaking.controller.js";
-import authMiddleware from "../middlewares/auth.middleware.js";
+import AuthMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/join", authMiddleware, MatchmakingController.joinQueueController);
-router.post("/leave", authMiddleware, MatchmakingController.leaveQueueController);
-router.get("/status", authMiddleware, MatchmakingController.getQueueStatusController);
+router.post("/join", AuthMiddleware.handle, MatchmakingController.joinQueueController);
+router.post("/leave", AuthMiddleware.handle, MatchmakingController.leaveQueueController);
+router.get("/status", AuthMiddleware.handle, MatchmakingController.getQueueStatusController);
 
 export default router;

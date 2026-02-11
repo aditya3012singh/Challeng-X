@@ -2,13 +2,13 @@
 
 import express from "express";
 import SquidGameController from "../controllers/squidGame.controller.js";
-import authMiddleware from "../middlewares/auth.middleware.js";
+import AuthMiddleware from "../middlewares/auth.middleware.js";
 
 
 const router = express.Router();
 
 // All routes require authentication
-router.use(authMiddleware);
+router.use(AuthMiddleware.handle);
 
 /**
  * POST /api/squid-game

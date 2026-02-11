@@ -7,7 +7,8 @@ import SquidGameService from "../services/squidGame.service.js";
  * Initialize Squid Game WebSocket handlers
  * @param {Object} io - Socket.io instance
  */
-export function initializeSquidGameSocket(io) {
+class SquidGameSocket {
+  static initializeSquidGameSocket(io) {
   const squidGameNamespace = io.of("/squid-game");
 
   squidGameNamespace.on("connection", (socket) => {
@@ -166,8 +167,8 @@ export function initializeSquidGameSocket(io) {
     });
   });
 
-  return squidGameNamespace;
-}
+    return squidGameNamespace;
+  }
 
 /**
  * Emit real-time leaderboard updates to all tournament participants
@@ -175,14 +176,14 @@ export function initializeSquidGameSocket(io) {
  * @param {string} squidGameId - Tournament ID
  * @param {Array} leaderboard - Current leaderboard
  */
-export function broadcastLeaderboardUpdate(io, squidGameId, leaderboard) {
-  io.of("/squid-game")
-    .to(`tournament-${squidGameId}`)
-    .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.LEADERBOARD_UPDATED, {
-      leaderboard,
-      timestamp: new Date()
-    });
-}
+  static broadcastLeaderboardUpdate(io, squidGameId, leaderboard) {
+    io.of("/squid-game")
+      .to(`tournament-${squidGameId}`)
+      .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.LEADERBOARD_UPDATED, {
+        leaderboard,
+        timestamp: new Date()
+      });
+  }
 
 /**
  * Emit round started event
@@ -190,18 +191,21 @@ export function broadcastLeaderboardUpdate(io, squidGameId, leaderboard) {
  * @param {string} squidGameId - Tournament ID
  * @param {Object} round - Round information
  */
-export function broadcastRoundStart(io, squidGameId, round) {
-  io.of("/squid-game")
-    .to(`tournament-${squidGameId}`)
-    .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.ROUND_STARTED, {
-      roundNumber: round.roundNumber,
-      difficulty: round.difficulty,
-      timeLimit: round.timeLimit,
-      problem: {
-        id: round.problem.id,
-        title: round.problem.title,
-        description: round.problem.description
-      },
-      timestamp: new Date()
-    });
+  static broadcastRoundStart(io, squidGameId, round) {
+    io.of("/squid-game")
+      .to(`tournament-${squidGameId}`)
+      .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.ROUND_STARTED, {
+        roundNumber: round.roundNumber,
+        difficulty: round.difficulty,
+        timeLimit: round.timeLimit,
+        problem: {
+          id: round.problem.id,
+          title: round.problem.title,
+          description: round.problem.description
+        },
+        timestamp: new Date()
+      });
+  }
 }
+
+export default SquidGameSocket;

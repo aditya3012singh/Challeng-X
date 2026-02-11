@@ -10,18 +10,18 @@
 
 import express from "express";
 import BattleController from "../controllers/battle.controller.js";
-import authMiddleware from "../middlewares/auth.middleware.js";
+import AuthMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/create/random", authMiddleware, BattleController.createBattleRandomQuestionController);
-router.post("/create/selected", authMiddleware, BattleController.createBattleWithSelectedQuestionController);
-router.post("/join", authMiddleware, BattleController.joinBattleController);
-router.get("/:battleId", authMiddleware, BattleController.getBattleController);
-router.post("/:battleId/submit", authMiddleware, BattleController.submitBattleCodeController);
+router.post("/create/random", AuthMiddleware.handle, BattleController.createBattleRandomQuestionController);
+router.post("/create/selected", AuthMiddleware.handle, BattleController.createBattleWithSelectedQuestionController);
+router.post("/join", AuthMiddleware.handle, BattleController.joinBattleController);
+router.get("/:battleId", AuthMiddleware.handle, BattleController.getBattleController);
+router.post("/:battleId/submit", AuthMiddleware.handle, BattleController.submitBattleCodeController);
 router.get(
   "/history",
-  authMiddleware,
+  AuthMiddleware.handle,
   BattleController.battleHistory
 );
 
