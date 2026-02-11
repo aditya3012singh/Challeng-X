@@ -1,6 +1,4 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage"; // localStorage
 import authReducer from "./slices/auth.slice";
 import battleReducer from "./slices/battle.slice";
 import leaderboardReducer from "./slices/leaderboard.slice";
@@ -11,19 +9,9 @@ import matchmakingReducer from "./slices/matchmaking.slice";
 import teamReducer from "./slices/team.slice";
 import teamBattleReducer from "./slices/teamBattle.slice";
 
-// Configure which parts of auth state to persist
-const persistConfig = {
-    key: "auth",
-    storage,
-    whitelist: ["user", "isAuthenticated"], // Only persist user and auth status
-    // blacklist: ["loading", "error"], // Don't persist loading and error states
-};
-
-const persistedAuthReducer = persistReducer(persistConfig, authReducer);
-
 export const store = configureStore({
     reducer: {
-        auth: persistedAuthReducer,
+        auth: authReducer,
         battle: battleReducer,
         leaderboard: leaderboardReducer,
         problem: problemReducer,
@@ -33,14 +21,6 @@ export const store = configureStore({
         team: teamReducer,
         teamBattle: teamBattleReducer,
     },
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({
-            serializableCheck: {
-                // Ignore redux-persist actions
-                ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
-            },
-        }),
 });
 
-export const persistor = persistStore(store);
 export default store;

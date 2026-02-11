@@ -22,6 +22,16 @@ import { SquidMode } from './pages/SquidMode'
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  
+  // Fetch profile only when accessing protected routes and not already checked
+  useEffect(() => {
+    if (!isAuthenticated && !profileLoading) {
+      dispatch(fetchUserProfile()).catch(() => {
+        // If profile fetch fails, user will be redirected to login
+      });
+    }
+  }, [dispatch, isAuthenticated, profileLoading]);
   
   if (profileLoading) {
     return (
@@ -37,14 +47,6 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   const dispatch = useDispatch();
   const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
-
-  // Fetch user profile on app load
-  useEffect(() => {
-    // Only fetch if not already authenticated and not currently loading
-    if (!isAuthenticated && !profileLoading) {
-      dispatch(fetchUserProfile());
-    }
-  }, []);
 
   return (
     <Router>
