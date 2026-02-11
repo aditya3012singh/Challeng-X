@@ -1,8 +1,8 @@
 import express from "express";
-import * as testcaseController from "../controllers/testcase.controller.js";
+import TestcaseController from "../controllers/testcase.controller.js";
 
 const router = express.Router();
 
-router.post("/add/:id", testcaseController.addTestCases);
+router.post("/add/:id", TestcaseController.addTestCases);
 
 export default router;

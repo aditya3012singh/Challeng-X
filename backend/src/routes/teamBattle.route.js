@@ -1,48 +1,37 @@
 import express from "express";
-import {
-  createTeamBattle,
-  getAvailableBattles,
-  joinTeamBattle,
-  getTeamBattle,
-  getTeamBattles,
-  startTeamBattle,
-  submitMatchSolution,
-  determineMatchWinner,
-  completeTeamBattle,
-  getActiveTeamBattles,
-} from "../controllers/teamBattleNew.controller.js";
+import TeamBattleNewController from "../controllers/teamBattleNew.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 // NEW JOIN-CODE FLOW ROUTES
 // POST /team-battle/create - Team1 leader creates battle
-router.post("/create", authMiddleware, createTeamBattle);
+router.post("/create", authMiddleware, TeamBattleNewController.createTeamBattle);
 
 // GET /team-battle/available - Browse available battles for Team2
-router.get("/available", getAvailableBattles);
+router.get("/available", TeamBattleNewController.getAvailableBattles);
 
 // POST /team-battle/join - Team2 leader joins battle with code
-router.post("/join", authMiddleware, joinTeamBattle);
+router.post("/join", authMiddleware, TeamBattleNewController.joinTeamBattle);
 
 // GET /team-battle/details/:battleId - Get battle details by ID (for battle room)
-router.get("/details/:battleId", getTeamBattle);
+router.get("/details/:battleId", TeamBattleNewController.getTeamBattle);
 
 // ============================================
 // EXISTING TOURNAMENT-STYLE ROUTES (LEGACY)
 // ============================================
 
 // Public routes
-router.get("/active", getActiveTeamBattles);
-router.get("/:battleCode", getTeamBattle);
+router.get("/active", TeamBattleNewController.getActiveTeamBattles);
+router.get("/:battleCode", TeamBattleNewController.getTeamBattle);
 
 // Protected routes
-router.post("/", authMiddleware, createTeamBattle);
-router.post("/:battleCode/start", authMiddleware, startTeamBattle);
-router.post("/:battleCode/:matchId/submit", authMiddleware, submitMatchSolution);
-router.post("/:matchId/winner", authMiddleware, determineMatchWinner);
-router.post("/:battleCode/complete", authMiddleware, completeTeamBattle);
-router.get("/team/:teamId", authMiddleware, getTeamBattles);
+router.post("/", authMiddleware, TeamBattleNewController.createTeamBattle);
+router.post("/:battleCode/start", authMiddleware, TeamBattleNewController.startTeamBattle);
+router.post("/:battleCode/:matchId/submit", authMiddleware, TeamBattleNewController.submitMatchSolution);
+router.post("/:matchId/winner", authMiddleware, TeamBattleNewController.determineMatchWinner);
+router.post("/:battleCode/complete", authMiddleware, TeamBattleNewController.completeTeamBattle);
+router.get("/team/:teamId", authMiddleware, TeamBattleNewController.getTeamBattles);
 
 export default router;
 

@@ -1,7 +1,7 @@
 // 🎮 squidGame.route.js - Squid Game Routes
 
 import express from "express";
-import * as squidGameController from "../controllers/squidGame.controller.js";
+import SquidGameController from "../controllers/squidGame.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 
@@ -14,37 +14,37 @@ router.use(authMiddleware);
  * POST /api/squid-game
  * Create a new Squid Game tournament
  */
-router.post("/", squidGameController.createSquidGameController);
+router.post("/", SquidGameController.createSquidGameController);
 
 /**
  * POST /api/squid-game/join
  * Join an existing tournament
  */
-router.post("/join", squidGameController.joinSquidGameController);
+router.post("/join", SquidGameController.joinSquidGameController);
 
 /**
  * GET /api/squid-game/:squidGameId
  * Get tournament status
  */
-router.get("/:squidGameId", squidGameController.getSquidGameStatusController);
+router.get("/:squidGameId", SquidGameController.getSquidGameStatusController);
 
 /**
  * POST /api/squid-game/start
  * Start a tournament
  */
-router.post("/start", squidGameController.startSquidGameController);
+router.post("/start", SquidGameController.startSquidGameController);
 
 /**
  * POST /api/squid-game/submit
  * Submit a solution
  */
-router.post("/submit", squidGameController.submitSquidGameSolutionController);
+router.post("/submit", SquidGameController.submitSquidGameSolutionController);
 
 /**
  * POST /api/squid-game/end-round
  * End current round and eliminate players
  */
-router.post("/end-round", squidGameController.endSquidGameRoundController);
+router.post("/end-round", SquidGameController.endSquidGameRoundController);
 
 /**
  * GET /api/squid-game/:squidGameId/leaderboard
@@ -52,13 +52,13 @@ router.post("/end-round", squidGameController.endSquidGameRoundController);
  */
 router.get(
   "/:squidGameId/leaderboard",
-  squidGameController.getSquidGameLeaderboardController
+  SquidGameController.getSquidGameLeaderboardController
 );
 
 /**
  * GET /api/squid-game/history/my
  * Get user's tournament history
  */
-router.get("/history/my", squidGameController.getUserSquidGameHistoryController);
+router.get("/history/my", SquidGameController.getUserSquidGameHistoryController);
 
 export default router;

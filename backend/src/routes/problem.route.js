@@ -5,13 +5,13 @@
 // manage dsa problems
 
 import express from "express";
-import * as problemController from "../controllers/problem.controller.js";
+import ProblemController from "../controllers/problem.controller.js";
 
 const router = express.Router();
 
-router.post("/create", problemController.createProblem);
-router.get("/list", problemController.getAllProblems);
-router.get("/:id", problemController.getProblemById);
+router.post("/create", ProblemController.createProblem);
+router.get("/list", ProblemController.getAllProblems);
+router.get("/:id", ProblemController.getProblemById);
 
 
 export default router;
