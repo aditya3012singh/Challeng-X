@@ -7,12 +7,17 @@
 import express from "express";
 import ProblemController from "../controllers/problem.controller.js";
 
-const router = express.Router();
+class ProblemRoutes {
+	static createRouter() {
+		const router = express.Router();
 
-router.post("/create", ProblemController.createProblem);
-router.get("/list", ProblemController.getAllProblems);
-router.get("/:id", ProblemController.getProblemById);
+		router.post("/create", ProblemController.createProblem);
+		router.get("/list", ProblemController.getAllProblems);
+		router.get("/:id", ProblemController.getProblemById);
 
+		return router;
+	}
+}
 
-export default router;
+export default ProblemRoutes;
 

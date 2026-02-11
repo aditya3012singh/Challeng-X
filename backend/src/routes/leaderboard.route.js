@@ -5,8 +5,14 @@
 import express from "express";
 import LeaderboardController from "../controllers/leaderboard.controller.js";
 
-const router = express.Router();
+class LeaderboardRoutes {
+	static createRouter() {
+		const router = express.Router();
 
-router.get("/", LeaderboardController.fetchLeaderboard);
+		router.get("/", LeaderboardController.fetchLeaderboard);
 
-export default router;
+		return router;
+	}
+}
+
+export default LeaderboardRoutes;

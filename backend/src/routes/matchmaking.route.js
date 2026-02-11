@@ -6,10 +6,16 @@ import express from "express";
 import MatchmakingController from "../controllers/matchmaking.controller.js";
 import AuthMiddleware from "../middlewares/auth.middleware.js";
 
-const router = express.Router();
+class MatchmakingRoutes {
+	static createRouter() {
+		const router = express.Router();
 
-router.post("/join", AuthMiddleware.handle, MatchmakingController.joinQueueController);
-router.post("/leave", AuthMiddleware.handle, MatchmakingController.leaveQueueController);
-router.get("/status", AuthMiddleware.handle, MatchmakingController.getQueueStatusController);
+		router.post("/join", AuthMiddleware.handle, MatchmakingController.joinQueueController);
+		router.post("/leave", AuthMiddleware.handle, MatchmakingController.leaveQueueController);
+		router.get("/status", AuthMiddleware.handle, MatchmakingController.getQueueStatusController);
 
-export default router;
+		return router;
+	}
+}
+
+export default MatchmakingRoutes;
