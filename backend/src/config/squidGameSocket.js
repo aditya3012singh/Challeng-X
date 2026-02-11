@@ -1,7 +1,7 @@
 // 🎮 squidGameSocket.js - WebSocket events for Squid Game
 
-import { SQUID_GAME_CONFIG } from "../constants/squidGameConfig.js";
-import * as squidGameService from "../services/squidGame.service.js";
+import SquidGameConfig from "../constants/squidGameConfig.js";
+import SquidGameService from "../services/squidGame.service.js";
 
 /**
  * Initialize Squid Game WebSocket handlers
@@ -26,7 +26,7 @@ export function initializeSquidGameSocket(io) {
       // Notify others that a player joined
       squidGameNamespace
         .to(`tournament-${squidGameId}`)
-        .emit(SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.PLAYER_JOINED, {
+        .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.PLAYER_JOINED, {
           message: `Player joined tournament`,
           timestamp: new Date()
         });
@@ -53,7 +53,7 @@ export function initializeSquidGameSocket(io) {
       try {
         const submission = await squidGameService.submitSquidGameSolution(
           squidGameId,
-          userId,
+        const submission = await SquidGameService.submitSquidGameSolution(
           code,
           language,
           status,
@@ -65,7 +65,7 @@ export function initializeSquidGameSocket(io) {
         // Notify tournament that submission was received
         squidGameNamespace
           .to(`tournament-${squidGameId}`)
-          .emit(SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.SUBMISSION_RECEIVED, {
+          .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.SUBMISSION_RECEIVED, {
             userId,
             status,
             score: submission.score,
@@ -91,12 +91,12 @@ export function initializeSquidGameSocket(io) {
       const { squidGameId } = data;
 
       try {
-        const leaderboard = await squidGameService.getSquidGameLeaderboard(
+        const leaderboard = await SquidGameService.getSquidGameLeaderboard(
           squidGameId
         );
 
         // Send leaderboard to requesting user
-        socket.emit(SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.LEADERBOARD_UPDATED, {
+        socket.emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.LEADERBOARD_UPDATED, {
           leaderboard,
           timestamp: new Date()
         });
@@ -116,12 +116,12 @@ export function initializeSquidGameSocket(io) {
       const { squidGameId } = data;
 
       try {
-        const result = await squidGameService.endRoundAndEliminate(squidGameId);
+        const result = await SquidGameService.endRoundAndEliminate(squidGameId);
 
         // Broadcast round end to all players in tournament
         squidGameNamespace
           .to(`tournament-${squidGameId}`)
-          .emit(SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.ROUND_ENDED, {
+          .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.ROUND_ENDED, {
             ...result,
             timestamp: new Date()
           });
@@ -130,7 +130,7 @@ export function initializeSquidGameSocket(io) {
         if (result.eliminatedCount > 0) {
           squidGameNamespace
             .to(`tournament-${squidGameId}`)
-            .emit(SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.PLAYERS_ELIMINATED, {
+            .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.PLAYERS_ELIMINATED, {
               eliminatedCount: result.eliminatedCount,
               remainingPlayers: result.remainingPlayers,
               leaderboard: result.leaderboard,
@@ -142,7 +142,7 @@ export function initializeSquidGameSocket(io) {
         if (result.tournamentEnded) {
           squidGameNamespace
             .to(`tournament-${squidGameId}`)
-            .emit(SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.TOURNAMENT_COMPLETED, {
+            .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.TOURNAMENT_COMPLETED, {
               winner: result.winner,
               finalLeaderboard: result.leaderboard,
               timestamp: new Date()
@@ -178,7 +178,7 @@ export function initializeSquidGameSocket(io) {
 export function broadcastLeaderboardUpdate(io, squidGameId, leaderboard) {
   io.of("/squid-game")
     .to(`tournament-${squidGameId}`)
-    .emit(SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.LEADERBOARD_UPDATED, {
+    .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.LEADERBOARD_UPDATED, {
       leaderboard,
       timestamp: new Date()
     });
@@ -193,7 +193,7 @@ export function broadcastLeaderboardUpdate(io, squidGameId, leaderboard) {
 export function broadcastRoundStart(io, squidGameId, round) {
   io.of("/squid-game")
     .to(`tournament-${squidGameId}`)
-    .emit(SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.ROUND_STARTED, {
+    .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.ROUND_STARTED, {
       roundNumber: round.roundNumber,
       difficulty: round.difficulty,
       timeLimit: round.timeLimit,
