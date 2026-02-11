@@ -4,7 +4,7 @@ import RedisClient from "../cache/redis.client.js";
 import Database from "../config/db.js";
 import BattleCode from "../utils/battleCode.js";
 import { emitToBattle } from "../config/socket.js";
-import { io } from "../server.js";
+import ServerApp from "../server.js";
 
 const MATCHMAKING_QUEUE = "matchmaking:queue";
 const RANK_THRESHOLD = 200; // Max rank difference for matching
@@ -155,10 +155,10 @@ class MatchmakingService {
 
   if (problems.length === 0) {
     // Notify players - no problems available
-    io.to(player1.socketId).emit("matchmakingError", { 
+    ServerApp.io?.to(player1.socketId).emit("matchmakingError", { 
       message: "No problems available for this difficulty" 
     });
-    io.to(player2.socketId).emit("matchmakingError", { 
+    ServerApp.io?.to(player2.socketId).emit("matchmakingError", { 
       message: "No problems available for this difficulty" 
     });
     return;
@@ -191,14 +191,14 @@ class MatchmakingService {
   });
 
   // Notify both players via socket
-  io.to(player1.socketId).emit("matchFound", {
+  ServerApp.io?.to(player1.socketId).emit("matchFound", {
     battleId: battle.id,
     battleCode: battle.battleCode,
     opponent: player2.username,
     problem: battle.problem
   });
 
-  io.to(player2.socketId).emit("matchFound", {
+  ServerApp.io?.to(player2.socketId).emit("matchFound", {
     battleId: battle.id,
     battleCode: battle.battleCode,
     opponent: player1.username,

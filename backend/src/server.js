@@ -1,38 +1,59 @@
 import dotenv from "dotenv";
 dotenv.config();
-import app from "./app.js";
+import App from "./app.js";
 import http from "http";
 import { Server } from "socket.io";
 import { initializeSquidGameSocket } from "./config/squidGameSocket.js";
 
-const server= http.createServer(app);
+class ServerApp {
+  static io = null;
 
-export const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
+  static createServer(app) {
+    return http.createServer(app);
+  }
 
-io.on("connection", (socket) => {
-  console.log("🟢 User connected:", socket.id);
+  static createIo(server) {
+    return new Server(server, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+      },
+    });
+  }
 
-  socket.on("joinBattle", (battleId) => {
-    socket.join(battleId);
-    console.log(`User joined room ${battleId}`);
-  });
+  static registerBaseSocketHandlers(io) {
+    io.on("connection", (socket) => {
+      console.log("🟢 User connected:", socket.id);
 
-  socket.on("disconnect", () => {
-    console.log("🔴 User disconnected");
-  });
-});
+      socket.on("joinBattle", (battleId) => {
+        socket.join(battleId);
+        console.log(`User joined room ${battleId}`);
+      });
 
-// Initialize Squid Game socket handlers
-initializeSquidGameSocket(io);
+      socket.on("disconnect", () => {
+        console.log("🔴 User disconnected");
+      });
+    });
+  }
 
-const PORT = process.env.PORT || 4000;
+  static start() {
+    const app = App.createApp();
+    const server = this.createServer(app);
 
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+    this.io = this.createIo(server);
+    this.registerBaseSocketHandlers(this.io);
+
+    // Initialize Squid Game socket handlers
+    initializeSquidGameSocket(this.io);
+
+    const PORT = process.env.PORT || 4000;
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  }
+}
+
+ServerApp.start();
+
+export default ServerApp;
 

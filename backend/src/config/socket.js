@@ -1,7 +1,14 @@
 // configure and export socket.io instance
 
-import { io } from "../server.js";
+import ServerApp from "../server.js";
 
-export function emitToBattle(battleId, event, data) {
-    io.to(battleId).emit(event, data);
+class SocketEmitter {
+    static emitToBattle(battleId, event, data) {
+        if (!ServerApp.io) {
+            return;
+        }
+        ServerApp.io.to(battleId).emit(event, data);
+    }
 }
+
+export default SocketEmitter;

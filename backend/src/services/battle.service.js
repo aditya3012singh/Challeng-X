@@ -3,7 +3,7 @@
 import RedisClient from "../cache/redis.client.js";
 import Database from "../config/db.js";
 import RankingService from "./ranking.service.js";
-import { emitToBattle } from "../config/socket.js";
+import SocketEmitter from "../config/socket.js";
 import BattleCode from "../utils/battleCode.js";
 // • Start timer
 // • Assign problem
@@ -76,11 +76,11 @@ class BattleService {
         }
     });
 
-    emitToBattle(battle.id, "playerJoined", {
+    SocketEmitter.emitToBattle(battle.id, "playerJoined", {
       playerId: player2Id
     });
 
-    emitToBattle(battle.id, "battleStarted", {
+    SocketEmitter.emitToBattle(battle.id, "battleStarted", {
       startedAt: new Date()
     });
 
@@ -148,7 +148,7 @@ class BattleService {
             winnerId,
         }
     });
-    emitToBattle(battleId, "battleFinished", {
+    SocketEmitter.emitToBattle(battleId, "battleFinished", {
       winnerId
     });
 

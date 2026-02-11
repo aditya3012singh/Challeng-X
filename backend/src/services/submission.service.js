@@ -1,7 +1,7 @@
 import Database from "../config/db.js";
 import OutputComparer from "../utils/compareOutput.js";
 import JudgeService from "./judge.service.js";
-import { emitToBattle } from "../config/socket.js";
+import SocketEmitter from "../config/socket.js";
 /**
  * Process a code submission
  * @param {object} params
@@ -58,7 +58,7 @@ class SubmissionService {
 
   // Emit socket event if this is a battle submission
   if (battleId) {
-    emitToBattle(battleId, "submissionResult", {
+    SocketEmitter.emitToBattle(battleId, "submissionResult", {
       userId,
       status: finalStatus
     });
