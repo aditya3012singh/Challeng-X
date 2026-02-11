@@ -139,11 +139,11 @@ class AuthService {
     data: { refreshTokenHash: newHash },
   });
 
-  const { accessCookieOptions, refreshCookieOptions } = await import("../utils/cookies.js");
+  const { default: CookieOptions } = await import("../utils/cookies.js");
 
   res
-    .cookie("accessToken", newAccessToken, accessCookieOptions)
-    .cookie("refreshToken", newRefreshToken, refreshCookieOptions)
+    .cookie("accessToken", newAccessToken, CookieOptions.accessCookieOptions)
+    .cookie("refreshToken", newRefreshToken, CookieOptions.refreshCookieOptions)
     .json({ message: "Token refreshed" });
   }
 }

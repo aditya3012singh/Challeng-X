@@ -3,7 +3,7 @@
 // • Issue JWT
 
 import AuthService from "../services/auth.service.js";
-import { accessCookieOptions, refreshCookieOptions } from "../utils/cookies.js";
+import CookieOptions from "../utils/cookies.js";
 import { loginSchema, registerSchema } from "../validation/auth.schema.js";
 import Database from "../config/db.js";
 
@@ -22,8 +22,8 @@ class AuthController {
         const { accessToken, refreshToken, user } = await AuthService.loginService(email, password);
         
         res
-            .cookie("accessToken", accessToken, accessCookieOptions)
-            .cookie("refreshToken", refreshToken, refreshCookieOptions)
+            .cookie("accessToken", accessToken, CookieOptions.accessCookieOptions)
+            .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
             .json({ 
                 message: "Login successful",
                 user: {
@@ -74,8 +74,8 @@ class AuthController {
 
         // Clear cookies
         res
-            .clearCookie("accessToken", accessCookieOptions)
-            .clearCookie("refreshToken", refreshCookieOptions)
+            .clearCookie("accessToken", CookieOptions.accessCookieOptions)
+            .clearCookie("refreshToken", CookieOptions.refreshCookieOptions)
             .json({ message: "Logout successful" });
     } catch (error) {
         res.status(500).json({ message: "Logout failed" });

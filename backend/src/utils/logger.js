@@ -11,45 +11,47 @@ const colors = {
   cyan: "\x1b[36m",
 };
 
-const getTimestamp = () => {
-  return new Date().toISOString();
-};
+class Logger {
+  static getTimestamp() {
+    return new Date().toISOString();
+  }
 
-export const logger = {
-  info: (...args) => {
+  static info(...args) {
     console.log(
-      `${colors.cyan}[INFO]${colors.reset} ${colors.bright}[${getTimestamp()}]${colors.reset}`,
+      `${colors.cyan}[INFO]${colors.reset} ${colors.bright}[${this.getTimestamp()}]${colors.reset}`,
       ...args
     );
-  },
+  }
 
-  error: (...args) => {
+  static error(...args) {
     console.error(
-      `${colors.red}[ERROR]${colors.reset} ${colors.bright}[${getTimestamp()}]${colors.reset}`,
+      `${colors.red}[ERROR]${colors.reset} ${colors.bright}[${this.getTimestamp()}]${colors.reset}`,
       ...args
     );
-  },
+  }
 
-  warn: (...args) => {
+  static warn(...args) {
     console.warn(
-      `${colors.yellow}[WARN]${colors.reset} ${colors.bright}[${getTimestamp()}]${colors.reset}`,
+      `${colors.yellow}[WARN]${colors.reset} ${colors.bright}[${this.getTimestamp()}]${colors.reset}`,
       ...args
     );
-  },
+  }
 
-  debug: (...args) => {
+  static debug(...args) {
     if (process.env.NODE_ENV === "development") {
       console.log(
-        `${colors.magenta}[DEBUG]${colors.reset} ${colors.bright}[${getTimestamp()}]${colors.reset}`,
+        `${colors.magenta}[DEBUG]${colors.reset} ${colors.bright}[${this.getTimestamp()}]${colors.reset}`,
         ...args
       );
     }
-  },
+  }
 
-  success: (...args) => {
+  static success(...args) {
     console.log(
-      `${colors.green}[SUCCESS]${colors.reset} ${colors.bright}[${getTimestamp()}]${colors.reset}`,
+      `${colors.green}[SUCCESS]${colors.reset} ${colors.bright}[${this.getTimestamp()}]${colors.reset}`,
       ...args
     );
-  },
-};
+  }
+}
+
+export default Logger;
