@@ -1,7 +1,7 @@
 // 🎮 squidGame.service.js - Squid Game Battle Tournament
 
 import Database from "../config/db.js";
-import { DIFFICULTY_PROGRESSION } from "../constants/squidGameConfig.js";
+import SquidGameConfig from "../constants/squidGameConfig.js";
 
 class SquidGameService {
 
@@ -16,7 +16,7 @@ class SquidGameService {
     data: {
       name,
       maxPlayers,
-      totalRounds: DIFFICULTY_PROGRESSION.length,
+      totalRounds: SquidGameConfig.DIFFICULTY_PROGRESSION.length,
       status: "REGISTRATION"
     },
     include: {
@@ -183,7 +183,7 @@ class SquidGameService {
     throw new Error("All rounds completed");
   }
 
-  const difficultyConfig = DIFFICULTY_PROGRESSION[roundNumber - 1];
+  const difficultyConfig = SquidGameConfig.DIFFICULTY_PROGRESSION[roundNumber - 1];
 
   // Get problem for this round
   const problem = await Database.client.problem.findFirst({

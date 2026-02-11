@@ -1,6 +1,7 @@
 // 🎮 squidGameConfig.js - Configuration for Squid Game tournament
 
-export const DIFFICULTY_PROGRESSION = [
+class SquidGameConfig {
+  static DIFFICULTY_PROGRESSION = [
   {
     round: 1,
     difficulty: "EASY",
@@ -31,9 +32,9 @@ export const DIFFICULTY_PROGRESSION = [
     timeLimit: 10 * 60, // 10 minutes
     eliminationPercentage: 1.0 // Last one standing wins
   }
-];
+  ];
 
-export const SQUID_GAME_CONFIG = {
+  static SQUID_GAME_CONFIG = {
   DEFAULT_MAX_PLAYERS: 50,
   MIN_PLAYERS_TO_START: 2,
   SCORING: {
@@ -51,4 +52,7 @@ export const SQUID_GAME_CONFIG = {
     PLAYERS_ELIMINATED: "squid_game:players_eliminated",
     TOURNAMENT_COMPLETED: "squid_game:tournament_completed"
   }
-};
+  };
+}
+
+export default SquidGameConfig;
