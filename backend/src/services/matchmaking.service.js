@@ -3,7 +3,6 @@
 import RedisClient from "../cache/redis.client.js";
 import Database from "../config/db.js";
 import BattleCode from "../utils/battleCode.js";
-import { emitToBattle } from "../config/socket.js";
 import ServerApp from "../server.js";
 
 const MATCHMAKING_QUEUE = "matchmaking:queue";

@@ -1,14 +1,14 @@
 import express from "express";
-import authRoutes from "./routes/auth.route.js";
-import problemRoutes from "./routes/problem.route.js";
-import testcaseRoutes from "./routes/testcase.route.js";
-import submissionRoutes from "./routes/submission.route.js";
-import battleRoutes from "./routes/battle.route.js";
-import leaderboardRoutes from "./routes/leaderboard.route.js";
-import matchmakingRoutes from "./routes/matchmaking.route.js";
-import teamRoutes from "./routes/team.route.js";
-import teamBattleRoutes from "./routes/teamBattle.route.js";
-import squidGameRoutes from "./routes/squidGame.route.js";
+import AuthRoutes from "./routes/auth.route.js";
+import ProblemRoutes from "./routes/problem.route.js";
+import TestcaseRoutes from "./routes/testcase.route.js";
+import SubmissionRoutes from "./routes/submission.route.js";
+import BattleRoutes from "./routes/battle.route.js";
+import LeaderboardRoutes from "./routes/leaderboard.route.js";
+import MatchmakingRoutes from "./routes/matchmaking.route.js";
+import TeamRoutes from "./routes/team.route.js";
+import TeamBattleRoutes from "./routes/teamBattle.route.js";
+import SquidGameRoutes from "./routes/squidGame.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -25,16 +25,16 @@ class App {
 
     app.use(express.json());
     app.use(cookieParser());
-    app.use("/api/auth", authRoutes);
-    app.use("/api/problem", problemRoutes);
-    app.use("/api/testcase", testcaseRoutes);
-    app.use("/api/submissions", submissionRoutes);
-    app.use("/api/battle", battleRoutes);
-    app.use("/api/leaderboard", leaderboardRoutes);
-    app.use("/api/matchmaking", matchmakingRoutes);
-    app.use("/api/team", teamRoutes);
-    app.use("/api/team-battle", teamBattleRoutes);
-    app.use("/api/squid-game", squidGameRoutes);
+    app.use("/api/auth", AuthRoutes.createRouter());
+    app.use("/api/problem", ProblemRoutes.createRouter());
+    app.use("/api/testcase", TestcaseRoutes.createRouter());
+    app.use("/api/submissions", SubmissionRoutes.createRouter());
+    app.use("/api/battle", BattleRoutes.createRouter());
+    app.use("/api/leaderboard", LeaderboardRoutes.createRouter());
+    app.use("/api/matchmaking", MatchmakingRoutes.createRouter());
+    app.use("/api/team", TeamRoutes.createRouter());
+    app.use("/api/team-battle", TeamBattleRoutes.createRouter());
+    app.use("/api/squid-game", SquidGameRoutes.createRouter());
 
     return app;
   }
