@@ -1,7 +1,7 @@
 // Team management service
 
 import Database from "../config/db.js";
-import { generateBattleCode } from "../utils/battleCode.js";
+import BattleCode from "../utils/battleCode.js";
 
 /**
  * Create a new team
@@ -12,7 +12,7 @@ class TeamService {
     throw new Error("Team size must be 2, 3, 4, or 5");
   }
 
-  const teamCode = await generateBattleCode();
+  const teamCode = await BattleCode.generateBattleCode();
 
   const team = await Database.client.team.create({
     data: {

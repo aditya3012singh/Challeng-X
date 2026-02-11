@@ -1,5 +1,5 @@
 import Database from "../config/db.js";
-import { compareOutput } from "../utils/compareOutput.js";
+import OutputComparer from "../utils/compareOutput.js";
 import JudgeService from "./judge.service.js";
 import { emitToBattle } from "../config/socket.js";
 /**
@@ -42,7 +42,7 @@ class SubmissionService {
 
     console.log("Output:", result.output);
 
-    const passed = compareOutput(result.output, tc.output);
+    const passed = OutputComparer.compareOutput(result.output, tc.output);
     if (!passed) {
       allPassed = false;
       break;

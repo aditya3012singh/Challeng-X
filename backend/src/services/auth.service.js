@@ -1,10 +1,6 @@
 import Database from "../config/db.js";
 import bcrypt from "bcrypt";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "../utils/jwt.js";
+import JwtService from "../utils/jwt.js";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
@@ -42,12 +38,12 @@ class AuthService {
     data: { failedLoginCount: 0, lockUntil: null },
   });
 
-  const accessToken = generateAccessToken({
+  const accessToken = JwtService.generateAccessToken({
     id: user.id,
     role: user.role,
   });
 
-  const refreshToken = generateRefreshToken({ id: user.id });
+  const refreshToken = JwtService.generateRefreshToken({ id: user.id });
 
   // 🔁 token rotation (store hash)
   const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
@@ -91,7 +87,7 @@ class AuthService {
 
   let payload;
   try {
-    payload = verifyRefreshToken(token);
+    payload = JwtService.verifyRefreshToken(token);
   } catch {
     return res.sendStatus(401);
   }
@@ -126,12 +122,12 @@ class AuthService {
   }
 
   // 🔄 Rotate tokens
-  const newAccessToken = generateAccessToken({
+  const newAccessToken = JwtService.generateAccessToken({
     id: user.id,
     role: user.role,
   });
 
-  const newRefreshToken = generateRefreshToken({
+  const newRefreshToken = JwtService.generateRefreshToken({
     id: user.id,
     tokenVersion: user.tokenVersion,
   });

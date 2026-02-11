@@ -1,5 +1,9 @@
 // Handles trimming spaces, newline differences
 
-export function compareOutput(actual, expected) {
-  return actual.trim() === expected.trim();
+class OutputComparer {
+  static compareOutput(actual, expected) {
+    return actual.trim() === expected.trim();
+  }
 }
+
+export default OutputComparer;

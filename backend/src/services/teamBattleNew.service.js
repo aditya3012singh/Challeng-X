@@ -1,6 +1,6 @@
 
 import Database from "../config/db.js";
-import { generateBattleCode } from "../utils/battleCode.js";
+import BattleCode from "../utils/battleCode.js";
 import { logger } from "../utils/logger.js";
 
 class TeamBattleNewService {
@@ -48,7 +48,7 @@ class TeamBattleNewService {
     }
 
     // Generate unique battle code for reference
-    const battleCode = await generateBattleCode();
+    const battleCode = await BattleCode.generateBattleCode();
 
     // Create the team battle (Team1 auto-joins)
     const teamBattle = await Database.client.teamBattle.create({
@@ -238,7 +238,7 @@ class TeamBattleNewService {
     let existingBattle;
     let attempts = 0;
     do {
-      battleCode = generateBattleCode();
+      battleCode = BattleCode.generateBattleCode();
       existingBattle = await Database.client.teamBattle.findUnique({
         where: { battleCode },
       });
