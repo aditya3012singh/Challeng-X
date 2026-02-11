@@ -6,8 +6,14 @@ import express from "express";
 import SubmissionController from "../controllers/submission.controller.js";
 import AuthMiddleware from "../middlewares/auth.middleware.js";
 
-const router = express.Router();
+class SubmissionRoutes {
+	static createRouter() {
+		const router = express.Router();
 
-router.post("/submit", AuthMiddleware.handle, SubmissionController.submitCode);
+		router.post("/submit", AuthMiddleware.handle, SubmissionController.submitCode);
 
-export default router;
+		return router;
+	}
+}
+
+export default SubmissionRoutes;

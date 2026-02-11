@@ -1,8 +1,14 @@
 import express from "express";
 import TestcaseController from "../controllers/testcase.controller.js";
 
-const router = express.Router();
+class TestcaseRoutes {
+	static createRouter() {
+		const router = express.Router();
 
-router.post("/add/:id", TestcaseController.addTestCases);
+		router.post("/add/:id", TestcaseController.addTestCases);
 
-export default router;
+		return router;
+	}
+}
+
+export default TestcaseRoutes;
