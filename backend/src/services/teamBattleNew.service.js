@@ -222,7 +222,7 @@ class TeamBattleNewService {
     }
 
     // Get random problems for each match (different for each pair)
-    const problems = await prisma.problem.findMany({
+    const problems = await Database.client.problem.findMany({
       take: maxTeamSize,
       orderBy: { createdAt: "desc" },
     });

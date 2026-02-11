@@ -4,10 +4,10 @@
 
 import express from "express";
 import SubmissionController from "../controllers/submission.controller.js";
-import authMiddleware from "../middlewares/auth.middleware.js";
+import AuthMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/submit", authMiddleware, SubmissionController.submitCode);
+router.post("/submit", AuthMiddleware.handle, SubmissionController.submitCode);
 
 export default router;
