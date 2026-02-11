@@ -60,11 +60,10 @@ class MatchmakingService {
   );
 
   // Try to find a match immediately
-  await findMatch(userId, difficulty);
+  await MatchmakingService.findMatch(userId, difficulty);
 
   return { message: "Added to queue", queueData };
   }
-}
 
 /**
  * Remove player from matchmaking queue
@@ -89,7 +88,6 @@ class MatchmakingService {
 
   return { message: "Removed from queue" };
   }
-}
 
 /**
  * Find a match for a player
@@ -130,9 +128,8 @@ class MatchmakingService {
   const opponentData = JSON.parse(opponentDataStr);
 
   // Create battle
-  await createMatchedBattle(currentPlayer, opponentData, difficulty);
+  await MatchmakingService.createMatchedBattle(currentPlayer, opponentData, difficulty);
   }
-}
 
 /**
  * Create a battle from matched players
@@ -143,8 +140,8 @@ class MatchmakingService {
   static async createMatchedBattle(player1, player2, difficulty) {
   // Remove both players from queue
   await Promise.all([
-    leaveQueue(player1.userId),
-    leaveQueue(player2.userId)
+    MatchmakingService.leaveQueue(player1.userId),
+    MatchmakingService.leaveQueue(player2.userId)
   ]);
 
   // Get random problem of specified difficulty
@@ -206,7 +203,6 @@ class MatchmakingService {
 
   return battle;
   }
-}
 
 /**
  * Get current queue status
@@ -237,4 +233,3 @@ class MatchmakingService {
 }
 
 export default MatchmakingService;
-}

@@ -52,8 +52,7 @@ class SquidGameSocket {
       } = data;
 
       try {
-        const submission = await squidGameService.submitSquidGameSolution(
-          squidGameId,
+        
         const submission = await SquidGameService.submitSquidGameSolution(
           code,
           language,
