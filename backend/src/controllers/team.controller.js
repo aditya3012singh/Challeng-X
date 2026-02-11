@@ -1,6 +1,6 @@
 // Team controller
 
-import * as teamService from "../services/team.service.js";
+import TeamService from "../services/team.service.js";
 
 class TeamController {
   static async createTeamController(req, res) {
@@ -16,7 +16,7 @@ class TeamController {
   }
 
   try {
-    const team = await teamService.createTeamService(userId, teamName, maxTeamSize);
+    const team = await TeamService.createTeamService(userId, teamName, maxTeamSize);
     res.status(201).json(team);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -27,7 +27,7 @@ class TeamController {
   const { teamId } = req.params;
 
   try {
-    const team = await teamService.getTeamService(teamId);
+    const team = await TeamService.getTeamService(teamId);
     res.status(200).json(team);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -43,7 +43,7 @@ class TeamController {
   }
 
   try {
-    const result = await teamService.joinTeamService(teamCode, userId);
+    const result = await TeamService.joinTeamService(teamCode, userId);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -55,7 +55,7 @@ class TeamController {
   const { teamId } = req.params;
 
   try {
-    const result = await teamService.leaveTeamService(teamId, userId);
+    const result = await TeamService.leaveTeamService(teamId, userId);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -67,7 +67,7 @@ class TeamController {
   const { teamId } = req.params;
 
   try {
-    const result = await teamService.disbandTeamService(teamId, userId);
+    const result = await TeamService.disbandTeamService(teamId, userId);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -80,7 +80,7 @@ class TeamController {
   console.log("Controller: Fetching teams for user:", userId);
 
   try {
-    const teams = await teamService.getUserTeamsService(userId);
+    const teams = await TeamService.getUserTeamsService(userId);
     res.status(200).json({ teams });
   } catch (error) {
     res.status(500).json({ message: error.message });

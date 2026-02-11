@@ -1,6 +1,6 @@
 // 🏆 ranking.service.js
 
-import prisma from "../config/db.js";
+import Database from "../config/db.js";
 
 // Updates:
 
@@ -9,9 +9,10 @@ import prisma from "../config/db.js";
 // • ELO rating // later we will do this
 
 
-export async function updateRanks(winnerId, loserId) {
+class RankingService {
+  static async updateRanks(winnerId, loserId) {
 
-  await prisma.user.update({
+  await Database.client.user.update({
     where: { id: winnerId },
     data: {
       rankPoints: { increment: 30 },
@@ -19,11 +20,14 @@ export async function updateRanks(winnerId, loserId) {
     }
   });
 
-  await prisma.user.update({
+  await Database.client.user.update({
     where: { id: loserId },
     data: {
       rankPoints: { decrement: 20 },
       losses: { increment: 1 }
     }
   });
+  }
 }
+
+export default RankingService;

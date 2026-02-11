@@ -1,4 +1,4 @@
-import { addTestcaseService } from "../services/testcase.service.js";
+import TestcaseService from "../services/testcase.service.js";
 
 class TestcaseController {
   static async addTestCases(req, res) {
@@ -6,7 +6,7 @@ class TestcaseController {
     const { id } = req.params;
     const { testcases } = req.body;
 
-    await addTestcaseService(id, testcases);
+    await TestcaseService.addTestcaseService(id, testcases);
 
     res.json({ message: "Testcases added successfully" });
   } catch (err) {

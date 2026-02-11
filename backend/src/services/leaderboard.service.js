@@ -1,13 +1,14 @@
-import redis from "../cache/redis.client.js";
-import prisma from "../config/db.js";
+import RedisClient from "../cache/redis.client.js";
+import Database from "../config/db.js";
 
-export async function getLeaderboard(page = 1, limit = 20) {
+class LeaderboardService {
+  static async getLeaderboard(page = 1, limit = 20) {
 
   
 //try from the cache first 
   const key = `leaderboard:page:${page}:limit:${limit}`;
 
-  const cached= await redis.get(key);
+  const cached= await RedisClient.client.get(key);
   if (cached) {
     return JSON.parse(cached);
   }
@@ -15,7 +16,7 @@ export async function getLeaderboard(page = 1, limit = 20) {
   const skip = (page - 1) * limit; //now fetch from db
 
   const [users, total] = await Promise.all([
-    prisma.user.findMany({
+    Database.client.user.findMany({
       skip,
       take: limit,
       orderBy: [
@@ -31,7 +32,7 @@ export async function getLeaderboard(page = 1, limit = 20) {
       }
     }),
 
-    prisma.user.count()
+    Database.client.user.count()
   ]);
   const result={
     data: users,
@@ -41,7 +42,10 @@ export async function getLeaderboard(page = 1, limit = 20) {
   };
 
   //store in cache for future requests
-  await redis.set(key, JSON.stringify(result), 'EX', 60*5); //cache for 5 minutes
+  await RedisClient.client.set(key, JSON.stringify(result), 'EX', 60*5); //cache for 5 minutes
   
   return result;
+  }
 }
+
+export default LeaderboardService;

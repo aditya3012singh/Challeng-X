@@ -1,6 +1,6 @@
 // 🎮 squidGame.controller.js - Squid Game API Controllers
 
-import * as squidGameService from "../services/squidGame.service.js";
+import SquidGameService from "../services/squidGame.service.js";
 
 /**
  * Create a new Squid Game tournament
@@ -15,7 +15,7 @@ class SquidGameController {
       return res.status(400).json({ message: "Tournament name is required" });
     }
 
-    const tournament = await squidGameService.createSquidGameTournament(
+    const tournament = await SquidGameService.createSquidGameTournament(
       name,
       maxPlayers
     );
@@ -41,7 +41,7 @@ class SquidGameController {
       return res.status(400).json({ message: "Tournament ID is required" });
     }
 
-    const result = await squidGameService.joinSquidGameTournament(
+    const result = await SquidGameService.joinSquidGameTournament(
       squidGameId,
       userId
     );
@@ -62,7 +62,7 @@ class SquidGameController {
   const { squidGameId } = req.params;
 
   try {
-    const status = await squidGameService.getSquidGameStatus(squidGameId);
+    const status = await SquidGameService.getSquidGameStatus(squidGameId);
 
     res.status(200).json(status);
   } catch (error) {
@@ -81,7 +81,7 @@ class SquidGameController {
       return res.status(400).json({ message: "Tournament ID is required" });
     }
 
-    const tournament = await squidGameService.startSquidGameTournament(
+    const tournament = await SquidGameService.startSquidGameTournament(
       squidGameId
     );
 
@@ -122,7 +122,7 @@ class SquidGameController {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const submission = await squidGameService.submitSquidGameSolution(
+    const submission = await SquidGameService.submitSquidGameSolution(
       squidGameId,
       userId,
       code,
@@ -153,7 +153,7 @@ class SquidGameController {
       return res.status(400).json({ message: "Tournament ID is required" });
     }
 
-    const result = await squidGameService.endRoundAndEliminate(squidGameId);
+    const result = await SquidGameService.endRoundAndEliminate(squidGameId);
 
     res.status(200).json(result);
   } catch (error) {
@@ -172,7 +172,7 @@ class SquidGameController {
       return res.status(400).json({ message: "Tournament ID is required" });
     }
 
-    const leaderboard = await squidGameService.getSquidGameLeaderboard(
+    const leaderboard = await SquidGameService.getSquidGameLeaderboard(
       squidGameId
     );
 
@@ -189,7 +189,7 @@ class SquidGameController {
   const userId = req.user.id;
 
   try {
-    const history = await squidGameService.getUserSquidGameHistory(userId);
+    const history = await SquidGameService.getUserSquidGameHistory(userId);
 
     res.status(200).json({
       message: "User tournament history",

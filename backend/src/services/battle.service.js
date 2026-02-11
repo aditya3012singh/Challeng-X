@@ -1,23 +1,24 @@
 // Controls battle rules:
 
-import redis from "../cache/redis.client.js";
-import prisma from "../config/db.js";
-import { updateRanks } from "./ranking.service.js";
+import RedisClient from "../cache/redis.client.js";
+import Database from "../config/db.js";
+import RankingService from "./ranking.service.js";
 import { emitToBattle } from "../config/socket.js";
-import { generateBattleCode } from "../utils/battleCode.js";
+import BattleCode from "../utils/battleCode.js";
 // • Start timer
 // • Assign problem
 // • End match
 // • Decide winner
 
-export async function createBattleRandomQuestionService(player1Id){
+class BattleService {
+  static async createBattleRandomQuestionService(player1Id){
 
-    const problems = await prisma.problem.findMany();
+    const problems = await Database.client.problem.findMany();
     const randomProblem = problems[Math.floor(Math.random() * problems.length)];
 
-    const battleCode = await generateBattleCode();
+    const battleCode = await BattleCode.generateBattleCode();
 
-    const battle = await prisma.battle.create({
+    const battle = await Database.client.battle.create({
         data: {
             player1Id,
             problemId: randomProblem.id,
@@ -27,12 +28,12 @@ export async function createBattleRandomQuestionService(player1Id){
     });
 
     return battle;
-}
+  }
 
-export async function createBattleWithSelectedQuestionService(player1Id, problemId){
-    const battleCode = await generateBattleCode();
+  static async createBattleWithSelectedQuestionService(player1Id, problemId){
+    const battleCode = await BattleCode.generateBattleCode();
 
-    const battle = await prisma.battle.create({
+    const battle = await Database.client.battle.create({
         data: {
             player1Id,
             problemId,
@@ -42,11 +43,11 @@ export async function createBattleWithSelectedQuestionService(player1Id, problem
     });
     
     return battle;
-}
+  }
 
-export async function joinBattleService(battleCode, player2Id){
+  static async joinBattleService(battleCode, player2Id){
 
-    const battleExists = await prisma.battle.findUnique({
+    const battleExists = await Database.client.battle.findUnique({
         where: { battleCode }
     });
 
@@ -66,7 +67,7 @@ export async function joinBattleService(battleCode, player2Id){
         throw new Error("Battle already has two players");
     }
 
-    const battle = await prisma.battle.update({
+    const battle = await Database.client.battle.update({
         where: { battleCode },
         data: {
             player2Id,
@@ -84,7 +85,7 @@ export async function joinBattleService(battleCode, player2Id){
     });
 
     return battle;
-}
+  }
 //         throw new Error("Cannot join your own battle");
 //     }
 
@@ -116,8 +117,8 @@ export async function joinBattleService(battleCode, player2Id){
 //     return battle;
 // }
 
-export async function getBattle(battleId){
-    const battle = await prisma.battle.findUnique({
+  static async getBattle(battleId){
+    const battle = await Database.client.battle.findUnique({
         where: { id: battleId },
         include: {
             problem: {
@@ -128,18 +129,18 @@ export async function getBattle(battleId){
         }
     });
     return battle;
-}
+  }
 
-export async function finishBattleService(battleId, winnerId){
-    const battle= await prisma.battle.findUnique({
+  static async finishBattleService(battleId, winnerId){
+    const battle= await Database.client.battle.findUnique({
         where: { id: battleId },
     });
 
     const loserId = (battle.player1Id === winnerId) ? battle.player2Id : battle.player1Id;
 
-    await updateRanks(winnerId, loserId);
+    await RankingService.updateRanks(winnerId, loserId);
 
-    const battleResult = await prisma.battle.update({
+    const battleResult = await Database.client.battle.update({
         where: { id: battleId },
         data: {
             status: "FINISHED",
@@ -151,15 +152,15 @@ export async function finishBattleService(battleId, winnerId){
       winnerId
     });
 
-    await redis.flushall(); 
+    await RedisClient.client.flushall(); 
     return battleResult;
-}
+  }
 
-export async function getBattleHistory(userId, page = 1, limit = 10) {
+  static async getBattleHistory(userId, page = 1, limit = 10) {
 
   const skip = (page - 1) * limit;
 
-  const battles = await prisma.battle.findMany({
+  const battles = await Database.client.battle.findMany({
     where: {
       OR: [
         { player1Id: userId },
@@ -188,7 +189,7 @@ export async function getBattleHistory(userId, page = 1, limit = 10) {
     }
   });
 
-  const total = await prisma.battle.count({
+  const total = await Database.client.battle.count({
     where: {
       OR: [
         { player1Id: userId },
@@ -204,4 +205,7 @@ export async function getBattleHistory(userId, page = 1, limit = 10) {
     page,
     totalPages: Math.ceil(total / limit)
   };
+  }
 }
+
+export default BattleService;

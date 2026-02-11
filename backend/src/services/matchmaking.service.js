@@ -1,8 +1,8 @@
 // Matchmaking service - finds opponents for battles
 
-import redis from "../cache/redis.client.js";
-import prisma from "../config/db.js";
-import { generateBattleCode } from "../utils/battleCode.js";
+import RedisClient from "../cache/redis.client.js";
+import Database from "../config/db.js";
+import BattleCode from "../utils/battleCode.js";
 import { emitToBattle } from "../config/socket.js";
 import { io } from "../server.js";
 
@@ -18,9 +18,10 @@ const QUEUE_TIMEOUT = 60000; // 60 seconds timeout
  */
 
 
-export async function joinQueue(userId, difficulty, socketId) {
+class MatchmakingService {
+  static async joinQueue(userId, difficulty, socketId) {
   // Get user's rank points
-  const user = await prisma.user.findUnique({
+  const user = await Database.client.user.findUnique({
     where: { id: userId },
     select: { rankPoints: true, username: true }
   });
@@ -30,7 +31,7 @@ export async function joinQueue(userId, difficulty, socketId) {
   }
 
   // Check if user already in queue
-  const existingQueue = await redis.get(`matchmaking:user:${userId}`);
+  const existingQueue = await RedisClient.client.get(`matchmaking:user:${userId}`);
   if (existingQueue) {
     throw new Error("Already in matchmaking queue");
   }
@@ -45,7 +46,7 @@ export async function joinQueue(userId, difficulty, socketId) {
     joinedAt: Date.now()
   };
 
-  await redis.set(
+  await RedisClient.client.set(
     `matchmaking:user:${userId}`, 
     JSON.stringify(queueData),
     'EX',
@@ -53,7 +54,7 @@ export async function joinQueue(userId, difficulty, socketId) {
   );
 
   // Add to difficulty-based queue
-  await redis.zadd(
+  await RedisClient.client.zadd(
     `${MATCHMAKING_QUEUE}:${difficulty}`,
     user.rankPoints,
     userId
@@ -63,14 +64,15 @@ export async function joinQueue(userId, difficulty, socketId) {
   await findMatch(userId, difficulty);
 
   return { message: "Added to queue", queueData };
+  }
 }
 
 /**
  * Remove player from matchmaking queue
  * @param {string} userId 
  */
-export async function leaveQueue(userId) {
-  const queueDataStr = await redis.get(`matchmaking:user:${userId}`);
+  static async leaveQueue(userId) {
+  const queueDataStr = await RedisClient.client.get(`matchmaking:user:${userId}`);
   
   if (!queueDataStr) {
     throw new Error("Not in queue");
@@ -80,13 +82,14 @@ export async function leaveQueue(userId) {
 
   // Remove from all difficulty queues
   await Promise.all([
-    redis.del(`matchmaking:user:${userId}`),
-    redis.zrem(`${MATCHMAKING_QUEUE}:EASY`, userId),
-    redis.zrem(`${MATCHMAKING_QUEUE}:MEDIUM`, userId),
-    redis.zrem(`${MATCHMAKING_QUEUE}:HARD`, userId)
+    RedisClient.client.del(`matchmaking:user:${userId}`),
+    RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:EASY`, userId),
+    RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:MEDIUM`, userId),
+    RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:HARD`, userId)
   ]);
 
   return { message: "Removed from queue" };
+  }
 }
 
 /**
@@ -94,8 +97,8 @@ export async function leaveQueue(userId) {
  * @param {string} userId 
  * @param {string} difficulty 
  */
-async function findMatch(userId, difficulty) {
-  const queueDataStr = await redis.get(`matchmaking:user:${userId}`);
+  static async findMatch(userId, difficulty) {
+  const queueDataStr = await RedisClient.client.get(`matchmaking:user:${userId}`);
   if (!queueDataStr) return;
 
   const currentPlayer = JSON.parse(queueDataStr);
@@ -105,7 +108,7 @@ async function findMatch(userId, difficulty) {
   const minRank = currentPlayer.rankPoints - RANK_THRESHOLD;
   const maxRank = currentPlayer.rankPoints + RANK_THRESHOLD;
 
-  const potentialMatches = await redis.zrangebyscore(
+  const potentialMatches = await RedisClient.client.zrangebyscore(
     queueKey,
     minRank,
     maxRank
@@ -118,10 +121,10 @@ async function findMatch(userId, difficulty) {
     return null; // No match found yet
   }
 
-  const opponentDataStr = await redis.get(`matchmaking:user:${opponent}`);
+  const opponentDataStr = await RedisClient.client.get(`matchmaking:user:${opponent}`);
   if (!opponentDataStr) {
     // Opponent left queue, remove from sorted set
-    await redis.zrem(queueKey, opponent);
+    await RedisClient.client.zrem(queueKey, opponent);
     return null;
   }
 
@@ -129,6 +132,7 @@ async function findMatch(userId, difficulty) {
 
   // Create battle
   await createMatchedBattle(currentPlayer, opponentData, difficulty);
+  }
 }
 
 /**
@@ -137,7 +141,7 @@ async function findMatch(userId, difficulty) {
  * @param {object} player2 
  * @param {string} difficulty 
  */
-async function createMatchedBattle(player1, player2, difficulty) {
+  static async createMatchedBattle(player1, player2, difficulty) {
   // Remove both players from queue
   await Promise.all([
     leaveQueue(player1.userId),
@@ -145,7 +149,7 @@ async function createMatchedBattle(player1, player2, difficulty) {
   ]);
 
   // Get random problem of specified difficulty
-  const problems = await prisma.problem.findMany({
+  const problems = await Database.client.problem.findMany({
     where: { difficulty }
   });
 
@@ -161,10 +165,10 @@ async function createMatchedBattle(player1, player2, difficulty) {
   }
 
   const randomProblem = problems[Math.floor(Math.random() * problems.length)];
-  const battleCode = await generateBattleCode();
+  const battleCode = await BattleCode.generateBattleCode();
 
   // Create battle with both players
-  const battle = await prisma.battle.create({
+  const battle = await Database.client.battle.create({
     data: {
       player1Id: player1.userId,
       player2Id: player2.userId,
@@ -202,14 +206,15 @@ async function createMatchedBattle(player1, player2, difficulty) {
   });
 
   return battle;
+  }
 }
 
 /**
  * Get current queue status
  * @param {string} userId 
  */
-export async function getQueueStatus(userId) {
-  const queueDataStr = await redis.get(`matchmaking:user:${userId}`);
+  static async getQueueStatus(userId) {
+  const queueDataStr = await RedisClient.client.get(`matchmaking:user:${userId}`);
   
   if (!queueDataStr) {
     return { inQueue: false };
@@ -219,7 +224,7 @@ export async function getQueueStatus(userId) {
   const queueKey = `${MATCHMAKING_QUEUE}:${queueData.difficulty}`;
   
   // Get queue size
-  const queueSize = await redis.zcard(queueKey);
+  const queueSize = await RedisClient.client.zcard(queueKey);
   const waitTime = Date.now() - queueData.joinedAt;
 
   return {
@@ -229,4 +234,8 @@ export async function getQueueStatus(userId) {
     waitTime,
     estimatedWait: Math.max(0, 30000 - waitTime) // Estimate 30s max wait
   };
+  }
+}
+
+export default MatchmakingService;
 }

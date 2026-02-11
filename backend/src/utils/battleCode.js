@@ -1,10 +1,11 @@
-import prisma from "../config/db.js";
+import Database from "../config/db.js";
 
 /**
  * Generate a unique 6-digit battle code
  * @returns {Promise<string>} A unique 6-digit code
  */
-export async function generateBattleCode() {
+class BattleCode {
+  static async generateBattleCode() {
   let code;
   let isUnique = false;
   let attempts = 0;
@@ -15,7 +16,7 @@ export async function generateBattleCode() {
     code = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Check if code already exists
-    const existing = await prisma.battle.findUnique({
+    const existing = await Database.client.battle.findUnique({
       where: { battleCode: code }
     });
 
@@ -30,4 +31,7 @@ export async function generateBattleCode() {
   }
 
   return code;
+  }
 }
+
+export default BattleCode;

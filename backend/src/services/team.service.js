@@ -1,19 +1,20 @@
 // Team management service
 
-import prisma from "../config/db.js";
+import Database from "../config/db.js";
 import { generateBattleCode } from "../utils/battleCode.js";
 
 /**
  * Create a new team
  */
-export async function createTeamService(creatorId, teamName, maxTeamSize) {
+class TeamService {
+  static async createTeamService(creatorId, teamName, maxTeamSize) {
   if (![2, 3, 4, 5].includes(maxTeamSize)) {
     throw new Error("Team size must be 2, 3, 4, or 5");
   }
 
   const teamCode = await generateBattleCode();
 
-  const team = await prisma.team.create({
+  const team = await Database.client.team.create({
     data: {
       name: teamName,
       teamCode,
@@ -40,13 +41,13 @@ export async function createTeamService(creatorId, teamName, maxTeamSize) {
   });
 
   return team;
-}
+  }
 
 /**
  * Get team details
  */
-export async function getTeamService(teamId) {
-  const team = await prisma.team.findUnique({
+  static async getTeamService(teamId) {
+  const team = await Database.client.team.findUnique({
     where: { id: teamId },
     include: {
       creator: {
@@ -76,13 +77,13 @@ export async function getTeamService(teamId) {
   }
 
   return team;
-}
+  }
 
 /**
  * Get team by code
  */
-export async function getTeamByCodeService(teamCode) {
-  const team = await prisma.team.findUnique({
+  static async getTeamByCodeService(teamCode) {
+  const team = await Database.client.team.findUnique({
     where: { teamCode },
     include: {
       creator: {
@@ -110,13 +111,13 @@ export async function getTeamByCodeService(teamCode) {
   }
 
   return team;
-}
+  }
 
 /**
  * Join a team
  */
-export async function joinTeamService(teamCode, userId) {
-  const team = await prisma.team.findUnique({
+  static async joinTeamService(teamCode, userId) {
+  const team = await Database.client.team.findUnique({
     where: { teamCode },
     include: {
       members: true
@@ -128,7 +129,7 @@ export async function joinTeamService(teamCode, userId) {
   }
 
   // Check if user is already in team
-  const existingMember = await prisma.teamMember.findUnique({
+  const existingMember = await Database.client.teamMember.findUnique({
     where: {
       userId_teamId: {
         userId,
@@ -147,7 +148,7 @@ export async function joinTeamService(teamCode, userId) {
     throw new Error("Team is full");
   }
 
-  const member = await prisma.teamMember.create({
+  const member = await Database.client.teamMember.create({
     data: {
       userId,
       teamId: team.id
@@ -164,13 +165,13 @@ export async function joinTeamService(teamCode, userId) {
   });
 
   return { message: "Joined team successfully", member };
-}
+  }
 
 /**
  * Leave a team
  */
-export async function leaveTeamService(teamId, userId) {
-  const team = await prisma.team.findUnique({
+  static async leaveTeamService(teamId, userId) {
+  const team = await Database.client.team.findUnique({
     where: { id: teamId },
     include: {
       members: true
@@ -186,7 +187,7 @@ export async function leaveTeamService(teamId, userId) {
     throw new Error("Creator cannot leave team while members exist. Disband the team instead.");
   }
 
-  await prisma.teamMember.delete({
+  await Database.client.teamMember.delete({
     where: {
       userId_teamId: {
         userId,
@@ -196,22 +197,22 @@ export async function leaveTeamService(teamId, userId) {
   });
 
   // If team is empty, delete it
-  const remainingMembers = await prisma.teamMember.count({
+  const remainingMembers = await Database.client.teamMember.count({
     where: { teamId }
   });
 
   if (remainingMembers === 0) {
-    await prisma.team.delete({ where: { id: teamId } });
+    await Database.client.team.delete({ where: { id: teamId } });
   }
 
   return { message: "Left team successfully" };
-}
+  }
 
 /**
  * Disband team (creator only)
  */
-export async function disbandTeamService(teamId, userId) {
-  const team = await prisma.team.findUnique({
+  static async disbandTeamService(teamId, userId) {
+  const team = await Database.client.team.findUnique({
     where: { id: teamId }
   });
 
@@ -224,24 +225,24 @@ export async function disbandTeamService(teamId, userId) {
   }
 
   // Delete all members first
-  await prisma.teamMember.deleteMany({
+  await Database.client.teamMember.deleteMany({
     where: { teamId }
   });
 
   // Delete team
-  await prisma.team.delete({
+  await Database.client.team.delete({
     where: { id: teamId }
   });
 
   return { message: "Team disbanded successfully" };
-}
+  }
 
 /**
  * Get user's teams
  */
-export async function getUserTeamsService(userId) {
+  static async getUserTeamsService(userId) {
     console.log("Fetching teams for user:", userId);
-  const teams = await prisma.teamMember.findMany({
+  const teams = await Database.client.teamMember.findMany({
     where: { userId },
     include: {
       team: {
@@ -280,4 +281,7 @@ export async function getUserTeamsService(userId) {
 
   console.log(teams.length, "teams found for user", userId);
   return teams.map(t => t.team);
+  }
 }
+
+export default TeamService;

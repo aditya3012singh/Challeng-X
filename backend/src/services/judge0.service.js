@@ -15,7 +15,8 @@ const languageMap = {
   // add more as needed
 };
 
-export async function runCode(language, code, input) {
+class Judge0Service {
+  static async runCode(language, code, input) {
   const language_id = languageMap[language];
   if (!language_id) return { error: `Language ${language} not supported` };
 
@@ -47,4 +48,7 @@ export async function runCode(language, code, input) {
   } catch (err) {
     return { error: err.message };
   }
+  }
 }
+
+export default Judge0Service;

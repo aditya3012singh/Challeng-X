@@ -2,7 +2,7 @@
 // • Trigger judge
 // • Return result
 
-import { processSubmission } from "../services/submission.service.js";
+import SubmissionService from "../services/submission.service.js";
 
 class SubmissionController {
   static async submitCode(req, res) {
@@ -12,7 +12,7 @@ class SubmissionController {
 
     const userId = req.user.id; // from auth middleware
 
-    const result = await processSubmission({
+    const result = await SubmissionService.processSubmission({
       userId,
     //   battleId,
       problemId,

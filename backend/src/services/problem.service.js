@@ -1,11 +1,12 @@
 
 // create problems service
 
-import redis from "../cache/redis.client.js";
-import prisma from "../config/db.js"
+import RedisClient from "../cache/redis.client.js";
+import Database from "../config/db.js"
 
-export async function createProblemService(data) {
-    const problem = await prisma.problem.create({
+class ProblemService {
+    static async createProblemService(data) {
+    const problem = await Database.client.problem.create({
         data:{
             title: data.title,
             description: data.description,
@@ -14,44 +15,47 @@ export async function createProblemService(data) {
             // memoryLimitMb: data.memoryLimitMb || 256,
         }
     })
-    await redis.del("problems:all");
+    await RedisClient.client.del("problems:all");
     return problem;
-}
+    }
 
-export async function getAllProblemsService() {
+    static async getAllProblemsService() {
     const key= "problems:all";
 
-    const cached = await redis.get(key);
+    const cached = await RedisClient.client.get(key);
 
     if(cached){
         return JSON.parse(cached);
     }   
 
-    const problems= await prisma.problem.findMany({
+    const problems= await Database.client.problem.findMany({
         select: {
             id: true,
             title: true,
             difficulty: true,
         }
     });
-    await redis.set(key, JSON.stringify(problems), 'EX', 3600); 
+    await RedisClient.client.set(key, JSON.stringify(problems), 'EX', 3600); 
     return problems;
-}
+    }
 
-export async function getProblemByIdService(problemId) {
+    static async getProblemByIdService(problemId) {
     const key= `problem:${problemId}`;
 
-    const cached = await redis.get(key);
+    const cached = await RedisClient.client.get(key);
     if(cached){
         return JSON.parse(cached);
     }
 
-    const problem = await prisma.problem.findUnique({
+    const problem = await Database.client.problem.findUnique({
         where: { id: problemId },
         include: {
             testcases: true,
         }
     });
-    await redis.set(key, JSON.stringify(problem), 'EX', 3600); 
+    await RedisClient.client.set(key, JSON.stringify(problem), 'EX', 3600); 
     return problem;
+    }
 }
+
+export default ProblemService;

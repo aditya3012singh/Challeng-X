@@ -1,16 +1,4 @@
-import {
-  createTeamBattleService,
-  createTeamBattleByLeaderService,
-  getAvailableBattlesService,
-  joinBattleWithCodeService,
-  getTeamBattleService,
-  getTeamBattlesService,
-  startTeamBattleService,
-  submitMatchSolutionService,
-  determineMatchWinnerService,
-  completeTeamBattleService,
-  getActiveTeamBattlesService,
-} from "../services/teamBattleNew.service.js";
+import TeamBattleNewService from "../services/teamBattleNew.service.js";
 import { logger } from "../utils/logger.js";
 
 class TeamBattleNewController {
@@ -38,7 +26,7 @@ class TeamBattleNewController {
       });
     }
 
-    const battle = await createTeamBattleByLeaderService(userId, team1Id, maxTeamSize);
+    const battle = await TeamBattleNewService.createTeamBattleByLeaderService(userId, team1Id, maxTeamSize);
 
     res.status(201).json({
       success: true,
@@ -60,7 +48,7 @@ class TeamBattleNewController {
  */
   static async getAvailableBattles(req, res) {
   try {
-    const battles = await getAvailableBattlesService();
+    const battles = await TeamBattleNewService.getAvailableBattlesService();
     res.status(200).json({
       success: true,
       data: battles,
@@ -90,7 +78,7 @@ class TeamBattleNewController {
       });
     }
 
-    const result = await joinBattleWithCodeService(joinCode, userId, team2Id);
+    const result = await TeamBattleNewService.joinBattleWithCodeService(joinCode, userId, team2Id);
 
     res.status(200).json({
       success: true,
@@ -119,7 +107,7 @@ class TeamBattleNewController {
       });
     }
 
-    const teamBattle = await getTeamBattleService(identifier);
+    const teamBattle = await TeamBattleNewService.getTeamBattleService(identifier);
 
     res.status(200).json({
       success: true,
@@ -146,7 +134,7 @@ class TeamBattleNewController {
       });
     }
 
-    const teamBattles = await getTeamBattlesService(teamId);
+    const teamBattles = await TeamBattleNewService.getTeamBattlesService(teamId);
 
     res.status(200).json({
       success: true,
@@ -173,7 +161,7 @@ class TeamBattleNewController {
       });
     }
 
-    const teamBattle = await startTeamBattleService(battleCode);
+    const teamBattle = await TeamBattleNewService.startTeamBattleService(battleCode);
 
     res.status(200).json({
       success: true,
@@ -203,7 +191,7 @@ class TeamBattleNewController {
       });
     }
 
-    const submission = await submitMatchSolutionService(
+    const submission = await TeamBattleNewService.submitMatchSolutionService(
       battleCode,
       matchId,
       userId,
@@ -239,7 +227,7 @@ class TeamBattleNewController {
       });
     }
 
-    const match = await determineMatchWinnerService(matchId, winnerId);
+    const match = await TeamBattleNewService.determineMatchWinnerService(matchId, winnerId);
 
     res.status(200).json({
       success: true,
@@ -267,7 +255,7 @@ class TeamBattleNewController {
       });
     }
 
-    const teamBattle = await completeTeamBattleService(battleCode);
+    const teamBattle = await TeamBattleNewService.completeTeamBattleService(battleCode);
 
     res.status(200).json({
       success: true,
@@ -286,7 +274,7 @@ class TeamBattleNewController {
 // Get active team battles
   static async getActiveTeamBattles(req, res) {
   try {
-    const activeBattles = await getActiveTeamBattlesService();
+    const activeBattles = await TeamBattleNewService.getActiveTeamBattlesService();
 
     res.status(200).json({
       success: true,

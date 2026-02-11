@@ -1,6 +1,6 @@
-import prisma from "../config/db.js";
+import Database from "../config/db.js";
 import { compareOutput } from "../utils/compareOutput.js";
-import { runCode } from "./judge.service.js";
+import JudgeService from "./judge.service.js";
 import { emitToBattle } from "../config/socket.js";
 /**
  * Process a code submission
@@ -11,9 +11,10 @@ import { emitToBattle } from "../config/socket.js";
  * @param {string} params.language
  * @param {string} [params.battleId] - Optional battleId for battle submissions
  */
-export async function processSubmission({ userId, problemId, code, language, battleId }) {
+class SubmissionService {
+  static async processSubmission({ userId, problemId, code, language, battleId }) {
   // Create submission with PENDING status
-  const submission = await prisma.submission.create({
+  const submission = await Database.client.submission.create({
     data: {
       userId,
       problemId,
@@ -23,16 +24,16 @@ export async function processSubmission({ userId, problemId, code, language, bat
     }
   });
 
-  const testcases = await prisma.testCase.findMany({ where: { problemId } });
+  const testcases = await Database.client.testCase.findMany({ where: { problemId } });
   console.log("Testcases fetched:", testcases.length);
 
   let allPassed = true;
 
   for (let tc of testcases) {
-    const result = await runCode(language, code, tc.input);
+    const result = await JudgeService.runCode(language, code, tc.input);
     console.log("Judge result:", result);
     if (result.error) {
-      await prisma.submission.update({
+      await Database.client.submission.update({
         where: { id: submission.id },
         data: { status: "ERROR" }
       });
@@ -50,7 +51,7 @@ export async function processSubmission({ userId, problemId, code, language, bat
 
   const finalStatus = allPassed ? "PASSED" : "FAILED";
 
-  await prisma.submission.update({
+  await Database.client.submission.update({
     where: { id: submission.id },
     data: { status: finalStatus }
   });
@@ -64,4 +65,7 @@ export async function processSubmission({ userId, problemId, code, language, bat
   }
 
   return { status: finalStatus };
+  }
 }
+
+export default SubmissionService;

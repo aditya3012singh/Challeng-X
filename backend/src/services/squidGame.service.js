@@ -1,7 +1,9 @@
 // 🎮 squidGame.service.js - Squid Game Battle Tournament
 
-import prisma from "../config/db.js";
+import Database from "../config/db.js";
 import { DIFFICULTY_PROGRESSION } from "../constants/squidGameConfig.js";
+
+class SquidGameService {
 
 /**
  * Create a new Squid Game tournament
@@ -9,8 +11,8 @@ import { DIFFICULTY_PROGRESSION } from "../constants/squidGameConfig.js";
  * @param {number} maxPlayers - Max players (default 50)
  * @returns {Promise<Object>} Created tournament
  */
-export async function createSquidGameTournament(name, maxPlayers = 50) {
-  const squidGame = await prisma.squidGame.create({
+  static async createSquidGameTournament(name, maxPlayers = 50) {
+  const squidGame = await Database.client.squidGame.create({
     data: {
       name,
       maxPlayers,
@@ -23,7 +25,7 @@ export async function createSquidGameTournament(name, maxPlayers = 50) {
   });
 
   return squidGame;
-}
+  }
 
 /**
  * Join a Squid Game tournament
@@ -31,9 +33,9 @@ export async function createSquidGameTournament(name, maxPlayers = 50) {
  * @param {string} userId - User ID
  * @returns {Promise<Object>} Updated tournament
  */
-export async function joinSquidGameTournament(squidGameId, userId) {
+  static async joinSquidGameTournament(squidGameId, userId) {
   // Check if tournament exists and is in REGISTRATION phase
-  const squidGame = await prisma.squidGame.findUnique({
+  const squidGame = await Database.client.squidGame.findUnique({
     where: { id: squidGameId },
     include: { participants: true }
   });
@@ -51,7 +53,7 @@ export async function joinSquidGameTournament(squidGameId, userId) {
   }
 
   // Check if user already joined
-  const existing = await prisma.squidGameParticipant.findUnique({
+  const existing = await Database.client.squidGameParticipant.findUnique({
     where: {
       squidGameId_userId: {
         squidGameId,
@@ -65,7 +67,7 @@ export async function joinSquidGameTournament(squidGameId, userId) {
   }
 
   // Add user as participant
-  const participant = await prisma.squidGameParticipant.create({
+  const participant = await Database.client.squidGameParticipant.create({
     data: {
       squidGameId,
       userId,
@@ -87,13 +89,13 @@ export async function joinSquidGameTournament(squidGameId, userId) {
     totalPlayers: squidGame.participants.length + 1,
     maxPlayers: squidGame.maxPlayers
   };
-}
+  }
 
 /**
  * Get tournament status
  */
-export async function getSquidGameStatus(squidGameId) {
-  const squidGame = await prisma.squidGame.findUnique({
+  static async getSquidGameStatus(squidGameId) {
+  const squidGame = await Database.client.squidGame.findUnique({
     where: { id: squidGameId },
     include: {
       participants: {
@@ -119,13 +121,13 @@ export async function getSquidGameStatus(squidGameId) {
   }
 
   return squidGame;
-}
+  }
 
 /**
  * Start the Squid Game tournament
  */
-export async function startSquidGameTournament(squidGameId) {
-  const squidGame = await prisma.squidGame.findUnique({
+  static async startSquidGameTournament(squidGameId) {
+  const squidGame = await Database.client.squidGame.findUnique({
     where: { id: squidGameId },
     include: { participants: true }
   });
@@ -143,7 +145,7 @@ export async function startSquidGameTournament(squidGameId) {
   }
 
   // Update status
-  const updated = await prisma.squidGame.update({
+  const updated = await Database.client.squidGame.update({
     where: { id: squidGameId },
     data: {
       status: "ROUND_ACTIVE",
@@ -153,16 +155,16 @@ export async function startSquidGameTournament(squidGameId) {
   });
 
   // Start round 1
-  await startNextRound(squidGameId);
+  await this.startNextRound(squidGameId);
 
   return updated;
-}
+  }
 
 /**
  * Start a new round
  */
-export async function startNextRound(squidGameId) {
-  const squidGame = await prisma.squidGame.findUnique({
+  static async startNextRound(squidGameId) {
+  const squidGame = await Database.client.squidGame.findUnique({
     where: { id: squidGameId },
     include: {
       participants: {
@@ -184,7 +186,7 @@ export async function startNextRound(squidGameId) {
   const difficultyConfig = DIFFICULTY_PROGRESSION[roundNumber - 1];
 
   // Get problem for this round
-  const problem = await prisma.problem.findFirst({
+  const problem = await Database.client.problem.findFirst({
     where: { difficulty: difficultyConfig.difficulty }
   });
 
@@ -193,7 +195,7 @@ export async function startNextRound(squidGameId) {
   }
 
   // Create round record
-  const round = await prisma.squidGameRound.create({
+  const round = await Database.client.squidGameRound.create({
     data: {
       squidGameId,
       roundNumber,
@@ -209,12 +211,12 @@ export async function startNextRound(squidGameId) {
   });
 
   return round;
-}
+  }
 
 /**
  * Submit a solution for Squid Game round
  */
-export async function submitSquidGameSolution(
+  static async submitSquidGameSolution(
   squidGameId,
   userId,
   code,
@@ -225,7 +227,7 @@ export async function submitSquidGameSolution(
   totalTestCases
 ) {
   // Get current round
-  const squidGame = await prisma.squidGame.findUnique({
+  const squidGame = await Database.client.squidGame.findUnique({
     where: { id: squidGameId }
   });
 
@@ -234,7 +236,7 @@ export async function submitSquidGameSolution(
   }
 
   const roundId = (
-    await prisma.squidGameRound.findFirst({
+    await Database.client.squidGameRound.findFirst({
       where: {
         squidGameId,
         roundNumber: squidGame.currentRound
@@ -243,7 +245,7 @@ export async function submitSquidGameSolution(
   ).id;
 
   // Get participant
-  const participant = await prisma.squidGameParticipant.findUnique({
+  const participant = await Database.client.squidGameParticipant.findUnique({
     where: {
       squidGameId_userId: { squidGameId, userId }
     }
@@ -254,7 +256,7 @@ export async function submitSquidGameSolution(
   }
 
   // Calculate score
-  const score = calculateScore(
+  const score = this.calculateScore(
     status,
     executionTimeMs,
     testCasesPassed,
@@ -262,7 +264,7 @@ export async function submitSquidGameSolution(
   );
 
   // Create submission
-  const submission = await prisma.squidGameSubmission.create({
+  const submission = await Database.client.squidGameSubmission.create({
     data: {
       roundId,
       participantId: participant.id,
@@ -281,7 +283,7 @@ export async function submitSquidGameSolution(
   const roundScores = [...(participant.roundScores || []), score];
   const totalScore = roundScores.reduce((a, b) => a + b, 0);
 
-  await prisma.squidGameParticipant.update({
+  await Database.client.squidGameParticipant.update({
     where: { id: participant.id },
     data: {
       roundScores,
@@ -290,14 +292,14 @@ export async function submitSquidGameSolution(
   });
 
   return submission;
-}
+  }
 
 /**
  * End current round and eliminate players
  * Eliminates bottom 50% or specified number
  */
-export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 0.5) {
-  const squidGame = await prisma.squidGame.findUnique({
+  static async endRoundAndEliminate(squidGameId, eliminationPercentage = 0.5) {
+  const squidGame = await Database.client.squidGame.findUnique({
     where: { id: squidGameId },
     include: {
       participants: {
@@ -350,7 +352,7 @@ export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 
     });
 
   // Save leaderboard snapshot
-  await prisma.squidGameLeaderboard.create({
+  await Database.client.squidGameLeaderboard.create({
     data: {
       squidGameId,
       roundNumber: squidGame.currentRound,
@@ -364,7 +366,7 @@ export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 
   // Eliminate bottom players
   const toEliminateIds = leaderboard.slice(-toEliminate).map((p) => p.participantId);
 
-  await prisma.squidGameParticipant.updateMany({
+  await Database.client.squidGameParticipant.updateMany({
     where: {
       id: { in: toEliminateIds }
     },
@@ -376,7 +378,7 @@ export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 
   });
 
   // Update round with elimination count
-  await prisma.squidGameRound.update({
+  await Database.client.squidGameRound.update({
     where: { id: currentRound.id },
     data: {
       playersEliminated: toEliminate,
@@ -391,7 +393,7 @@ export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 
     // Tournament complete
     const winner = leaderboard[0];
 
-    await prisma.squidGame.update({
+    await Database.client.squidGame.update({
       where: { id: squidGameId },
       data: {
         status: "COMPLETED",
@@ -399,7 +401,7 @@ export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 
       }
     });
 
-    await prisma.squidGameParticipant.update({
+    await Database.client.squidGameParticipant.update({
       where: { id: winner.participantId },
       data: {
         status: "WINNER"
@@ -417,7 +419,7 @@ export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 
   }
 
   // Move to next round
-  await prisma.squidGame.update({
+  await Database.client.squidGame.update({
     where: { id: squidGameId },
     data: {
       currentRound: squidGame.currentRound + 1
@@ -425,7 +427,7 @@ export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 
   });
 
   // Start next round
-  await startNextRound(squidGameId);
+  await this.startNextRound(squidGameId);
 
   return {
     roundEnded: true,
@@ -435,20 +437,20 @@ export async function endRoundAndEliminate(squidGameId, eliminationPercentage = 
     nextRound: squidGame.currentRound + 1,
     leaderboard
   };
-}
+  }
 
 /**
  * Get tournament leaderboard
  */
-export async function getSquidGameLeaderboard(squidGameId) {
-  const leaderboards = await prisma.squidGameLeaderboard.findMany({
+  static async getSquidGameLeaderboard(squidGameId) {
+  const leaderboards = await Database.client.squidGameLeaderboard.findMany({
     where: { squidGameId },
     orderBy: { roundNumber: "asc" }
   });
 
   if (leaderboards.length === 0) {
     // No snapshots yet, calculate from current state
-    const participants = await prisma.squidGameParticipant.findMany({
+    const participants = await Database.client.squidGameParticipant.findMany({
       where: { squidGameId },
       include: {
         user: {
@@ -476,12 +478,12 @@ export async function getSquidGameLeaderboard(squidGameId) {
       snapshot: l.playerRankings
     }))
   };
-}
+  }
 
 /**
  * Calculate score for a submission
  */
-function calculateScore(status, executionTimeMs, testCasesPassed, totalTestCases) {
+  static calculateScore(status, executionTimeMs, testCasesPassed, totalTestCases) {
   if (status === "FAILED" || status === "ERROR" || status === "TIMEOUT") {
     return 0;
   }
@@ -504,13 +506,13 @@ function calculateScore(status, executionTimeMs, testCasesPassed, totalTestCases
   }
 
   return 0;
-}
+  }
 
 /**
  * Get user's tournament history
  */
-export async function getUserSquidGameHistory(userId) {
-  const participations = await prisma.squidGameParticipant.findMany({
+  static async getUserSquidGameHistory(userId) {
+  const participations = await Database.client.squidGameParticipant.findMany({
     where: { userId },
     include: {
       squidGame: true
@@ -529,4 +531,7 @@ export async function getUserSquidGameHistory(userId) {
     joinedAt: p.joinedAt,
     eliminatedAt: p.eliminatedAt
   }));
+  }
 }
+
+export default SquidGameService;

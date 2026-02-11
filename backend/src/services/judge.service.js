@@ -23,7 +23,8 @@ import path from "path";
 const TEMP_DIR = path.join(process.cwd(), "temp");
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
-export function runCode(language, code, input) {
+class JudgeService {
+  static runCode(language, code, input) {
   return new Promise((resolve) => {
     const id = Date.now();
     const codePath = path.join(TEMP_DIR, `${id}.py`);
@@ -67,4 +68,7 @@ export function runCode(language, code, input) {
       resolve({ output: output.trim() });
     });
   });
+  }
 }
+
+export default JudgeService;

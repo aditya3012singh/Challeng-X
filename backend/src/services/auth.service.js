@@ -1,4 +1,4 @@
-import prisma from "../config/db.js";
+import Database from "../config/db.js";
 import bcrypt from "bcrypt";
 import {
   generateAccessToken,
@@ -9,9 +9,10 @@ import {
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
 
-export const loginService = async (email, password) => {
+class AuthService {
+  static async loginService(email, password) {
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await Database.client.user.findUnique({ where: { email } });
   if (!user) throw new Error("Invalid credentials");
 
   // 🔒 account locked
@@ -22,7 +23,7 @@ export const loginService = async (email, password) => {
   const isValid = await bcrypt.compare(password, user.password);
 
   if (!isValid) {
-    await prisma.user.update({
+    await Database.client.user.update({
       where: { id: user.id },
       data: {
         failedLoginCount: { increment: 1 },
@@ -36,7 +37,7 @@ export const loginService = async (email, password) => {
   }
 
   // ✅ reset failures
-  await prisma.user.update({
+  await Database.client.user.update({
     where: { id: user.id },
     data: { failedLoginCount: 0, lockUntil: null },
   });
@@ -51,20 +52,19 @@ export const loginService = async (email, password) => {
   // 🔁 token rotation (store hash)
   const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
 
-  await prisma.user.update({
+  await Database.client.user.update({
     where: { id: user.id },
     data: { refreshTokenHash },
   });
 
   return { accessToken, refreshToken, user };
-};
+  }
 
-
-export const registerService = async (email, username, password) => {
+  static async registerService(email, username, password) {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await prisma.user.create({
+    await Database.client.user.create({
       data: {
         email,
         username,
@@ -83,10 +83,9 @@ export const registerService = async (email, username, password) => {
     }
     throw error;
   }
-};
+  }
 
-
-export const refreshTokenService = async (req, res) => {
+  static async refreshTokenService(req, res) {
   const token = req.cookies.refreshToken;
   if (!token) return res.sendStatus(401);
 
@@ -97,7 +96,7 @@ export const refreshTokenService = async (req, res) => {
     return res.sendStatus(401);
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await Database.client.user.findUnique({
     where: { id: payload.id },
   });
 
@@ -113,7 +112,7 @@ export const refreshTokenService = async (req, res) => {
 
   if (!tokenMatches) {
     // 🔥 Token reuse detected
-    await prisma.user.update({
+    await Database.client.user.update({
       where: { id: user.id },
       data: {
         refreshTokenHash: null,
@@ -139,7 +138,7 @@ export const refreshTokenService = async (req, res) => {
 
   const newHash = await bcrypt.hash(newRefreshToken, 10);
 
-  await prisma.user.update({
+  await Database.client.user.update({
     where: { id: user.id },
     data: { refreshTokenHash: newHash },
   });
@@ -150,7 +149,10 @@ export const refreshTokenService = async (req, res) => {
     .cookie("accessToken", newAccessToken, accessCookieOptions)
     .cookie("refreshToken", newRefreshToken, refreshCookieOptions)
     .json({ message: "Token refreshed" });
-};
+  }
+}
+
+export default AuthService;
 
 
 

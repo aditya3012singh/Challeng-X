@@ -2,8 +2,8 @@
 // • Fetch problems
 // • Fetch details
 
-import * as problemService from "../services/problem.service.js";
-import * as testcaseService from "../services/testcase.service.js";
+import ProblemService from "../services/problem.service.js";
+import TestcaseService from "../services/testcase.service.js";
 import { createProblemSchema } from "../validation/createProblem.schema.js";
 
 class ProblemController {
@@ -13,7 +13,7 @@ class ProblemController {
         return res.status(400).json({ errors: validation.error.errors });
     }
     try {
-        const problem=await problemService.createProblemService(validation.data);
+        const problem=await ProblemService.createProblemService(validation.data);
         return  res.status(201).json({ message: "Problem created successfully", problem : problem });
     } catch (error) {
         console.error("Error creating problem:", error);
@@ -23,7 +23,7 @@ class ProblemController {
 
     static async getAllProblems(req, res) {
     try {
-        const problems = await problemService.getAllProblemsService();
+        const problems = await ProblemService.getAllProblemsService();
         return res.status(200).json({message: "Problems fetched successfully", problems : problems });
     } catch (error) {
         console.error("Error fetching problems:", error);
@@ -34,7 +34,7 @@ class ProblemController {
     static async getProblemById(req, res) {
     const { id: problemId } = req.params;
     try {
-        const problem = await problemService.getProblemByIdService(problemId);
+        const problem = await ProblemService.getProblemByIdService(problemId);
         if (!problem) {
             return res.status(404).json({ message: "Problem not found" });
         }

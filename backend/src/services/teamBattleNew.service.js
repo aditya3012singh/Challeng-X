@@ -1,18 +1,19 @@
 
-import prisma from "../config/db.js";
+import Database from "../config/db.js";
 import { generateBattleCode } from "../utils/battleCode.js";
 import { logger } from "../utils/logger.js";
 
-// Generate a unique 6-character join code
-const generateJoinCode = () => {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-};
+class TeamBattleNewService {
+  // Generate a unique 6-character join code
+  static generateJoinCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
 
 // Create a new team battle by Team1 leader (waiting for Team2 to join)
-export const createTeamBattleByLeaderService = async (userId, team1Id, maxTeamSize) => {
+  static async createTeamBattleByLeaderService(userId, team1Id, maxTeamSize) {
   try {
     // Validate team exists and user is the creator (leader)
-    const team1 = await prisma.team.findUnique({
+    const team1 = await Database.client.team.findUnique({
       where: { id: team1Id },
       include: { 
         members: { 
@@ -35,8 +36,8 @@ export const createTeamBattleByLeaderService = async (userId, team1Id, maxTeamSi
     let existingBattle;
     let attempts = 0;
     do {
-      joinCode = generateJoinCode();
-      existingBattle = await prisma.teamBattle.findUnique({
+      joinCode = this.generateJoinCode();
+      existingBattle = await Database.client.teamBattle.findUnique({
         where: { joinCode },
       });
       attempts++;
@@ -50,7 +51,7 @@ export const createTeamBattleByLeaderService = async (userId, team1Id, maxTeamSi
     const battleCode = await generateBattleCode();
 
     // Create the team battle (Team1 auto-joins)
-    const teamBattle = await prisma.teamBattle.create({
+    const teamBattle = await Database.client.teamBattle.create({
       data: {
         battleCode,
         joinCode,
@@ -77,12 +78,12 @@ export const createTeamBattleByLeaderService = async (userId, team1Id, maxTeamSi
     logger.error(`Error creating team battle: ${error.message}`);
     throw error;
   }
-};
+  }
 
 // Get available battles for Team2 to browse and join
-export const getAvailableBattlesService = async () => {
+  static async getAvailableBattlesService() {
   try {
-    const availableBattles = await prisma.teamBattle.findMany({
+    const availableBattles = await Database.client.teamBattle.findMany({
       where: {
         status: "WAITING", // Only battles waiting for Team2
         team2Id: null, // Team2 not yet joined
@@ -112,13 +113,13 @@ export const getAvailableBattlesService = async () => {
     logger.error(`Error fetching available battles: ${error.message}`);
     throw error;
   }
-};
+  }
 
 // Join a battle with join code (Team2 action)
-export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
+  static async joinBattleWithCodeService(joinCode, userId, team2Id) {
   try {
     // Find battle by join code
-    const teamBattle = await prisma.teamBattle.findUnique({
+    const teamBattle = await Database.client.teamBattle.findUnique({
       where: { joinCode },
       include: {
         team1: { include: { members: { include: { user: true } } } },
@@ -140,7 +141,7 @@ export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
     }
 
     // Validate Team2 exists and user is the creator (leader)
-    const team2 = await prisma.team.findUnique({
+    const team2 = await Database.client.team.findUnique({
       where: { id: team2Id },
       include: { 
         members: { 
@@ -159,7 +160,7 @@ export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
     }
 
     // Validate Team2 has required members
-    const allTeam2Members = await prisma.team.findUnique({
+    const allTeam2Members = await Database.client.team.findUnique({
       where: { id: team2Id },
       include: { members: true },
     });
@@ -171,7 +172,7 @@ export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
     }
 
     // Update battle: Team2 joins
-    const updatedBattle = await prisma.teamBattle.update({
+    const updatedBattle = await Database.client.teamBattle.update({
       where: { id: teamBattle.id },
       data: {
         team2Id,
@@ -193,18 +194,18 @@ export const joinBattleWithCodeService = async (joinCode, userId, team2Id) => {
     logger.error(`Error joining battle: ${error.message}`);
     throw error;
   }
-};
+  }
 
 // Create the old tournament-style team battle with individual matches (keeping for reference)
-export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => {
+  static async createTeamBattleService(team1Id, team2Id, maxTeamSize) {
   try {
     // Validate teams exist and have correct size
     const [team1, team2] = await Promise.all([
-      prisma.team.findUnique({
+      Database.client.team.findUnique({
         where: { id: team1Id },
         include: { members: { include: { user: true } } },
       }),
-      prisma.team.findUnique({
+      Database.client.team.findUnique({
         where: { id: team2Id },
         include: { members: { include: { user: true } } },
       }),
@@ -238,7 +239,7 @@ export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => 
     let attempts = 0;
     do {
       battleCode = generateBattleCode();
-      existingBattle = await prisma.teamBattle.findUnique({
+      existingBattle = await Database.client.teamBattle.findUnique({
         where: { battleCode },
       });
       attempts++;
@@ -249,7 +250,7 @@ export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => 
     }
 
     // Create the team battle
-    const teamBattle = await prisma.teamBattle.create({
+    const teamBattle = await Database.client.teamBattle.create({
       data: {
         battleCode,
         team1Id,
@@ -267,7 +268,7 @@ export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => 
       const player1 = team1.members[i];
       const player2 = team2.members[i];
 
-      const match = await prisma.teamBattleMatch.create({
+      const match = await Database.client.teamBattleMatch.create({
         data: {
           teamBattleId: teamBattle.id,
           player1Id: player1.userId,
@@ -285,7 +286,7 @@ export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => 
       matches.push(match);
     }
 
-    const battleWithMatches = await prisma.teamBattle.findUnique({
+    const battleWithMatches = await Database.client.teamBattle.findUnique({
       where: { id: teamBattle.id },
       include: {
         team1: { include: { members: { include: { user: true } } } },
@@ -306,13 +307,13 @@ export const createTeamBattleService = async (team1Id, team2Id, maxTeamSize) => 
     logger.error("Error creating team battle:", error);
     throw error;
   }
-};
+  }
 
 // Get team battle by battle code or ID
-export const getTeamBattleService = async (identifier) => {
+  static async getTeamBattleService(identifier) {
   try {
     // Try to find by ID first, then by battleCode
-    const teamBattle = await prisma.teamBattle.findFirst({
+    const teamBattle = await Database.client.teamBattle.findFirst({
       where: {
         OR: [
           { id: identifier },
@@ -343,12 +344,12 @@ export const getTeamBattleService = async (identifier) => {
     logger.error("Error fetching team battle:", error);
     throw error;
   }
-};
+  }
 
 // Get team battles for a team
-export const getTeamBattlesService = async (teamId) => {
+  static async getTeamBattlesService(teamId) {
   try {
-    const teamBattles = await prisma.teamBattle.findMany({
+    const teamBattles = await Database.client.teamBattle.findMany({
       where: {
         OR: [{ team1Id: teamId }, { team2Id: teamId }],
       },
@@ -371,13 +372,13 @@ export const getTeamBattlesService = async (teamId) => {
     logger.error("Error fetching team battles:", error);
     throw error;
   }
-};
+  }
 
 // Start team battle
-export const startTeamBattleService = async (battleCode) => {
+  static async startTeamBattleService(battleCode) {
   try {
     // Update main battle status
-    const teamBattle = await prisma.teamBattle.update({
+    const teamBattle = await Database.client.teamBattle.update({
       where: { battleCode },
       data: {
         status: "ONGOING",
@@ -386,7 +387,7 @@ export const startTeamBattleService = async (battleCode) => {
     });
 
     // Update all matches to started
-    await prisma.teamBattleMatch.updateMany({
+    await Database.client.teamBattleMatch.updateMany({
       where: { teamBattleId: teamBattle.id },
       data: {
         status: "ONGOING",
@@ -394,26 +395,26 @@ export const startTeamBattleService = async (battleCode) => {
       },
     });
 
-    const updatedBattle = await getTeamBattleService(battleCode);
+    const updatedBattle = await this.getTeamBattleService(battleCode);
     logger.info(`Team battle started: ${battleCode}`);
     return updatedBattle;
   } catch (error) {
     logger.error("Error starting team battle:", error);
     throw error;
   }
-};
+  }
 
 // Submit solution for individual match
-export const submitMatchSolutionService = async (
+  static async submitMatchSolutionService(
   battleCode,
   matchId,
   userId,
   code,
   language,
   output
-) => {
+) {
   try {
-    const teamBattle = await prisma.teamBattle.findUnique({
+    const teamBattle = await Database.client.teamBattle.findUnique({
       where: { battleCode },
       include: { matches: true },
     });
@@ -422,7 +423,7 @@ export const submitMatchSolutionService = async (
       throw new Error("Team battle not found");
     }
 
-    const match = await prisma.teamBattleMatch.findUnique({
+    const match = await Database.client.teamBattleMatch.findUnique({
       where: { id: matchId },
       include: { player1: true, player2: true, problem: true },
     });
@@ -446,7 +447,7 @@ export const submitMatchSolutionService = async (
     }
 
     // Update match with submission
-    const updatedMatch = await prisma.teamBattleMatch.update({
+    const updatedMatch = await Database.client.teamBattleMatch.update({
       where: { id: matchId },
       data: {
         ...(isPlayer1
@@ -461,7 +462,7 @@ export const submitMatchSolutionService = async (
     });
 
     // Record submission for history
-    await prisma.teamBattleSubmission.create({
+    await Database.client.teamBattleSubmission.create({
       data: {
         teamBattleId: teamBattle.id,
         submittedById: userId,
@@ -478,12 +479,12 @@ export const submitMatchSolutionService = async (
     logger.error("Error submitting match solution:", error);
     throw error;
   }
-};
+  }
 
 // Determine match winner (both submitted, compare who finished first or output correctness)
-export const determineMatchWinnerService = async (matchId, winnerId) => {
+  static async determineMatchWinnerService(matchId, winnerId) {
   try {
-    const match = await prisma.teamBattleMatch.update({
+    const match = await Database.client.teamBattleMatch.update({
       where: { id: matchId },
       data: {
         winnerId,
@@ -508,14 +509,14 @@ export const determineMatchWinnerService = async (matchId, winnerId) => {
       match.teamBattle.team1.members?.some((m) => m.userId === winnerId);
 
     if (isTeam1Winner) {
-      await prisma.teamBattle.update({
+      await Database.client.teamBattle.update({
         where: { id: match.teamBattleId },
         data: {
           team1Wins: { increment: 1 },
         },
       });
     } else {
-      await prisma.teamBattle.update({
+      await Database.client.teamBattle.update({
         where: { id: match.teamBattleId },
         data: {
           team2Wins: { increment: 1 },
@@ -529,12 +530,12 @@ export const determineMatchWinnerService = async (matchId, winnerId) => {
     logger.error("Error determining match winner:", error);
     throw error;
   }
-};
+  }
 
 // Complete team battle (check if all matches are done and determine overall winner)
-export const completeTeamBattleService = async (battleCode) => {
+  static async completeTeamBattleService(battleCode) {
   try {
-    const teamBattle = await prisma.teamBattle.findUnique({
+    const teamBattle = await Database.client.teamBattle.findUnique({
       where: { battleCode },
       include: {
         matches: true,
@@ -565,7 +566,7 @@ export const completeTeamBattleService = async (battleCode) => {
     }
 
     // Update battle status
-    const completedBattle = await prisma.teamBattle.update({
+    const completedBattle = await Database.client.teamBattle.update({
       where: { battleCode },
       data: {
         status: "FINISHED",
@@ -590,7 +591,7 @@ export const completeTeamBattleService = async (battleCode) => {
 
     const pointsPerMember = 20;
     for (const member of winningTeam.members) {
-      await prisma.user.update({
+      await Database.client.user.update({
         where: { id: member.userId },
         data: {
           rankPoints: { increment: pointsPerMember },
@@ -601,7 +602,7 @@ export const completeTeamBattleService = async (battleCode) => {
 
     const deductPerMember = 5;
     for (const member of losingTeam.members) {
-      await prisma.user.update({
+      await Database.client.user.update({
         where: { id: member.userId },
         data: {
           rankPoints: { decrement: deductPerMember },
@@ -616,12 +617,12 @@ export const completeTeamBattleService = async (battleCode) => {
     logger.error("Error completing team battle:", error);
     throw error;
   }
-};
+  }
 
 // Get active team battles
-export const getActiveTeamBattlesService = async () => {
+  static async getActiveTeamBattlesService() {
   try {
-    const activeBattles = await prisma.teamBattle.findMany({
+    const activeBattles = await Database.client.teamBattle.findMany({
       where: {
         status: {
           in: ["WAITING", "ONGOING"],
@@ -646,11 +647,11 @@ export const getActiveTeamBattlesService = async () => {
     logger.error("Error fetching active team battles:", error);
     throw error;
   }
-};
+  }
 // Get battle details by ID (for new join-code flow)
-export const getBattleDetailsService = async (battleId) => {
+  static async getBattleDetailsService(battleId) {
   try {
-    const battle = await prisma.teamBattle.findUnique({
+    const battle = await Database.client.teamBattle.findUnique({
       where: { id: battleId },
       include: {
         team1: { include: { members: { include: { user: true } } } },
@@ -675,12 +676,12 @@ export const getBattleDetailsService = async (battleId) => {
     logger.error(`Error fetching battle details: ${error.message}`);
     throw error;
   }
-};
+  }
 
 // Cancel a battle (only by creator before Team2 joins)
-export const cancelBattleService = async (battleId, userId) => {
+  static async cancelBattleService(battleId, userId) {
   try {
-    const battle = await prisma.teamBattle.findUnique({
+    const battle = await Database.client.teamBattle.findUnique({
       where: { id: battleId },
     });
 
@@ -696,7 +697,7 @@ export const cancelBattleService = async (battleId, userId) => {
       throw new Error("Cannot cancel battle once Team2 has joined");
     }
 
-    const cancelledBattle = await prisma.teamBattle.delete({
+    const cancelledBattle = await Database.client.teamBattle.delete({
       where: { id: battleId },
     });
 
@@ -709,4 +710,7 @@ export const cancelBattleService = async (battleId, userId) => {
     logger.error(`Error cancelling battle: ${error.message}`);
     throw error;
   }
-};
+  }
+}
+
+export default TeamBattleNewService;

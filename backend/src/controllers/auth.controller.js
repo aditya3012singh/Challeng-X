@@ -2,10 +2,10 @@
 // • Login user
 // • Issue JWT
 
-import { loginService, registerService, refreshTokenService } from "../services/auth.service.js";
+import AuthService from "../services/auth.service.js";
 import { accessCookieOptions, refreshCookieOptions } from "../utils/cookies.js";
 import { loginSchema, registerSchema } from "../validation/auth.schema.js";
-import prisma from "../config/db.js";
+import Database from "../config/db.js";
 
 class AuthController {
     static async login(req, res) {
@@ -19,7 +19,7 @@ class AuthController {
     }
     const { email, password } = validationResult.data;
     try {
-        const { accessToken, refreshToken, user } = await loginService(email, password);
+        const { accessToken, refreshToken, user } = await AuthService.loginService(email, password);
         
         res
             .cookie("accessToken", accessToken, accessCookieOptions)
@@ -51,7 +51,7 @@ class AuthController {
     const { email, username, password } = CheckSchema.data;
 
     try {
-        const result= await registerService(email, username, password);
+        const result= await AuthService.registerService(email, username, password);
         res.status(201).json(result);
     } catch (error) {
         res.status(error.status || 500).json({
@@ -66,7 +66,7 @@ class AuthController {
         
         // Clear refresh token from database
         if (userId) {
-            await prisma.user.update({
+            await Database.client.user.update({
                 where: { id: userId },
                 data: { refreshTokenHash: null }
             });
@@ -86,7 +86,7 @@ class AuthController {
     try {
         const userId = req.user.id;
         
-        const user = await prisma.user.findUnique({
+        const user = await Database.client.user.findUnique({
             where: { id: userId },
             select: {
                 id: true,
@@ -112,7 +112,7 @@ class AuthController {
 
     static async refreshToken(req, res) {
     try {
-        await refreshTokenService(req, res);
+        await AuthService.refreshTokenService(req, res);
     } catch (error) {
         res.status(500).json({ message: "Token refresh failed" });
     }
@@ -122,7 +122,7 @@ class AuthController {
     try {
         const { userId } = req.params;
         
-        const user = await prisma.user.findUnique({
+        const user = await Database.client.user.findUnique({
             where: { id: userId },
             select: {
                 id: true,

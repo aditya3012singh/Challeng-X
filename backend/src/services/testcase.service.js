@@ -1,12 +1,14 @@
 // Manages:
 
-import prisma from "../config/db.js";
+import RedisClient from "../cache/redis.client.js";
+import Database from "../config/db.js";
 
 // • Fetch testcases
 // • Generate random ones (later)
 
-export async function addTestcaseService(problemId, testcases) {
-    const testCase = await prisma.testCase.createMany({
+class TestcaseService {
+    static async addTestcaseService(problemId, testcases) {
+    const testCase = await Database.client.testCase.createMany({
         data: testcases.map(tc => ({
             problemId: problemId,
             input: tc.input,
@@ -15,7 +17,10 @@ export async function addTestcaseService(problemId, testcases) {
         }))
     });
 
-    await redis.del(`problem:${problemId}`);
+    await RedisClient.client.del(`problem:${problemId}`);
 
     return testCase;
+    }
 }
+
+export default TestcaseService;
