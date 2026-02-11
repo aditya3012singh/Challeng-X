@@ -1,5 +1,5 @@
 import TeamBattleNewService from "../services/teamBattleNew.service.js";
-import { logger } from "../utils/logger.js";
+import Logger from "../utils/logger.js";
 
 class TeamBattleNewController {
 
@@ -34,7 +34,7 @@ class TeamBattleNewController {
       data: battle,
     });
   } catch (error) {
-    logger.error("Error creating team battle:", error);
+    Logger.error("Error creating team battle:", error);
     res.status(400).json({
       success: false,
       message: error?.message || "Failed to create team battle",
@@ -54,7 +54,7 @@ class TeamBattleNewController {
       data: battles,
     });
   } catch (error) {
-    logger.error("Error fetching available battles:", error);
+    Logger.error("Error fetching available battles:", error);
     res.status(500).json({
       success: false,
       message: error?.message || "Failed to fetch available battles",
@@ -86,7 +86,7 @@ class TeamBattleNewController {
       data: result,
     });
   } catch (error) {
-    logger.error("Error joining team battle:", error);
+    Logger.error("Error joining team battle:", error);
     res.status(400).json({
       success: false,
       message: error?.message || "Failed to join team battle",
@@ -114,7 +114,7 @@ class TeamBattleNewController {
       data: teamBattle,
     });
   } catch (error) {
-    logger.error("Error fetching team battle:", error);
+    Logger.error("Error fetching team battle:", error);
     res.status(500).json({
       success: false,
       message: error?.message || "Failed to fetch team battle",
@@ -141,7 +141,7 @@ class TeamBattleNewController {
       data: teamBattles,
     });
   } catch (error) {
-    logger.error("Error fetching team battles:", error);
+    Logger.error("Error fetching team battles:", error);
     res.status(500).json({
       success: false,
       message: error?.message || "Failed to fetch team battles",
@@ -169,7 +169,7 @@ class TeamBattleNewController {
       data: teamBattle,
     });
   } catch (error) {
-    logger.error("Error starting team battle:", error);
+    Logger.error("Error starting team battle:", error);
     res.status(500).json({
       success: false,
       message: error?.message || "Failed to start team battle",
@@ -206,7 +206,7 @@ class TeamBattleNewController {
       data: submission,
     });
   } catch (error) {
-    logger.error("Error submitting match solution:", error);
+    Logger.error("Error submitting match solution:", error);
     res.status(500).json({
       success: false,
       message: error?.message || "Failed to submit solution",
@@ -235,7 +235,7 @@ class TeamBattleNewController {
       data: match,
     });
   } catch (error) {
-    logger.error("Error determining match winner:", error);
+    Logger.error("Error determining match winner:", error);
     res.status(500).json({
       success: false,
       message: error?.message || "Failed to determine match winner",
@@ -263,7 +263,7 @@ class TeamBattleNewController {
       data: teamBattle,
     });
   } catch (error) {
-    logger.error("Error completing team battle:", error);
+    Logger.error("Error completing team battle:", error);
     res.status(500).json({
       success: false,
       message: error?.message || "Failed to complete team battle",
@@ -281,7 +281,7 @@ class TeamBattleNewController {
       data: activeBattles,
     });
   } catch (error) {
-    logger.error("Error fetching active team battles:", error);
+    Logger.error("Error fetching active team battles:", error);
     res.status(500).json({
       success: false,
       message: error?.message || "Failed to fetch active battles",

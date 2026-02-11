@@ -1,7 +1,7 @@
 
 import Database from "../config/db.js";
 import BattleCode from "../utils/battleCode.js";
-import { logger } from "../utils/logger.js";
+import Logger from "../utils/logger.js";
 
 class TeamBattleNewService {
   // Generate a unique 6-character join code
@@ -62,7 +62,7 @@ class TeamBattleNewService {
       },
     });
 
-    logger.info(`Team battle created by user ${userId}: ${teamBattle.id}`);
+    Logger.info(`Team battle created by user ${userId}: ${teamBattle.id}`);
 
     return {
       id: teamBattle.id,
@@ -75,7 +75,7 @@ class TeamBattleNewService {
       message: "Battle created! Share this code with Team2: " + joinCode,
     };
   } catch (error) {
-    logger.error(`Error creating team battle: ${error.message}`);
+    Logger.error(`Error creating team battle: ${error.message}`);
     throw error;
   }
   }
@@ -110,7 +110,7 @@ class TeamBattleNewService {
       createdAt: battle.createdAt,
     }));
   } catch (error) {
-    logger.error(`Error fetching available battles: ${error.message}`);
+    Logger.error(`Error fetching available battles: ${error.message}`);
     throw error;
   }
   }
@@ -181,7 +181,7 @@ class TeamBattleNewService {
       },
     });
 
-    logger.info(`User ${userId} joined battle ${teamBattle.id} with Team2 ${team2Id}`);
+    Logger.info(`User ${userId} joined battle ${teamBattle.id} with Team2 ${team2Id}`);
 
     return {
       id: updatedBattle.id,
@@ -191,7 +191,7 @@ class TeamBattleNewService {
       team2,
     };
   } catch (error) {
-    logger.error(`Error joining battle: ${error.message}`);
+    Logger.error(`Error joining battle: ${error.message}`);
     throw error;
   }
   }
@@ -301,10 +301,10 @@ class TeamBattleNewService {
       },
     });
 
-    logger.info(`Tournament team battle created: ${teamBattle.battleCode} with ${maxTeamSize} matches`);
+    Logger.info(`Tournament team battle created: ${teamBattle.battleCode} with ${maxTeamSize} matches`);
     return battleWithMatches;
   } catch (error) {
-    logger.error("Error creating team battle:", error);
+    Logger.error("Error creating team battle:", error);
     throw error;
   }
   }
@@ -341,7 +341,7 @@ class TeamBattleNewService {
 
     return teamBattle;
   } catch (error) {
-    logger.error("Error fetching team battle:", error);
+    Logger.error("Error fetching team battle:", error);
     throw error;
   }
   }
@@ -369,7 +369,7 @@ class TeamBattleNewService {
 
     return teamBattles;
   } catch (error) {
-    logger.error("Error fetching team battles:", error);
+    Logger.error("Error fetching team battles:", error);
     throw error;
   }
   }
@@ -396,10 +396,10 @@ class TeamBattleNewService {
     });
 
     const updatedBattle = await this.getTeamBattleService(battleCode);
-    logger.info(`Team battle started: ${battleCode}`);
+    Logger.info(`Team battle started: ${battleCode}`);
     return updatedBattle;
   } catch (error) {
-    logger.error("Error starting team battle:", error);
+    Logger.error("Error starting team battle:", error);
     throw error;
   }
   }
@@ -473,10 +473,10 @@ class TeamBattleNewService {
       },
     });
 
-    logger.info(`Solution submitted for match ${matchId} by user ${userId}`);
+    Logger.info(`Solution submitted for match ${matchId} by user ${userId}`);
     return updatedMatch;
   } catch (error) {
-    logger.error("Error submitting match solution:", error);
+    Logger.error("Error submitting match solution:", error);
     throw error;
   }
   }
@@ -524,10 +524,10 @@ class TeamBattleNewService {
       });
     }
 
-    logger.info(`Match ${matchId} won by user ${winnerId}`);
+    Logger.info(`Match ${matchId} won by user ${winnerId}`);
     return match;
   } catch (error) {
-    logger.error("Error determining match winner:", error);
+    Logger.error("Error determining match winner:", error);
     throw error;
   }
   }
@@ -611,10 +611,10 @@ class TeamBattleNewService {
       });
     }
 
-    logger.info(`Team battle completed: ${battleCode}, Winner: Team ${winnerTeamId}`);
+    Logger.info(`Team battle completed: ${battleCode}, Winner: Team ${winnerTeamId}`);
     return completedBattle;
   } catch (error) {
-    logger.error("Error completing team battle:", error);
+    Logger.error("Error completing team battle:", error);
     throw error;
   }
   }
@@ -644,7 +644,7 @@ class TeamBattleNewService {
 
     return activeBattles;
   } catch (error) {
-    logger.error("Error fetching active team battles:", error);
+    Logger.error("Error fetching active team battles:", error);
     throw error;
   }
   }
@@ -673,7 +673,7 @@ class TeamBattleNewService {
 
     return battle;
   } catch (error) {
-    logger.error(`Error fetching battle details: ${error.message}`);
+    Logger.error(`Error fetching battle details: ${error.message}`);
     throw error;
   }
   }
@@ -701,13 +701,13 @@ class TeamBattleNewService {
       where: { id: battleId },
     });
 
-    logger.info(`Battle ${battleId} cancelled by user ${userId}`);
+    Logger.info(`Battle ${battleId} cancelled by user ${userId}`);
     return {
       success: true,
       message: "Battle cancelled successfully",
     };
   } catch (error) {
-    logger.error(`Error cancelling battle: ${error.message}`);
+    Logger.error(`Error cancelling battle: ${error.message}`);
     throw error;
   }
   }
