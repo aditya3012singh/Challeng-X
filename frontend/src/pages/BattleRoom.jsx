@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getBattleById } from "../../store/api/teamBattle.thunk";
+import { TeamChat } from "../components/TeamChat";
 
 export const BattleRoom = () => {
   const { battleId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  
+
   const [battleData, setBattleData] = useState(null);
   const [countdown, setCountdown] = useState(null);
   const [isStarting, setIsStarting] = useState(false);
@@ -35,19 +36,15 @@ export const BattleRoom = () => {
     }
   }, [battleId, dispatch, navigate]);
 
-  // Listen for Team2 joining (Socket.IO or polling)
+  // Listen for Team2 joining (polling for now)
   useEffect(() => {
     if (!battleData || battleData.team2) return;
 
-    // Poll for updates every 3 seconds if Team2 hasn't joined
     const interval = setInterval(async () => {
       try {
         const result = await dispatch(getBattleById(battleId)).unwrap();
         if (result.team2 && !battleData.team2) {
           setBattleData(result);
-          // Optionally auto-start countdown when Team2 joins
-          // setIsStarting(true);
-          // setCountdown(5);
         }
       } catch (error) {
         console.error("Error polling battle:", error);
@@ -64,7 +61,6 @@ export const BattleRoom = () => {
     const timer = setTimeout(() => {
       setCountdown(countdown - 1);
       if (countdown === 1) {
-        // Navigate to IDE when countdown reaches 0
         startBattle();
       }
     }, 1000);
@@ -78,22 +74,20 @@ export const BattleRoom = () => {
   };
 
   const startBattle = () => {
-    // Navigate each member to their IDE with their opponent
-    // For now, navigate to a general battle IDE
     navigate(`/battle/${battleData.battleCode}/ide`);
   };
 
   const copyJoinCode = () => {
     navigator.clipboard.writeText(battleData?.joinCode || "");
-    alert("Join code copied to clipboard!");
+    // Could add a toast here
   };
 
   if (!battleData || loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-dark)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-xl">Loading battle room...</p>
+          <div className="w-16 h-16 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[var(--color-primary)] font-mono animate-pulse">ESTABLISHING LINK...</p>
         </div>
       </div>
     );
@@ -101,169 +95,153 @@ export const BattleRoom = () => {
 
   const isTeam1 = battleData.team1.members.some(m => m.id === user?.id);
   const isTeam2 = battleData.team2?.members.some(m => m.id === user?.id);
+  const userTeam = isTeam1 ? battleData.team1 : (isTeam2 ? battleData.team2 : null);
   const bothTeamsReady = battleData.team1 && battleData.team2;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-white overflow-hidden relative">
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 py-6">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold text-center mb-2">
-            ⚔️ Battle Room
-          </h1>
-          <div className="text-center text-gray-400">
-            <p className="text-sm">Battle Code: <span className="text-blue-400 font-mono">{battleData.battleCode}</span></p>
+      <div className="relative z-10 bg-[rgba(0,0,0,0.8)] border-b border-gray-800 p-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-[family:var(--font-heading)] text-white tracking-wider flex items-center gap-2">
+              <span className="text-[var(--color-primary)]">///</span> BATTLE ROOM
+            </h1>
+            <p className="text-xs text-gray-500 font-mono mt-1">
+              PROTOCOL: <span className="text-[var(--color-primary)]">{battleData.battleCode}</span>
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <button
+              onClick={() => navigate('/team-battle')}
+              className="px-4 py-2 text-sm border border-red-900 text-red-500 hover:bg-red-900/20 transition-colors uppercase"
+            >
+              Abort
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        
-        {/* Join Code Section (Only show if Team2 hasn't joined) */}
-        {!bothTeamsReady && isTeam1 && (
-          <div className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-center">
-            <h2 className="text-2xl font-bold mb-3">🔗 Waiting for Team 2</h2>
-            <p className="mb-4 text-lg">Share this code with the opposing team:</p>
-            <div className="flex items-center justify-center gap-4">
-              <div className="bg-white text-gray-900 px-8 py-4 rounded-lg text-3xl font-mono font-bold tracking-wider">
-                {battleData.joinCode}
-              </div>
-              <button
-                onClick={copyJoinCode}
-                className="px-6 py-3 bg-green-500 hover:bg-green-600 rounded-lg font-semibold transition-all"
-              >
-                📋 Copy Code
-              </button>
-            </div>
-          </div>
-        )}
+      <div className="max-w-7xl mx-auto p-4 md:p-8 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-100px)]">
 
-        {/* Countdown Section */}
-        {bothTeamsReady && countdown !== null && (
-          <div className="mb-8 bg-gradient-to-r from-red-600 to-orange-600 rounded-lg p-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Battle Starting In...</h2>
-            <div className="text-9xl font-bold animate-pulse">
-              {countdown}
-            </div>
-          </div>
-        )}
-
-        {/* Ready Button (show when both teams are ready but countdown hasn't started) */}
-        {bothTeamsReady && countdown === null && !isStarting && (
-          <div className="mb-8 text-center">
-            <button
-              onClick={startCountdown}
-              className="px-12 py-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg text-2xl font-bold transition-all shadow-lg transform hover:scale-105"
-            >
-              🚀 START BATTLE
-            </button>
-          </div>
-        )}
-
-        {/* Teams Display - Split View */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* Team 1 - Left Side */}
-          <div className={`bg-gray-800 rounded-lg p-6 border-2 ${isTeam1 ? 'border-blue-500' : 'border-gray-700'}`}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-blue-400">
-                🛡️ {battleData.team1.name}
-              </h2>
-              {isTeam1 && (
-                <span className="px-3 py-1 bg-blue-600 rounded-full text-sm font-semibold">
-                  YOUR TEAM
-                </span>
-              )}
-            </div>
-            
+        {/* LEFT COLUMN - TEAM 1 */}
+        <div className="lg:col-span-3 flex flex-col gap-4">
+          <div className={`glass-panel p-4 rounded-lg flex-1 border-t-4 ${isTeam1 ? 'border-[var(--color-primary)]' : 'border-gray-700'}`}>
+            <h2 className="text-xl font-bold mb-4 text-[var(--color-primary)] flex justify-between items-center">
+              {battleData.team1.name}
+              {isTeam1 && <span className="text-[10px] bg-[var(--color-primary)] text-black px-2 py-0.5 rounded">YOU</span>}
+            </h2>
             <div className="space-y-3">
-              {battleData.team1.members.map((member, index) => (
-                <div
-                  key={member.id}
-                  className="bg-gray-700 rounded-lg p-4 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-bold">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-semibold">{member.username}</p>
-                      <p className="text-sm text-gray-400">{member.email}</p>
-                    </div>
+              {battleData.team1.members.map((member, i) => (
+                <div key={member.id} className="flex items-center gap-3 p-2 bg-[rgba(255,255,255,0.03)] rounded border-l-2 border-[var(--color-primary)]">
+                  <div className="w-8 h-8 bg-[var(--color-primary)] text-black font-bold flex items-center justify-center rounded-sm">
+                    {member.username[0].toUpperCase()}
                   </div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-semibold truncate">{member.username}</p>
+                    <p className="text-[10px] text-gray-500">READY</p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
+        </div>
 
-          {/* Team 2 - Right Side */}
-          <div className={`bg-gray-800 rounded-lg p-6 border-2 ${isTeam2 ? 'border-red-500' : 'border-gray-700'}`}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-red-400">
-                ⚔️ {battleData.team2?.name || "Waiting..."}
-              </h2>
-              {isTeam2 && (
-                <span className="px-3 py-1 bg-red-600 rounded-full text-sm font-semibold">
-                  YOUR TEAM
-                </span>
-              )}
-            </div>
+        {/* MIDDLE COLUMN - ACTION / CHAT */}
+        <div className="lg:col-span-6 flex flex-col gap-4">
+
+          {/* Status / Countdown Board */}
+          <div className="glass-panel p-6 rounded-lg text-center relative overflow-hidden border-glow">
+            {!bothTeamsReady ? (
+              <div className="py-8">
+                {isTeam1 ? (
+                  <>
+                    <h3 className="text-2xl font-bold text-gray-400 mb-4 animate-pulse">AWAITING CHALLENGER</h3>
+                    <div className="inline-block p-4 border border-dashed border-gray-600 rounded bg-black/50 mb-4">
+                      <span className="text-2xl font-mono tracking-widest text-[var(--color-primary)]">{battleData.joinCode}</span>
+                    </div>
+                    <button onClick={copyJoinCode} className="block mx-auto text-sm text-[var(--color-primary)] hover:underline">
+                      [ COPY ACCESS CODE ]
+                    </button>
+                  </>
+                ) : (
+                  <h3 className="text-xl font-bold text-gray-400 animate-pulse">CONNECTING TO LOBBY...</h3>
+                )}
+              </div>
+            ) : (
+              <div className="py-4">
+                {countdown !== null ? (
+                  <div>
+                    <p className="text-[var(--color-accent)] font-bold tracking-widest mb-2">IMMIMENT DEPLOYMENT</p>
+                    <div className="text-8xl font-black text-white font-mono countdown-glitch">{countdown}</div>
+                  </div>
+                ) : (
+                  <div>
+                    <h3 className="text-2xl font-bold text-[var(--color-success)] mb-2">SYSTEMS READY</h3>
+                    <p className="text-gray-400 mb-6">All operators online. Initialize combat sequence.</p>
+                    {!isStarting && (
+                      <button
+                        onClick={startCountdown}
+                        className="px-12 py-4 bg-[var(--color-success)] text-black font-bold text-xl rounded clip-path-polygon hover:scale-105 transition-transform"
+                        style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
+                      >
+                        INITIATE
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* TEAM CHAT */}
+          <div className="flex-1 min-h-[300px]">
+            {userTeam ? (
+              <TeamChat teamName={userTeam.name} isOwnTeam={true} />
+            ) : (
+              <div className="h-full flex items-center justify-center glass-panel border border-gray-800 text-gray-500">
+                Spectator Mode - Chat Disabled
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN - TEAM 2 */}
+        <div className="lg:col-span-3 flex flex-col gap-4">
+          <div className={`glass-panel p-4 rounded-lg flex-1 border-t-4 ${isTeam2 ? 'border-[var(--color-secondary)]' : 'border-gray-700'}`}>
+            <h2 className="text-xl font-bold mb-4 text-[var(--color-secondary)] flex justify-between items-center text-right">
+              {battleData.team2 ? battleData.team2.name : "OPPONENT"}
+              {isTeam2 && <span className="text-[10px] bg-[var(--color-secondary)] text-white px-2 py-0.5 rounded">YOU</span>}
+            </h2>
 
             {battleData.team2 ? (
               <div className="space-y-3">
-                {battleData.team2.members.map((member, index) => (
-                  <div
-                    key={member.id}
-                    className="bg-gray-700 rounded-lg p-4 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center font-bold">
-                        {index + 1}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{member.username}</p>
-                        <p className="text-sm text-gray-400">{member.email}</p>
-                      </div>
+                {battleData.team2.members.map((member, i) => (
+                  <div key={member.id} className="flex flex-row-reverse items-center gap-3 p-2 bg-[rgba(255,255,255,0.03)] rounded border-r-2 border-[var(--color-secondary)] text-right">
+                    <div className="w-8 h-8 bg-[var(--color-secondary)] text-white font-bold flex items-center justify-center rounded-sm">
+                      {member.username[0].toUpperCase()}
                     </div>
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-semibold truncate">{member.username}</p>
+                      <p className="text-[10px] text-gray-500">READY</p>
+                    </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full min-h-[200px]">
-                <div className="text-center text-gray-500">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-500 mx-auto mb-4"></div>
-                  <p className="text-lg">Waiting for Team 2 to join...</p>
+              <div className="h-full flex items-center justify-center opacity-30">
+                <div className="text-center">
+                  <div className="text-4xl mb-2">?</div>
+                  <p>SEARCHING...</p>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Match-ups Info (Show when both teams ready) */}
-        {bothTeamsReady && (
-          <div className="mt-8 bg-gray-800 rounded-lg p-6">
-            <h3 className="text-xl font-bold mb-4 text-center">📊 Match-ups</h3>
-            <div className="space-y-3">
-              {battleData.team1.members.map((member1, index) => {
-                const member2 = battleData.team2?.members[index];
-                return (
-                  <div key={index} className="bg-gray-700 rounded-lg p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-blue-400 font-semibold">{member1.username}</span>
-                    </div>
-                    <div className="text-yellow-400 font-bold text-xl">VS</div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-red-400 font-semibold">{member2?.username || "TBD"}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

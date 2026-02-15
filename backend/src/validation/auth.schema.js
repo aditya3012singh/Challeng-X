@@ -18,7 +18,7 @@ class AuthSchema {
             .min(1, "Email is required")
             .email("Invalid email format"),
         username: z
-            .string()
+            .string() 
             .min(3, "Username must be at least 3 characters long")
             .max(30, "Username must be at most 30 characters long"),
         password: z
