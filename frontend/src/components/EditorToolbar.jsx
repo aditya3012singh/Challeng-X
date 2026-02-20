@@ -6,14 +6,16 @@ export default function EditorToolbar({
 }) {
   return (
     <div className="h-12 bg-black/20 border-b border-slate-700 flex items-center px-4 gap-4">
+
       <select
         value={language}
         onChange={(e) => onLanguageChange(e.target.value)}
         className="bg-slate-800 text-slate-200 px-3 py-1 rounded"
       >
-        <option value="javascript">JavaScript</option>
-        <option value="java">Java</option>
-        <option value="python">Python</option>
+        <option value="python">Python 3</option>
+        <option value="js">JavaScript (Node.js)</option>
+        <option value="c">C (GCC)</option>
+        <option value="cpp">C++ (G++)</option>
       </select>
 
       <button

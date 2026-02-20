@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSubmission } from "../hooks/useSubmission";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getSocket } from "../../lib/socket";
@@ -9,19 +10,14 @@ import OutputPanel from "../components/OutputPanel";
 import { Skeleton } from "../components/Skeleton";
 
 import { getBattle, submitBattleCode } from "../../store/api/battle.thunk";
+import { submitCode, getSubmissionStatus } from "../../store/api/submission.thunk";
 import { BattleProblem } from "../components/BattleProblem";
 
 const LANGUAGES = {
-  javascript: { monaco: "javascript", defaultCode: `console.log("Hello");` },
   python: { monaco: "python", defaultCode: `print("Hello")` },
-  java: {
-    monaco: "java",
-    defaultCode: `public class Main {
-  public static void main(String[] args) {
-    System.out.println("Hello");
-  }
-}`,
-  },
+  js: { monaco: "javascript", defaultCode: `console.log("Hello");` },
+  c: { monaco: "c", defaultCode: `#include <stdio.h>\nint main() {\n  printf(\"Hello\\n\");\n  return 0;\n}` },
+  cpp: { monaco: "cpp", defaultCode: `#include <iostream>\nint main() {\n  std::cout << \"Hello\\n\";\n  return 0;\n}` }
 };
 
 const WaitingForOpponent = ({ battleId }) => {
@@ -58,6 +54,15 @@ export default function Ide() {
   const [code, setCode] = useState(LANGUAGES.python.defaultCode);
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
+  // Use the custom hook for async submission (practice mode)
+  const {
+    handleSubmit: handlePracticeSubmit,
+    currentSubmission,
+    submissionStatus,
+    loading: practiceLoading,
+    error: practiceError,
+    resetSubmission
+  } = useSubmission();
 
   useEffect(() => {
     dispatch(getBattle({ battleId }));
@@ -107,30 +112,40 @@ export default function Ide() {
     }
   }, [currentBattle, submissionResult]);
 
+  // Handles both battle and practice submissions
   const handleSubmit = async () => {
     setStatus("running");
     setMessage("");
 
-    try {
-      const result = await dispatch(submitBattleCode({ battleId, code, language })).unwrap();
-      setStatus("submitted");
-      
-      if (result.status === "PASSED") {
-        if (currentBattle?.status === "WAITING") {
-          setMessage("✅ All test cases passed! Waiting for opponent to join...");
+    if (battleId) {
+      try {
+        const result = await dispatch(submitBattleCode({ battleId, code, language })).unwrap();
+        setStatus("submitted");
+        if (result.status === "PASSED") {
+          if (currentBattle?.status === "WAITING") {
+            setMessage("✅ All test cases passed! Waiting for opponent to join...");
+          } else {
+            setMessage("✅ All test cases passed! You won the battle!");
+          }
+        } else if (result.status === "FAILED") {
+          setMessage(`❌ Some test cases failed`);
+        } else if (result.status === "ERROR") {
+          setMessage(`❌ Compilation/Runtime Error: ${result.error || ''}`);
         } else {
-          setMessage("✅ All test cases passed! You won the battle!");
+          setMessage(`⚠️ ${result.status}: ${result.message || ''}`);
         }
-      } else if (result.status === "FAILED") {
-        setMessage(`❌ Some test cases failed`);
-      } else if (result.status === "ERROR") {
-        setMessage(`❌ Compilation/Runtime Error: ${result.error || ''}`);
-      } else {
-        setMessage(`⚠️ ${result.status}: ${result.message || ''}`);
+      } catch (error) {
+        setStatus("error");
+        setMessage(`❌ Error: ${error.message || 'Submission failed'}`);
       }
-    } catch (error) {
-      setStatus("error");
-      setMessage(`❌ Error: ${error.message || 'Submission failed'}`);
+    } else {
+      // Practice mode: use the custom hook
+      try {
+        await handlePracticeSubmit({ code, language, problemId: currentBattle?.problem?.id });
+        setMessage("⏳ Submission queued. Waiting for result...");
+      } catch (error) {
+        setMessage(`❌ Error: ${error.message || 'Submission failed'}`);
+      }
     }
   };
 
@@ -140,14 +155,14 @@ export default function Ide() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden">
+    <div className="h-screen flex pt-20 bg-gray-900"> {/* pt-20 for navbar height, bg for right panel */}
       {/* LEFT — Problem */}
-      <div className="w-[40%] border-r border-gray-300 overflow-y-auto">
+      <div className="w-[40%]"> {/* Left panel now styled in BattleProblem */}
         <BattleProblem problem={currentBattle?.problem} />
       </div>
 
       {/* RIGHT — IDE */}
-      <div className="w-[60%] flex flex-col">
+      <div className="w-[60%] bg-gray-900 flex flex-col h-full">
         {isBattleLoading ? (
           <div className="p-6 space-y-4">
             <Skeleton className="h-10 w-full" />
@@ -174,19 +189,31 @@ export default function Ide() {
                 language={language}
                 onLanguageChange={handleLanguageChange}
                 onRun={handleSubmit}
-                status={status}
+                status={battleId ? status : practiceStatus || status}
               />
-
               <div className="flex flex-col h-[calc(100%-3rem)]">
-                <div className="flex-1">
+                <div className="flex-1 min-h-0">
                   <CodeEditor
                     language={LANGUAGES[language].monaco}
                     value={code}
                     onChange={(v) => setCode(v || "")}
                   />
                 </div>
-
-                <OutputPanel output={message} error={""} status={status} />
+                <div className="h-48">
+                  <OutputPanel
+                    output={
+                      battleId
+                        ? message
+                        : practiceError
+                        ? `❌ ${practiceError}`
+                        : submissionStatus
+                        ? `Result: ${submissionStatus.status}\nPassed: ${submissionStatus.passedTests}/${submissionStatus.totalTests}`
+                        : message
+                    }
+                    error={battleId ? "" : practiceError}
+                    status={battleId ? status : submissionStatus?.status || status}
+                  />
+                </div>
               </div>
             </EditorPane>
           </>

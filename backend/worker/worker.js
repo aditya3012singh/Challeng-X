@@ -24,7 +24,7 @@ const worker = new Worker(
         const submission = await Database.client.submission.findUnique({
             where: { id: submissionId },
             include: { 
-                problem: { include: { testCases: true } },
+                problem: { include: { testcases: true } },
                 user: { select: { id: true } }
             }
         });
@@ -35,13 +35,14 @@ const worker = new Worker(
             data: { status: "RUNNING" }
         });
 
+
         let passed = 0;
-        let total = submission.problem.testCases.length;
+        let total = submission.problem.testcases.length;
         const startTime = Date.now();
 
-        for (let tc of submission.problem.testCases) {
+        for (let tc of submission.problem.testcases) {
             const result = await JudgeService.runCode(submission.language, submission.code, tc.input);
-            if (result.error || result.output.trim() !== tc.expectedOutput.trim()) {
+            if (result.error || result.output.trim() !== tc.output.trim()) {
                 const updatedSubmission = await Database.client.submission.update({
                     where: { id: submissionId },
                     data: { 

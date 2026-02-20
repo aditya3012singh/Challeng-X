@@ -23,51 +23,75 @@ import path from "path";
 const TEMP_DIR = path.join(process.cwd(), "temp");
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
+
+const LANGUAGE_CONFIG = {
+  python: {
+    image: "codearena-python",
+    ext: "py",
+    run: (id) => `cat /app/${id}.txt | python3 /app/${id}.py`
+  },
+  js: {
+    image: "codearena-js",
+    ext: "js",
+    run: (id) => `cat /app/${id}.txt | node /app/${id}.js`
+  },
+  c: {
+    image: "codearena-c",
+    ext: "c",
+    run: (id) => `gcc /app/${id}.c -o /app/${id} && cat /app/${id}.txt | /app/${id}`
+  },
+  cpp: {
+    image: "codearena-cpp",
+    ext: "cpp",
+    run: (id) => `g++ /app/${id}.cpp -o /app/${id} && cat /app/${id}.txt | /app/${id}`
+  }
+  // Add Java support here if needed
+};
+
 class JudgeService {
   static runCode(language, code, input) {
-  return new Promise((resolve) => {
-    const id = Date.now();
-    const codePath = path.join(TEMP_DIR, `${id}.py`);
-    const inputPath = path.join(TEMP_DIR, `${id}.txt`);
+    return new Promise((resolve) => {
+      const lang = LANGUAGE_CONFIG[language];
+      if (!lang) return resolve({ error: "Unsupported language" });
 
-    // Write UTF-8 without BOM
-    fs.writeFileSync(codePath, code, { encoding: "utf8" });
-    fs.writeFileSync(inputPath, input, { encoding: "utf8" });
+      const id = Date.now() + Math.floor(Math.random() * 10000);
+      const codePath = path.join(TEMP_DIR, `${id}.${lang.ext}`);
+      const inputPath = path.join(TEMP_DIR, `${id}.txt`);
 
-    // Windows path -> Linux path for Docker
-    const dockerTempDir = path.resolve(TEMP_DIR)
-      .replace(/\\/g, "/")
-      .replace(/^([A-Za-z]):/, '/$1');
+      fs.writeFileSync(codePath, code, { encoding: "utf8" });
+      fs.writeFileSync(inputPath, input, { encoding: "utf8" });
 
-    const args = [
-      "run",
-      "--rm",
-      "--network", "none",
-      "-v", `${dockerTempDir}:/app`,
-      "python-runner",
-      "bash",
-      "-c",
-      `cat /app/${id}.txt | python3 /app/${id}.py`
-    ];
+      const dockerTempDir = path.resolve(TEMP_DIR)
+        .replace(/\\/g, "/")
+        .replace(/^([A-Za-z]):/, '/$1');
 
+      const args = [
+        "run",
+        "--rm",
+        "--network", "none",
+        "-v", `${dockerTempDir}:/app`,
+        lang.image,
+        "bash",
+        "-c",
+        lang.run(id)
+      ];
 
-    const proc = spawn("docker", args);
+      const proc = spawn("docker", args);
 
-    let output = "";
-    let error = "";
+      let output = "";
+      let error = "";
 
-    proc.stdout.on("data", (data) => (output += data.toString()));
-    proc.stderr.on("data", (data) => (error += data.toString()));
+      proc.stdout.on("data", (data) => (output += data.toString()));
+      proc.stderr.on("data", (data) => (error += data.toString()));
 
-    proc.on("close", () => {
-      // Cleanup
-      try { fs.unlinkSync(codePath); } catch {}
-      try { fs.unlinkSync(inputPath); } catch {}
+      proc.on("close", () => {
+        try { fs.unlinkSync(codePath); } catch {}
+        try { fs.unlinkSync(inputPath); } catch {}
 
-      if (error) return resolve({ error: error.trim() });
-      resolve({ output: output.trim() });
+        if (error) return resolve({ error: error.trim() });
+        resolve({ output: output.trim() });
+      });
     });
-  });
   }
 }
 
