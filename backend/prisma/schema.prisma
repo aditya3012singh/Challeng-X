@@ -32,6 +32,8 @@ enum Difficulty {
 
 enum SubmissionStatus {
   PENDING
+  QUEUED
+  RUNNING
   PASSED
   FAILED
   ERROR
@@ -154,6 +156,9 @@ model Submission {
   language  String
 
   status    SubmissionStatus @default(PENDING)
+
+  passedTests Int?
+  totalTests  Int?
 
   executionTimeMs Int?
 

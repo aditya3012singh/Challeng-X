@@ -12,7 +12,7 @@ export const submissionQueue = new Queue('submissionQueue', {
             type: 'exponential',
             delay: 2000, // 5 seconds
         },
-            removeOnComplete: true,
-            removeOnFail: false,
+        removeOnComplete: true,
+        removeOnFail: false,
     }
 });
