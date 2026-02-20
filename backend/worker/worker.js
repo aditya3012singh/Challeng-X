@@ -5,7 +5,9 @@ import JudgeService from "../src/services/judge.service.js";
 import { io as ioClient } from "socket.io-client";
 import Database from "../src/config/db.js";
 
-const connection = new IORedis(process.env.REDIS_URL);
+const connection = new IORedis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null
+});
 
 // Socket.IO client to emit events back to the main server
 const socket = ioClient(`http://localhost:${process.env.PORT || 4000}`);

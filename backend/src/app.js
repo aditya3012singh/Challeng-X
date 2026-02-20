@@ -19,8 +19,29 @@ class App {
     const app = express();
 
     app.use(cors({
-      origin: "http://localhost:5173", // frontend
-      credentials: true,               // 🔥 REQUIRED for cookies
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        
+        // In development, allow any localhost origin
+        if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
+          return callback(null, true);
+        }
+        
+        // In production, use specific allowed origins
+        const allowedOrigins = [
+          'http://localhost:5173',
+          'http://localhost:5174',
+          process.env.FRONTEND_URL
+        ].filter(Boolean);
+        
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true, // 🔥 REQUIRED for cookies
     }));
 
     app.use(express.json());
