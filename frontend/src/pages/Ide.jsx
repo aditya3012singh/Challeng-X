@@ -110,6 +110,16 @@ export default function Ide() {
   const [draftSaved, setDraftSaved] = useState(false);
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
+  const [testCaseResults, setTestCaseResults] = useState(null);
+  const [myAttempts, setMyAttempts] = useState(0);
+
+  // Sync attempts from battle state
+  useEffect(() => {
+    if (currentBattle && user) {
+      const isPlayer1 = currentBattle.player1Id === user.id;
+      setMyAttempts(isPlayer1 ? currentBattle.attemptsPlayer1 : currentBattle.attemptsPlayer2);
+    }
+  }, [currentBattle, user]);
 
   // Use the custom hook for async submission (practice mode)
   const {
@@ -202,43 +212,60 @@ export default function Ide() {
       dispatch(getBattle({ battleId }));
     });
 
-    socket.on("submissionResult", ({ userId: resultUserId, status, passedTests, totalTests, failedTestCase, input, expectedOutput, actualOutput, errorMessage, executionTimeMs }) => {
-      const isMe = resultUserId === userIdRef.current;
-      console.log("submissionResult received:", { resultUserId, status, passedTests, totalTests, isMe });
-
-      if (status === "PASSED") {
-        if (isMe) {
-          setStatus("submitted");
-          setMessage(`✅ All test cases passed! (${passedTests}/${totalTests})${executionTimeMs ? ` in ${executionTimeMs}ms` : ""}`);
-        } else {
-          // Notify the other player that their opponent just finished
-          setStatus("error"); // Use 'error' status color/style for alerting the lose is imminent
-          setMessage(`🔔 Opponent passed all test cases!`);
-        }
-        return;
+    socket.on("attemptsUpdated", ({ player1Attempts, player2Attempts }) => {
+      if (currentBattle && user) {
+        const isPlayer1 = currentBattle.player1Id === user.id;
+        setMyAttempts(isPlayer1 ? player1Attempts : player2Attempts);
       }
+    });
 
-      setStatus("error");
+    socket.on("submissionResult", ({ userId: resultUserId, status: resStatus, passedTests, totalTests, failedTestCase, input, expectedOutput, actualOutput, errorMessage, executionTimeMs, type, testCaseResults: tcResults }) => {
+      const isMe = resultUserId === userIdRef.current;
+      console.log("submissionResult received:", { resultUserId, resStatus, passedTests, totalTests, isMe, type });
+
       if (isMe) {
-        // Build a detailed output message
-        const lines = [`❌ Wrong answer — ${passedTests ?? 0}/${totalTests ?? "?"} test cases passed`];
-        if (failedTestCase) lines.push(`\nFailed on Test Case #${failedTestCase}`);
-        if (input != null) lines.push(`\nInput:\n${input}`);
-        if (errorMessage) lines.push(`\nRuntime Error:\n${errorMessage}`);
-        if (!errorMessage) {
-          if (expectedOutput != null) lines.push(`\nExpected Output:\n${expectedOutput}`);
-          if (actualOutput != null) lines.push(`\nYour Output:\n${actualOutput}`);
+        if (type === "RUN") {
+          setTestCaseResults(tcResults);
+          setStatus(resStatus === "PASSED" ? "success" : "error");
+          setMessage(resStatus === "PASSED" ? "✅ Sample tests passed!" : "❌ Sample tests failed.");
+          return;
         }
-        setMessage(lines.join(""));
+
+        // SUBMIT logic
+        if (resStatus === "PASSED") {
+          setStatus("success");
+          setTestCaseResults(null);
+          setMessage(`🏆 Victory! All test cases passed! (${passedTests}/${totalTests})${executionTimeMs ? ` in ${executionTimeMs}ms` : ""}`);
+        } else {
+          setStatus("error");
+          setTestCaseResults(null);
+          const lines = [`❌ Wrong answer — ${passedTests ?? 0}/${totalTests ?? "?"} test cases passed`];
+          if (failedTestCase) lines.push(`\nFailed on Test Case #${failedTestCase}`);
+          if (errorMessage) lines.push(`\nRuntime Error:\n${errorMessage}`);
+          setMessage(lines.join(""));
+        }
       } else {
-        setMessage("");
+        // Notify the other player
+        if (type === "SUBMIT") {
+          if (resStatus === "PASSED") {
+            setStatus("error");
+            setMessage(`🔔 Opponent passed all test cases!`);
+          } else {
+            // Opponent failed a final submission
+            // Maybe show a small toast: "Opponent failed an attempt (2/3)"
+          }
+        }
       }
     });
 
     // Listen for battle finished event
-    socket.on("battleFinished", ({ winnerId }) => {
+    socket.on("battleFinished", ({ winnerId, draw }) => {
       console.log("Battle finished, winner:", winnerId);
-      // Small delay to ensure DB sync is complete (background task on server)
+      if (draw) {
+        setMessage("💀 ARENA WINS: Both players failed all attempts. Points deducted.");
+        setStatus("finished");
+        setHasLost(true);
+      }
       setTimeout(() => {
         dispatch(getBattle({ battleId }));
       }, 500);
@@ -249,8 +276,9 @@ export default function Ide() {
       socket.off("battleStarted");
       socket.off("battleFinished");
       socket.off("submissionResult");
+      socket.off("attemptsUpdated");
     };
-  }, [battleId, dispatch]);
+  }, [battleId, dispatch, currentBattle, user]);
 
   useEffect(() => {
     if (!currentBattle) return;
@@ -265,48 +293,40 @@ export default function Ide() {
         setHasWon(true);
         setStatus("finished");
       } else if (myUserId === currentBattle.player1?.id || myUserId === currentBattle.player2?.id) {
-        setMessage(`❌ You lost the battle. Winner: ${currentBattle.winner?.username || "Unknown"}`);
-        setHasLost(true);
-        setStatus("finished");
-      } else {
-        setMessage(`🏆 Winner: ${currentBattle.winner?.username || currentBattle.winnerId}`);
-        setStatus("finished");
+        // If it wasn't a draw, then you lost
+        if (currentBattle.winnerId) {
+          setMessage(`❌ You lost the battle. Winner: ${currentBattle.winner?.username || "Unknown"}`);
+          setHasLost(true);
+          setStatus("finished");
+        }
       }
     }
   }, [currentBattle, submissionResult]);
 
-  // Handles both battle and practice submissions
-  const handleSubmit = async () => {
+  // Handles both battle (Run/Submit) and practice submissions
+  const handleSubmit = async (type = "SUBMIT") => {
     // Block submission if user has won or lost
     if (hasWon || hasLost || (currentBattle && currentBattle.status === "FINISHED")) {
       return;
     }
+
+    setTestCaseResults(null);
     setStatus("running");
     setMessage("");
 
     if (battleId) {
       try {
-        const result = await dispatch(submitBattleCode({ battleId, code, language })).unwrap();
-        // Submission is async — worker will emit the real result via socket
+        const result = await dispatch(submitBattleCode({ battleId, code, language, type })).unwrap();
         if (result.status === "QUEUED") {
           setStatus("running");
-          setMessage("⏳ Judging your code... results will appear shortly");
-        } else if (result.status === "PASSED") {
-          setStatus("submitted");
-          setMessage("✅ All test cases passed!");
-        } else if (result.status === "FAILED") {
-          setStatus("error");
-          setMessage(`❌ Some test cases failed`);
-        } else if (result.status === "ERROR") {
-          setStatus("error");
-          setMessage(`❌ Compilation/Runtime Error: ${result.error || ''}`);
+          setMessage(type === "RUN" ? "⏳ Running sample tests..." : "⏳ Judging final submission...");
         }
       } catch (error) {
         setStatus("error");
         setMessage(`❌ Error: ${error.message || 'Submission failed'}`);
       }
     } else {
-      // Practice mode: use the custom hook
+      // Practice mode
       try {
         await handlePracticeSubmit({ code, language, problemId: currentBattle?.problem?.id });
         setMessage("🟡 Evaluating your code...");
@@ -319,6 +339,7 @@ export default function Ide() {
   const handleLanguageChange = (lang) => {
     setLanguage(lang);
     setCode(LANGUAGES[lang].defaultCode);
+    setTestCaseResults(null);
   };
 
   return (
@@ -335,7 +356,7 @@ export default function Ide() {
         />
       )}
 
-      <div className="h-screen flex bg-gray-900 flex-col">
+      <div className="h-screen flex bg-[#050505] flex-col overflow-hidden">
         {/* Draft saved toast */}
         <div
           className={`fixed bottom-4 right-4 z-50 px-4 py-2 bg-black border border-[var(--color-success)] text-[var(--color-success)] text-xs font-mono uppercase tracking-widest transition-all duration-500 ${draftSaved ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
@@ -346,7 +367,7 @@ export default function Ide() {
 
         {/* Battle-finished top bar with back button */}
         {isBattleFinished && (
-          <div className="flex items-center justify-between px-6 py-3 bg-[#050505] border-b border-[rgba(0,240,255,0.15)] z-50 shrink-0">
+          <div className="flex items-center justify-between px-6 py-3 bg-black border-b border-[rgba(0,240,255,0.15)] z-50 shrink-0">
             <button
               onClick={() => navigate("/")}
               className="flex items-center gap-2 px-6 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] font-bold uppercase tracking-widest text-sm hover:bg-[rgba(0,240,255,0.1)] hover:shadow-[0_0_15px_var(--color-primary)] transition-all"
@@ -355,10 +376,10 @@ export default function Ide() {
               ← RETURN TO BASE
             </button>
             <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-widest">
-              Battle Concluded
+              Battle Over: {currentBattle.winner ? `${currentBattle.winner.username} Won` : "Arena Victory"}
             </div>
-            <div className="text-xs font-mono text-[var(--color-success)] border border-[var(--color-success)] px-3 py-1">
-              {hasWon ? "VICTORY" : hasLost ? "DEFEAT" : "FINISHED"}
+            <div className={`text-xs font-mono border px-3 py-1 ${hasWon ? "text-[var(--color-success)] border-[var(--color-success)]" : "text-red-500 border-red-500"}`}>
+              {hasWon ? "VICTORY" : "DEFEAT"}
             </div>
           </div>
         )}
@@ -366,12 +387,12 @@ export default function Ide() {
         {/* Main IDE layout */}
         <div className="flex flex-1 min-h-0">
           {/* LEFT — Problem */}
-          <div className="w-[40%]">
+          <div className="w-[35%] border-r border-slate-800">
             <BattleProblem problem={currentBattle?.problem} />
           </div>
 
           {/* RIGHT — IDE */}
-          <div className="w-[60%] bg-gray-900 flex flex-col h-full">
+          <div className="w-[65%] bg-[#080808] flex flex-col h-full">
             {isBattleLoading ? (
               <div className="p-6 space-y-4">
                 <Skeleton className="h-10 w-full" />
@@ -382,13 +403,16 @@ export default function Ide() {
               <>
                 {/* Waiting for opponent banner */}
                 {isWaitingForOpponent && (
-                  <div className="bg-yellow-100 border-b border-yellow-300 px-4 py-3">
+                  <div className="bg-[#FFD700]/10 border-b border-[#FFD700]/30 px-6 py-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-yellow-800">⏳ Waiting for opponent...</p>
-                        <p className="text-xs text-yellow-700">Share battle code: <span className="font-mono font-bold text-lg">{currentBattle?.battleCode}</span></p>
+                        <p className="font-black text-[#FFD700] uppercase tracking-widest text-xs">Waiting for Opponent</p>
+                        <p className="text-[10px] text-gray-400 uppercase mt-1">Join Code: <span className="font-black text-white ml-2 text-sm">{currentBattle?.battleCode}</span></p>
                       </div>
-                      <p className="text-xs text-yellow-700">You can practice while waiting!</p>
+                      <div className="flex items-center gap-4 text-[10px] uppercase font-bold text-gray-500">
+                        <span>Invite Link Copied</span>
+                        <div className="w-2 h-2 rounded-full bg-[#FFD700] animate-pulse"></div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -397,7 +421,9 @@ export default function Ide() {
                   <EditorToolbar
                     language={language}
                     onLanguageChange={handleLanguageChange}
-                    onRun={handleSubmit}
+                    onRun={() => handleSubmit("RUN")}
+                    onSubmit={() => handleSubmit("SUBMIT")}
+                    attempts={myAttempts}
                     status={battleId ? (hasWon || hasLost || (currentBattle && currentBattle.status === "FINISHED") ? "finished" : status) : practiceStatus || status}
                   />
                   <div className="flex flex-col h-[calc(100%-3rem)]">
@@ -408,19 +434,13 @@ export default function Ide() {
                         onChange={(v) => setCode(v || "")}
                       />
                     </div>
-                    <div className="h-48">
+                    <div className="h-64 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10 transition-all duration-300">
                       <OutputPanel
-                        output={
-                          battleId
-                            ? message
-                            : practiceError
-                              ? `❌ ${practiceError}`
-                              : submissionStatus
-                                ? `Result: ${submissionStatus.status}\nPassed: ${submissionStatus.passedTests}/${submissionStatus.totalTests}`
-                                : message
-                        }
-                        error={battleId ? "" : practiceError}
+                        output={message}
+                        error={practiceError}
                         status={battleId ? status : submissionStatus?.status || status}
+                        testCaseResults={testCaseResults}
+                        problem={currentBattle?.problem}
                       />
                     </div>
                   </div>

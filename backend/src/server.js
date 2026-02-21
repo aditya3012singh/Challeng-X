@@ -35,21 +35,15 @@ class ServerApp {
       // Worker → Server: result of a judged submission
       // The worker emits this after running all test cases.
       // ──────────────────────────────────────────────────────────────────────
-      socket.on("submissionResult", async ({ submissionId, userId, battleId, status, passedTests, totalTests, executionTimeMs, failedTestCase, input, expectedOutput, actualOutput, errorMessage }) => {
-        console.log(`📨 submissionResult: battle=${battleId} user=${userId} status=${status}`);
+      socket.on("submissionResult", async (data) => {
+        const { submissionId, userId, battleId, status, type, testCaseResults, executionTimeMs } = data;
+        console.log(`📨 submissionResult: battle=${battleId} user=${userId} type=${type} status=${status}`);
 
         try {
           if (battleId) {
-            if (status === "PASSED") {
+            if (status === "PASSED" && type === "SUBMIT") {
               // 1. Forward the individual success result immediately (Progress feedback)
-              io.to(battleId).emit("submissionResult", {
-                submissionId,
-                userId,
-                status: "PASSED",
-                passedTests: totalTests,
-                totalTests,
-                executionTimeMs,
-              });
+              io.to(battleId).emit("submissionResult", data);
 
               // 2. Await the CRITICAL status change in DB before notifying the room of completion
               // This prevents the loser from re-fetching before the status is 'FINISHED'
@@ -61,23 +55,12 @@ class ServerApp {
                 .catch((err) => console.error(`❌ finishBattleService error: ${err.message}`));
 
             } else {
-              // Send the failure result back to both players in the room
-              io.to(battleId).emit("submissionResult", {
-                submissionId,
-                userId,
-                status,
-                passedTests,
-                totalTests,
-                failedTestCase,
-                input,
-                expectedOutput,
-                actualOutput,
-                errorMessage,
-              });
+              // Standard forwarding for failures or RUN types
+              io.to(battleId).emit("submissionResult", data);
             }
           }
-        } catch (err) {
-          console.error("❌ Error handling submissionResult:", err.message);
+        } catch (error) {
+          console.error("Socket submissionResult handler error:", error);
         }
       });
 

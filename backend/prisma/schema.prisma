@@ -40,6 +40,11 @@ enum SubmissionStatus {
   TIMEOUT
 }
 
+enum SubmissionType {
+  RUN
+  SUBMIT
+}
+
 enum SquidGameStatus {
   REGISTRATION
   ROUND_ACTIVE
@@ -108,6 +113,9 @@ model Battle {
 
   submissions Submission[]
 
+  attemptsPlayer1 Int @default(0)
+  attemptsPlayer2 Int @default(0)
+
   createdAt DateTime @default(now())
 }
 
@@ -138,6 +146,7 @@ model TestCase {
   output    String
 
   isHidden  Boolean @default(true)
+  isSample  Boolean @default(false)
 }
 
 model Submission {
@@ -161,6 +170,8 @@ model Submission {
   totalTests  Int?
 
   executionTimeMs Int?
+
+  type      SubmissionType @default(SUBMIT)
 
   createdAt DateTime @default(now())
 }

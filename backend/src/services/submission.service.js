@@ -3,6 +3,8 @@ import OutputComparer from "../utils/compareOutput.js";
 import JudgeService from "./judge.service.js";
 import SocketEmitter from "../config/socket.js";
 import { submissionQueue } from "../queues/submission.queue.js";
+import BattleService from "./battle.service.js";
+
 /**
  * Process a code submission
  * @param {object} params
@@ -11,10 +13,20 @@ import { submissionQueue } from "../queues/submission.queue.js";
  * @param {string} params.code
  * @param {string} params.language
  * @param {string} [params.battleId] - Optional battleId for battle submissions
+ * @param {string} [params.type] - RUN or SUBMIT
  */
 class SubmissionService {
-  static async processSubmission({ userId, problemId, code, language, battleId }) {
-    // Create submission with PENDING status
+  static async processSubmission({ userId, problemId, code, language, battleId, type = "SUBMIT" }) {
+    // 1. If SUBMIT in a battle, check and increment attempts
+    if (battleId && type === "SUBMIT") {
+      const remainingAttempts = await BattleService.getRemainingAttempts(battleId, userId);
+      if (remainingAttempts <= 0) {
+        throw new Error("No attempts remaining. You have already submitted 3 times.");
+      }
+      await BattleService.incrementBattleAttempt(battleId, userId);
+    }
+
+    // 2. Create submission with the specified type
     const submission = await Database.client.submission.create({
       data: {
         userId,
@@ -22,61 +34,23 @@ class SubmissionService {
         code,
         language,
         status: "QUEUED",
+        type
       }
     });
 
-    // const testcases = await Database.client.testCase.findMany({ where: { problemId } });
-    // console.log("Testcases fetched:", testcases.length);
-
-    // let allPassed = true;
-
-    // for (let tc of testcases) {
-    //   const result = await JudgeService.runCode(language, code, tc.input);
-    //   console.log("Judge result:", result);
-    //   if (result.error) {
-    //     await Database.client.submission.update({
-    //       where: { id: submission.id },
-    //       data: { status: "ERROR" }
-    //     });
-    //     return { status: "ERROR", error: result.error };
-    //   }
-
-    //   console.log("Output:", result.output);
-
-    //   const passed = OutputComparer.compareOutput(result.output, tc.output);
-    //   if (!passed) {
-    //     allPassed = false;
-    //     break;
-    //   }
-    // }
-
-    // const finalStatus = allPassed ? "PASSED" : "FAILED";
-
-    // await Database.client.submission.update({
-    //   where: { id: submission.id },
-    //   data: { status: finalStatus }
-    // });
-
-    // Emit socket event if this is a battle submission
-
-    // if (battleId) {
-    //   SocketEmitter.emitToBattle(battleId, "submissionResult", {
-    //     userId,
-    //     status: finalStatus
-    //   });
-    // }
-
+    // 3. Add to queue with 'type' flag
     await submissionQueue.add('processSubmission', {
       submissionId: submission.id,
       battleId: battleId || null,
       userId,
-      status: "QUEUED"
+      status: "QUEUED",
+      type
     });
 
     return {
       submissionId: submission.id,
       status: "QUEUED",
-      message: "Submission queued for processing"
+      message: type === "RUN" ? "Run started..." : "Final submission queued..."
     };
   }
 

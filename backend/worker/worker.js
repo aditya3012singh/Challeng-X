@@ -19,8 +19,8 @@ socket.on("connect", () => {
 const worker = new Worker(
     "submissionQueue",
     async (job) => {
-        const { submissionId, battleId, userId } = job.data;
-        console.log(`📦 Job ${job.id} picked up — submissionId=${submissionId} lang=${job.data.language ?? "?"}`);
+        const { submissionId, battleId, userId, type } = job.data;
+        console.log(`📦 Job ${job.id} picked up — submissionId=${submissionId} type=${type || "SUBMIT"} lang=${job.data.language ?? "?"}`);
 
         try {
             const submission = await Database.client.submission.findUnique({
@@ -33,88 +33,112 @@ const worker = new Worker(
             if (!submission) throw new Error("Submission not found");
             if (!submission.problem) throw new Error("Submission has no associated problem");
 
-            // Idempotency guard — skip if already judged (stale job replay after worker restart)
-            if (submission.status === "PASSED" || submission.status === "ERROR") {
-                console.log(`⏭  Job ${job.id} skipped — already processed (status=${submission.status})`);
-                return;
+            // Filter testcases based on type (RUN only uses sample cases)
+            let testcases = submission.problem.testcases;
+            const isRun = type === "RUN";
+            if (isRun) {
+                testcases = testcases.filter(tc => tc.isSample);
+                // If no samples are marked, use the first one as a fallback so 'Run' doesn't stay empty
+                if (testcases.length === 0 && submission.problem.testcases.length > 0) {
+                    testcases = [submission.problem.testcases[0]];
+                }
             }
+
+            const total = testcases.length;
+            const t0 = Date.now();
 
             await Database.client.submission.update({
                 where: { id: submissionId },
                 data: { status: "RUNNING" }
             });
 
-            const testcases = submission.problem.testcases;
-            const total = testcases.length;
-            const t0 = Date.now();
+            console.log(`⏱  [${submission.language}] Starting ${type} — ${total} test case(s)`);
 
-            console.log(`⏱  [${submission.language}] Starting judge — ${total} test case(s)`);
-
-            // Run ALL test cases in a single warm-container job.
-            // For C/C++ this means compile ONCE, run each input against the same binary.
+            // RUN type disable early_exit to get full feedback on all sample cases
             const { results, stopped_at } = await JudgeService.runTestCases(
                 submission.language,
                 submission.code,
-                testcases.map(tc => tc.input)
+                testcases.map(tc => tc.input),
+                !isRun // earlyExit = true for SUBMIT, false for RUN
             );
 
             const judgeMs = Date.now() - t0;
-            const passed = stopped_at;
             const executionTimeMs = judgeMs;
 
-            console.log(`⏱  [${submission.language}] Judge done in ${judgeMs}ms | passed=${passed}/${total}`);
+            console.log(`⏱  [${submission.language}] ${type} done in ${judgeMs}ms | passed=${stopped_at}/${total}`);
 
-            // Check every result against expected output
-            let failedIndex = -1;
-            let failedResult = null;
+            // Process results
+            const runDetails = [];
+            let firstFailedIndex = -1;
 
-            for (let i = 0; i < results.length; i++) {
-                const r = results[i];
+            for (let i = 0; i < testcases.length; i++) {
                 const tc = testcases[i];
-                const actualOutput = r.output?.trim() ?? "";
-                const expectedOutput = tc.output?.trim() ?? "";
-                const hasError = !!r.error;
-                const wrongAnswer = !hasError && actualOutput !== expectedOutput;
+                const res = results[i];
+                const actual = res?.output?.trim() ?? "";
+                const expected = tc.output?.trim() ?? "";
+                const error = res?.error || null;
+                const passed = !error && actual === expected;
 
-                if (hasError || wrongAnswer) {
-                    failedIndex = i;
-                    failedResult = {
-                        hasError,
-                        actualOutput: hasError ? null : actualOutput,
-                        expectedOutput,
-                        errorMessage: hasError ? r.error : null,
-                        input: tc.input,
-                    };
-                    break;
+                if (!passed && firstFailedIndex === -1) {
+                    firstFailedIndex = i;
                 }
+
+                runDetails.push({
+                    input: tc.input,
+                    expected,
+                    actual: error ? null : actual,
+                    error,
+                    passed
+                });
             }
 
-            if (failedIndex !== -1) {
-                const { hasError, actualOutput, expectedOutput, errorMessage, input } = failedResult;
-
+            if (isRun) {
+                // Return full details for 'RUN' (all sample cases for the tabbed UI)
                 await Database.client.submission.update({
                     where: { id: submissionId },
-                    data: { status: "ERROR", passedTests: failedIndex, totalTests: total, executionTimeMs }
+                    data: { status: firstFailedIndex === -1 ? "PASSED" : "FAILED", passedTests: stopped_at, totalTests: total, executionTimeMs }
                 });
 
                 socket.emit("submissionResult", {
                     submissionId,
                     userId: userId || submission.user.id,
                     battleId: battleId || submission.battleId || null,
-                    status: "ERROR",
-                    passedTests: failedIndex,
-                    totalTests: total,
-                    failedTestCase: failedIndex + 1,
-                    input,
-                    expectedOutput,
-                    actualOutput,
-                    errorMessage,
+                    status: firstFailedIndex === -1 ? "PASSED" : "FAILED",
+                    type: "RUN",
+                    testCaseResults: runDetails,
+                    executionTimeMs
+                });
+                return;
+            }
+
+            // SUBMIT logic (standard early-exit check)
+            if (firstFailedIndex !== -1) {
+                const failed = runDetails[firstFailedIndex];
+
+                await Database.client.submission.update({
+                    where: { id: submissionId },
+                    data: { status: "FAILED", passedTests: firstFailedIndex, totalTests: submission.problem.testcases.length, executionTimeMs }
+                });
+
+                socket.emit("submissionResult", {
+                    submissionId,
+                    userId: userId || submission.user.id,
+                    battleId: battleId || submission.battleId || null,
+                    status: "FAILED",
+                    type: "SUBMIT",
+                    passedTests: firstFailedIndex,
+                    totalTests: submission.problem.testcases.length,
+                    failedTestCase: firstFailedIndex + 1,
+                    input: failed.input,
+                    expectedOutput: failed.expected,
+                    actualOutput: failed.actual,
+                    errorMessage: failed.error,
                 });
 
                 return;
             }
 
-            // All test cases passed
+            // All test cases passed for SUBMIT
             await Database.client.submission.update({
                 where: { id: submissionId },
                 data: { status: "PASSED", passedTests: total, totalTests: total, executionTimeMs }
@@ -125,6 +149,7 @@ const worker = new Worker(
                 userId: userId || submission.user.id,
                 battleId: battleId || submission.battleId || null,
                 status: "PASSED",
+                type: "SUBMIT",
                 passedTests: total,
                 totalTests: total,
                 executionTimeMs

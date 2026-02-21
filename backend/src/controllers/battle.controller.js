@@ -56,7 +56,7 @@ class BattleController {
     static async submitBattleCodeController(req, res) {
         const userId = req.user.id;
         const { battleId } = req.params;
-        const { code, language } = req.body;
+        const { code, language, type } = req.body; // type: "RUN" or "SUBMIT"
 
         try {
             const battle = await BattleService.getBattle(battleId);
@@ -79,7 +79,8 @@ class BattleController {
                 problemId: battle.problemId,
                 code,
                 language,
-                battleId
+                battleId,
+                type: type || "SUBMIT"
             });
 
             // Battle finish is handled asynchronously by the worker via socket event.

@@ -110,7 +110,7 @@ class WarmContainer {
   }
 
   /** Send a batched job (all test case inputs at once) and wait for one JSON response. */
-  run(code, inputs) {
+  run(code, inputs, earlyExit = true) {
     return new Promise((resolve, reject) => {
       this._pendingResolve = resolve;
       this._pendingReject = reject;
@@ -135,7 +135,7 @@ class WarmContainer {
         origResolve(result);
       };
 
-      this._proc.stdin.write(JSON.stringify({ code, inputs, early_exit: true }) + "\n");
+      this._proc.stdin.write(JSON.stringify({ code, inputs, early_exit: earlyExit }) + "\n");
     });
   }
 }
@@ -169,10 +169,10 @@ class WarmContainerPool {
     }
   }
 
-  async runCode(code, inputs) {
+  async runCode(code, inputs, earlyExit = true) {
     const container = await this._acquire();
     try {
-      return await container.run(code, inputs);
+      return await container.run(code, inputs, earlyExit);
     } finally {
       this._release(container);
     }
@@ -211,7 +211,7 @@ class JudgeService {
    *   results[i].error  → test case i failed (compilation/runtime/TLE)
    *   stopped_at        → index of first failure (= inputs.length if all passed)
    */
-  static async runTestCases(language, code, inputs) {
+  static async runTestCases(language, code, inputs, earlyExit = true) {
     const pool = pools[language];
     if (!pool) {
       return {
@@ -219,7 +219,7 @@ class JudgeService {
         stopped_at: 0,
       };
     }
-    return pool.runCode(code, inputs);
+    return pool.runCode(code, inputs, earlyExit);
   }
 }
 

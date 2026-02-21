@@ -176,8 +176,86 @@ class BattleService {
     return battleResult;
   }
 
-  static async getBattleHistory(userId, page = 1, limit = 10) {
+  static async incrementBattleAttempt(battleId, userId) {
+    const battle = await Database.client.battle.findUnique({
+      where: { id: battleId }
+    });
 
+    if (!battle) return;
+
+    const data = {};
+    if (battle.player1Id === userId) {
+      data.attemptsPlayer1 = { increment: 1 };
+    } else if (battle.player2Id === userId) {
+      data.attemptsPlayer2 = { increment: 1 };
+    }
+
+    const updatedBattle = await Database.client.battle.update({
+      where: { id: battleId },
+      data,
+      include: { player1: true, player2: true }
+    });
+
+    // Notify listeners about the attempt update
+    SocketEmitter.emitToBattle(battleId, "attemptsUpdated", {
+      player1Attempts: updatedBattle.attemptsPlayer1,
+      player2Attempts: updatedBattle.attemptsPlayer2
+    });
+
+    // Check if both players have failed 3 times
+    if (updatedBattle.attemptsPlayer1 >= 3 && updatedBattle.attemptsPlayer2 >= 3) {
+      // Check if battle is still ongoing (nobody passed)
+      if (updatedBattle.status === "ONGOING") {
+        await this.handleDoubleFailure(battleId, updatedBattle.player1Id, updatedBattle.player2Id);
+      }
+    }
+
+    return updatedBattle;
+  }
+
+  static async handleDoubleFailure(battleId, p1Id, p2Id) {
+    console.log(`💀 Double failure in battle ${battleId}. Ending with penalties...`);
+
+    await Database.client.battle.update({
+      where: { id: battleId },
+      data: {
+        status: "FINISHED",
+        endedAt: new Date(),
+        winnerId: null // No winner
+      }
+    });
+
+    // Apply penalties to BOTH players
+    (async () => {
+      try {
+        // Custom ranking reduction for double failure
+        await Database.client.user.updateMany({
+          where: { id: { in: [p1Id, p2Id] } },
+          data: {
+            rankPoints: { decrement: 50 },
+            losses: { increment: 1 }
+          }
+        });
+        await RedisClient.client.flushall();
+        SocketEmitter.emitToBattle(battleId, "battleFinished", { winnerId: null, draw: true });
+        console.log(`✅ Double failure penalties applied for battle ${battleId}`);
+      } catch (err) {
+        console.error(`❌ handleDoubleFailure error: ${err.message}`);
+      }
+    })();
+  }
+
+  static async getRemainingAttempts(battleId, userId) {
+    const battle = await Database.client.battle.findUnique({
+      where: { id: battleId },
+      select: { player1Id: true, player2Id: true, attemptsPlayer1: true, attemptsPlayer2: true }
+    });
+    if (!battle) return 3;
+    const used = battle.player1Id === userId ? battle.attemptsPlayer1 : battle.attemptsPlayer2;
+    return Math.max(0, 3 - used);
+  }
+
+  static async getBattleHistory(userId, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
     const battles = await Database.client.battle.findMany({
