@@ -108,18 +108,18 @@ export default function Ide() {
 
     // If battle finished, check winner
     if (currentBattle.status === "FINISHED") {
-      // Assume myUserId is available in currentBattle (add from backend if not)
       const myUserId = currentBattle.myUserId || localStorage.getItem("userId");
-      if (currentBattle.winnerId === myUserId) {
-        setMessage("🏆 You won the battle!");
+      // Use winner object from backend
+      if (currentBattle.winner && currentBattle.winner.id === myUserId) {
+        setMessage(`🏆 You won the battle! (${currentBattle.winner.username})`);
         setHasWon(true);
         setStatus("finished");
-      } else if (currentBattle.player1Id === myUserId || currentBattle.player2Id === myUserId) {
-        setMessage("❌ You lost the battle.");
+      } else if (myUserId === currentBattle.player1?.id || myUserId === currentBattle.player2?.id) {
+        setMessage(`❌ You lost the battle. Winner: ${currentBattle.winner?.username || "Unknown"}`);
         setHasLost(true);
         setStatus("finished");
       } else {
-        setMessage(`🏆 Winner: ${currentBattle.winnerId}`);
+        setMessage(`🏆 Winner: ${currentBattle.winner?.username || currentBattle.winnerId}`);
         setStatus("finished");
       }
     } else if (submissionResult) {

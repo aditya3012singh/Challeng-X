@@ -45,8 +45,9 @@ class BattleController {
     const { battleId } = req.params;
     try {
         const battle = await BattleService.getBattle(battleId);
-        // console.log("Fetched battle details:", battle);
-        res.status(200).json(battle);
+        // Attach myUserId for frontend convenience
+        const myUserId = req.user?.id;
+        res.status(200).json({ ...battle, myUserId });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

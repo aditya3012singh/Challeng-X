@@ -125,10 +125,23 @@ class BattleService {
               select:{
                 id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: true
               }
-            }
+            },
+            player1: { select: { id: true, username: true, email: true } },
+            player2: { select: { id: true, username: true, email: true } },
         }
     });
-    return battle;
+    // Add winner details if available
+    let winner = null;
+    if (battle.winnerId) {
+      if (battle.player1 && battle.player1.id === battle.winnerId) winner = battle.player1;
+      else if (battle.player2 && battle.player2.id === battle.winnerId) winner = battle.player2;
+    }
+    return {
+      ...battle,
+      player1: battle.player1,
+      player2: battle.player2,
+      winner,
+    };
   }
 
   static async finishBattleService(battleId, winnerId){
