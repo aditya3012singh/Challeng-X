@@ -33,6 +33,12 @@ const worker = new Worker(
             if (!submission) throw new Error("Submission not found");
             if (!submission.problem) throw new Error("Submission has no associated problem");
 
+            // Idempotency guard — skip if already judged (stale job replay after worker restart)
+            if (submission.status === "PASSED" || submission.status === "ERROR") {
+                console.log(`⏭  Job ${job.id} skipped — already processed (status=${submission.status})`);
+                return;
+            }
+
             await Database.client.submission.update({
                 where: { id: submissionId },
                 data: { status: "RUNNING" }
