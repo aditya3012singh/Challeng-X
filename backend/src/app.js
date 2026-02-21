@@ -22,19 +22,19 @@ class App {
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
-        
+
         // In development, allow any localhost origin
         if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
           return callback(null, true);
         }
-        
+
         // In production, use specific allowed origins
         const allowedOrigins = [
           'http://localhost:5173',
           'http://localhost:5174',
           process.env.FRONTEND_URL
         ].filter(Boolean);
-        
+
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
@@ -56,6 +56,11 @@ class App {
     app.use("/api/team", TeamRoutes.createRouter());
     app.use("/api/team-battle", TeamBattleRoutes.createRouter());
     app.use("/api/squid-game", SquidGameRoutes.createRouter());
+
+    // Health Check for production Monitoring
+    app.get("/api/health", (req, res) => {
+      res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
+    });
 
     return app;
   }
