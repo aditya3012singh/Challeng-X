@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSubmission } from "../hooks/useSubmission";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -90,6 +90,10 @@ export default function Ide() {
   const { currentBattle, submissionResult } = useSelector(
     (state) => state.battle
   );
+  // Keep a ref to the current user id so socket closures always see the latest value
+  const { user } = useSelector((state) => state.auth);
+  const userIdRef = useRef(null);
+  useEffect(() => { userIdRef.current = user?.id; }, [user]);
 
   const isBattleFinished = currentBattle?.status === "FINISHED";
   const isBattleLoading = !currentBattle;
@@ -201,10 +205,28 @@ export default function Ide() {
       dispatch(getBattle({ battleId }));
     });
 
+    // Listen for submission result from the worker (via server relay)
+    // Server only emits this event for ERROR/FAILED results.
+    // PASSED results are handled via the battleFinished event chain.
+    socket.on("submissionResult", ({ userId: resultUserId, status, passedTests, totalTests }) => {
+      const isMe = resultUserId === userIdRef.current;
+      console.log("submissionResult received:", { resultUserId, status, passedTests, totalTests, isMe });
+
+      setStatus("error");
+      if (isMe) {
+        // Show detailed result to the person who submitted
+        setMessage(`❌ Wrong answer — ${passedTests ?? 0}/${totalTests ?? '?'} test cases passed`);
+      } else {
+        // Opponent submitted wrong answer — nothing to show for the other player
+        setMessage("");
+      }
+    });
+
     return () => {
       socket.off("playerJoined");
       socket.off("battleStarted");
       socket.off("battleFinished");
+      socket.off("submissionResult");
     };
   }, [battleId, dispatch]);
 
@@ -213,7 +235,7 @@ export default function Ide() {
 
     // If battle finished, check winner
     if (currentBattle.status === "FINISHED") {
-      const myUserId = currentBattle.myUserId || localStorage.getItem("userId");
+      const myUserId = currentBattle.myUserId || userIdRef.current;
       // Use winner object from backend
       if (currentBattle.winner && currentBattle.winner.id === myUserId) {
         setMessage(`🏆 You won the battle! (${currentBattle.winner.username})`);
@@ -245,20 +267,19 @@ export default function Ide() {
     if (battleId) {
       try {
         const result = await dispatch(submitBattleCode({ battleId, code, language })).unwrap();
-        setStatus("submitted");
-        if (result.status === "PASSED") {
-          if (currentBattle?.status === "WAITING") {
-            setMessage("✅ All test cases passed! Waiting for opponent to join...");
-          } else {
-            setMessage("✅ All test cases passed! You won the battle!");
-            setHasWon(true);
-          }
+        // Submission is async — worker will emit the real result via socket
+        if (result.status === "QUEUED") {
+          setStatus("running");
+          setMessage("⏳ Judging your code... results will appear shortly");
+        } else if (result.status === "PASSED") {
+          setStatus("submitted");
+          setMessage("✅ All test cases passed!");
         } else if (result.status === "FAILED") {
+          setStatus("error");
           setMessage(`❌ Some test cases failed`);
         } else if (result.status === "ERROR") {
+          setStatus("error");
           setMessage(`❌ Compilation/Runtime Error: ${result.error || ''}`);
-        } else {
-          setMessage(`⚠️ ${result.status}: ${result.message || ''}`);
         }
       } catch (error) {
         setStatus("error");
@@ -286,7 +307,11 @@ export default function Ide() {
       {showLeaveModal && (
         <LeaveConfirmModal
           onStay={() => setShowLeaveModal(false)}
-          onLeave={() => { setShowLeaveModal(false); navigate("/"); }}
+          onLeave={() => {
+            localStorage.removeItem("active_battle_id");
+            setShowLeaveModal(false);
+            navigate("/");
+          }}
         />
       )}
 
