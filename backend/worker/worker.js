@@ -40,9 +40,15 @@ const worker = new Worker(
         let total = submission.problem.testcases.length;
         const startTime = Date.now();
 
-        for (let tc of submission.problem.testcases) {
+        for (let i = 0; i < submission.problem.testcases.length; i++) {
+            const tc = submission.problem.testcases[i];
             const result = await JudgeService.runCode(submission.language, submission.code, tc.input);
-            if (result.error || result.output.trim() !== tc.output.trim()) {
+            const actualOutput = result.output?.trim() ?? "";
+            const expectedOutput = tc.output?.trim() ?? "";
+            const hasError = !!result.error;
+            const wrongAnswer = !hasError && actualOutput !== expectedOutput;
+
+            if (hasError || wrongAnswer) {
                 await Database.client.submission.update({
                     where: { id: submissionId },
                     data: {
@@ -53,14 +59,19 @@ const worker = new Worker(
                     }
                 });
 
-                // Emit failure event — server will forward to battle room
+                // Emit failure event with full details — server forwards to battle room
                 socket.emit("submissionResult", {
                     submissionId,
                     userId: userId || submission.user.id,
                     battleId: battleId || submission.battleId || null,
                     status: "ERROR",
                     passedTests: passed,
-                    totalTests: total
+                    totalTests: total,
+                    failedTestCase: i + 1,
+                    input: tc.input,
+                    expectedOutput,
+                    actualOutput: hasError ? null : actualOutput,
+                    errorMessage: hasError ? result.error : null,
                 });
 
                 return;

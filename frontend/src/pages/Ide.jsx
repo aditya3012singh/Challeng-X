@@ -10,6 +10,7 @@ import OutputPanel from "../components/OutputPanel";
 import { Skeleton } from "../components/Skeleton";
 
 import { getBattle, submitBattleCode } from "../../store/api/battle.thunk";
+import { clearCurrentBattle } from "../../store/slices/battle.slice";
 import { submitCode, getSubmissionStatus } from "../../store/api/submission.thunk";
 import { BattleProblem } from "../components/BattleProblem";
 
@@ -177,6 +178,8 @@ export default function Ide() {
   }, [isBattleFinished]);
 
   useEffect(() => {
+    // Wipe any stale Redux state from a previous battle session
+    dispatch(clearCurrentBattle());
     dispatch(getBattle({ battleId }));
   }, [battleId]);
 
@@ -208,16 +211,23 @@ export default function Ide() {
     // Listen for submission result from the worker (via server relay)
     // Server only emits this event for ERROR/FAILED results.
     // PASSED results are handled via the battleFinished event chain.
-    socket.on("submissionResult", ({ userId: resultUserId, status, passedTests, totalTests }) => {
+    socket.on("submissionResult", ({ userId: resultUserId, status, passedTests, totalTests, failedTestCase, input, expectedOutput, actualOutput, errorMessage }) => {
       const isMe = resultUserId === userIdRef.current;
       console.log("submissionResult received:", { resultUserId, status, passedTests, totalTests, isMe });
 
       setStatus("error");
       if (isMe) {
-        // Show detailed result to the person who submitted
-        setMessage(`❌ Wrong answer — ${passedTests ?? 0}/${totalTests ?? '?'} test cases passed`);
+        // Build a detailed output message
+        const lines = [`❌ Wrong answer — ${passedTests ?? 0}/${totalTests ?? "?"} test cases passed`];
+        if (failedTestCase) lines.push(`\nFailed on Test Case #${failedTestCase}`);
+        if (input != null) lines.push(`\nInput:\n${input}`);
+        if (errorMessage) lines.push(`\nRuntime Error:\n${errorMessage}`);
+        if (!errorMessage) {
+          if (expectedOutput != null) lines.push(`\nExpected Output:\n${expectedOutput}`);
+          if (actualOutput != null) lines.push(`\nYour Output:\n${actualOutput}`);
+        }
+        setMessage(lines.join(""));
       } else {
-        // Opponent submitted wrong answer — nothing to show for the other player
         setMessage("");
       }
     });
@@ -232,11 +242,12 @@ export default function Ide() {
 
   useEffect(() => {
     if (!currentBattle) return;
+    // Ignore stale Redux state from a DIFFERENT battle
+    if (currentBattle.id !== battleId) return;
 
     // If battle finished, check winner
     if (currentBattle.status === "FINISHED") {
       const myUserId = currentBattle.myUserId || userIdRef.current;
-      // Use winner object from backend
       if (currentBattle.winner && currentBattle.winner.id === myUserId) {
         setMessage(`🏆 You won the battle! (${currentBattle.winner.username})`);
         setHasWon(true);

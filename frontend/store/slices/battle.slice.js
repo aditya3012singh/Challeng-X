@@ -27,6 +27,11 @@ const battleSlice = createSlice({
         clearSubmissionResult: (state) => {
             state.submissionResult = null;
         },
+        clearCurrentBattle: (state) => {
+            state.currentBattle = null;
+            state.submissionResult = null;
+            state.error = null;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -118,5 +123,5 @@ const battleSlice = createSlice({
     },
 });
 
-export const { clearBattleError, clearSubmissionResult } = battleSlice.actions;
+export const { clearBattleError, clearSubmissionResult, clearCurrentBattle } = battleSlice.actions;
 export default battleSlice.reducer;

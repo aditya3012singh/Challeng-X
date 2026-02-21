@@ -35,7 +35,7 @@ class ServerApp {
       // Worker → Server: result of a judged submission
       // The worker emits this after running all test cases.
       // ──────────────────────────────────────────────────────────────────────
-      socket.on("submissionResult", async ({ submissionId, userId, battleId, status, passedTests, totalTests, executionTimeMs }) => {
+      socket.on("submissionResult", async ({ submissionId, userId, battleId, status, passedTests, totalTests, executionTimeMs, failedTestCase, input, expectedOutput, actualOutput, errorMessage }) => {
         console.log(`📨 submissionResult: battle=${battleId} user=${userId} status=${status}`);
 
         try {
@@ -56,7 +56,11 @@ class ServerApp {
                 status,
                 passedTests,
                 totalTests,
-                executionTimeMs,
+                failedTestCase,
+                input,
+                expectedOutput,
+                actualOutput,
+                errorMessage,
               });
             }
           }

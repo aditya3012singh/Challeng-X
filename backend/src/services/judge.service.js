@@ -69,11 +69,13 @@ class JudgeService {
         "run",
         "--rm",
         "--network", "none",
+        "--memory", "128m",
+        "--cpus", "0.5",
         "-v", `${dockerTempDir}:/app`,
         lang.image,
         "bash",
         "-c",
-        lang.run(id)
+        `timeout 8 sh -c '${lang.run(id)}'`
       ];
 
       const proc = spawn("docker", args);
@@ -81,12 +83,19 @@ class JudgeService {
       let output = "";
       let error = "";
 
+      // Hard kill in case docker itself hangs
+      const killer = setTimeout(() => {
+        proc.kill("SIGKILL");
+        resolve({ error: "Time Limit Exceeded (12s)" });
+      }, 12000);
+
       proc.stdout.on("data", (data) => (output += data.toString()));
       proc.stderr.on("data", (data) => (error += data.toString()));
 
       proc.on("close", () => {
-        try { fs.unlinkSync(codePath); } catch {}
-        try { fs.unlinkSync(inputPath); } catch {}
+        clearTimeout(killer);
+        try { fs.unlinkSync(codePath); } catch { }
+        try { fs.unlinkSync(inputPath); } catch { }
 
         if (error) return resolve({ error: error.trim() });
         resolve({ output: output.trim() });
