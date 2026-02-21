@@ -20,7 +20,7 @@ export default function EditorToolbar({
 
       <button
         onClick={onRun}
-        disabled={status === "running"}
+        disabled={status === "running" || status === "QUEUED"}
         className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded"
       >
         ▶ Run

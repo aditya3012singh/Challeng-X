@@ -39,6 +39,9 @@ const WaitingForOpponent = ({ battleId }) => {
 };
 
 export default function Ide() {
+    // Track win/loss state
+    const [hasWon, setHasWon] = useState(false);
+    const [hasLost, setHasLost] = useState(false);
   const { battleId } = useParams();
   const dispatch = useDispatch();
 
@@ -103,9 +106,22 @@ export default function Ide() {
   useEffect(() => {
     if (!currentBattle) return;
 
+    // If battle finished, check winner
     if (currentBattle.status === "FINISHED") {
-      setMessage(`🏆 Winner: ${currentBattle.winnerId}`);
-      setStatus("finished");
+      // Assume myUserId is available in currentBattle (add from backend if not)
+      const myUserId = currentBattle.myUserId || localStorage.getItem("userId");
+      if (currentBattle.winnerId === myUserId) {
+        setMessage("🏆 You won the battle!");
+        setHasWon(true);
+        setStatus("finished");
+      } else if (currentBattle.player1Id === myUserId || currentBattle.player2Id === myUserId) {
+        setMessage("❌ You lost the battle.");
+        setHasLost(true);
+        setStatus("finished");
+      } else {
+        setMessage(`🏆 Winner: ${currentBattle.winnerId}`);
+        setStatus("finished");
+      }
     } else if (submissionResult) {
       setMessage("✅ Code submitted. Waiting for opponent...");
       setStatus("waiting");
@@ -114,6 +130,10 @@ export default function Ide() {
 
   // Handles both battle and practice submissions
   const handleSubmit = async () => {
+    // Block submission if user has won or lost
+    if (hasWon || hasLost || (currentBattle && currentBattle.status === "FINISHED")) {
+      return;
+    }
     setStatus("running");
     setMessage("");
 
@@ -126,6 +146,7 @@ export default function Ide() {
             setMessage("✅ All test cases passed! Waiting for opponent to join...");
           } else {
             setMessage("✅ All test cases passed! You won the battle!");
+            setHasWon(true);
           }
         } else if (result.status === "FAILED") {
           setMessage(`❌ Some test cases failed`);
@@ -142,7 +163,7 @@ export default function Ide() {
       // Practice mode: use the custom hook
       try {
         await handlePracticeSubmit({ code, language, problemId: currentBattle?.problem?.id });
-        setMessage("⏳ Submission queued. Waiting for result...");
+        setMessage("🟡 Evaluating your code...");
       } catch (error) {
         setMessage(`❌ Error: ${error.message || 'Submission failed'}`);
       }
@@ -189,7 +210,7 @@ export default function Ide() {
                 language={language}
                 onLanguageChange={handleLanguageChange}
                 onRun={handleSubmit}
-                status={battleId ? status : practiceStatus || status}
+                status={battleId ? (hasWon || hasLost || (currentBattle && currentBattle.status === "FINISHED") ? "finished" : status) : practiceStatus || status}
               />
               <div className="flex flex-col h-[calc(100%-3rem)]">
                 <div className="flex-1 min-h-0">
