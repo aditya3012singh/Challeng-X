@@ -20,110 +20,115 @@ const worker = new Worker(
     "submissionQueue",
     async (job) => {
         const { submissionId, battleId, userId } = job.data;
+        console.log(`📦 Job ${job.id} picked up — submissionId=${submissionId} lang=${job.data.language ?? "?"}`);
 
-        const submission = await Database.client.submission.findUnique({
-            where: { id: submissionId },
-            include: {
-                problem: { include: { testcases: true } },
-                user: { select: { id: true } }
-            }
-        });
-        if (!submission) throw new Error("Submission not found");
-
-        await Database.client.submission.update({
-            where: { id: submissionId },
-            data: { status: "RUNNING" }
-        });
-
-
-        const testcases = submission.problem.testcases;
-        const total = testcases.length;
-        const startTime = Date.now();
-
-        // Run ALL test cases in a single warm-container job.
-        // For C/C++ this means compile ONCE, run each input against the same binary.
-        const { results, stopped_at } = await JudgeService.runTestCases(
-            submission.language,
-            submission.code,
-            testcases.map(tc => tc.input)
-        );
-
-        const passed = stopped_at; // number of test cases that passed before failure
-        const executionTimeMs = Date.now() - startTime;
-
-        // Check every result against expected output
-        let failedIndex = -1;
-        let failedResult = null;
-
-        for (let i = 0; i < results.length; i++) {
-            const r = results[i];
-            const tc = testcases[i];
-            const actualOutput = r.output?.trim() ?? "";
-            const expectedOutput = tc.output?.trim() ?? "";
-            const hasError = !!r.error;
-            const wrongAnswer = !hasError && actualOutput !== expectedOutput;
-
-            if (hasError || wrongAnswer) {
-                failedIndex = i;
-                failedResult = {
-                    hasError,
-                    actualOutput: hasError ? null : actualOutput,
-                    expectedOutput,
-                    errorMessage: hasError ? r.error : null,
-                    input: tc.input,
-                };
-                break;
-            }
-        }
-
-        if (failedIndex !== -1) {
-            const { hasError, actualOutput, expectedOutput, errorMessage, input } = failedResult;
+        try {
+            const submission = await Database.client.submission.findUnique({
+                where: { id: submissionId },
+                include: {
+                    problem: { include: { testcases: true } },
+                    user: { select: { id: true } }
+                }
+            });
+            if (!submission) throw new Error("Submission not found");
+            if (!submission.problem) throw new Error("Submission has no associated problem");
 
             await Database.client.submission.update({
                 where: { id: submissionId },
-                data: { status: "ERROR", passedTests: failedIndex, totalTests: total, executionTimeMs }
+                data: { status: "RUNNING" }
+            });
+
+            const testcases = submission.problem.testcases;
+            const total = testcases.length;
+            const t0 = Date.now();
+
+            console.log(`⏱  [${submission.language}] Starting judge — ${total} test case(s)`);
+
+            // Run ALL test cases in a single warm-container job.
+            // For C/C++ this means compile ONCE, run each input against the same binary.
+            const { results, stopped_at } = await JudgeService.runTestCases(
+                submission.language,
+                submission.code,
+                testcases.map(tc => tc.input)
+            );
+
+            const judgeMs = Date.now() - t0;
+            const passed = stopped_at;
+            const executionTimeMs = judgeMs;
+
+            console.log(`⏱  [${submission.language}] Judge done in ${judgeMs}ms | passed=${passed}/${total}`);
+
+            // Check every result against expected output
+            let failedIndex = -1;
+            let failedResult = null;
+
+            for (let i = 0; i < results.length; i++) {
+                const r = results[i];
+                const tc = testcases[i];
+                const actualOutput = r.output?.trim() ?? "";
+                const expectedOutput = tc.output?.trim() ?? "";
+                const hasError = !!r.error;
+                const wrongAnswer = !hasError && actualOutput !== expectedOutput;
+
+                if (hasError || wrongAnswer) {
+                    failedIndex = i;
+                    failedResult = {
+                        hasError,
+                        actualOutput: hasError ? null : actualOutput,
+                        expectedOutput,
+                        errorMessage: hasError ? r.error : null,
+                        input: tc.input,
+                    };
+                    break;
+                }
+            }
+
+            if (failedIndex !== -1) {
+                const { hasError, actualOutput, expectedOutput, errorMessage, input } = failedResult;
+
+                await Database.client.submission.update({
+                    where: { id: submissionId },
+                    data: { status: "ERROR", passedTests: failedIndex, totalTests: total, executionTimeMs }
+                });
+
+                socket.emit("submissionResult", {
+                    submissionId,
+                    userId: userId || submission.user.id,
+                    battleId: battleId || submission.battleId || null,
+                    status: "ERROR",
+                    passedTests: failedIndex,
+                    totalTests: total,
+                    failedTestCase: failedIndex + 1,
+                    input,
+                    expectedOutput,
+                    actualOutput,
+                    errorMessage,
+                });
+
+                return;
+            }
+
+            // All test cases passed
+            await Database.client.submission.update({
+                where: { id: submissionId },
+                data: { status: "PASSED", passedTests: total, totalTests: total, executionTimeMs }
             });
 
             socket.emit("submissionResult", {
                 submissionId,
                 userId: userId || submission.user.id,
                 battleId: battleId || submission.battleId || null,
-                status: "ERROR",
-                passedTests: failedIndex,
-                totalTests: total,
-                failedTestCase: failedIndex + 1,
-                input,
-                expectedOutput,
-                actualOutput,
-                errorMessage,
-            });
-
-            return;
-        }
-
-        // All test cases passed
-
-        await Database.client.submission.update({
-            where: { id: submissionId },
-            data: {
                 status: "PASSED",
                 passedTests: total,
                 totalTests: total,
                 executionTimeMs
-            }
-        });
+            });
 
-        // Emit success event — server will call finishBattleService
-        socket.emit("submissionResult", {
-            submissionId,
-            userId: userId || submission.user.id,
-            battleId: battleId || submission.battleId || null,
-            status: "PASSED",
-            passedTests: total,
-            totalTests: total,
-            executionTimeMs
-        });
-
+        } catch (err) {
+            console.error(`💥 Job ${job.id} processor error:`, err.message);
+            // Re-throw so BullMQ marks it as failed (fires worker.on("failed"))
+            throw err;
+        }
     },
     {
         connection,
