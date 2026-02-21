@@ -4,6 +4,7 @@ import App from "./app.js";
 import http from "http";
 import { Server } from "socket.io";
 import SquidGameSocket from "./config/squidGameSocket.js";
+import BattleService from "./services/battle.service.js";
 
 class ServerApp {
   static io = null;
@@ -28,6 +29,40 @@ class ServerApp {
       socket.on("joinBattle", (battleId) => {
         socket.join(battleId);
         console.log(`User joined room ${battleId}`);
+      });
+
+      // ──────────────────────────────────────────────────────────────────────
+      // Worker → Server: result of a judged submission
+      // The worker emits this after running all test cases.
+      // ──────────────────────────────────────────────────────────────────────
+      socket.on("submissionResult", async ({ submissionId, userId, battleId, status, passedTests, totalTests, executionTimeMs }) => {
+        console.log(`📨 submissionResult: battle=${battleId} user=${userId} status=${status}`);
+
+        try {
+          if (battleId) {
+            if (status === "PASSED") {
+              // Fetch battle to ensure it's still ONGOING (guard against race)
+              const battle = await BattleService.getBattle(battleId);
+              if (battle && battle.status === "ONGOING") {
+                // Finish battle — updates DB, updates ranks, emits battleFinished
+                await BattleService.finishBattleService(battleId, userId);
+                console.log(`🏆 Battle ${battleId} finished. Winner: ${userId}`);
+              }
+            } else {
+              // Send the failure result back to both players in the room
+              io.to(battleId).emit("submissionResult", {
+                submissionId,
+                userId,
+                status,
+                passedTests,
+                totalTests,
+                executionTimeMs,
+              });
+            }
+          }
+        } catch (err) {
+          console.error("❌ Error handling submissionResult:", err.message);
+        }
       });
 
       socket.on("disconnect", () => {

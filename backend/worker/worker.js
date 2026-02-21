@@ -19,11 +19,11 @@ socket.on("connect", () => {
 const worker = new Worker(
     "submissionQueue",
     async (job) => {
-        const { submissionId } = job.data;
+        const { submissionId, battleId, userId } = job.data;
 
         const submission = await Database.client.submission.findUnique({
             where: { id: submissionId },
-            include: { 
+            include: {
                 problem: { include: { testcases: true } },
                 user: { select: { id: true } }
             }
@@ -43,9 +43,9 @@ const worker = new Worker(
         for (let tc of submission.problem.testcases) {
             const result = await JudgeService.runCode(submission.language, submission.code, tc.input);
             if (result.error || result.output.trim() !== tc.output.trim()) {
-                const updatedSubmission = await Database.client.submission.update({
+                await Database.client.submission.update({
                     where: { id: submissionId },
-                    data: { 
+                    data: {
                         status: "ERROR",
                         passedTests: passed,
                         totalTests: total,
@@ -53,11 +53,11 @@ const worker = new Worker(
                     }
                 });
 
-                // Emit failure event
+                // Emit failure event — server will forward to battle room
                 socket.emit("submissionResult", {
                     submissionId,
-                    userId: submission.userId,
-                    battleId: submission.battleId,
+                    userId: userId || submission.user.id,
+                    battleId: battleId || submission.battleId || null,
                     status: "ERROR",
                     passedTests: passed,
                     totalTests: total
@@ -70,21 +70,21 @@ const worker = new Worker(
 
         const executionTime = Date.now() - startTime;
 
-        const updatedSubmission = await Database.client.submission.update({
+        await Database.client.submission.update({
             where: { id: submissionId },
-            data: { 
-                status: "PASSED", 
-                passedTests: passed, 
+            data: {
+                status: "PASSED",
+                passedTests: passed,
                 totalTests: total,
                 executionTimeMs: executionTime
             }
         });
 
-        // Emit success event
+        // Emit success event — server will call finishBattleService
         socket.emit("submissionResult", {
             submissionId,
-            userId: submission.userId,
-            battleId: submission.battleId,
+            userId: userId || submission.user.id,
+            battleId: battleId || submission.battleId || null,
             status: "PASSED",
             passedTests: passed,
             totalTests: total,
@@ -92,7 +92,7 @@ const worker = new Worker(
         });
 
     },
-    { 
+    {
         connection,
         concurrency: 5,
     }
