@@ -75,115 +75,120 @@ export const Battle = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-dark)] text-white py-20 px-4 relative overflow-hidden font-[family:var(--font-heading)]">
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-10 pointer-events-none"></div>
+    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-24 px-6 relative overflow-hidden font-[family:var(--font-body)]">
+      {/* Background Decor */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.015] blur-[180px] rounded-full"></div>
+      </div>
 
       <div className="max-w-4xl mx-auto relative z-10">
-        <h1 className="text-5xl font-black text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-glow">
-          BATTLE CONTROL
-        </h1>
+        <div className="text-center mb-16">
+          <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Engagement Hub // Solo</div>
+          <h1 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
+            Strategic Controller
+          </h1>
+        </div>
 
-        {/* Tabs */}
-        <div className="flex justify-center mb-12 space-x-6">
-          <button
-            onClick={() => setActiveTab("random")}
-            className={`px-8 py-3 rounded clip-path-polygon transition-all border border-[var(--color-primary)] uppercase tracking-widest text-sm font-bold ${activeTab === "random"
-              ? "bg-[var(--color-primary)] text-black shadow-[0_0_20px_var(--color-primary)]"
-              : "bg-transparent text-[var(--color-primary)] hover:bg-[rgba(0,240,255,0.1)]"
-              }`}
-            style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
-          >
-            Random
-          </button>
-
-          <button
-            onClick={() => setActiveTab("selected")}
-            className={`px-8 py-3 rounded clip-path-polygon transition-all border border-[var(--color-primary)] uppercase tracking-widest text-sm font-bold ${activeTab === "selected"
-              ? "bg-[var(--color-primary)] text-black shadow-[0_0_20px_var(--color-primary)]"
-              : "bg-transparent text-[var(--color-primary)] hover:bg-[rgba(0,240,255,0.1)]"
-              }`}
-            style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
-          >
-            Custom
-          </button>
-
-          <button
-            onClick={() => setActiveTab("join")}
-            className={`px-8 py-3 rounded clip-path-polygon transition-all border border-[var(--color-success)] uppercase tracking-widest text-sm font-bold ${activeTab === "join"
-              ? "bg-[var(--color-success)] text-black shadow-[0_0_20px_var(--color-success)]"
-              : "bg-transparent text-[var(--color-success)] hover:bg-[rgba(0,255,157,0.1)]"
-              }`}
-            style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
-          >
-            Join
-          </button>
+        {/* Tabs - REFINED */}
+        <div className="flex justify-center mb-16">
+          <div className="inline-flex bg-white/[0.02] p-1 border border-white/5" style={{ borderRadius: "2px" }}>
+            <button
+              onClick={() => setActiveTab("random")}
+              className={`px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "random"
+                ? "bg-[var(--color-primary)] text-black"
+                : "text-slate-500 hover:text-white"
+                }`}
+              style={{ borderRadius: "1px" }}
+            >
+              Random // Adapt
+            </button>
+            <button
+              onClick={() => setActiveTab("selected")}
+              className={`px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "selected"
+                ? "bg-[var(--color-primary)] text-black"
+                : "text-slate-500 hover:text-white"
+                }`}
+              style={{ borderRadius: "1px" }}
+            >
+              Custom // Select
+            </button>
+            <button
+              onClick={() => setActiveTab("join")}
+              className={`px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "join"
+                ? "bg-[var(--color-primary)] text-black"
+                : "text-slate-500 hover:text-white"
+                }`}
+              style={{ borderRadius: "1px" }}
+            >
+              Join // Access
+            </button>
+          </div>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="mb-8 p-4 bg-red-900/40 border border-red-500 rounded text-red-300 text-center animate-pulse">
-            ⚠ {error}
+          <div className="mb-12 p-6 border border-red-500/20 bg-red-500/5 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center animate-pulse" style={{ borderRadius: "2px" }}>
+            ⚠ Security Exception: {error}
           </div>
         )}
 
-        {/* Tab Content Card */}
-        <div className="glass-panel border-glow rounded-3xl p-10 min-h-[400px] flex items-center justify-center relative">
-          {/* Decorative Elements */}
-          <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-[var(--color-primary)]"></div>
-          <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-[var(--color-primary)]"></div>
-          <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-[var(--color-primary)]"></div>
-          <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-[var(--color-primary)]"></div>
+        {/* Tab Content Card - PREMIUM */}
+        <div className="premium-card p-16 lg:p-20 relative overflow-hidden" style={{ borderRadius: "2px" }}>
 
           {/* Random Battle */}
           {activeTab === "random" && (
-            <div className="text-center max-w-lg">
-              <div className="mb-8">
-                <div className="text-8xl mb-6 filter drop-shadow-[0_0_15px_var(--color-primary)]">⚡</div>
-                <h2 className="text-3xl font-bold mb-3 text-white">QUICK DEPLOYMENT</h2>
-                <p className="text-[var(--color-text-muted)]">
-                  Instant matchmaking with random parameters. Test your adaptability.
+            <div className="text-center max-w-lg mx-auto">
+              <div className="mb-12">
+                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Zero Parameter</div>
+                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Quick Deployment</h2>
+                <p className="text-slate-500 text-sm font-light leading-relaxed">
+                  Instant matchmaking with randomized constraints. Designed for operatives requiring immediate engagement and adaptability testing.
                 </p>
               </div>
 
               <button
                 onClick={handleCreateRandom}
                 disabled={loading}
-                className="px-12 py-5 neon-button text-xl font-bold rounded clip-path-polygon hover:scale-105 transition-transform"
-                style={{ clipPath: "polygon(5% 0, 100% 0, 100% 80%, 95% 100%, 0 100%, 0 20%)" }}
+                className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
+                style={{ borderRadius: "2px" }}
               >
-                {loading ? "INITIALIZING..." : "INITIATE SEQUENCE"}
+                {loading ? "Initializing..." : "Execute Deployment Sequence →"}
               </button>
             </div>
           )}
 
           {/* Selected Problem */}
           {activeTab === "selected" && (
-            <div className="w-full max-w-lg">
-              <h2 className="text-3xl font-bold mb-6 text-center text-white">CUSTOM CONFIGURATION</h2>
-              <p className="text-[var(--color-text-muted)] mb-8 text-center">
-                Select specific combat scenario.
-              </p>
+            <div className="w-full max-w-lg mx-auto">
+              <div className="text-center mb-12">
+                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Manual Override</div>
+                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Custom Configuration</h2>
+                <p className="text-slate-500 text-sm font-light leading-relaxed">
+                  Define specific engagement parameters by selecting a target dataset for combat analysis.
+                </p>
+              </div>
 
               <form onSubmit={handleCreateSelected}>
-                <div className="mb-8">
-                  <label className="block text-xs font-bold text-[var(--color-primary)] mb-2 uppercase tracking-widest">
+                <div className="mb-12">
+                  <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
                     Select Target Problem
                   </label>
 
                   {problemsLoading ? (
-                    <div className="text-center py-6 text-gray-500 animate-pulse">
-                      LOADING DATABASE...
+                    <div className="text-center py-6 text-slate-700 text-[10px] font-bold tracking-widest animate-pulse">
+                      Scanning Database...
                     </div>
                   ) : (
                     <select
                       value={selectedProblemId}
                       onChange={(e) => setSelectedProblemId(e.target.value)}
-                      className="w-full px-4 py-4 bg-black/50 border border-gray-700 rounded text-white focus:border-[var(--color-primary)] focus:outline-none focus:shadow-[0_0_15px_rgba(0,240,255,0.2)]"
+                      className="w-full bg-[#050505] border border-white/10 px-6 py-5 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all appearance-none text-sm"
+                      style={{ borderRadius: "2px" }}
                       required
                     >
-                      <option value="">-- SELECT DATASET --</option>
+                      <option value="">-- Select Dataset --</option>
                       {problems.map((problem) => (
-                        <option key={problem.id} value={problem.id}>
+                        <option key={problem.id} value={problem.id} className="bg-[#050505]">
                           [{problem.difficulty}] {problem.title}
                         </option>
                       ))}
@@ -194,36 +199,38 @@ export const Battle = () => {
                 <button
                   type="submit"
                   disabled={loading || !selectedProblemId}
-                  className="w-full py-5 neon-button text-xl font-bold rounded clip-path-polygon"
-                  style={{ clipPath: "polygon(5% 0, 100% 0, 100% 80%, 95% 100%, 0 100%, 0 20%)" }}
+                  className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
+                  style={{ borderRadius: "2px" }}
                 >
-                  {loading ? "INITIALIZING..." : "CREATE LOBBY"}
+                  {loading ? "Establishing..." : "Initialize Private Lobby →"}
                 </button>
               </form>
             </div>
           )}
 
+          {/* Join Battle */}
           {activeTab === "join" && (
-            <div className="w-full max-w-lg">
-              <div className="text-center mb-8">
-                <div className="text-6xl mb-6">🤝</div>
-                <h2 className="text-3xl font-bold mb-2 text-white">ESTABLISH LINK</h2>
-                <p className="text-[var(--color-text-muted)]">
-                  Enter access code to join existing session.
+            <div className="w-full max-w-lg mx-auto">
+              <div className="text-center mb-12">
+                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Link Establishment</div>
+                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Access Encryption</h2>
+                <p className="text-slate-500 text-sm font-light leading-relaxed">
+                  Input designated access credentials to merge with a pre-established engagement node.
                 </p>
               </div>
 
               <form onSubmit={handleJoinBattle}>
-                <div className="mb-8">
-                  <label className="block text-xs font-bold text-[var(--color-success)] mb-2 uppercase tracking-widest">
-                    Access Code
+                <div className="mb-12 text-center">
+                  <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-6">
+                    Subroutine Identifier
                   </label>
                   <input
                     type="text"
                     value={battleId}
                     onChange={(e) => setBattleId(e.target.value)}
-                    placeholder="ENTER CODE (e.g. A1B2C3)"
-                    className="w-full px-4 py-4 bg-black/50 border border-gray-700 rounded text-white focus:border-[var(--color-success)] focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,157,0.2)] font-mono tracking-widest text-center text-lg"
+                    placeholder="CODE (e.g. ALPHA-9)"
+                    className="w-full bg-[#050505] border border-white/10 px-6 py-8 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-center text-2xl tracking-[0.4em] uppercase"
+                    style={{ borderRadius: "2px" }}
                     required
                   />
                 </div>
@@ -231,10 +238,10 @@ export const Battle = () => {
                 <button
                   type="submit"
                   disabled={loading || !battleId.trim()}
-                  className="w-full py-5 bg-[rgba(0,255,157,0.1)] border border-[var(--color-success)] text-[var(--color-success)] hover:bg-[var(--color-success)] hover:text-black transition-all text-xl font-bold rounded clip-path-polygon uppercase tracking-widest"
-                  style={{ clipPath: "polygon(5% 0, 100% 0, 100% 80%, 95% 100%, 0 100%, 0 20%)" }}
+                  className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
+                  style={{ borderRadius: "2px" }}
                 >
-                  {loading ? "CONNECTING..." : "JOIN SESSION"}
+                  {loading ? "Authenticating..." : "Establish Link Sequence →"}
                 </button>
               </form>
             </div>

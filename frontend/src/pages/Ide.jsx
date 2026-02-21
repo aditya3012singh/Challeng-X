@@ -21,19 +21,36 @@ const LANGUAGES = {
   cpp: { monaco: "cpp", defaultCode: `#include <iostream>\nint main() {\n  std::cout << "Hello\\n";\n  return 0;\n}` }
 };
 
-const WaitingForOpponent = ({ battleId }) => {
+const WaitingForOpponent = ({ battleId, battleCode }) => {
   const inviteLink = `${window.location.origin}/battle/${battleId}/join`;
 
   return (
-    <div className="h-full flex flex-col items-center justify-center text-center px-8">
-      <h2 className="text-2xl font-bold mb-4">Waiting for opponent...</h2>
+    <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-[#050505] relative overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[var(--color-primary)] opacity-[0.03] blur-[100px] rounded-full"></div>
 
-      <p className="text-gray-600 mb-6">
-        Share this battle link with your friend to start the match.
-      </p>
+      <div className="relative z-10 max-w-md w-full">
+        <div className="mb-10 flex justify-center">
+          <div className="w-20 h-20 border border-white/5 rounded-full flex items-center justify-center relative">
+            <div className="absolute inset-[-4px] border border-[var(--color-primary)]/20 rounded-full animate-ping"></div>
+            <div className="w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_10px_var(--color-primary)]"></div>
+          </div>
+        </div>
 
-      <div className="bg-gray-100 px-4 py-3 rounded-lg text-sm mb-4 break-all">
-        {inviteLink}
+        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Signal Broadcast // Active</div>
+        <h2 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter font-[family:var(--font-heading)]">Scanning Node</h2>
+
+        <p className="text-slate-500 text-sm font-light mb-12 leading-relaxed">
+          The arena is awaiting a second operator to authorize engagement. Distribute the access link to initialize the battle protocol.
+        </p>
+
+        <div className="premium-card p-6 border border-white/10 bg-white/[0.02] text-xs font-mono text-slate-400 break-all mb-4" style={{ borderRadius: "2px" }}>
+          {inviteLink}
+        </div>
+
+        <div className="flex items-center justify-center gap-4 text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-8">
+          <span className="animate-pulse">Waiting for parity</span>
+          <div className="w-1 h-1 rounded-full bg-[var(--color-primary)]"></div>
+        </div>
       </div>
     </div>
   );
@@ -41,34 +58,32 @@ const WaitingForOpponent = ({ battleId }) => {
 
 // Blocker confirmation overlay shown when the user tries to navigate away mid-battle
 const LeaveConfirmModal = ({ onStay, onLeave }) => (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
     <div
-      className="relative bg-[#0a0a0a] border border-white/5 p-12 max-w-md w-full text-center shadow-2xl"
+      className="relative bg-[#080808] border border-white/10 p-12 max-w-md w-full text-center shadow-2xl"
       style={{ borderRadius: "2px" }}
     >
-      {/* No corner decor needed for minimalist look */}
-
-      <div className="text-5xl mb-4">⚠️</div>
-      <h2 className="text-2xl font-black text-white mb-2 font-[family:var(--font-heading)] tracking-widest">
-        ABANDON BATTLE?
+      <div className="text-[10px] font-bold tracking-[0.4em] text-red-500 uppercase mb-8">System Alert // Security</div>
+      <h2 className="text-4xl font-black text-white mb-4 font-[family:var(--font-heading)] tracking-tighter uppercase">
+        Abandon Node?
       </h2>
-      <p className="text-[var(--color-text-muted)] mb-8 text-sm leading-relaxed">
-        You are in an active battle. Leaving now will forfeit the match. Your opponent wins automatically.
+      <p className="text-slate-500 mb-10 text-sm font-light leading-relaxed">
+        Termination of an active battle protocol will result in an <span className="text-red-500 font-bold italic">Automatic Forfeit</span>. The opposing operator will secure the victory.
       </p>
-      <div className="flex gap-4 justify-center">
+      <div className="flex flex-col gap-4">
         <button
           onClick={onStay}
-          className="px-8 py-3 bg-[var(--color-primary)] text-black font-bold uppercase tracking-widest hover:bg-white transition-all text-[10px]"
+          className="w-full py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest hover:bg-white transition-all text-[10px]"
           style={{ borderRadius: "2px" }}
         >
-          Stay in Battle
+          [ Stay in Battle ]
         </button>
         <button
           onClick={onLeave}
-          className="px-8 py-3 border border-white/10 text-white/50 hover:text-white hover:border-white transition-all text-[10px]"
+          className="w-full py-4 border border-white/10 text-slate-600 hover:text-white hover:border-white transition-all text-[10px] font-bold uppercase tracking-widest"
           style={{ borderRadius: "2px" }}
         >
-          Leave Anyway
+          Disconnect Anyway
         </button>
       </div>
     </div>

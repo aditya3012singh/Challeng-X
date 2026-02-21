@@ -37,75 +37,84 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="max-w-md w-full space-y-8 p-8 bg-gray-900 rounded-xl shadow-2xl border border-gray-800">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-white">
-            Sign in to your account
-          </h2>
+    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] flex items-center justify-center p-6 relative overflow-hidden font-[family:var(--font-body)]">
+      {/* Background Decor */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.012] blur-[180px] rounded-full"></div>
+      </div>
+
+      <div className="relative max-w-md w-full z-10">
+        <div className="premium-card p-12 lg:p-16 shadow-2xl" style={{ borderRadius: "2px" }}>
+          <div className="text-center mb-12">
+            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Identity Verification // Secure</div>
+            <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Access Portal</h2>
+          </div>
+
+          <form className="space-y-10" onSubmit={handleSubmit}>
+            {error && (
+              <div className="border border-red-500/20 bg-red-500/5 text-red-500 p-6 text-[10px] font-bold uppercase tracking-widest text-center" style={{ borderRadius: "2px" }}>
+                ⚠ Authorization Fail: {error.message || error}
+              </div>
+            )}
+
+            <div className="space-y-8">
+              <div>
+                <label htmlFor="email" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
+                  Origin Address
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                  style={{ borderRadius: "2px" }}
+                  placeholder="OPERATOR@CORE.ARENA"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
+                  Secure Key
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                  style={{ borderRadius: "2px" }}
+                  placeholder="••••••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
+                style={{ borderRadius: "2px" }}
+              >
+                {loading ? "Authenticating..." : "Initialize Link →"}
+              </button>
+            </div>
+
+            <div className="text-center">
+              <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
+                New operative?{" "}
+                <Link to="/register" className="text-white hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/10">
+                  Request Access
+                </Link>
+              </p>
+            </div>
+          </form>
         </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-900/40 border border-red-600 text-red-400 px-4 py-3 rounded">
-              {error.message || error}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="mt-1 w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="mt-1 w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2 px-4 rounded-md text-white font-medium bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </div>
-
-          <div className="text-center">
-            <p className="text-sm text-gray-400">
-              Don't have an account?{" "}
-              <Link to="/register" className="font-medium text-blue-500 hover:text-blue-400">
-                Sign up
-              </Link>
-            </p>
-          </div>
-        </form>
       </div>
     </div>
   );

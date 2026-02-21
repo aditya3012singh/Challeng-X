@@ -99,49 +99,56 @@ export const BattleRoom = () => {
   const bothTeamsReady = battleData.team1 && battleData.team2;
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-dark)] text-white overflow-hidden relative">
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] overflow-hidden relative font-[family:var(--font-body)]">
+      {/* Background Atmosphere */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-[var(--color-primary)] opacity-[0.012] blur-[200px] rounded-full"></div>
+      </div>
 
       {/* Header */}
-      <div className="relative z-10 bg-[rgba(0,0,0,0.8)] border-b border-gray-800 p-4">
+      <div className="relative z-20 bg-white/[0.01] border-b border-white/[0.03] p-8">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-[family:var(--font-heading)] text-white tracking-wider flex items-center gap-2">
-              <span className="text-[var(--color-primary)]">///</span> BATTLE ROOM
+            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-2">Sync Status // Hybrid</div>
+            <h1 className="text-3xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">
+              Combat Interface Node
             </h1>
-            <p className="text-xs text-gray-500 font-mono mt-1">
-              PROTOCOL: <span className="text-[var(--color-primary)]">{battleData.battleCode}</span>
+            <p className="text-[9px] text-slate-600 font-bold uppercase tracking-[0.3em] mt-3">
+              Protocol ID: <span className="text-white font-mono">{battleData.battleCode}</span>
             </p>
           </div>
           <div className="flex gap-4">
             <button
               onClick={() => navigate('/team-battle')}
-              className="px-4 py-2 text-sm border border-red-900 text-red-500 hover:bg-red-900/20 transition-colors uppercase"
+              className="px-6 py-2.5 text-[10px] font-bold border border-red-500/20 text-red-500 hover:bg-red-500/5 transition-all uppercase tracking-widest"
+              style={{ borderRadius: "2px" }}
             >
-              Abort
+              Abort Session
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-8 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-100px)]">
+      <div className="max-w-7xl mx-auto p-8 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-140px)]">
 
         {/* LEFT COLUMN - TEAM 1 */}
-        <div className="lg:col-span-3 flex flex-col gap-4">
-          <div className={`glass-panel p-4 rounded-lg flex-1 border-t-4 ${isTeam1 ? 'border-[var(--color-primary)]' : 'border-gray-700'}`}>
-            <h2 className="text-xl font-bold mb-4 text-[var(--color-primary)] flex justify-between items-center">
-              {battleData.team1.name}
-              {isTeam1 && <span className="text-[10px] bg-[var(--color-primary)] text-black px-2 py-0.5 rounded">YOU</span>}
-            </h2>
-            <div className="space-y-3">
+        <div className="lg:col-span-3 flex flex-col gap-6">
+          <div className="premium-card p-6 flex flex-col border-t-2" style={{ borderRadius: "2px", borderTopColor: isTeam1 ? "var(--color-primary)" : "rgba(255,255,255,0.05)" }}>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Team A // Primary</h2>
+              {isTeam1 && <span className="text-[9px] bg-white text-black px-2 py-0.5 font-bold tracking-widest">OPERATOR</span>}
+            </div>
+            <h3 className="text-2xl font-black text-white mb-8 tracking-tight">{battleData.team1.name}</h3>
+
+            <div className="space-y-4">
               {battleData.team1.members.map((member, i) => (
-                <div key={member.id} className="flex items-center gap-3 p-2 bg-[rgba(255,255,255,0.03)] rounded border-l-2 border-[var(--color-primary)]">
-                  <div className="w-8 h-8 bg-[var(--color-primary)] text-black font-bold flex items-center justify-center rounded-sm">
+                <div key={member.id} className="flex items-center gap-4 p-4 bg-white/[0.01] border border-white/[0.03]" style={{ borderRadius: "1px" }}>
+                  <div className="w-8 h-8 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white">
                     {member.username[0].toUpperCase()}
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-sm font-semibold truncate">{member.username}</p>
-                    <p className="text-[10px] text-gray-500">READY</p>
+                    <p className="text-sm font-bold text-white truncate tracking-tight">{member.username}</p>
+                    <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Status: Ready</p>
                   </div>
                 </div>
               ))}
@@ -150,44 +157,44 @@ export const BattleRoom = () => {
         </div>
 
         {/* MIDDLE COLUMN - ACTION / CHAT */}
-        <div className="lg:col-span-6 flex flex-col gap-4">
+        <div className="lg:col-span-6 flex flex-col gap-6">
 
           {/* Status / Countdown Board */}
-          <div className="glass-panel p-6 rounded-lg text-center relative overflow-hidden border-glow">
+          <div className="premium-card p-12 text-center relative overflow-hidden flex flex-col justify-center min-h-[300px]" style={{ borderRadius: "2px" }}>
             {!bothTeamsReady ? (
-              <div className="py-8">
+              <div className="py-8 animate-in fade-in duration-500">
                 {isTeam1 ? (
                   <>
-                    <h3 className="text-2xl font-bold text-gray-400 mb-4 animate-pulse">AWAITING CHALLENGER</h3>
-                    <div className="inline-block p-4 border border-dashed border-gray-600 rounded bg-black/50 mb-4">
-                      <span className="text-2xl font-mono tracking-widest text-[var(--color-primary)]">{battleData.joinCode}</span>
+                    <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-8 pl-2">Waiting for Challenger</div>
+                    <div className="inline-block px-12 py-6 border border-white/5 bg-white/[0.01] mb-8" style={{ borderRadius: "2px" }}>
+                      <span className="text-4xl font-black tracking-[0.4em] text-white font-mono">{battleData.joinCode}</span>
                     </div>
-                    <button onClick={copyJoinCode} className="block mx-auto text-sm text-[var(--color-primary)] hover:underline">
-                      [ COPY ACCESS CODE ]
+                    <button onClick={copyJoinCode} className="block mx-auto text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors mb-2">
+                      [ Copy Access Credentials ]
                     </button>
                   </>
                 ) : (
-                  <h3 className="text-xl font-bold text-gray-400 animate-pulse">CONNECTING TO LOBBY...</h3>
+                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.8em] animate-pulse">Establishing Node Link...</h3>
                 )}
               </div>
             ) : (
-              <div className="py-4">
+              <div className="py-4 animate-in zoom-in duration-500">
                 {countdown !== null ? (
                   <div>
-                    <p className="text-[var(--color-accent)] font-bold tracking-widest mb-2">IMMIMENT DEPLOYMENT</p>
-                    <div className="text-8xl font-black text-white font-mono countdown-glitch">{countdown}</div>
+                    <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-8 pl-2">Imminent Deployment</div>
+                    <div className="text-9xl font-black text-white font-mono tracking-tighter opacity-80">{countdown}</div>
                   </div>
                 ) : (
                   <div>
-                    <h3 className="text-2xl font-bold text-[var(--color-success)] mb-2">SYSTEMS READY</h3>
-                    <p className="text-gray-400 mb-6">All operators online. Initialize combat sequence.</p>
+                    <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-success)] uppercase mb-8 pl-2">Systems Operational</div>
+                    <p className="text-slate-500 text-sm font-light mb-12 max-w-sm mx-auto">All computational operatives are synchronized. Authorization required to initiate combat sequence.</p>
                     {!isStarting && (
                       <button
                         onClick={startCountdown}
-                        className="px-12 py-4 bg-[var(--color-success)] text-black font-bold text-xl rounded clip-path-polygon hover:scale-105 transition-transform"
-                        style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
+                        className="px-16 py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.4em] text-xs hover:bg-white transition-all transform active:scale-95 shadow-2xl"
+                        style={{ borderRadius: "2px" }}
                       >
-                        INITIATE
+                        Initialize Combat
                       </button>
                     )}
                   </div>
@@ -201,8 +208,8 @@ export const BattleRoom = () => {
             {userTeam ? (
               <TeamChat teamName={userTeam.name} isOwnTeam={true} />
             ) : (
-              <div className="h-full flex items-center justify-center glass-panel border border-gray-800 text-gray-500">
-                Spectator Mode - Chat Disabled
+              <div className="h-full flex items-center justify-center premium-card text-[10px] font-bold text-slate-600 uppercase tracking-widest" style={{ borderRadius: "2px" }}>
+                Monitoring Only // Read Access
               </div>
             )}
           </div>
@@ -210,38 +217,40 @@ export const BattleRoom = () => {
         </div>
 
         {/* RIGHT COLUMN - TEAM 2 */}
-        <div className="lg:col-span-3 flex flex-col gap-4">
-          <div className={`glass-panel p-4 rounded-lg flex-1 border-t-4 ${isTeam2 ? 'border-[var(--color-secondary)]' : 'border-gray-700'}`}>
-            <h2 className="text-xl font-bold mb-4 text-[var(--color-secondary)] flex justify-between items-center text-right">
-              {battleData.team2 ? battleData.team2.name : "OPPONENT"}
-              {isTeam2 && <span className="text-[10px] bg-[var(--color-secondary)] text-white px-2 py-0.5 rounded">YOU</span>}
-            </h2>
+        <div className="lg:col-span-3 flex flex-col gap-6">
+          <div className="premium-card p-6 flex flex-col border-t-2" style={{ borderRadius: "2px", borderTopColor: isTeam2 ? "var(--color-primary)" : "rgba(255,255,255,0.05)" }}>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Team B // Secondary</h2>
+              {isTeam2 && <span className="text-[9px] bg-white text-black px-2 py-0.5 font-bold tracking-widest">OPERATOR</span>}
+            </div>
+            <h3 className="text-2xl font-black text-white mb-8 tracking-tight">{battleData.team2 ? battleData.team2.name : "Unassigned"}</h3>
 
             {battleData.team2 ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {battleData.team2.members.map((member, i) => (
-                  <div key={member.id} className="flex flex-row-reverse items-center gap-3 p-2 bg-[rgba(255,255,255,0.03)] rounded border-r-2 border-[var(--color-secondary)] text-right">
-                    <div className="w-8 h-8 bg-[var(--color-secondary)] text-white font-bold flex items-center justify-center rounded-sm">
+                  <div key={member.id} className="flex flex-row-reverse items-center gap-4 p-4 bg-white/[0.01] border border-white/[0.03]" style={{ borderRadius: "1px" }}>
+                    <div className="w-8 h-8 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white">
                       {member.username[0].toUpperCase()}
                     </div>
-                    <div className="overflow-hidden">
-                      <p className="text-sm font-semibold truncate">{member.username}</p>
-                      <p className="text-[10px] text-gray-500">READY</p>
+                    <div className="text-right overflow-hidden">
+                      <p className="text-sm font-bold text-white truncate tracking-tight">{member.username}</p>
+                      <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Status: Ready</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="h-full flex items-center justify-center opacity-30">
+              <div className="flex-1 flex items-center justify-center opacity-20">
                 <div className="text-center">
-                  <div className="text-4xl mb-2">?</div>
-                  <p>SEARCHING...</p>
+                  <div className="w-12 h-12 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest">Scanning Perimeter</p>
                 </div>
               </div>
             )}
           </div>
         </div>
-
       </div>
     </div>
   );

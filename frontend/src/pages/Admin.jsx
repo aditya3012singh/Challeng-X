@@ -1,24 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import axios from '../../lib/axios';
+import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
   const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [problems, setProblems] = useState([]);
-  const [showAddForm, setShowAddForm] = useState(false);
   const [editingProblem, setEditingProblem] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     difficulty: 'EASY',
-    timeLimitMs: 2000,
+    reward: 50,
+    testCode: '',
     testcases: [{ input: '', output: '', isHidden: false }]
   });
 
   useEffect(() => {
+    if (user?.role !== 'ADMIN') {
+      navigate('/');
+      return;
+    }
     fetchProblems();
-  }, []);
+  }, [user, navigate]);
 
   const fetchProblems = async () => {
     try {
@@ -29,268 +35,270 @@ const Admin = () => {
     }
   };
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Create problem
-      const problemResponse = await axios.post('/api/problem/create', {
-        title: formData.title,
-        description: formData.description,
-        difficulty: formData.difficulty,
-        timeLimitMs: formData.timeLimitMs
-      });
+      if (editingProblem) {
+        // Update logic would go here if implemented
+        alert('Update functionality not yet fully implemented in this node.');
+      } else {
+        const problemResponse = await axios.post('/api/problem/create', {
+          title: formData.title,
+          description: formData.description,
+          difficulty: formData.difficulty,
+          reward: parseInt(formData.reward),
+          testCode: formData.testCode
+        });
 
-      const problemId = problemResponse.data.problem.id;
+        const problemId = problemResponse.data.problem.id;
 
-      // Add test cases
-      await axios.post('/api/testcase/add', {
-        problemId,
-        testcases: formData.testcases
-      });
+        await axios.post('/api/testcase/add', {
+          problemId,
+          testcases: formData.testcases
+        });
 
-      // Reset form and refresh problems
+        alert('Protocol Authorized: New problem record established.');
+      }
+
       setFormData({
         title: '',
         description: '',
         difficulty: 'EASY',
-        timeLimitMs: 2000,
+        reward: 50,
+        testCode: '',
         testcases: [{ input: '', output: '', isHidden: false }]
       });
-      setShowAddForm(false);
+      setEditingProblem(null);
       fetchProblems();
-      
-      alert('Problem created successfully!');
     } catch (error) {
-      console.error('Error creating problem:', error);
-      alert('Error creating problem');
+      console.error('Error:', error);
+      alert('Security Exception: Failed to commit record.');
     }
   };
 
-  const addTestCase = () => {
+  const handleEdit = (problem) => {
+    setEditingProblem(problem);
     setFormData({
-      ...formData,
-      testcases: [...formData.testcases, { input: '', output: '', isHidden: true }]
+      title: problem.title,
+      description: problem.description,
+      difficulty: problem.difficulty,
+      reward: problem.reward || 50,
+      testCode: problem.testCode || '',
+      testcases: problem.testcases || [{ input: '', output: '', isHidden: false }]
     });
   };
 
-  const updateTestCase = (index, field, value) => {
-    const updatedTestcases = [...formData.testcases];
-    updatedTestcases[index][field] = value;
-    setFormData({ ...formData, testcases: updatedTestcases });
-  };
-
-  const removeTestCase = (index) => {
-    if (formData.testcases.length > 1) {
-      setFormData({
-        ...formData,
-        testcases: formData.testcases.filter((_, i) => i !== index)
-      });
+  const handleDelete = async (id) => {
+    if (window.confirm('Authorize Purge: Are you sure you want to permanently delete this protocol record?')) {
+      try {
+        await axios.delete(`/api/problem/${id}`);
+        fetchProblems();
+      } catch (error) {
+        console.error('Error deleting problem:', error);
+        alert('Purge Failed: Record protected or network failure.');
+      }
     }
   };
 
-  // Check if user is admin
-  if (user?.role !== 'ADMIN') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600">You need admin privileges to access this page.</p>
-        </div>
-      </div>
-    );
-  }
+  if (user?.role !== 'ADMIN') return null;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Problem Management</h1>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
-          >
-            Add New Problem
-          </button>
-        </div>
+    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-20 px-6 font-[family:var(--font-body)]">
+      {/* Background Decor */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 right-1/4 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.015] blur-[150px] rounded-full"></div>
+      </div>
 
-        {/* Problems List */}
-        <div className="grid gap-4 mb-8">
-          {problems.map((problem) => (
-            <div key={problem.id} className="bg-gray-900 p-4 rounded-lg border border-gray-800">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-xl font-semibold">{problem.title}</h3>
-                  <span className={`inline-block px-2 py-1 rounded text-xs mt-2 ${
-                    problem.difficulty === 'EASY' ? 'bg-green-900 text-green-300' :
-                    problem.difficulty === 'MEDIUM' ? 'bg-yellow-900 text-yellow-300' :
-                    'bg-red-900 text-red-300'
-                  }`}>
-                    {problem.difficulty}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <button className="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-sm">
-                    Edit
-                  </button>
-                  <button className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">
-                    Delete
-                  </button>
-                </div>
-              </div>
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="flex justify-between items-end mb-20">
+          <div>
+            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Command Center // Oversight</div>
+            <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Dataset Management</h1>
+          </div>
+          <div className="flex gap-12 text-right">
+            <div>
+              <p className="text-slate-600 text-[9px] font-bold uppercase tracking-widest mb-1">Total Problems</p>
+              <p className="text-3xl font-black text-white tabular-nums">{problems.length}</p>
             </div>
-          ))}
+            <div className="border-l border-white/10 pl-12">
+              <p className="text-slate-600 text-[9px] font-bold uppercase tracking-widest mb-1">Active Protocols</p>
+              <p className="text-3xl font-black text-[var(--color-primary)] tabular-nums">LIVE</p>
+            </div>
+          </div>
         </div>
 
-        {/* Add Problem Form */}
-        {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Add New Problem</h2>
-                <button
-                  onClick={() => setShowAddForm(false)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  ✕
-                </button>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* PROBLEM FORM */}
+          <div className="lg:col-span-5">
+            <div className="premium-card p-10 sticky top-24" style={{ borderRadius: "2px" }}>
+              <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">
+                {editingProblem ? "Edit Record" : "New Entry Protocol"}
               </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-8">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Title</label>
+                  <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">Target Title</label>
                   <input
                     type="text"
+                    name="title"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={handleChange}
+                    className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                    style={{ borderRadius: "2px" }}
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
+                  <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">Manifest Description</label>
                   <textarea
+                    name="description"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
+                    onChange={handleChange}
+                    className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm h-32"
+                    style={{ borderRadius: "2px" }}
                     required
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Difficulty</label>
+                    <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">Complexity</label>
                     <select
+                      name="difficulty"
                       value={formData.difficulty}
-                      onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={handleChange}
+                      className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm appearance-none"
+                      style={{ borderRadius: "2px" }}
                     >
-                      <option value="EASY">Easy</option>
-                      <option value="MEDIUM">Medium</option>
-                      <option value="HARD">Hard</option>
+                      <option value="EASY">EASY</option>
+                      <option value="MEDIUM">MEDIUM</option>
+                      <option value="HARD">HARD</option>
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium mb-2">Time Limit (ms)</label>
+                    <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">Bounty Payout</label>
                     <input
                       type="number"
-                      value={formData.timeLimitMs}
-                      onChange={(e) => setFormData({ ...formData, timeLimitMs: parseInt(e.target.value) })}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      min="100"
+                      name="reward"
+                      value={formData.reward}
+                      onChange={handleChange}
+                      className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                      style={{ borderRadius: "2px" }}
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <label className="block text-sm font-medium">Test Cases</label>
-                    <button
-                      type="button"
-                      onClick={addTestCase}
-                      className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
-                    >
-                      Add Test Case
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {formData.testcases.map((testcase, index) => (
-                      <div key={index} className="bg-gray-800 p-4 rounded-lg">
-                        <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-medium">Test Case {index + 1}</h4>
-                          {formData.testcases.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeTestCase(index)}
-                              className="text-red-400 hover:text-red-300"
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mb-3">
-                          <div>
-                            <label className="block text-xs text-gray-400 mb-1">Input</label>
-                            <textarea
-                              value={testcase.input}
-                              onChange={(e) => updateTestCase(index, 'input', e.target.value)}
-                              className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 h-20"
-                              placeholder="Test input..."
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs text-gray-400 mb-1">Output</label>
-                            <textarea
-                              value={testcase.output}
-                              onChange={(e) => updateTestCase(index, 'output', e.target.value)}
-                              className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 h-20"
-                              placeholder="Expected output..."
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id={`hidden-${index}`}
-                            checked={testcase.isHidden}
-                            onChange={(e) => updateTestCase(index, 'isHidden', e.target.checked)}
-                            className="mr-2"
-                          />
-                          <label htmlFor={`hidden-${index}`} className="text-sm text-gray-400">
-                            Hidden test case (not visible to users)
-                          </label>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">Validation Logic (.js)</label>
+                  <textarea
+                    name="testCode"
+                    value={formData.testCode}
+                    onChange={handleChange}
+                    className="w-full bg-[#050505] border border-white/10 px-4 py-5 text-[var(--color-primary)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-xs h-64 leading-relaxed"
+                    style={{ borderRadius: "2px" }}
+                    placeholder="// Test cases execution logic"
+                    required
+                  />
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex gap-4 pt-4">
                   <button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg"
+                    className="flex-1 py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all transform active:scale-95 shadow-xl"
+                    style={{ borderRadius: "2px" }}
                   >
-                    Create Problem
+                    {editingProblem ? "Commit Changes" : "Authorize Addition"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddForm(false)}
-                    className="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg"
-                  >
-                    Cancel
-                  </button>
+                  {editingProblem && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingProblem(null);
+                        setFormData({
+                          title: '',
+                          description: '',
+                          difficulty: 'EASY',
+                          reward: 50,
+                          testCode: '',
+                          testcases: [{ input: '', output: '', isHidden: false }]
+                        });
+                      }}
+                      className="px-6 py-4 border border-white/10 text-slate-500 font-bold uppercase tracking-widest text-[9px] hover:text-white transition-colors"
+                      style={{ borderRadius: "2px" }}
+                    >
+                      Abort
+                    </button>
+                  )}
                 </div>
               </form>
             </div>
           </div>
-        )}
+
+          {/* PROBLEM LIST */}
+          <div className="lg:col-span-7">
+            <div className="premium-card overflow-hidden" style={{ borderRadius: "2px" }}>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/5 bg-white/[0.01]">
+                    <th className="py-6 px-8 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">Protocol</th>
+                    <th className="py-6 px-8 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">Complexity</th>
+                    <th className="py-6 px-8 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {problems.map((problem) => (
+                    <tr key={problem.id} className="border-b border-white/[0.03] hover:bg-white/[0.01] transition-colors group">
+                      <td className="py-6 px-8">
+                        <p className="text-white font-bold text-sm mb-1">{problem.title}</p>
+                        <p className="text-[9px] text-slate-600 font-mono">ID: {problem.id}</p>
+                      </td>
+                      <td className="py-6 px-8">
+                        <span className={`text-[10px] font-bold px-3 py-1 border ${problem.difficulty === 'EASY' ? 'border-emerald-500/20 text-emerald-500' :
+                          problem.difficulty === 'MEDIUM' ? 'border-amber-500/20 text-amber-500' :
+                            'border-red-500/20 text-red-500'
+                          }`} style={{ borderRadius: "1px" }}>
+                          {problem.difficulty}
+                        </span>
+                      </td>
+                      <td className="py-6 px-8 text-right">
+                        <div className="flex justify-end gap-6">
+                          <button
+                            onClick={() => handleEdit(problem)}
+                            className="text-[9px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors"
+                          >
+                            Modify
+                          </button>
+                          <button
+                            onClick={() => handleDelete(problem.id)}
+                            className="text-[9px] font-bold text-red-900 hover:text-red-500 uppercase tracking-widest transition-colors"
+                          >
+                            Purge
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {problems.length === 0 && (
+                    <tr>
+                      <td colSpan="3" className="py-20 text-center text-slate-700 text-[10px] font-bold uppercase tracking-widest">
+                        No active protocols found in database.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
