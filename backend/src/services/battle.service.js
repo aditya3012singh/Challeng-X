@@ -11,7 +11,7 @@ import BattleCode from "../utils/battleCode.js";
 // • Decide winner
 
 class BattleService {
-  static async createBattleRandomQuestionService(player1Id){
+  static async createBattleRandomQuestionService(player1Id) {
 
     const problems = await Database.client.problem.findMany();
     const randomProblem = problems[Math.floor(Math.random() * problems.length)];
@@ -19,61 +19,61 @@ class BattleService {
     const battleCode = await BattleCode.generateBattleCode();
 
     const battle = await Database.client.battle.create({
-        data: {
-            player1Id,
-            problemId: randomProblem.id,
-            status: "WAITING",
-            battleCode,
-        }
+      data: {
+        player1Id,
+        problemId: randomProblem.id,
+        status: "WAITING",
+        battleCode,
+      }
     });
 
     return battle;
   }
 
-  static async createBattleWithSelectedQuestionService(player1Id, problemId){
+  static async createBattleWithSelectedQuestionService(player1Id, problemId) {
     const battleCode = await BattleCode.generateBattleCode();
 
     const battle = await Database.client.battle.create({
-        data: {
-            player1Id,
-            problemId,
-            status: "WAITING",
-            battleCode,
-        }
+      data: {
+        player1Id,
+        problemId,
+        status: "WAITING",
+        battleCode,
+      }
     });
-    
+
     return battle;
   }
 
-  static async joinBattleService(battleCode, player2Id){
+  static async joinBattleService(battleCode, player2Id) {
 
     const battleExists = await Database.client.battle.findUnique({
-        where: { battleCode }
+      where: { battleCode }
     });
 
-    if(!battleExists){
-        throw new Error("Battle not available");
+    if (!battleExists) {
+      throw new Error("Battle not available");
     }
 
-    if(battleExists.player1Id === player2Id){
-        throw new Error("Cannot join your own battle");
+    if (battleExists.player1Id === player2Id) {
+      throw new Error("Cannot join your own battle");
     }
 
-    if(battleExists.status !== "WAITING"){
-        throw new Error("Battle already started");
+    if (battleExists.status !== "WAITING") {
+      throw new Error("Battle already started");
     }
 
-    if(battleExists.player2Id){
-        throw new Error("Battle already has two players");
+    if (battleExists.player2Id) {
+      throw new Error("Battle already has two players");
     }
 
     const battle = await Database.client.battle.update({
-        where: { battleCode },
-        data: {
-            player2Id,
-            status: "ONGOING",
-            startedAt: new Date(),
-        }
+      where: { battleCode },
+      data: {
+        player2Id,
+        status: "ONGOING",
+        startedAt: new Date(),
+      }
     });
 
     SocketEmitter.emitToBattle(battle.id, "playerJoined", {
@@ -86,49 +86,49 @@ class BattleService {
 
     return battle;
   }
-//         throw new Error("Cannot join your own battle");
-//     }
+  //         throw new Error("Cannot join your own battle");
+  //     }
 
-//     if(battleExists.status !== "WAITING"){
-//         throw new Error("Battle already started");
-//     }
+  //     if(battleExists.status !== "WAITING"){
+  //         throw new Error("Battle already started");
+  //     }
 
-//     if(battleExists.player2Id){
-//         throw new Error("Battle already has two players");
-//     }
+  //     if(battleExists.player2Id){
+  //         throw new Error("Battle already has two players");
+  //     }
 
-//     const battle = await prisma.battle.update({
-//         where: { id: battleId },
-//         data: {
-//             player2Id,
-//             status: "ONGOING",
-//             startedAt: new Date(),
-//         }
-//     });
+  //     const battle = await prisma.battle.update({
+  //         where: { id: battleId },
+  //         data: {
+  //             player2Id,
+  //             status: "ONGOING",
+  //             startedAt: new Date(),
+  //         }
+  //     });
 
-//     emitToBattle(battleId, "playerJoined", {
-//       playerId: player2Id
-//     });
+  //     emitToBattle(battleId, "playerJoined", {
+  //       playerId: player2Id
+  //     });
 
-//     emitToBattle(battleId, "battleStarted", {
-//       startedAt: new Date()
-//     });
+  //     emitToBattle(battleId, "battleStarted", {
+  //       startedAt: new Date()
+  //     });
 
-//     return battle;
-// }
+  //     return battle;
+  // }
 
-  static async getBattle(battleId){
+  static async getBattle(battleId) {
     const battle = await Database.client.battle.findUnique({
-        where: { id: battleId },
-        include: {
-            problem: {
-              select:{
-                id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: true
-              }
-            },
-            player1: { select: { id: true, username: true, email: true } },
-            player2: { select: { id: true, username: true, email: true } },
-        }
+      where: { id: battleId },
+      include: {
+        problem: {
+          select: {
+            id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: true
+          }
+        },
+        player1: { select: { id: true, username: true, email: true } },
+        player2: { select: { id: true, username: true, email: true } },
+      }
     });
     // Add winner details if available
     let winner = null;
@@ -144,80 +144,87 @@ class BattleService {
     };
   }
 
-  static async finishBattleService(battleId, winnerId){
-    const battle= await Database.client.battle.findUnique({
-        where: { id: battleId },
+  static async finishBattleService(battleId, winnerId) {
+    const battle = await Database.client.battle.findUnique({
+      where: { id: battleId },
     });
 
-    const loserId = (battle.player1Id === winnerId) ? battle.player2Id : battle.player1Id;
+    if (!battle || battle.status === "FINISHED") return null;
 
-    await RankingService.updateRanks(winnerId, loserId);
-
+    // 1. Update status synchronously
     const battleResult = await Database.client.battle.update({
-        where: { id: battleId },
-        data: {
-            status: "FINISHED",
-            endedAt: new Date(),
-            winnerId,
-        }
-    });
-    SocketEmitter.emitToBattle(battleId, "battleFinished", {
-      winnerId
+      where: { id: battleId },
+      data: {
+        status: "FINISHED",
+        endedAt: new Date(),
+        winnerId,
+      }
     });
 
-    await RedisClient.client.flushall(); 
+    // 2. Perform background tasks (ranking, cache flush)
+    (async () => {
+      try {
+        const loserId = (battle.player1Id === winnerId) ? battle.player2Id : battle.player1Id;
+        await RankingService.updateRanks(winnerId, loserId);
+        await RedisClient.client.flushall();
+        console.log(`✅ Background ranking and cache flush completed for battle ${battleId}`);
+      } catch (err) {
+        console.error(`❌ Background task error for battle ${battleId}:`, err.message);
+      }
+    })();
+
     return battleResult;
   }
 
   static async getBattleHistory(userId, page = 1, limit = 10) {
 
-  const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-  const battles = await Database.client.battle.findMany({
-    where: {
-      OR: [
-        { player1Id: userId },
-        { player2Id: userId }
-      ],
-      status: "FINISHED"
-    },
-    skip,
-    take: limit,
-    orderBy: {
-      endedAt: "desc"
-    },
-    include: {
-      problem: {
-        select: {
-          title: true,
-          difficulty: true
+    const battles = await Database.client.battle.findMany({
+      where: {
+        OR: [
+          { player1Id: userId },
+          { player2Id: userId }
+        ],
+        status: "FINISHED"
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        endedAt: "desc"
+      },
+      include: {
+        problem: {
+          select: {
+            title: true,
+            difficulty: true
+          }
+        },
+        player1: {
+          select: { username: true }
+        },
+        player2: {
+          select: { username: true }
         }
-      },
-      player1: {
-        select: { username: true }
-      },
-      player2: {
-        select: { username: true }
       }
-    }
-  });
+    });
 
-  const total = await Database.client.battle.count({
-    where: {
-      OR: [
-        { player1Id: userId },
-        { player2Id: userId }
-      ],
-      status: "FINISHED"
-    }
-  });
+    const total = await Database.client.battle.count({
+      where: {
+        OR: [
+          { player1Id: userId },
+          { player2Id: userId }
+        ],
+        status: "FINISHED"
+      }
+    });
 
-  return {
-    data: battles,
-    total,
-    page,
-    totalPages: Math.ceil(total / limit)
-  };
+    return {
+      data: battles,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    };
   }
 }
 

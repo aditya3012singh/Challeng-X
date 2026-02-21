@@ -202,18 +202,21 @@ export default function Ide() {
       dispatch(getBattle({ battleId }));
     });
 
-    // Listen for battle finished event
-    socket.on("battleFinished", ({ winnerId }) => {
-      console.log("Battle finished, winner:", winnerId);
-      dispatch(getBattle({ battleId }));
-    });
-
-    // Listen for submission result from the worker (via server relay)
-    // Server only emits this event for ERROR/FAILED results.
-    // PASSED results are handled via the battleFinished event chain.
-    socket.on("submissionResult", ({ userId: resultUserId, status, passedTests, totalTests, failedTestCase, input, expectedOutput, actualOutput, errorMessage }) => {
+    socket.on("submissionResult", ({ userId: resultUserId, status, passedTests, totalTests, failedTestCase, input, expectedOutput, actualOutput, errorMessage, executionTimeMs }) => {
       const isMe = resultUserId === userIdRef.current;
       console.log("submissionResult received:", { resultUserId, status, passedTests, totalTests, isMe });
+
+      if (status === "PASSED") {
+        if (isMe) {
+          setStatus("submitted");
+          setMessage(`✅ All test cases passed! (${passedTests}/${totalTests})${executionTimeMs ? ` in ${executionTimeMs}ms` : ""}`);
+        } else {
+          // Notify the other player that their opponent just finished
+          setStatus("error"); // Use 'error' status color/style for alerting the lose is imminent
+          setMessage(`🔔 Opponent passed all test cases!`);
+        }
+        return;
+      }
 
       setStatus("error");
       if (isMe) {
@@ -230,6 +233,15 @@ export default function Ide() {
       } else {
         setMessage("");
       }
+    });
+
+    // Listen for battle finished event
+    socket.on("battleFinished", ({ winnerId }) => {
+      console.log("Battle finished, winner:", winnerId);
+      // Small delay to ensure DB sync is complete (background task on server)
+      setTimeout(() => {
+        dispatch(getBattle({ battleId }));
+      }, 500);
     });
 
     return () => {
@@ -260,9 +272,6 @@ export default function Ide() {
         setMessage(`🏆 Winner: ${currentBattle.winner?.username || currentBattle.winnerId}`);
         setStatus("finished");
       }
-    } else if (submissionResult) {
-      setMessage("✅ Code submitted. Waiting for opponent...");
-      setStatus("waiting");
     }
   }, [currentBattle, submissionResult]);
 

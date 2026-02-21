@@ -41,13 +41,25 @@ class ServerApp {
         try {
           if (battleId) {
             if (status === "PASSED") {
-              // Fetch battle to ensure it's still ONGOING (guard against race)
-              const battle = await BattleService.getBattle(battleId);
-              if (battle && battle.status === "ONGOING") {
-                // Finish battle — updates DB, updates ranks, emits battleFinished
-                await BattleService.finishBattleService(battleId, userId);
-                console.log(`🏆 Battle ${battleId} finished. Winner: ${userId}`);
-              }
+              // 1. Forward the individual success result immediately (Progress feedback)
+              io.to(battleId).emit("submissionResult", {
+                submissionId,
+                userId,
+                status: "PASSED",
+                passedTests: totalTests,
+                totalTests,
+                executionTimeMs,
+              });
+
+              // 2. Await the CRITICAL status change in DB before notifying the room of completion
+              // This prevents the loser from re-fetching before the status is 'FINISHED'
+              BattleService.finishBattleService(battleId, userId)
+                .then(() => {
+                  console.log(`🏆 Battle ${battleId} finished in DB. Notifying room...`);
+                  io.to(battleId).emit("battleFinished", { winnerId: userId });
+                })
+                .catch((err) => console.error(`❌ finishBattleService error: ${err.message}`));
+
             } else {
               // Send the failure result back to both players in the room
               io.to(battleId).emit("submissionResult", {
