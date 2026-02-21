@@ -36,58 +36,80 @@ const worker = new Worker(
         });
 
 
-        let passed = 0;
-        let total = submission.problem.testcases.length;
+        const testcases = submission.problem.testcases;
+        const total = testcases.length;
         const startTime = Date.now();
 
-        for (let i = 0; i < submission.problem.testcases.length; i++) {
-            const tc = submission.problem.testcases[i];
-            const result = await JudgeService.runCode(submission.language, submission.code, tc.input);
-            const actualOutput = result.output?.trim() ?? "";
+        // Run ALL test cases in a single warm-container job.
+        // For C/C++ this means compile ONCE, run each input against the same binary.
+        const { results, stopped_at } = await JudgeService.runTestCases(
+            submission.language,
+            submission.code,
+            testcases.map(tc => tc.input)
+        );
+
+        const passed = stopped_at; // number of test cases that passed before failure
+        const executionTimeMs = Date.now() - startTime;
+
+        // Check every result against expected output
+        let failedIndex = -1;
+        let failedResult = null;
+
+        for (let i = 0; i < results.length; i++) {
+            const r = results[i];
+            const tc = testcases[i];
+            const actualOutput = r.output?.trim() ?? "";
             const expectedOutput = tc.output?.trim() ?? "";
-            const hasError = !!result.error;
+            const hasError = !!r.error;
             const wrongAnswer = !hasError && actualOutput !== expectedOutput;
 
             if (hasError || wrongAnswer) {
-                await Database.client.submission.update({
-                    where: { id: submissionId },
-                    data: {
-                        status: "ERROR",
-                        passedTests: passed,
-                        totalTests: total,
-                        executionTimeMs: Date.now() - startTime
-                    }
-                });
-
-                // Emit failure event with full details — server forwards to battle room
-                socket.emit("submissionResult", {
-                    submissionId,
-                    userId: userId || submission.user.id,
-                    battleId: battleId || submission.battleId || null,
-                    status: "ERROR",
-                    passedTests: passed,
-                    totalTests: total,
-                    failedTestCase: i + 1,
-                    input: tc.input,
-                    expectedOutput,
+                failedIndex = i;
+                failedResult = {
+                    hasError,
                     actualOutput: hasError ? null : actualOutput,
-                    errorMessage: hasError ? result.error : null,
-                });
-
-                return;
+                    expectedOutput,
+                    errorMessage: hasError ? r.error : null,
+                    input: tc.input,
+                };
+                break;
             }
-            passed++;
         }
 
-        const executionTime = Date.now() - startTime;
+        if (failedIndex !== -1) {
+            const { hasError, actualOutput, expectedOutput, errorMessage, input } = failedResult;
+
+            await Database.client.submission.update({
+                where: { id: submissionId },
+                data: { status: "ERROR", passedTests: failedIndex, totalTests: total, executionTimeMs }
+            });
+
+            socket.emit("submissionResult", {
+                submissionId,
+                userId: userId || submission.user.id,
+                battleId: battleId || submission.battleId || null,
+                status: "ERROR",
+                passedTests: failedIndex,
+                totalTests: total,
+                failedTestCase: failedIndex + 1,
+                input,
+                expectedOutput,
+                actualOutput,
+                errorMessage,
+            });
+
+            return;
+        }
+
+        // All test cases passed
 
         await Database.client.submission.update({
             where: { id: submissionId },
             data: {
                 status: "PASSED",
-                passedTests: passed,
+                passedTests: total,
                 totalTests: total,
-                executionTimeMs: executionTime
+                executionTimeMs
             }
         });
 
@@ -97,9 +119,9 @@ const worker = new Worker(
             userId: userId || submission.user.id,
             battleId: battleId || submission.battleId || null,
             status: "PASSED",
-            passedTests: passed,
+            passedTests: total,
             totalTests: total,
-            executionTimeMs: executionTime
+            executionTimeMs
         });
 
     },
