@@ -116,6 +116,19 @@ export default function Ide() {
     resetSubmission
   } = useSubmission();
 
+  // Save active battleId so we can return after a page refresh
+  useEffect(() => {
+    if (!isBattleFinished) {
+      localStorage.setItem("active_battle_id", battleId);
+    } else {
+      localStorage.removeItem("active_battle_id");
+    }
+    return () => {
+      // Only remove if the battle is finished when leaving
+      if (isBattleFinished) localStorage.removeItem("active_battle_id");
+    };
+  }, [battleId, isBattleFinished]);
+
   // Auto-save code + language to localStorage on every change
   useEffect(() => {
     if (isBattleFinished) return;

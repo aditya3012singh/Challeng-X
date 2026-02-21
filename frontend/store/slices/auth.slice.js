@@ -6,7 +6,7 @@ const initialState = {
     loading: false,
     error: null,
     isAuthenticated: false,
-    profileLoading: false,
+    profileLoading: true,
     publicProfile: null,
     publicProfileLoading: false,
     publicProfileError: null,

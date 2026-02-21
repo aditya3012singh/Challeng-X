@@ -24,24 +24,35 @@ import Admin from './pages/Admin'
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  
-  // Fetch profile only when accessing protected routes and not already checked
+
+  // On mount, always attempt to restore session from cookie
   useEffect(() => {
-    if (!isAuthenticated && !profileLoading) {
-      dispatch(fetchUserProfile()).catch(() => {
-        // If profile fetch fails, user will be redirected to login
-      });
+    if (!isAuthenticated) {
+      dispatch(fetchUserProfile()).catch(() => { });
     }
-  }, [dispatch, isAuthenticated, profileLoading]);
-  
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+          <div className="text-[var(--color-primary)] text-xs uppercase tracking-widest font-mono">Authenticating...</div>
+        </div>
       </div>
     );
   }
-  
+
+  // After auth resolves, check if user has an active battle in localStorage
+  if (isAuthenticated) {
+    const activeBattleId = localStorage.getItem("active_battle_id");
+    const currentPath = window.location.pathname;
+    const idePattern = /^\/battle\/[^/]+\/ide/;
+    if (activeBattleId && !idePattern.test(currentPath)) {
+      return <Navigate to={`/battle/${activeBattleId}/ide`} replace />;
+    }
+  }
+
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
@@ -64,31 +75,31 @@ function App() {
           }
         />
         <Route path="/problems" element={
-          
-            <Problem/>
-          
+
+          <Problem />
+
         } />
         <Route path='/problem/:id' element={
           <ProtectedRoute>
-            <ProblemDetail/>
+            <ProblemDetail />
           </ProtectedRoute>
         } />
         <Route path='/battles' element={
           <ProtectedRoute>
-            <Battle/>
+            <Battle />
           </ProtectedRoute>
         } />
         <Route path='/battle/:battleId/ide' element={
           <ProtectedRoute>
-            <Ide/>
-          </ProtectedRoute>
-        } /> 
-        <Route path='/leaderboard' element={
-          <ProtectedRoute>
-            <Leaderboard/>
+            <Ide />
           </ProtectedRoute>
         } />
-        
+        <Route path='/leaderboard' element={
+          <ProtectedRoute>
+            <Leaderboard />
+          </ProtectedRoute>
+        } />
+
         <Route path="/join-room" element={
           <ProtectedRoute>
             <JoinRoom />
@@ -96,27 +107,27 @@ function App() {
         } />
         <Route path='/matchmaking' element={
           <ProtectedRoute>
-            <FindMatch/>
+            <FindMatch />
           </ProtectedRoute>
         } />
         <Route path='/team-battle' element={
           <ProtectedRoute>
-            <TeamBattle/>
+            <TeamBattle />
           </ProtectedRoute>
         } />
         <Route path='/battle-room/:battleId' element={
           <ProtectedRoute>
-            <BattleRoom/>
+            <BattleRoom />
           </ProtectedRoute>
         } />
         <Route path='/squid-mode' element={
           <ProtectedRoute>
-            <SquidMode/>
+            <SquidMode />
           </ProtectedRoute>
         } />
         <Route path='/admin' element={
           <ProtectedRoute>
-            <Admin/>
+            <Admin />
           </ProtectedRoute>
         } />
         {/* <Route path='/profile/:userId' element={
