@@ -9,26 +9,31 @@ export const TournamentCreationPanel = ({
   if (!selectedTeam) return null;
 
   return (
-    <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-4">Create Tournament</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div className="premium-card p-12 lg:p-16 relative overflow-hidden" style={{ borderRadius: "2px" }}>
+      <div className="mb-10">
+        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Engagement Config // Manual</div>
+        <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Assemble Tournament</h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
         <div>
-          <p className="text-sm text-gray-200 mb-2">Your Team</p>
-          <div className="bg-gray-900/50 rounded px-4 py-2 font-semibold">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">Origin Node</p>
+          <div className="bg-white/[0.02] border border-white/5 px-6 py-5 text-white font-black uppercase tracking-widest text-sm" style={{ borderRadius: "2px" }}>
             {selectedTeam.name}
           </div>
         </div>
         <div>
-          <p className="text-sm text-gray-200 mb-2">Opponent Team</p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">Target Node</p>
           <select
             value={selectedOpponent?.id || ""}
             onChange={(e) => {
               const opponent = availableTeams.find((t) => t.id === e.target.value);
               onOpponentChange(opponent);
             }}
-            className="w-full bg-gray-900/50 border border-gray-600 rounded px-4 py-2 text-white"
+            className="w-full bg-[#050505] border border-white/10 px-6 py-5 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all appearance-none"
+            style={{ borderRadius: "2px" }}
           >
-            <option value="">Select opponent team...</option>
+            <option value="">-- Select Target --</option>
             {availableTeams
               .filter(
                 (t) =>
@@ -37,18 +42,20 @@ export const TournamentCreationPanel = ({
               )
               .map((team) => (
                 <option key={team.id} value={team.id}>
-                  {team.name} ({team.members.length}v{team.members.length})
+                  {team.name} ({team.members.length} VS {team.members.length})
                 </option>
               ))}
           </select>
         </div>
       </div>
+
       <button
         onClick={onCreateBattle}
         disabled={!selectedOpponent || battleLoading}
-        className="w-full py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-gray-100 disabled:opacity-50"
+        className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
+        style={{ borderRadius: "2px" }}
       >
-        {battleLoading ? "Creating Tournament..." : "Start Tournament"}
+        {battleLoading ? "Allocating..." : "Initialize Hybrid Battle Node →"}
       </button>
     </div>
   );

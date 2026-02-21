@@ -24,42 +24,47 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const navItems = [
-    { label: "MATCHMAKING", path: "/matchmaking", icon: "📡" },
-    { label: "BATTLE ROOM", path: "/battles", icon: "⚔️" },
-    { label: "TEAM WARS", path: "/team-battle", icon: "🛡️" },
-    { label: "SQUID PROTOCOL", path: "/squid-mode", icon: "🦑" },
-    { label: "JOIN LOBBY", path: "/join-room", icon: "🔑" },
+    { label: "MATCHMAKING", path: "/matchmaking" },
+    { label: "BATTLE ROOM", path: "/battles" },
+    { label: "TEAM WARS", path: "/team-battle" },
+    { label: "SQUID PROTOCOL", path: "/squid-mode" },
+    { label: "JOIN LOBBY", path: "/join-room" },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-[#050505]/80 backdrop-blur-md border-b border-[rgba(255,255,255,0.05)] shadow-lg font-[family:var(--font-heading)]">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-[#050505]/80 backdrop-blur-md border-b border-white/[0.03] font-[family:var(--font-heading)]">
       <div className="max-w-[1800px] mx-auto px-6 h-20 flex justify-between items-center">
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-[var(--color-primary)] text-black flex items-center justify-center font-black text-xl clip-path-polygon group-hover:shadow-[0_0_15px_var(--color-primary)] transition-all" style={{ clipPath: "polygon(20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%)" }}>
+          <div className="w-10 h-10 bg-[var(--color-primary)] text-black flex items-center justify-center font-black text-xl hover:shadow-[0_0_20px_rgba(255,170,0,0.3)] transition-all" style={{ borderRadius: "2px" }}>
             CA
           </div>
           <div>
-            <span className="text-xl font-bold tracking-widest text-white block leading-none">CODE</span>
-            <span className="text-sm font-bold tracking-[0.3em] text-[var(--color-primary)] block leading-none">ARENA</span>
+            <span className="text-lg font-bold tracking-tight text-white block leading-none">CODE</span>
+            <span className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] block leading-none mt-1">ARENA</span>
           </div>
         </Link>
 
         {/* NAVIGATION */}
         {isAuthenticated && (
-          <div className="hidden xl:flex items-center gap-1">
+          <div className="hidden xl:flex items-center gap-2">
             {navItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`px-4 py-2 text-xs font-bold tracking-widest flex items-center gap-2 border-b-2 transition-all ${isActive(item.path)
-                  ? "text-[var(--color-primary)] border-[var(--color-primary)] bg-[rgba(0,240,255,0.05)]"
-                  : "text-gray-400 border-transparent hover:text-white hover:bg-[rgba(255,255,255,0.02)]"
+                className={`px-5 py-2 text-[10px] font-bold tracking-[0.2em] transition-all relative group/item ${isActive(item.path)
+                  ? "text-[var(--color-primary)]"
+                  : "text-slate-400 hover:text-white"
                   }`}
               >
-                <span className="text-lg opacity-70">{item.icon}</span>
                 {item.label}
+                {isActive(item.path) && (
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-[var(--color-primary)] rounded-full"></div>
+                )}
+                {!isActive(item.path) && (
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-white opacity-20 group-hover/item:w-4 transition-all duration-300"></div>
+                )}
               </button>
             ))}
           </div>
@@ -111,11 +116,11 @@ const Navbar = () => {
             </>
           ) : (
             <div className="flex gap-4">
-              <Link to="/login" className="px-6 py-2 text-sm font-bold text-white hover:text-[var(--color-primary)] transition-colors">
-                LOGIN
+              <Link to="/login" className="px-6 py-2 text-[10px] font-bold text-white hover:text-[var(--color-primary)] transition-colors uppercase tracking-widest flex items-center">
+                Login
               </Link>
-              <Link to="/register" className="px-6 py-2 bg-[var(--color-primary)] text-black text-sm font-bold clip-path-polygon hover:bg-white transition-colors" style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}>
-                REGISTER
+              <Link to="/register" className="px-8 py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl" style={{ borderRadius: "2px" }}>
+                Establish Identity
               </Link>
             </div>
           )}

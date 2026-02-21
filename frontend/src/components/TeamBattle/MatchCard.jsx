@@ -1,41 +1,42 @@
 export const MatchCard = ({ match, user, onSelectMatch, getMatchStatus, isUserInMatch }) => {
   return (
     <div
-      className="bg-gray-900 border border-gray-700 rounded-lg p-4 hover:border-blue-500 transition-colors cursor-pointer"
+      className="bg-white/[0.01] border border-white/5 p-8 transition-all hover:bg-white/[0.02] hover:border-white/20 group cursor-pointer relative overflow-hidden"
       onClick={() => {
         if (isUserInMatch(match) && match.status !== 'completed') {
           onSelectMatch(match);
         }
       }}
+      style={{ borderRadius: "2px" }}
     >
-      <div className="flex justify-between items-center mb-3">
-        <div className="text-sm font-bold">
-          {match.player1?.username} vs {match.player2?.username}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <div className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-2">Logic Duel</div>
+          <div className="text-sm font-bold text-white uppercase tracking-widest">
+            {match.player1?.username} <span className="text-slate-700 px-1 font-mono">VS</span> {match.player2?.username}
+          </div>
         </div>
-        <span
-          className={`text-xs px-2 py-1 rounded font-semibold ${
-            match.status === 'completed'
-              ? 'bg-green-600'
-              : match.submissions?.length > 0
-              ? 'bg-yellow-600'
-              : 'bg-gray-600'
-          }`}
-        >
+        <div className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1 border tabular-nums ${match.status === 'completed'
+            ? 'border-[var(--color-success)] text-[var(--color-success)]'
+            : match.submissions?.length > 0
+              ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+              : 'border-white/20 text-slate-500'
+          }`}>
           {getMatchStatus(match)}
-        </span>
+        </div>
       </div>
 
-      <div className="mb-3">
-        <p className="text-xs text-gray-500 mb-1">Problem:</p>
-        <p className="text-sm font-semibold text-blue-400">
+      <div className="mb-8 p-4 bg-white/[0.01] border border-white/[0.03]">
+        <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mb-1">Target Module:</p>
+        <p className="text-sm font-bold text-white hover:text-[var(--color-primary)] transition-colors">
           {match.problem?.title}
         </p>
       </div>
 
       {match.winnerId && (
-        <div className="bg-gray-800 border border-green-600 rounded px-3 py-2">
-          <p className="text-xs text-gray-400">Winner</p>
-          <p className="text-sm font-bold text-green-400">
+        <div className="pt-6 border-t border-white/5 flex items-baseline gap-3">
+          <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Resolved Victory:</p>
+          <p className="text-xs font-black text-[var(--color-primary)] uppercase tracking-widest">
             {match.winnerId === match.player1Id
               ? match.player1?.username
               : match.player2?.username}
@@ -49,9 +50,10 @@ export const MatchCard = ({ match, user, onSelectMatch, getMatchStatus, isUserIn
             e.stopPropagation();
             onSelectMatch(match);
           }}
-          className="mt-3 w-full py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-semibold"
+          className="mt-8 w-full py-4 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all shadow-lg"
+          style={{ borderRadius: "2px" }}
         >
-          Submit Code
+          Initialize Submission
         </button>
       )}
     </div>

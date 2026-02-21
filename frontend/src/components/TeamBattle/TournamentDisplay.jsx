@@ -32,98 +32,105 @@ export const TournamentDisplay = ({
   return (
     <div className="space-y-6">
       {/* Tournament Header */}
-      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold">
-            {currentBattle.team1?.name} vs {currentBattle.team2?.name}
-          </h3>
-          <div className="text-right">
-            <p className="text-sm text-gray-400">Code: {currentBattle.battleCode}</p>
-            <p
-              className={`text-lg font-bold ${
-                currentBattle.status === 'active'
-                  ? 'text-green-400'
-                  : currentBattle.status === 'completed'
-                  ? 'text-blue-400'
-                  : 'text-yellow-400'
-              }`}
-            >
-              {currentBattle.status?.toUpperCase()}
-            </p>
+      <div className="space-y-12 animate-in fade-in duration-700">
+        {/* Tournament Header */}
+        <div className="premium-card p-12 lg:p-16 relative overflow-hidden" style={{ borderRadius: "2px" }}>
+          <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8">
+            <div>
+              <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Active Engagement // Tournament</div>
+              <h3 className="text-4xl font-black text-white uppercase tracking-tighter">
+                {currentBattle.team1?.name} <span className="text-slate-600 px-4 font-mono">VS</span> {currentBattle.team2?.name}
+              </h3>
+            </div>
+            <div className="text-center md:text-right">
+              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Synchronization Key</div>
+              <div className="font-mono text-xl font-black text-white tracking-widest mb-4 bg-white/[0.02] px-6 py-2 border border-white/5 inline-block">{currentBattle.battleCode}</div>
+              <p className={`text-[10px] font-bold uppercase tracking-[0.4em] ${currentBattle.status === 'active' ? 'text-[var(--color-success)]' : 'text-[var(--color-primary)]'
+                }`}>
+                {currentBattle.status}
+              </p>
+            </div>
+          </div>
+
+          {/* Tournament Scoreboard */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
+            <div className="p-10 border-l-4 border-[var(--color-primary)] bg-white/[0.01] shadow-2xl relative group">
+              <div className="absolute top-4 right-6 text-[9px] font-bold text-slate-600 uppercase tracking-widest group-hover:text-white transition-colors">Cluster One</div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">{currentBattle.team1?.name}</p>
+              <div className="flex items-baseline gap-4">
+                <p className="text-7xl font-black text-white tabular-nums">{currentBattle.team1Wins || 0}</p>
+                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Wins Recorded</p>
+              </div>
+            </div>
+            <div className="p-10 border-l-4 border-white/10 bg-white/[0.01] shadow-2xl relative group">
+              <div className="absolute top-4 right-6 text-[9px] font-bold text-slate-600 uppercase tracking-widest group-hover:text-white transition-colors">Cluster Two</div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">{currentBattle.team2?.name}</p>
+              <div className="flex items-baseline gap-4">
+                <p className="text-7xl font-black text-white tabular-nums">{currentBattle.team2Wins || 0}</p>
+                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Wins Recorded</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Matches Grid */}
+          <div className="mb-16">
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.5em] mb-8 border-b border-white/5 pb-4">Logic Duels // 1V1</h4>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {currentMatches.map((match) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  user={user}
+                  onSelectMatch={() => {
+                    if (isUserInMatch(match) && match.status !== 'completed') {
+                      onSelectMatchForCode(match);
+                    }
+                  }}
+                  getMatchStatus={getMatchStatus}
+                  isUserInMatch={isUserInMatch}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Tournament Controls */}
+          <div className="pt-12 border-t border-white/[0.03]">
+            {currentBattle.status === 'pending' && (
+              <button
+                onClick={onStartBattle}
+                disabled={battleLoading}
+                className="w-full py-6 bg-[var(--color-primary)] text-black font-bold uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
+                style={{ borderRadius: "2px" }}
+              >
+                {battleLoading ? "Initializing..." : "Engage Tournament Engine →"}
+              </button>
+            )}
+
+            {currentBattle.status === 'active' && (
+              <button
+                onClick={onCompleteBattle}
+                disabled={battleLoading}
+                className="w-full py-6 border border-white/10 text-white font-bold uppercase tracking-widest text-xs hover:border-white hover:bg-white/5 transition-all"
+                style={{ borderRadius: "2px" }}
+              >
+                {battleLoading ? "Resolving..." : "Conclude Battle Protocol →"}
+              </button>
+            )}
+
+            {currentBattle.status === 'completed' && (
+              <div className="p-10 bg-white/[0.01] border border-[var(--color-primary)]/20 text-center" style={{ borderRadius: "2px" }}>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">Official Result</p>
+                <p className="text-3xl font-black text-[var(--color-primary)] uppercase tracking-tighter">
+                  {currentBattle.team1Wins > currentBattle.team2Wins
+                    ? `${currentBattle.team1?.name} DOMINANT`
+                    : currentBattle.team2Wins > currentBattle.team1Wins
+                      ? `${currentBattle.team2?.name} DOMINANT`
+                      : "PROTOCOL TIE // EQUALIZED"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Tournament Scoreboard */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-gray-900 rounded-lg p-4 border-2 border-blue-500">
-            <p className="text-sm text-gray-400 mb-2">{currentBattle.team1?.name}</p>
-            <p className="text-3xl font-bold text-blue-400">
-              {currentBattle.team1Wins || 0}
-            </p>
-            <p className="text-xs text-gray-500">Wins</p>
-          </div>
-          <div className="bg-gray-900 rounded-lg p-4 border-2 border-red-500">
-            <p className="text-sm text-gray-400 mb-2">{currentBattle.team2?.name}</p>
-            <p className="text-3xl font-bold text-red-400">
-              {currentBattle.team2Wins || 0}
-            </p>
-            <p className="text-xs text-gray-500">Wins</p>
-          </div>
-        </div>
-
-        {/* Matches Grid */}
-        <div className="mb-6">
-          <h4 className="text-xl font-bold mb-4">1v1 Matches</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {currentMatches.map((match) => (
-              <MatchCard
-                key={match.id}
-                match={match}
-                user={user}
-                onSelectMatch={() => {
-                  if (isUserInMatch(match) && match.status !== 'completed') {
-                    onSelectMatchForCode(match);
-                  }
-                }}
-                getMatchStatus={getMatchStatus}
-                isUserInMatch={isUserInMatch}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Tournament Controls */}
-        {currentBattle.status === 'pending' && (
-          <button
-            onClick={onStartBattle}
-            disabled={battleLoading}
-            className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold disabled:opacity-50"
-          >
-            {battleLoading ? "Starting..." : "Start Tournament"}
-          </button>
-        )}
-
-        {currentBattle.status === 'active' && (
-          <button
-            onClick={onCompleteBattle}
-            disabled={battleLoading}
-            className="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-bold disabled:opacity-50"
-          >
-            {battleLoading ? "Completing..." : "Complete Tournament"}
-          </button>
-        )}
-
-        {currentBattle.status === 'completed' && (
-          <div className="bg-gray-900 border-2 border-yellow-500 rounded-lg p-4 text-center">
-            <p className="text-lg font-bold text-yellow-400">
-              {currentBattle.team1Wins > currentBattle.team2Wins
-                ? `🎉 ${currentBattle.team1?.name} Wins!`
-                : currentBattle.team2Wins > currentBattle.team1Wins
-                ? `🎉 ${currentBattle.team2?.name} Wins!`
-                : "Tournament Tied!"}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

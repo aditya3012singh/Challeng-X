@@ -145,35 +145,41 @@ class BattleService {
   }
 
   static async finishBattleService(battleId, winnerId) {
-    const battle = await Database.client.battle.findUnique({
-      where: { id: battleId },
-    });
+    // Atomic update: only transition if still ONGOING
+    // This prevents race conditions where two players pass at the same time
+    try {
+      const battleResult = await Database.client.battle.update({
+        where: {
+          id: battleId,
+          status: "ONGOING" // Essential for atomicity
+        },
+        data: {
+          status: "FINISHED",
+          endedAt: new Date(),
+          winnerId,
+        },
+        include: { player1: true, player2: true }
+      });
 
-    if (!battle || battle.status === "FINISHED") return null;
+      // Perform background tasks (ranking, cache flush)
+      (async () => {
+        try {
+          const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
+          await RankingService.updateRanks(winnerId, loserId);
+          await RedisClient.client.flushall();
+          console.log(`✅ Atomic Battle Finish: ${battleId} (Winner: ${winnerId})`);
+        } catch (err) {
+          console.error(`❌ Background task error for battle ${battleId}:`, err.message);
+        }
+      })();
 
-    // 1. Update status synchronously
-    const battleResult = await Database.client.battle.update({
-      where: { id: battleId },
-      data: {
-        status: "FINISHED",
-        endedAt: new Date(),
-        winnerId,
-      }
-    });
-
-    // 2. Perform background tasks (ranking, cache flush)
-    (async () => {
-      try {
-        const loserId = (battle.player1Id === winnerId) ? battle.player2Id : battle.player1Id;
-        await RankingService.updateRanks(winnerId, loserId);
-        await RedisClient.client.flushall();
-        console.log(`✅ Background ranking and cache flush completed for battle ${battleId}`);
-      } catch (err) {
-        console.error(`❌ Background task error for battle ${battleId}:`, err.message);
-      }
-    })();
-
-    return battleResult;
+      return battleResult;
+    } catch (error) {
+      // P2025 is Prisma's "Record to update not found" error,
+      // which happens here if status is already FINISHED.
+      console.log(`ℹ️ Battle ${battleId} already finished or record missing. Ignoring winner ${winnerId}.`);
+      return null;
+    }
   }
 
   static async incrementBattleAttempt(battleId, userId) {

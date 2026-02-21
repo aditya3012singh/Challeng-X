@@ -233,27 +233,30 @@ export const TeamBattle = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f12] text-white py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-16 font-[family:var(--font-body)]">
+      <div className="max-w-7xl mx-auto px-6">
         {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold text-center mb-2">🏆 Team Tournament Battle</h1>
-          <p className="text-center text-gray-400">Create teams, join battles, and compete with your squad</p>
+        <div className="mb-20 text-center">
+          <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Tactical Cluster // Social</div>
+          <h1 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Team Battle</h1>
+          <p className="text-slate-500 text-lg font-light max-w-2xl mx-auto">Build your consensus. Coordinate your logic. Overload the opponent node.</p>
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="flex gap-4 mb-8 justify-center flex-wrap">
+        <div className="flex gap-6 mb-16 justify-center flex-wrap">
           <button
             onClick={() => setShowCreateBattleModal(true)}
-            className="px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl font-semibold transition-all shadow-lg"
+            className="px-10 py-4 bg-[var(--color-primary)] text-black font-bold uppercase tracking-widest text-xs hover:bg-white transition-all transform hover:-translate-y-1 shadow-lg"
+            style={{ borderRadius: "2px" }}
           >
-            ➕ Create Battle
+            Create Battle Protocol
           </button>
           <button
             onClick={() => setShowJoinBattleModal(true)}
-            className="px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-xl font-semibold transition-all shadow-lg"
+            className="px-10 py-4 border border-white/10 text-white font-bold uppercase tracking-widest text-xs hover:border-white transition-all transform hover:-translate-y-1"
+            style={{ borderRadius: "2px" }}
           >
-            🔗 Join Battle
+            Proxy Join Battle
           </button>
         </div>
 

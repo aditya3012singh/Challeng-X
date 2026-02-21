@@ -31,35 +31,49 @@ const JoinRoom = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center px-4">
-      <div className="bg-[#15151a] border border-gray-300 rounded-2xl shadow-2xl w-full max-w-md p-10 text-center">
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center px-4">
+      {/* MINIMALIST BACKGROUND DECOR */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.02] blur-[150px] rounded-full"></div>
+      </div>
 
-        <h1 className="text-4xl font-bold text-white mb-4">🎮 Join Room</h1>
-        <p className="text-gray-400 mb-8">
-          Enter the 6-digit battle code to join the room
+      <div className="premium-card w-full max-w-md p-16 text-center shadow-2xl relative z-10" style={{ borderRadius: "2px" }}>
+        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">Battle Protocol</div>
+
+        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
+          Join Room
+        </h1>
+        <p className="text-slate-500 text-sm font-light mb-12">
+          Enter the synchronization code to join the arena.
         </p>
 
-        <form onSubmit={handleJoin} className="space-y-6">
-          <input
-            type="text"
-            value={code}
-            onChange={handleChange}
-            placeholder="••••••"
-            className="w-full text-center tracking-[12px] text-3xl py-4 rounded-xl bg-[#0f0f12] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
+        <form onSubmit={handleJoin} className="space-y-8">
+          <div className="relative group">
+            <input
+              type="text"
+              value={code}
+              onChange={handleChange}
+              placeholder="000 000"
+              className="w-full text-center tracking-[0.4em] text-4xl py-6 bg-white/[0.02] border border-white/5 text-white focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono"
+              style={{ borderRadius: "2px" }}
+            />
+          </div>
 
           <button
             type="submit"
             disabled={loading || code.length !== 6}
-            className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-5 bg-[var(--color-primary)] text-black font-bold uppercase tracking-[0.2em] text-xs disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white transition-all transform active:scale-95 shadow-xl"
+            style={{ borderRadius: "2px" }}
           >
-            {loading ? "Joining..." : "Enter Battle"}
+            {loading ? "Initializing..." : "Establish Connection →"}
           </button>
         </form>
 
-        <p className="text-gray-500 text-sm mt-6">
-          Battle codes are 6 digits and expire after the battle ends
-        </p>
+        <div className="mt-12 pt-12 border-t border-white/[0.03]">
+          <p className="text-[9px] text-slate-600 font-bold uppercase tracking-[0.3em]">
+            Security: 256-Bit Encrypted Link
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -16,81 +16,82 @@ export const MyTeamsTab = ({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       {userTeams.map((team) => (
         <div
           key={team.id}
-          className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-blue-500 transition-colors"
+          className="premium-card p-10 group"
+          style={{ borderRadius: "2px" }}
         >
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex justify-between items-start mb-10">
             <div>
-              <h3 className="text-2xl font-bold text-white">{team.name}</h3>
-              <p className="text-gray-400 text-sm">
-                Created by: <span className="text-blue-400">{team.creator?.username}</span>
+              <div className="text-[9px] font-bold text-[var(--color-primary)] tracking-[0.3em] mb-2 uppercase opacity-50">Team Alpha</div>
+              <h3 className="text-3xl font-bold text-white tracking-tight">{team.name}</h3>
+              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">
+                Leader: <span className="text-white">{team.creator?.username}</span>
               </p>
             </div>
           </div>
 
-          <div className="mb-4">
-            <p className="text-sm text-gray-400 mb-2">Team Code:</p>
-            <div className="flex items-center gap-2">
-              <code className="bg-gray-900 px-3 py-2 rounded font-mono text-lg font-bold text-green-400">
+          <div className="mb-10 p-6 bg-white/[0.02] border border-white/5" style={{ borderRadius: "2px" }}>
+            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-3">Synchronization Code</p>
+            <div className="flex items-center justify-between">
+              <code className="text-2xl font-black text-[var(--color-primary)] tracking-[0.2em] font-mono">
                 {team.teamCode}
               </code>
               <button
                 onClick={() => copyToClipboard(team.teamCode)}
-                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm"
+                className="text-[9px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
               >
-                Copy
+                [ Copy Code ]
               </button>
             </div>
           </div>
 
-          <div className="mb-6">
-            <p className="text-sm text-gray-400 mb-3">
-              Members ({team.members?.length || 0})
+          <div className="mb-12">
+            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-6 border-b border-white/5 pb-2">
+              Sync Members ({team.members?.length || 0} / 5)
             </p>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {team.members?.map((member) => (
-                <div key={member.id} className="flex items-center justify-between bg-gray-900 p-2 rounded">
-                  <div>
-                    <p className="text-white font-semibold">{member.user?.username}</p>
-                    <p className="text-xs text-gray-500">Rank: {member.user?.rankPoints}</p>
+                <div key={member.id} className="flex items-center justify-between py-1">
+                  <div className="flex items-center gap-4">
+                    <div className="w-2 h-2 rounded-full bg-[var(--color-primary)]/40 group-hover:bg-[var(--color-primary)] transition-colors"></div>
+                    <span className="text-sm font-bold text-slate-300 uppercase tracking-widest">{member.user?.username}</span>
                   </div>
-                  {member.user?.id === team.creatorId && (
-                    <span className="text-xs bg-yellow-600 text-white px-2 py-1 rounded">
-                      Creator
-                    </span>
-                  )}
+                  <span className="text-[10px] font-black text-slate-600 tabular-nums">ELO {member.user?.rankPoints}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-4">
             {team.creatorId !== user?.id && (
               <button
                 onClick={() => onLeaveTeam(team.id)}
                 disabled={teamLoading}
-                className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded text-sm disabled:opacity-50"
+                className="flex-1 py-4 border border-white/10 text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white hover:border-white transition-all disabled:opacity-20"
+                style={{ borderRadius: "2px" }}
               >
-                Leave Team
+                Leave Cluster
               </button>
             )}
             {team.creatorId === user?.id && (
               <button
                 onClick={() => onDisbandTeam(team.id)}
                 disabled={teamLoading}
-                className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded text-sm disabled:opacity-50"
+                className="flex-1 py-4 border border-white/10 text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white hover:border-white transition-all disabled:opacity-20"
+                style={{ borderRadius: "2px" }}
               >
-                Disband
+                Disband Node
               </button>
             )}
             <button
               onClick={() => onStartBattle(team)}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+              className="flex-1 py-4 bg-[var(--color-primary)] text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-white transition-all shadow-lg"
+              style={{ borderRadius: "2px" }}
             >
-              Start Battle
+              Initialize Battle
             </button>
           </div>
         </div>

@@ -56,9 +56,9 @@ export const getBattle = createAsyncThunk(
 // Submit battle code
 export const submitBattleCode = createAsyncThunk(
     "battle/submitCode",
-    async ({ battleId, code, language }, { rejectWithValue }) => {
+    async ({ battleId, code, language, type }, { rejectWithValue }) => {
         try {
-            const res = await api.post(`/battle/${battleId}/submit`, { code, language });
+            const res = await api.post(`/battle/${battleId}/submit`, { code, language, type });
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data || { message: err.message });

@@ -48,9 +48,13 @@ class ServerApp {
               // 2. Await the CRITICAL status change in DB before notifying the room of completion
               // This prevents the loser from re-fetching before the status is 'FINISHED'
               BattleService.finishBattleService(battleId, userId)
-                .then(() => {
-                  console.log(`🏆 Battle ${battleId} finished in DB. Notifying room...`);
-                  io.to(battleId).emit("battleFinished", { winnerId: userId });
+                .then((result) => {
+                  if (result) {
+                    console.log(`🏆 Battle ${battleId} finished in DB. Winner: ${userId}. Notifying room...`);
+                    io.to(battleId).emit("battleFinished", { winnerId: userId });
+                  } else {
+                    console.log(`ℹ️ Battle ${battleId} already has a winner. Skipping notification for ${userId}.`);
+                  }
                 })
                 .catch((err) => console.error(`❌ finishBattleService error: ${err.message}`));
 

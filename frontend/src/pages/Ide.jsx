@@ -43,14 +43,10 @@ const WaitingForOpponent = ({ battleId }) => {
 const LeaveConfirmModal = ({ onStay, onLeave }) => (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
     <div
-      className="relative glass-panel border border-[var(--color-primary)] p-10 max-w-md w-full text-center"
-      style={{ clipPath: "polygon(4% 0, 100% 0, 100% 88%, 96% 100%, 0 100%, 0 12%)" }}
+      className="relative bg-[#0a0a0a] border border-white/5 p-12 max-w-md w-full text-center shadow-2xl"
+      style={{ borderRadius: "2px" }}
     >
-      {/* Corner decor */}
-      <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-[var(--color-primary)]" />
-      <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-[var(--color-primary)]" />
-      <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-[var(--color-primary)]" />
-      <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-[var(--color-primary)]" />
+      {/* No corner decor needed for minimalist look */}
 
       <div className="text-5xl mb-4">⚠️</div>
       <h2 className="text-2xl font-black text-white mb-2 font-[family:var(--font-heading)] tracking-widest">
@@ -62,15 +58,15 @@ const LeaveConfirmModal = ({ onStay, onLeave }) => (
       <div className="flex gap-4 justify-center">
         <button
           onClick={onStay}
-          className="px-8 py-3 bg-[var(--color-primary)] text-black font-bold uppercase tracking-widest hover:shadow-[0_0_20px_var(--color-primary)] transition-all text-sm"
-          style={{ clipPath: "polygon(8% 0, 100% 0, 100% 75%, 92% 100%, 0 100%, 0 25%)" }}
+          className="px-8 py-3 bg-[var(--color-primary)] text-black font-bold uppercase tracking-widest hover:bg-white transition-all text-[10px]"
+          style={{ borderRadius: "2px" }}
         >
           Stay in Battle
         </button>
         <button
           onClick={onLeave}
-          className="px-8 py-3 border border-red-500 text-red-400 font-bold uppercase tracking-widest hover:bg-red-900/30 transition-all text-sm"
-          style={{ clipPath: "polygon(8% 0, 100% 0, 100% 75%, 92% 100%, 0 100%, 0 25%)" }}
+          className="px-8 py-3 border border-white/10 text-white/50 hover:text-white hover:border-white transition-all text-[10px]"
+          style={{ borderRadius: "2px" }}
         >
           Leave Anyway
         </button>
@@ -93,7 +89,13 @@ export default function Ide() {
   );
   // Keep a ref to the current user id so socket closures always see the latest value
   const { user } = useSelector((state) => state.auth);
-  const userIdRef = useRef(null);
+  const userRef = useRef(user);
+  const currentBattleRef = useRef(currentBattle);
+
+  useEffect(() => { userRef.current = user; }, [user]);
+  useEffect(() => { currentBattleRef.current = currentBattle; }, [currentBattle]);
+
+  const userIdRef = useRef(user?.id);
   useEffect(() => { userIdRef.current = user?.id; }, [user]);
 
   const isBattleFinished = currentBattle?.status === "FINISHED";
@@ -130,6 +132,9 @@ export default function Ide() {
     error: practiceError,
     resetSubmission
   } = useSubmission();
+
+  // Track the ID of the last submission we sent, to match against incoming socket results
+  const pendingSubmissionIdRef = useRef(null);
 
   // Save active battleId so we can return after a page refresh
   useEffect(() => {
@@ -195,35 +200,46 @@ export default function Ide() {
 
   // Socket.io connection for real-time updates
   useEffect(() => {
-    const socket = getSocket();
+    if (!battleId) return;
 
-    // Join the battle room
+    const socket = getSocket();
     socket.emit("joinBattle", battleId);
 
-    // Listen for player joined event
-    socket.on("playerJoined", () => {
+    const onPlayerJoined = () => {
       console.log("Player joined the battle");
       dispatch(getBattle({ battleId }));
-    });
+    };
 
-    // Listen for battle started event
-    socket.on("battleStarted", () => {
+    const onBattleStarted = () => {
       console.log("Battle started");
       dispatch(getBattle({ battleId }));
-    });
+    };
 
-    socket.on("attemptsUpdated", ({ player1Attempts, player2Attempts }) => {
-      if (currentBattle && user) {
-        const isPlayer1 = currentBattle.player1Id === user.id;
-        setMyAttempts(isPlayer1 ? player1Attempts : player2Attempts);
+    const onAttemptsUpdated = ({ player1Attempts, player2Attempts }) => {
+      const battle = currentBattleRef.current;
+      const currentUser = userRef.current;
+      if (battle && currentUser) {
+        const isPlayer1 = battle.player1Id === currentUser.id;
+        setMyAttempts(isPlayer1 ? battle.attemptsPlayer1 : battle.attemptsPlayer2);
       }
-    });
+    };
 
-    socket.on("submissionResult", ({ userId: resultUserId, status: resStatus, passedTests, totalTests, failedTestCase, input, expectedOutput, actualOutput, errorMessage, executionTimeMs, type, testCaseResults: tcResults }) => {
-      const isMe = resultUserId === userIdRef.current;
-      console.log("submissionResult received:", { resultUserId, resStatus, passedTests, totalTests, isMe, type });
+    const onSubmissionResult = (data) => {
+      console.log("DEBUG: submissionResult data received:", data);
+      const {
+        submissionId, userId: resultUserId, status: resStatus, passedTests, totalTests,
+        failedTestCase, errorMessage, executionTimeMs, type, testCaseResults: tcResults
+      } = data;
+
+      const isMe = resultUserId === userIdRef.current || submissionId === pendingSubmissionIdRef.current;
+      console.log("DEBUG: submissionResult check:", { submissionId, resultUserId, myId: userIdRef.current, isMe, pending: pendingSubmissionIdRef.current });
 
       if (isMe) {
+        // Clear pending ID since we got a result
+        if (submissionId === pendingSubmissionIdRef.current) {
+          pendingSubmissionIdRef.current = null;
+        }
+
         if (type === "RUN") {
           setTestCaseResults(tcResults);
           setStatus(resStatus === "PASSED" ? "success" : "error");
@@ -233,10 +249,12 @@ export default function Ide() {
 
         // SUBMIT logic
         if (resStatus === "PASSED") {
+          console.log("DEBUG: Submission passed! Setting status to success.");
           setStatus("success");
           setTestCaseResults(null);
-          setMessage(`🏆 Victory! All test cases passed! (${passedTests}/${totalTests})${executionTimeMs ? ` in ${executionTimeMs}ms` : ""}`);
+          setMessage(`✅ Evaluation passed! (${passedTests}/${totalTests}) Waiting for arena verification...`);
         } else {
+          console.log("DEBUG: Submission failed. Setting status to error.");
           setStatus("error");
           setTestCaseResults(null);
           const lines = [`❌ Wrong answer — ${passedTests ?? 0}/${totalTests ?? "?"} test cases passed`];
@@ -245,40 +263,50 @@ export default function Ide() {
           setMessage(lines.join(""));
         }
       } else {
-        // Notify the other player
-        if (type === "SUBMIT") {
-          if (resStatus === "PASSED") {
-            setStatus("error");
-            setMessage(`🔔 Opponent passed all test cases!`);
-          } else {
-            // Opponent failed a final submission
-            // Maybe show a small toast: "Opponent failed an attempt (2/3)"
-          }
+        if (type === "SUBMIT" && resStatus === "PASSED") {
+          console.log("DEBUG: Opponent passed! Setting status to error/notified.");
+          setStatus("error");
+          setMessage(`🔔 Opponent passed all test cases!`);
         }
       }
-    });
+    };
 
-    // Listen for battle finished event
-    socket.on("battleFinished", ({ winnerId, draw }) => {
-      console.log("Battle finished, winner:", winnerId);
+    const onBattleFinished = (data) => {
+      console.log("DEBUG: battleFinished data received:", data);
+      const { winnerId, draw } = data;
       if (draw) {
         setMessage("💀 ARENA WINS: Both players failed all attempts. Points deducted.");
         setStatus("finished");
         setHasLost(true);
       }
+      // Re-fetch to get final winner object and rewards
       setTimeout(() => {
+        console.log("DEBUG: Re-fetching battle after finish event...");
         dispatch(getBattle({ battleId }));
       }, 500);
-    });
+    };
+
+    const onConnect = () => {
+      console.log("🟢 Socket connected/reconnected, joining battle room:", battleId);
+      socket.emit("joinBattle", battleId);
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("playerJoined", onPlayerJoined);
+    socket.on("battleStarted", onBattleStarted);
+    socket.on("attemptsUpdated", onAttemptsUpdated);
+    socket.on("submissionResult", onSubmissionResult);
+    socket.on("battleFinished", onBattleFinished);
 
     return () => {
-      socket.off("playerJoined");
-      socket.off("battleStarted");
-      socket.off("battleFinished");
-      socket.off("submissionResult");
-      socket.off("attemptsUpdated");
+      socket.off("connect", onConnect);
+      socket.off("playerJoined", onPlayerJoined);
+      socket.off("battleStarted", onBattleStarted);
+      socket.off("attemptsUpdated", onAttemptsUpdated);
+      socket.off("submissionResult", onSubmissionResult);
+      socket.off("battleFinished", onBattleFinished);
     };
-  }, [battleId, dispatch, currentBattle, user]);
+  }, [battleId, dispatch]);
 
   useEffect(() => {
     if (!currentBattle) return;
@@ -317,6 +345,10 @@ export default function Ide() {
     if (battleId) {
       try {
         const result = await dispatch(submitBattleCode({ battleId, code, language, type })).unwrap();
+        console.log("DEBUG: Submission result from dispatch:", result);
+        if (result.submissionId) {
+          pendingSubmissionIdRef.current = result.submissionId;
+        }
         if (result.status === "QUEUED") {
           setStatus("running");
           setMessage(type === "RUN" ? "⏳ Running sample tests..." : "⏳ Judging final submission...");
@@ -367,11 +399,11 @@ export default function Ide() {
 
         {/* Battle-finished top bar with back button */}
         {isBattleFinished && (
-          <div className="flex items-center justify-between px-6 py-3 bg-black border-b border-[rgba(0,240,255,0.15)] z-50 shrink-0">
+          <div className="flex items-center justify-between px-6 py-3 bg-black border-b border-white/[0.03] z-50 shrink-0">
             <button
               onClick={() => navigate("/")}
-              className="flex items-center gap-2 px-6 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] font-bold uppercase tracking-widest text-sm hover:bg-[rgba(0,240,255,0.1)] hover:shadow-[0_0_15px_var(--color-primary)] transition-all"
-              style={{ clipPath: "polygon(8% 0, 100% 0, 100% 75%, 92% 100%, 0 100%, 0 25%)" }}
+              className="px-6 py-2 border border-white/10 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-white hover:text-black transition-all"
+              style={{ borderRadius: "2px" }}
             >
               ← RETURN TO BASE
             </button>
@@ -403,15 +435,15 @@ export default function Ide() {
               <>
                 {/* Waiting for opponent banner */}
                 {isWaitingForOpponent && (
-                  <div className="bg-[#FFD700]/10 border-b border-[#FFD700]/30 px-6 py-3">
+                  <div className="bg-[var(--color-primary)]/10 border-b border-[var(--color-primary)]/30 px-6 py-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-black text-[#FFD700] uppercase tracking-widest text-xs">Waiting for Opponent</p>
+                        <p className="font-black text-[var(--color-primary)] uppercase tracking-widest text-xs">Waiting for Opponent</p>
                         <p className="text-[10px] text-gray-400 uppercase mt-1">Join Code: <span className="font-black text-white ml-2 text-sm">{currentBattle?.battleCode}</span></p>
                       </div>
                       <div className="flex items-center gap-4 text-[10px] uppercase font-bold text-gray-500">
                         <span>Invite Link Copied</span>
-                        <div className="w-2 h-2 rounded-full bg-[#FFD700] animate-pulse"></div>
+                        <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse"></div>
                       </div>
                     </div>
                   </div>

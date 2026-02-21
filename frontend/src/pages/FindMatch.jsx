@@ -79,108 +79,115 @@ export const FindMatch = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--color-bg-dark)] text-white flex items-center justify-center px-4 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
+        <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] flex items-center justify-center px-4 relative overflow-hidden font-[family:var(--font-body)]">
+            {/* MINIMALIST BACKGROUND DECOR */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.015] blur-[180px] rounded-full"></div>
+            </div>
 
-            <div className="relative max-w-3xl w-full z-10 font-[family:var(--font-heading)]">
+            <div className="relative max-w-4xl w-full z-10">
 
                 {matchFound ? (
-                    // Match Found Screen
-                    <div className="glass-panel border-2 border-[var(--color-success)] rounded-xl p-12 text-center shadow-[0_0_50px_var(--color-success)] animate-pulse">
-                        <div className="text-8xl mb-6 filter drop-shadow-[0_0_10px_var(--color-success)]">🎯</div>
-                        <h1 className="text-5xl font-black mb-4 text-white">TARGET ACQUIRED</h1>
-                        <div className="inline-block px-6 py-2 bg-[var(--color-success)] text-black font-bold text-xl rounded mb-4">
-                            {opponent}
+                    // Match Found Screen - REFINED
+                    <div className="premium-card p-20 text-center shadow-2xl animate-in zoom-in duration-500" style={{ borderRadius: "2px" }}>
+                        <div className="text-[10px] font-bold tracking-[1em] text-[var(--color-success)] uppercase mb-8">Signal Locked</div>
+
+                        <h1 className="text-6xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Opponent Found</h1>
+
+                        <div className="mb-10 flex flex-col items-center">
+                            <div className="w-1 h-12 bg-[var(--color-success)] mb-6 opacity-40"></div>
+                            <div className="px-10 py-4 border border-[var(--color-success)]/20 text-white font-black text-2xl tracking-widest uppercase bg-white/[0.02]">
+                                {opponent}
+                            </div>
                         </div>
-                        <p className="text-xl text-[var(--color-success)] animate-bounce mt-4"> INITIATING BATTLE SEQUENCE...</p>
+
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em] animate-pulse">Initializing Neural Link...</p>
                     </div>
                 ) : inQueue ? (
-                    // Searching Screen
-                    <div className="glass-panel rounded-xl p-12 text-center border-glow relative overflow-hidden">
-                        <div className="scanline"></div>
-
-                        <div className="mb-10 relative">
-                            <div className="w-32 h-32 mx-auto rounded-full border-4 border-[var(--color-primary)] border-t-transparent animate-spin relative z-10"></div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-4xl">📡</span>
+                    // Searching Screen - SOPHISTICATED
+                    <div className="premium-card p-20 text-center relative overflow-hidden" style={{ borderRadius: "2px" }}>
+                        <div className="mb-12 relative flex justify-center">
+                            <div className="w-24 h-24 border border-white/5 rounded-full flex items-center justify-center relative">
+                                <div className="absolute inset-[-4px] border border-[var(--color-primary)]/20 rounded-full animate-ping"></div>
+                                <div className="absolute inset-[-12px] border border-[var(--color-primary)]/5 rounded-full"></div>
+                                <div className="w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_10px_var(--color-primary)]"></div>
                             </div>
                         </div>
 
-                        <h1 className="text-4xl font-bold mb-2 text-white text-glow">SCANNING NETWORK</h1>
-                        <p className="text-[var(--color-text-muted)] mb-8">
-                            SEARCHING FOR <span className="text-[var(--color-primary)]">{selectedDifficulty}</span> OPERATIVES
+                        <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Searching Perimeter</div>
+                        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Scanning Node</h1>
+                        <p className="text-slate-500 text-sm font-light mb-16 tracking-widest">
+                            Locating <span className="text-white font-bold">{selectedDifficulty}</span> operands for engagement.
                         </p>
 
-                        <div className="grid grid-cols-2 gap-6 mb-10 max-w-md mx-auto">
-                            <div className="bg-black/40 rounded-lg p-4 border border-gray-700">
-                                <p className="text-xs text-gray-400 mb-1 uppercase tracking-widest">Active queue</p>
-                                <p className="text-3xl font-bold text-[var(--color-primary)]">{queueSize}</p>
+                        <div className="grid grid-cols-2 gap-12 mb-16 max-w-md mx-auto">
+                            <div className="text-left border-l border-white/10 pl-6">
+                                <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Queue Depth</p>
+                                <p className="text-3xl font-black text-white tabular-nums">{queueSize}</p>
                             </div>
-                            <div className="bg-black/40 rounded-lg p-4 border border-gray-700">
-                                <p className="text-xs text-gray-400 mb-1 uppercase tracking-widest">Est. Wait</p>
-                                <p className="text-3xl font-bold text-[var(--color-success)]">{formatTime(waitTime)}</p>
+                            <div className="text-left border-l border-white/10 pl-6">
+                                <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Est. Latency</p>
+                                <p className="text-3xl font-black text-[var(--color-success)] tabular-nums">{formatTime(waitTime)}</p>
                             </div>
                         </div>
 
                         <button
                             onClick={handleLeaveQueue}
-                            className="px-8 py-3 bg-red-900/20 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all rounded uppercase tracking-widest text-sm font-bold"
+                            className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-600 hover:text-red-500 transition-colors"
                         >
-                            Abort Scan
+                            [ Disconnect Search ]
                         </button>
                     </div>
                 ) : (
-                    // Selection Screen
-                    <div className="glass-panel border-glow rounded-xl p-10">
-                        <h1 className="text-5xl font-black text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">
-                            INITIALIZE COMBAT
+                    // Selection Screen - PREMIUM
+                    <div className="premium-card p-16 lg:p-20 relative overflow-hidden" style={{ borderRadius: "2px" }}>
+                        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">Combat Initiation</div>
+                        <h1 className="text-6xl font-black text-white mb-12 tracking-tighter uppercase font-[family:var(--font-heading)]">
+                            Enter Arena
                         </h1>
 
-                        <div className="mb-12">
-                            <label className="block text-center text-sm font-bold text-[var(--color-text-main)] mb-6 uppercase tracking-[0.2em]">
-                                Select Protocol parameters
+                        <div className="mb-20">
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mb-10 text-center">
+                                Complexity Protocol
                             </label>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 {["EASY", "MEDIUM", "HARD"].map((diff) => (
                                     <button
                                         key={diff}
                                         onClick={() => setSelectedDifficulty(diff)}
-                                        className={`relative p-6 rounded-lg border transition-all duration-300 group overflow-hidden ${selectedDifficulty === diff
-                                            ? "border-[var(--color-primary)] bg-[rgba(0,240,255,0.1)] text-white shadow-[0_0_15px_rgba(0,240,255,0.3)]"
-                                            : "border-gray-800 bg-black/40 text-gray-500 hover:border-gray-600 hover:text-gray-300"
+                                        className={`p-8 border transition-all duration-300 relative group overflow-hidden ${selectedDifficulty === diff
+                                            ? "border-[var(--color-primary)] bg-white/[0.02] text-white"
+                                            : "border-white/5 bg-transparent text-slate-600 hover:border-white/20 hover:text-slate-400"
                                             }`}
+                                        style={{ borderRadius: "2px" }}
                                     >
-                                        <div className="relative z-10">
-                                            <h3 className="text-xl font-bold mb-1">{diff}</h3>
-                                            <p className="text-xs opacity-70">
-                                                {diff === "EASY" && "Recruit Training"}
-                                                {diff === "MEDIUM" && "Soldier Standard"}
-                                                {diff === "HARD" && "Veteran Elite"}
+                                        <div className="relative z-10 text-center">
+                                            <h3 className="text-lg font-black uppercase tracking-widest mb-2">{diff}</h3>
+                                            <p className="text-[9px] font-bold tracking-widest opacity-60">
+                                                {diff === "EASY" && "Recruit"}
+                                                {diff === "MEDIUM" && "Standard"}
+                                                {diff === "HARD" && "Veteran"}
                                             </p>
                                         </div>
-                                        {selectedDifficulty === diff && (
-                                            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-primary)]/10 to-transparent pointer-events-none"></div>
-                                        )}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
                         {error && (
-                            <div className="bg-red-900/20 border border-red-500 text-red-400 p-4 mb-8 rounded text-center">
-                                ⚠ {error}
+                            <div className="border border-red-500/20 bg-red-500/5 text-red-500 p-6 mb-12 text-[10px] font-bold uppercase tracking-widest text-center" style={{ borderRadius: "2px" }}>
+                                ⚠ Connection Error: {error}
                             </div>
                         )}
 
                         <button
                             onClick={handleJoinQueue}
                             disabled={loading}
-                            className="w-full py-6 neon-button text-xl font-bold tracking-[0.1em] clip-path-polygon"
-                            style={{ clipPath: "polygon(5% 0, 100% 0, 100% 80%, 95% 100%, 0 100%, 0 20%)" }}
+                            className="w-full py-6 bg-[var(--color-primary)] text-black font-black text-xs uppercase tracking-[0.4em] hover:bg-white transition-all transform active:scale-95 shadow-2xl"
+                            style={{ borderRadius: "2px" }}
                         >
-                            {loading ? "ESTABLISHING CONNECTION..." : "START MATCHMAKING"}
+                            {loading ? "Establishing Link..." : "Initialize Matchmaking →"}
                         </button>
-
                     </div>
                 )}
             </div>

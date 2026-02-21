@@ -20,6 +20,14 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
 
   const isRunning = status === "running" || status === "QUEUED";
 
+  const handleTabClick = (i) => {
+    setActiveTab(i);
+    // If we have results for this case, show them by default
+    if (testCaseResults?.[i]) {
+      setViewMode("result");
+    }
+  };
+
   return (
     <div className="h-72 bg-[#0a0a0a] border border-slate-800 rounded-b-2xl text-sm flex flex-col shadow-2xl overflow-hidden">
       {/* Tabs Header */}
@@ -39,7 +47,7 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
           return (
             <button
               key={i}
-              onClick={() => setActiveTab(i)}
+              onClick={() => handleTabClick(i)}
               className={`px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider shrink-0 ${activeTab === i
                 ? "bg-[#1e1e1e] text-white border-x border-t border-slate-700 shadow-[0_-2px_10px_rgba(0,0,0,0.5)]"
                 : "text-slate-500 hover:text-slate-300"
