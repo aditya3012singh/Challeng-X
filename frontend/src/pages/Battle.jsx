@@ -23,6 +23,13 @@ export const Battle = () => {
     error,
   } = useSelector((state) => state.battle);
 
+  // Redirect back to active battle IDE if one already exists in state
+  useEffect(() => {
+    if (currentBattle && currentBattle.status !== "FINISHED") {
+      navigate(`/battle/${currentBattle.id}/ide`, { replace: true });
+    }
+  }, [currentBattle, navigate]);
+
   const {
     problems = [],
     loading: problemsLoading,
@@ -81,8 +88,8 @@ export const Battle = () => {
           <button
             onClick={() => setActiveTab("random")}
             className={`px-8 py-3 rounded clip-path-polygon transition-all border border-[var(--color-primary)] uppercase tracking-widest text-sm font-bold ${activeTab === "random"
-                ? "bg-[var(--color-primary)] text-black shadow-[0_0_20px_var(--color-primary)]"
-                : "bg-transparent text-[var(--color-primary)] hover:bg-[rgba(0,240,255,0.1)]"
+              ? "bg-[var(--color-primary)] text-black shadow-[0_0_20px_var(--color-primary)]"
+              : "bg-transparent text-[var(--color-primary)] hover:bg-[rgba(0,240,255,0.1)]"
               }`}
             style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
           >
@@ -92,8 +99,8 @@ export const Battle = () => {
           <button
             onClick={() => setActiveTab("selected")}
             className={`px-8 py-3 rounded clip-path-polygon transition-all border border-[var(--color-primary)] uppercase tracking-widest text-sm font-bold ${activeTab === "selected"
-                ? "bg-[var(--color-primary)] text-black shadow-[0_0_20px_var(--color-primary)]"
-                : "bg-transparent text-[var(--color-primary)] hover:bg-[rgba(0,240,255,0.1)]"
+              ? "bg-[var(--color-primary)] text-black shadow-[0_0_20px_var(--color-primary)]"
+              : "bg-transparent text-[var(--color-primary)] hover:bg-[rgba(0,240,255,0.1)]"
               }`}
             style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
           >
@@ -103,8 +110,8 @@ export const Battle = () => {
           <button
             onClick={() => setActiveTab("join")}
             className={`px-8 py-3 rounded clip-path-polygon transition-all border border-[var(--color-success)] uppercase tracking-widest text-sm font-bold ${activeTab === "join"
-                ? "bg-[var(--color-success)] text-black shadow-[0_0_20px_var(--color-success)]"
-                : "bg-transparent text-[var(--color-success)] hover:bg-[rgba(0,255,157,0.1)]"
+              ? "bg-[var(--color-success)] text-black shadow-[0_0_20px_var(--color-success)]"
+              : "bg-transparent text-[var(--color-success)] hover:bg-[rgba(0,255,157,0.1)]"
               }`}
             style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
           >

@@ -8,6 +8,10 @@ const Navbar = () => {
   const location = useLocation();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
+  // Hide navbar completely when inside the battle IDE
+  const isBattleIde = /^\/battle\/[^/]+\/ide/.test(location.pathname);
+  if (isBattleIde) return null;
+
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
