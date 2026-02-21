@@ -68,11 +68,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route
           path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
+          element={<Home />}
         />
         <Route path="/problems" element={
 

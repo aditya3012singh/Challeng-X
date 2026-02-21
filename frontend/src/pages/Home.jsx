@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-    const { user } = useSelector((state) => state.auth);
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
     const navigate = useNavigate();
 
     return (
@@ -24,29 +24,30 @@ const Home = () => {
                         </div>
 
                         <h1 className="text-7xl md:text-9xl font-black tracking-tight leading-[0.85] mb-12 font-[family:var(--font-heading)] uppercase text-white">
-                            THE NEW<br />
+                            {isAuthenticated ? "ENTER THE" : "THE NEW"}<br />
                             CODE<span className="text-[var(--color-primary)]">ARENA</span>
                         </h1>
 
                         <p className="max-w-2xl mx-auto text-slate-500 text-lg md:text-xl font-light leading-relaxed mb-16 tracking-wide">
-                            Elevate your logic. Compete in high-stakes automated arenas.<br />
-                            <span className="text-slate-400">Synchronized execution for the next generation of engineers.</span>
+                            {isAuthenticated
+                                ? "Operational clearance granted. Your node is synchronized and ready for high-stakes execution."
+                                : "Elevate your logic. Compete in high-stakes automated arenas. Synchronized execution for the next generation of engineers."}
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
                             <button
-                                onClick={() => navigate("/matchmaking")}
+                                onClick={() => navigate(isAuthenticated ? "/matchmaking" : "/register")}
                                 className="px-12 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all transform hover:-translate-y-1 shadow-2xl active:scale-95"
                                 style={{ borderRadius: "2px" }}
                             >
-                                Enter Arena
+                                {isAuthenticated ? "Enter Arena" : "Establish Identity →"}
                             </button>
                             <button
-                                onClick={() => navigate("/battles")}
+                                onClick={() => navigate(isAuthenticated ? "/battles" : "/login")}
                                 className="px-12 py-5 border border-white/10 hover:border-white/30 text-white font-bold uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-white/5"
                                 style={{ borderRadius: "2px" }}
                             >
-                                Live Feed →
+                                {isAuthenticated ? "Live Feed →" : "Login Protocol"}
                             </button>
                         </div>
                     </div>

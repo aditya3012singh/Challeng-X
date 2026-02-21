@@ -53,7 +53,7 @@ const Register = () => {
         })
       ).unwrap();
 
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       console.error("Registration failed:", err);
     }

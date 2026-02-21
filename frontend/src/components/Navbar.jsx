@@ -99,17 +99,27 @@ const Navbar = () => {
                   </div>
 
                   {/* Hover Dropdown */}
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-black border border-gray-800 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-[-10px] group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto">
-                    <div className="p-3 border-b border-gray-800 text-center">
-                      <div className="text-xs text-gray-500">CURRENT RATING</div>
-                      <div className="text-xl font-bold text-[var(--color-success)]">{user?.rankPoints || 0}</div>
+                  <div className="absolute right-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-[-10px] group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto z-50">
+                    <div className="bg-[#050505] border border-white/10 shadow-2xl overflow-hidden" style={{ borderRadius: "2px" }}>
+                      <div className="p-5 border-b border-white/5 text-center bg-white/[0.01]">
+                        <div className="text-[8px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-2">Current Rating</div>
+                        <div className="text-2xl font-black text-[var(--color-primary)] tabular-nums">{user?.rankPoints || 1000}</div>
+                      </div>
+                      <div className="py-2">
+                        <button
+                          onClick={() => navigate('/history')}
+                          className="block w-full text-left px-6 py-4 text-[9px] font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em]"
+                        >
+                          [ Battle History ]
+                        </button>
+                        <button
+                          onClick={handleLogout}
+                          className="block w-full text-left px-6 py-4 text-[9px] font-bold text-red-500/80 hover:bg-red-500 hover:text-white transition-all uppercase tracking-[0.2em] border-t border-white/5"
+                        >
+                          Disconnect Node
+                        </button>
+                      </div>
                     </div>
-                    <button onClick={() => navigate('/history')} className="block w-full text-left px-4 py-3 text-sm hover:bg-[var(--color-primary)] hover:text-black transition-colors">
-                      BATLLE HISTORY
-                    </button>
-                    <button onClick={handleLogout} className="block w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-900/20 transition-colors">
-                      DISCONNECT
-                    </button>
                   </div>
                 </div>
               </div>
