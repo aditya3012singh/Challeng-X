@@ -4,8 +4,10 @@ import {
     createBattleSelected,
     joinBattle,
     getBattle,
+    getBattle,
     submitBattleCode,
-    getBattleHistory
+    getBattleHistory,
+    forfeitBattle
 } from "../api/battle.thunk";
 
 const initialState = {
@@ -119,6 +121,21 @@ const battleSlice = createSlice({
             .addCase(getBattleHistory.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Failed to get battle history";
+            })
+            // Forfeit battle
+            .addCase(forfeitBattle.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(forfeitBattle.fulfilled, (state) => {
+                state.loading = false;
+                state.currentBattle = null;
+                state.submissionResult = null;
+                state.error = null;
+            })
+            .addCase(forfeitBattle.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Failed to forfeit battle";
             });
     },
 });

@@ -21,6 +21,7 @@ class BattleRoutes {
     router.post("/join", AuthMiddleware.handle, BattleController.joinBattleController);
     router.get("/:battleId", AuthMiddleware.handle, BattleController.getBattleController);
     router.post("/:battleId/submit", AuthMiddleware.handle, BattleController.submitBattleCodeController);
+    router.post("/:battleId/forfeit", AuthMiddleware.handle, BattleController.forfeitBattleController);
     router.get(
       "/history",
       AuthMiddleware.handle,

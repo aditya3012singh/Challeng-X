@@ -92,6 +92,22 @@ class BattleController {
         }
     }
 
+    static async forfeitBattleController(req, res) {
+        const userId = req.user.id;
+        const { battleId } = req.params;
+
+        try {
+            const result = await BattleService.forfeitBattle(battleId, userId);
+            if (!result) {
+                return res.status(400).json({ message: "Battle could not be forfeited (might already be finished)" });
+            }
+            res.status(200).json({ message: "Battle forfeited successfully", battle: result });
+        } catch (error) {
+            console.error("Forfeit battle error:", error);
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     static async battleHistory(req, res) {
 
         const page = parseInt(req.query.page) || 1;

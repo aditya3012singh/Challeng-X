@@ -9,7 +9,7 @@ import CodeEditor from "../components/CodeEditor";
 import OutputPanel from "../components/OutputPanel";
 import { Skeleton } from "../components/Skeleton";
 
-import { getBattle, submitBattleCode } from "../../store/api/battle.thunk";
+import { getBattle, submitBattleCode, forfeitBattle } from "../../store/api/battle.thunk";
 import { clearCurrentBattle } from "../../store/slices/battle.slice";
 import { submitCode, getSubmissionStatus } from "../../store/api/submission.thunk";
 import { BattleProblem } from "../components/BattleProblem";
@@ -129,6 +129,8 @@ export default function Ide() {
   const [message, setMessage] = useState("");
   const [testCaseResults, setTestCaseResults] = useState(null);
   const [myAttempts, setMyAttempts] = useState(0);
+  const [beatsPercentile, setBeatsPercentile] = useState(0);
+  const [opponentBeatsPercentile, setOpponentBeatsPercentile] = useState(0);
 
   // Sync attempts from battle state
   useEffect(() => {
@@ -279,7 +281,7 @@ export default function Ide() {
           setMessage(`✅ Evaluation passed! (${passedTests}/${totalTests}) Waiting for arena verification...`);
 
           // Store percentile for OutputPanel
-          setProblem(prev => ({ ...prev, beatsPercentile: data.beatsPercentile }));
+          setBeatsPercentile(data.beatsPercentile);
         } else {
           console.log("DEBUG: Submission failed. Setting status to error.");
           setStatus("error");
@@ -296,7 +298,7 @@ export default function Ide() {
           setMessage(`🔔 Opponent passed all test cases!`);
 
           // Optionally update problem state if we want to show opponent's beat % too
-          setProblem(prev => ({ ...prev, opponentBeatsPercentile: data.beatsPercentile }));
+          setOpponentBeatsPercentile(data.beatsPercentile);
         }
       }
     };
@@ -412,9 +414,13 @@ export default function Ide() {
       {showLeaveModal && (
         <LeaveConfirmModal
           onStay={() => setShowLeaveModal(false)}
-          onLeave={() => {
+          onLeave={async () => {
+            if (battleId) {
+              await dispatch(forfeitBattle({ battleId }));
+            }
             localStorage.removeItem("active_battle_id");
             setShowLeaveModal(false);
+            dispatch(clearCurrentBattle());
             navigate("/");
           }}
         />
@@ -433,7 +439,10 @@ export default function Ide() {
         {isBattleFinished && (
           <div className="flex items-center justify-between px-6 py-3 bg-black border-b border-white/[0.03] z-50 shrink-0">
             <button
-              onClick={() => navigate("/")}
+              onClick={() => {
+                dispatch(clearCurrentBattle());
+                navigate("/");
+              }}
               className="px-6 py-2 border border-white/10 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-white hover:text-black transition-all"
               style={{ borderRadius: "2px" }}
             >
@@ -504,7 +513,7 @@ export default function Ide() {
                         error={practiceError}
                         status={battleId ? status : submissionStatus?.status || status}
                         testCaseResults={testCaseResults}
-                        problem={currentBattle?.problem}
+                        problem={currentBattle?.problem ? { ...currentBattle.problem, beatsPercentile } : null}
                       />
                     </div>
                   </div>

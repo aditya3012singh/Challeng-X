@@ -251,6 +251,37 @@ class BattleService {
     })();
   }
 
+  static async forfeitBattle(battleId, forfeiterId) {
+    const battle = await Database.client.battle.findUnique({
+      where: { id: battleId },
+      include: { player1: true, player2: true }
+    });
+
+    if (!battle || battle.status === "FINISHED") {
+      return null;
+    }
+
+    // Determine the winner (the other person)
+    const winnerId = (battle.player1Id === forfeiterId) ? battle.player2Id : battle.player1Id;
+
+    // If there's no opponent yet (battle is WAITING), just cancel it
+    if (!winnerId) {
+      return await Database.client.battle.update({
+        where: { id: battleId },
+        data: { status: "FINISHED", winnerId: null }
+      });
+    }
+
+    // Atomically finish the battle
+    const result = await this.finishBattleService(battleId, winnerId);
+
+    if (result) {
+      SocketEmitter.emitToBattle(battleId, "battleFinished", { winnerId, draw: false });
+    }
+
+    return result;
+  }
+
   static async getRemainingAttempts(battleId, userId) {
     const battle = await Database.client.battle.findUnique({
       where: { id: battleId },
