@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { joinMatchmaking, leaveMatchmaking, getQueueStatus } from "../api/matchmaking.thunk";
+import { login, register, logoutUser } from "../api/auth.thunk";
 
 const initialState = {
     inQueue: false,
@@ -77,6 +78,16 @@ const matchmakingSlice = createSlice({
                     state.waitTime = action.payload.waitTime;
                     state.estimatedWait = action.payload.estimatedWait;
                 }
+            })
+            // Reset state on auth changes
+            .addCase(login.fulfilled, (state) => {
+                return initialState;
+            })
+            .addCase(register.fulfilled, (state) => {
+                return initialState;
+            })
+            .addCase(logoutUser.fulfilled, (state) => {
+                return initialState;
             });
     },
 });

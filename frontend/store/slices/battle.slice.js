@@ -8,6 +8,7 @@ import {
     getBattleHistory,
     forfeitBattle
 } from "../api/battle.thunk";
+import { login, register, logoutUser } from "../api/auth.thunk";
 
 const initialState = {
     currentBattle: null,
@@ -135,6 +136,16 @@ const battleSlice = createSlice({
             .addCase(forfeitBattle.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Failed to forfeit battle";
+            })
+            // Reset state on auth changes
+            .addCase(login.fulfilled, (state) => {
+                return initialState;
+            })
+            .addCase(register.fulfilled, (state) => {
+                return initialState;
+            })
+            .addCase(logoutUser.fulfilled, (state) => {
+                return initialState;
             });
     },
 });

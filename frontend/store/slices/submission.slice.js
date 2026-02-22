@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { submitCode, getSubmissionStatus } from "../api/submission.thunk";
+import { login, register, logoutUser } from "../api/auth.thunk";
 
 const initialState = {
     submissions: [],
@@ -50,7 +51,7 @@ const submissionSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || "Failed to submit code";
             })
-            
+
             // Get submission status
             .addCase(getSubmissionStatus.pending, (state) => {
                 state.statusLoading = true;
@@ -58,7 +59,7 @@ const submissionSlice = createSlice({
             .addCase(getSubmissionStatus.fulfilled, (state, action) => {
                 state.statusLoading = false;
                 state.submissionStatus = action.payload;
-                
+
                 // Update currentSubmission if it matches
                 if (state.currentSubmission?.submissionId === action.payload.id) {
                     state.currentSubmission = {
@@ -70,14 +71,24 @@ const submissionSlice = createSlice({
             .addCase(getSubmissionStatus.rejected, (state, action) => {
                 state.statusLoading = false;
                 state.error = action.payload?.message || "Failed to get submission status";
+            })
+            // Reset state on auth changes
+            .addCase(login.fulfilled, (state) => {
+                return initialState;
+            })
+            .addCase(register.fulfilled, (state) => {
+                return initialState;
+            })
+            .addCase(logoutUser.fulfilled, (state) => {
+                return initialState;
             });
     },
 });
 
-export const { 
-    clearSubmissionError, 
+export const {
+    clearSubmissionError,
     clearCurrentSubmission,
-    updateSubmissionStatus 
+    updateSubmissionStatus
 } = submissionSlice.actions;
 
 export default submissionSlice.reducer;

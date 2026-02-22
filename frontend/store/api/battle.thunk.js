@@ -78,3 +78,16 @@ export const getBattleHistory = createAsyncThunk(
         }
     }
 );
+
+// Forfeit battle
+export const forfeitBattle = createAsyncThunk(
+    "battle/forfeit",
+    async ({ battleId }, { rejectWithValue }) => {
+        try {
+            const res = await api.post(`/battle/${battleId}/forfeit`);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { message: err.message });
+        }
+    }
+);
