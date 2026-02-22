@@ -4,8 +4,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api",
   withCredentials: true,
   timeout: 10000,
-  headers: { 
-    "Content-Type": "application/json" 
+  headers: {
+    "Content-Type": "application/json"
   },
 });
 
@@ -37,7 +37,7 @@ const processQueue = (error, token = null) => {
       prom.resolve(token);
     }
   });
-  
+
   failedQueue = [];
 };
 
@@ -68,7 +68,7 @@ api.interceptors.response.use(
         // Lazy import to avoid circular dependency
         const { default: store } = await import("../store/store.js");
         const { refreshAccessToken } = await import("../store/api/auth.thunk.js");
-        
+
         // Attempt to refresh the token
         await store.dispatch(refreshAccessToken()).unwrap();
         processQueue(null);

@@ -167,25 +167,21 @@ class WarmContainerPool {
     this._waitQueue = [];
   }
 
-  async _acquire() {
+  _acquire() {
     const free = this._pool.find((c) => !c.busy);
     if (free) {
       free.busy = true;
-      console.log(`📦 [judge] Slot acquired for ${this.language}`);
-      return free;
+      return Promise.resolve(free);
     }
     // All slots busy — put caller in queue, will be resolved by _release()
-    console.log(`⏳ [judge] All slots busy for ${this.language}, queuing job...`);
     return new Promise((resolve) => this._waitQueue.push(resolve));
   }
 
   _release(container) {
     container.busy = false;
-    console.log(`🔓 [judge] Slot released for ${this.language}`);
     if (this._waitQueue.length > 0) {
       const next = this._waitQueue.shift();
       container.busy = true;
-      console.log(`📦 [judge] Slot handed to queued job for ${this.language}`);
       next(container);
     }
   }
@@ -212,7 +208,6 @@ class WarmContainerPool {
 const pools = {};
 for (const lang of Object.keys(LANGUAGE_CONFIG)) {
   pools[lang] = new WarmContainerPool(lang, POOL_SIZE);
-  console.log(`🚀 [judge] ${lang.toUpperCase()} pool initialized with size: ${POOL_SIZE}`);
 }
 
 // Clean up containers when the worker process exits

@@ -1,6 +1,5 @@
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
-import "dotenv/config";
 
 import JudgeService from "../src/services/judge.service.js";
 import SubmissionService from "../src/services/submission.service.js";
@@ -21,8 +20,8 @@ socket.on("connect", () => {
 const worker = new Worker(
     "submissionQueue",
     async (job) => {
-        const { submissionId, battleId, userId, type, language } = job.data;
-        console.log(`📦 Job ${job.id} picked up — submissionId=${submissionId} type=${type || "SUBMIT"} lang=${language ?? "?"}`);
+        const { submissionId, battleId, userId, type } = job.data;
+        console.log(`📦 Job ${job.id} picked up — submissionId=${submissionId} type=${type || "SUBMIT"} lang=${job.data.language ?? "?"}`);
 
         try {
             const submission = await Database.client.submission.findUnique({
@@ -54,7 +53,7 @@ const worker = new Worker(
                 data: { status: "RUNNING" }
             });
 
-            console.log(`⏱  [${submission.language}] Job ${job.id} starting ${type} — ${total} test case(s)`);
+            console.log(`⏱  [${submission.language}] Starting ${type} — ${total} test case(s)`);
 
             // RUN type disable early_exit to get full feedback on all sample cases
             const { results, stopped_at } = await JudgeService.runTestCases(
@@ -78,7 +77,7 @@ const worker = new Worker(
             const judgeMs = Date.now() - t0;
             const executionTimeMs = judgeMs;
 
-            console.log(`⏱  [${submission.language}] Job ${job.id} ${type} done in ${judgeMs}ms | passed=${stopped_at}/${total}`);
+            console.log(`⏱  [${submission.language}] ${type} done in ${judgeMs}ms | passed=${stopped_at}/${total}`);
 
             // Process results
             const runDetails = [];
@@ -184,8 +183,6 @@ const worker = new Worker(
     {
         connection,
         concurrency: 5,
-        lockDuration: 60000,   // Wait 60s for the lock
-        lockRenewTime: 20000,  // Renew lock every 20s
     }
 );
 
