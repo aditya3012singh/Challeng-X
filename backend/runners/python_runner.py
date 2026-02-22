@@ -11,6 +11,48 @@ import json
 import subprocess
 import tempfile
 import os
+from multiprocessing import Pool, cpu_count
+
+def run_test_case(args):
+    """Worker function to run a single test case."""
+    i, input_data, fname = args
+    try:
+        result = subprocess.run(
+            ["python3", fname],
+            input=input_data,
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+        
+        passed = True
+        error = None
+        output = None
+
+        if result.returncode != 0:
+            passed = False
+            error = result.stderr.strip() or "Standard Error captured"
+        else:
+            output = result.stdout.strip()
+
+        return {
+            "index": i,
+            "passed": passed,
+            "output": output,
+            "error": error
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "index": i,
+            "passed": False,
+            "error": "Time Limit Exceeded (8s)"
+        }
+    except Exception as e:
+        return {
+            "index": i,
+            "passed": False,
+            "error": str(e)
+        }
 
 def handle_job(job):
     code = job.get("code", "")
@@ -24,50 +66,71 @@ def handle_job(job):
     # INITIAL PROGRESS SIGNAL
     print(json.dumps({"type": "start", "total": len(inputs)}), flush=True)
 
-    results = []
+    results = [None] * len(inputs)
     stopped_at = len(inputs)
+    passed_count = 0
 
+    # Limit concurrency to avoid resource exhaustion
+    # Use min(cpu_count, 8) as a reasonable limit for these tiny tasks
+    num_workers = min(cpu_count() or 4, 8)
+    
     try:
-        for i, input_data in enumerate(inputs):
-            try:
-                result = subprocess.run(
-                    ["python3", fname],
-                    input=input_data,
-                    capture_output=True,
-                    text=True,
-                    timeout=8,
-                )
+        if early_exit:
+            # For SUBMIT/Early Exit, we still want some parallelism but must respect the first failure
+            # We can run in small batches or just accept that parallel might finish later indices first
+            # To keep it simple and fast, we run all in parallel and then find the first failure
+            with Pool(processes=num_workers) as pool:
+                # We use imap_unordered to get results as they finish for streaming
+                worker_args = [(i, input_data, fname) for i, input_data in enumerate(inputs)]
                 
-                passed = True
-                error = None
-                output = None
+                for res in pool.imap_unordered(run_test_case, worker_args):
+                    idx = res["index"]
+                    results[idx] = res
+                    
+                    if res["passed"]:
+                        passed_count += 1
+                        print(json.dumps({
+                            "type": "progress", 
+                            "index": idx, 
+                            "passed": True, 
+                            "passed_so_far": passed_count
+                        }), flush=True)
+                    else:
+                        print(json.dumps({
+                            "type": "progress", 
+                            "index": idx, 
+                            "passed": False, 
+                            "error": res["error"],
+                            "passed_so_far": passed_count
+                        }), flush=True)
+                        # In parallel mode, we can't truly "stop" other workers easily without complexity
+                        # but we can record where we should have stopped.
+                        if idx < stopped_at:
+                            stopped_at = idx
+                            # If we hit a failure and want early exit, we can't easily kill other workers in imap
+                            # but for the Arena, running a few more tiny tests is fine for the speed gain.
+                
+                # After parallel run, if early_exit is on, truncate results to the first failure
+                if early_exit and stopped_at < len(inputs):
+                    results = results[:stopped_at + 1]
+        else:
+            # RUN type (sequential or parallel, early_exit=False anyway)
+            with Pool(processes=num_workers) as pool:
+                worker_args = [(i, input_data, fname) for i, input_data in enumerate(inputs)]
+                for res in pool.imap_unordered(run_test_case, worker_args):
+                    idx = res["index"]
+                    results[idx] = res
+                    passed_count += 1 if res["passed"] else 0
+                    print(json.dumps({
+                        "type": "progress", 
+                        "index": idx, 
+                        "passed": res["passed"], 
+                        "error": res.get("error"),
+                        "passed_so_far": passed_count
+                    }), flush=True)
 
-                # Returncode check (Comp / Runtime Error)
-                if result.returncode != 0:
-                    passed = False
-                    error = result.stderr.strip() or "Standard Error captured"
-                else:
-                    output = result.stdout.strip()
-
-                if passed:
-                    results.append({"output": output})
-                    # STREAMING PROGRESS
-                    print(json.dumps({"type": "progress", "index": i, "passed": True}), flush=True)
-                else:
-                    results.append({"error": error})
-                    # STREAMING PROGRESS (FAILED CASE)
-                    print(json.dumps({"type": "progress", "index": i, "passed": False, "error": error}), flush=True)
-                    stopped_at = i
-                    if early_exit:
-                        break
-            except subprocess.TimeoutExpired:
-                results.append({"error": "Time Limit Exceeded (8s)"})
-                print(json.dumps({"type": "progress", "index": i, "passed": False, "error": "Time Limit Exceeded"}), flush=True)
-                stopped_at = i
-                if early_exit:
-                    break
     except Exception as e:
-        results.append({"error": str(e)})
+        results = [{"error": str(e)}]
         stopped_at = 0
     finally:
         try:
@@ -75,7 +138,16 @@ def handle_job(job):
         except Exception:
             pass
 
-    return {"type": "finished", "results": results, "stopped_at": stopped_at}
+    # Format final results
+    formatted_results = []
+    for r in results:
+        if r is None: continue
+        if r["passed"]:
+            formatted_results.append({"output": r["output"]})
+        else:
+            formatted_results.append({"error": r["error"]})
+
+    return {"type": "finished", "results": formatted_results, "stopped_at": stopped_at}
 
 
 for line in sys.stdin:

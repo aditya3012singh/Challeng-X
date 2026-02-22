@@ -4,7 +4,6 @@ import {
     createBattleSelected,
     joinBattle,
     getBattle,
-    getBattle,
     submitBattleCode,
     getBattleHistory,
     forfeitBattle

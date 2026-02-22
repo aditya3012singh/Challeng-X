@@ -11,6 +11,49 @@ import subprocess
 import tempfile
 import os
 
+from multiprocessing import Pool, cpu_count
+
+def run_test_case(args):
+    """Worker function to run a single compiled binary."""
+    i, input_data, exe = args
+    try:
+        result = subprocess.run(
+            [exe],
+            input=input_data,
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+        
+        passed = True
+        error = None
+        output = None
+
+        if result.returncode != 0:
+            passed = False
+            error = result.stderr.strip() or "Standard error captured"
+        else:
+            output = result.stdout.strip()
+
+        return {
+            "index": i,
+            "passed": passed,
+            "output": output,
+            "error": error
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "index": i,
+            "passed": False,
+            "error": "Time Limit Exceeded (8s)"
+        }
+    except Exception as e:
+        return {
+            "index": i,
+            "passed": False,
+            "error": str(e)
+        }
+
 def handle_job(job):
     code = job.get("code", "")
     inputs = job.get("inputs", [])
@@ -22,9 +65,7 @@ def handle_job(job):
 
     # Strip .cpp -> executable path
     exe = src[:-4]
-    results = []
-    stopped_at = len(inputs)
-
+    
     try:
         # ── Compile ONCE ──────────────────────────────────────────────────────
         comp = subprocess.run(
@@ -40,44 +81,41 @@ def handle_job(job):
         # INITIAL PROGRESS SIGNAL
         print(json.dumps({"type": "start", "total": len(inputs)}), flush=True)
 
-        # ── Run each test case against the compiled binary ────────────────────
-        for i, input_data in enumerate(inputs):
-            try:
-                result = subprocess.run(
-                    [exe],
-                    input=input_data,
-                    capture_output=True,
-                    text=True,
-                    timeout=8,
-                )
+        results = [None] * len(inputs)
+        stopped_at = len(inputs)
+        passed_count = 0
+        num_workers = min(cpu_count() or 4, 8)
+
+        # ── Run each test case against the compiled binary in parallel ────────
+        with Pool(processes=num_workers) as pool:
+            worker_args = [(i, input_data, exe) for i, input_data in enumerate(inputs)]
+            
+            for res in pool.imap_unordered(run_test_case, worker_args):
+                idx = res["index"]
+                results[idx] = res
                 
-                passed = True
-                error = None
-                output = None
-
-                if result.returncode != 0:
-                    passed = False
-                    error = result.stderr.strip() or "Standard error captured"
+                if res["passed"]:
+                    passed_count += 1
+                    print(json.dumps({
+                        "type": "progress", 
+                        "index": idx, 
+                        "passed": True, 
+                        "passed_so_far": passed_count
+                    }), flush=True)
                 else:
-                    output = result.stdout.strip()
+                    print(json.dumps({
+                        "type": "progress", 
+                        "index": idx, 
+                        "passed": False, 
+                        "error": res["error"],
+                        "passed_so_far": passed_count
+                    }), flush=True)
+                    if idx < stopped_at:
+                        stopped_at = idx
 
-                if passed:
-                    results.append({"output": output})
-                    # STREAMING PROGRESS
-                    print(json.dumps({"type": "progress", "index": i, "passed": True}), flush=True)
-                else:
-                    results.append({"error": error})
-                    # STREAMING PROGRESS (FAILED CASE)
-                    print(json.dumps({"type": "progress", "index": i, "passed": False, "error": error}), flush=True)
-                    stopped_at = i
-                    if early_exit:
-                        break
-            except subprocess.TimeoutExpired:
-                results.append({"error": "Time Limit Exceeded (8s)"})
-                print(json.dumps({"type": "progress", "index": i, "passed": False, "error": "Time Limit Exceeded"}), flush=True)
-                stopped_at = i
-                if early_exit:
-                    break
+        # After parallel run, if early_exit is on, truncate results to the first failure
+        if early_exit and stopped_at < len(inputs):
+            results = results[:stopped_at + 1]
 
     except subprocess.TimeoutExpired:
         return {"type": "finished", "results": [{"error": "Compilation Time Limit Exceeded (15s)"}], "stopped_at": 0}
@@ -89,7 +127,16 @@ def handle_job(job):
         try: os.unlink(exe)
         except Exception: pass
 
-    return {"type": "finished", "results": results, "stopped_at": stopped_at}
+    # Format final results
+    formatted_results = []
+    for r in results:
+        if r is None: continue
+        if r["passed"]:
+            formatted_results.append({"output": r["output"]})
+        else:
+            formatted_results.append({"error": r["error"]})
+
+    return {"type": "finished", "results": formatted_results, "stopped_at": stopped_at}
 
 
 for line in sys.stdin:
