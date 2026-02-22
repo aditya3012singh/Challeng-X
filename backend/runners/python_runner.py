@@ -21,6 +21,9 @@ def handle_job(job):
         f.write(code)
         fname = f.name
 
+    # INITIAL PROGRESS SIGNAL
+    print(json.dumps({"type": "start", "total": len(inputs)}), flush=True)
+
     results = []
     stopped_at = len(inputs)
 
@@ -34,15 +37,32 @@ def handle_job(job):
                     text=True,
                     timeout=8,
                 )
-                if result.returncode != 0 and result.stderr:
-                    results.append({"error": result.stderr.strip()})
+                
+                passed = True
+                error = None
+                output = None
+
+                # Returncode check (Comp / Runtime Error)
+                if result.returncode != 0:
+                    passed = False
+                    error = result.stderr.strip() or "Standard Error captured"
+                else:
+                    output = result.stdout.strip()
+
+                if passed:
+                    results.append({"output": output})
+                    # STREAMING PROGRESS
+                    print(json.dumps({"type": "progress", "index": i, "passed": True}), flush=True)
+                else:
+                    results.append({"error": error})
+                    # STREAMING PROGRESS (FAILED CASE)
+                    print(json.dumps({"type": "progress", "index": i, "passed": False, "error": error}), flush=True)
                     stopped_at = i
                     if early_exit:
                         break
-                else:
-                    results.append({"output": result.stdout.strip()})
             except subprocess.TimeoutExpired:
                 results.append({"error": "Time Limit Exceeded (8s)"})
+                print(json.dumps({"type": "progress", "index": i, "passed": False, "error": "Time Limit Exceeded"}), flush=True)
                 stopped_at = i
                 if early_exit:
                     break
@@ -55,7 +75,7 @@ def handle_job(job):
         except Exception:
             pass
 
-    return {"results": results, "stopped_at": stopped_at}
+    return {"type": "finished", "results": results, "stopped_at": stopped_at}
 
 
 for line in sys.stdin:
@@ -66,5 +86,5 @@ for line in sys.stdin:
         job = json.loads(line)
         result = handle_job(job)
     except Exception as e:
-        result = {"results": [{"error": str(e)}], "stopped_at": 0}
+        result = {"type": "finished", "results": [{"error": str(e)}], "stopped_at": 0}
     print(json.dumps(result), flush=True)

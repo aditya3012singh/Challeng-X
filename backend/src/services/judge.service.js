@@ -73,49 +73,67 @@ class WarmContainer {
       ...this.config.runnerCmd,
     ]);
 
-    // Accumulate stdout until we see a newline (one JSON response per job)
+    // Accumulate stdout until we see a newline (one JSON message per line)
     this._proc.stdout.on("data", (data) => {
       this._buffer += data.toString();
-      const idx = this._buffer.indexOf("\n");
-      if (idx !== -1 && this._pendingResolve) {
+      let idx;
+      while ((idx = this._buffer.indexOf("\n")) !== -1) {
         const line = this._buffer.slice(0, idx).trim();
         this._buffer = this._buffer.slice(idx + 1);
-        const resolve = this._pendingResolve;
-        this._pendingResolve = null;
-        this._pendingReject = null;
+        if (!line) continue;
+
         try {
-          resolve(JSON.parse(line));
+          const msg = JSON.parse(line);
+
+          // Handle progress messages vs final finished message
+          if (msg.type === "progress" && this._onProgress) {
+            this._onProgress(msg);
+          } else if (msg.type === "finished" && this._pendingResolve) {
+            const resolve = this._pendingResolve;
+            this._pendingResolve = null;
+            this._pendingReject = null;
+            this._onProgress = null;
+            resolve(msg);
+          } else if (!msg.type && this._pendingResolve) {
+            // Fallback for older/simpler runner output
+            const resolve = this._pendingResolve;
+            this._pendingResolve = null;
+            this._pendingReject = null;
+            this._onProgress = null;
+            resolve(msg);
+          }
         } catch {
-          resolve({ error: "Container returned invalid JSON" });
+          if (this._pendingResolve) {
+            this._pendingResolve({ error: "Container returned invalid JSON" });
+            this._pendingResolve = null;
+          }
         }
       }
     });
 
-    // Suppress stderr noise from docker / runner internals
+    // Suppress stderr noise
     this._proc.stderr.on("data", () => { });
 
     this._proc.on("exit", (code) => {
-      console.warn(`🔄 [judge] ${this.language} container exited (code ${code}) — restarting in 500ms`);
+      console.warn(`🔄 [judge] ${this.language} container exited (code ${code}) — restarting`);
       this._buffer = "";
       if (this._pendingResolve) {
         this._pendingResolve({ error: "Container exited unexpectedly" });
         this._pendingResolve = null;
-        this._pendingReject = null;
       }
-      // Restart the container so the slot stays usable
       setTimeout(() => this._startContainer(), 500);
     });
 
     console.log(`🟢 [judge] Warm ${this.language} container ready`);
   }
 
-  /** Send a batched job (all test case inputs at once) and wait for one JSON response. */
-  run(code, inputs, earlyExit = true) {
+  /** Send a batched job and wait for 'finished' JSON. onProgress is called for each test case. */
+  run(code, inputs, earlyExit = true, onProgress = null) {
     return new Promise((resolve, reject) => {
       this._pendingResolve = resolve;
       this._pendingReject = reject;
+      this._onProgress = onProgress;
 
-      // Hard timeout — kills the container process if the runner stalls
       const killer = setTimeout(() => {
         if (this._pendingResolve) {
           this._pendingResolve({
@@ -123,12 +141,11 @@ class WarmContainer {
             stopped_at: 0,
           });
           this._pendingResolve = null;
-          this._pendingReject = null;
+          this._onProgress = null;
           try { this._proc.kill("SIGKILL"); } catch { }
         }
       }, 15_000);
 
-      // Wrap resolve so we always clear the timer
       const origResolve = this._pendingResolve;
       this._pendingResolve = (result) => {
         clearTimeout(killer);
@@ -169,10 +186,10 @@ class WarmContainerPool {
     }
   }
 
-  async runCode(code, inputs, earlyExit = true) {
+  async runCode(code, inputs, earlyExit = true, onProgress = null) {
     const container = await this._acquire();
     try {
-      return await container.run(code, inputs, earlyExit);
+      return await container.run(code, inputs, earlyExit, onProgress);
     } finally {
       this._release(container);
     }
@@ -211,7 +228,7 @@ class JudgeService {
    *   results[i].error  → test case i failed (compilation/runtime/TLE)
    *   stopped_at        → index of first failure (= inputs.length if all passed)
    */
-  static async runTestCases(language, code, inputs, earlyExit = true) {
+  static async runTestCases(language, code, inputs, earlyExit = true, onProgress = null) {
     const pool = pools[language];
     if (!pool) {
       return {
@@ -219,7 +236,7 @@ class JudgeService {
         stopped_at: 0,
       };
     }
-    return pool.runCode(code, inputs, earlyExit);
+    return pool.runCode(code, inputs, earlyExit, onProgress);
   }
 }
 

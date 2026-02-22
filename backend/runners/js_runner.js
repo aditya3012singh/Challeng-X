@@ -33,6 +33,9 @@ rl.on("line", (line) => {
         `job_${Date.now()}_${Math.random().toString(36).slice(2)}.js`
     );
 
+    // INITIAL PROGRESS SIGNAL
+    process.stdout.write(JSON.stringify({ type: "start", total: inputs.length }) + "\n");
+
     const results = [];
     let stopped_at = inputs.length;
 
@@ -53,14 +56,22 @@ rl.on("line", (line) => {
                         ? "Time Limit Exceeded (8s)"
                         : result.error.message;
                 results.push({ error: msg });
+                // STREAMING PROGRESS (TIMEOUT/PROC ERROR)
+                process.stdout.write(JSON.stringify({ type: "progress", index: i, passed: false, error: msg }) + "\n");
                 stopped_at = i;
                 if (early_exit) break;
-            } else if (result.status !== 0 && result.stderr) {
-                results.push({ error: result.stderr.trim() });
+            } else if (result.status !== 0) {
+                const errorMsg = (result.stderr || "").trim() || "Runtime Error";
+                results.push({ error: errorMsg });
+                // STREAMING PROGRESS (RUNTIME ERROR)
+                process.stdout.write(JSON.stringify({ type: "progress", index: i, passed: false, error: errorMsg }) + "\n");
                 stopped_at = i;
                 if (early_exit) break;
             } else {
-                results.push({ output: (result.stdout || "").trim() });
+                const output = (result.stdout || "").trim();
+                results.push({ output });
+                // STREAMING PROGRESS (SUCCESS)
+                process.stdout.write(JSON.stringify({ type: "progress", index: i, passed: true }) + "\n");
             }
         }
     } catch (e) {
@@ -70,5 +81,6 @@ rl.on("line", (line) => {
         try { fs.unlinkSync(tmpFile); } catch { }
     }
 
-    process.stdout.write(JSON.stringify({ results, stopped_at }) + "\n");
+    // FINAL BATCH SIGNAL
+    process.stdout.write(JSON.stringify({ type: "finished", results, stopped_at }) + "\n");
 });

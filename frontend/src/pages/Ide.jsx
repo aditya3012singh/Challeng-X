@@ -239,6 +239,15 @@ export default function Ide() {
       }
     };
 
+    const onSubmissionProgress = (data) => {
+      const { submissionId, index, total } = data;
+      const isMe = submissionId === pendingSubmissionIdRef.current;
+      if (isMe) {
+        setStatus("running");
+        setMessage(`⏳ Evaluating: Test Case ${index + 1} / ${total}...`);
+      }
+    };
+
     const onSubmissionResult = (data) => {
       console.log("DEBUG: submissionResult data received:", data);
       const {
@@ -268,6 +277,9 @@ export default function Ide() {
           setStatus("success");
           setTestCaseResults(null);
           setMessage(`✅ Evaluation passed! (${passedTests}/${totalTests}) Waiting for arena verification...`);
+
+          // Store percentile for OutputPanel
+          setProblem(prev => ({ ...prev, beatsPercentile: data.beatsPercentile }));
         } else {
           console.log("DEBUG: Submission failed. Setting status to error.");
           setStatus("error");
@@ -282,6 +294,9 @@ export default function Ide() {
           console.log("DEBUG: Opponent passed! Setting status to error/notified.");
           setStatus("error");
           setMessage(`🔔 Opponent passed all test cases!`);
+
+          // Optionally update problem state if we want to show opponent's beat % too
+          setProblem(prev => ({ ...prev, opponentBeatsPercentile: data.beatsPercentile }));
         }
       }
     };
@@ -310,6 +325,7 @@ export default function Ide() {
     socket.on("playerJoined", onPlayerJoined);
     socket.on("battleStarted", onBattleStarted);
     socket.on("attemptsUpdated", onAttemptsUpdated);
+    socket.on("submissionProgress", onSubmissionProgress);
     socket.on("submissionResult", onSubmissionResult);
     socket.on("battleFinished", onBattleFinished);
 
@@ -318,6 +334,7 @@ export default function Ide() {
       socket.off("playerJoined", onPlayerJoined);
       socket.off("battleStarted", onBattleStarted);
       socket.off("attemptsUpdated", onAttemptsUpdated);
+      socket.off("submissionProgress", onSubmissionProgress);
       socket.off("submissionResult", onSubmissionResult);
       socket.off("battleFinished", onBattleFinished);
     };

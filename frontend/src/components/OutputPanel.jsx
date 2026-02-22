@@ -123,7 +123,15 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
                     <div className={`text-lg font-black uppercase tracking-tighter ${testCaseResults[activeTab]?.passed ? "text-[var(--color-success)]" : "text-red-500"}`}>
                       {testCaseResults[activeTab]?.passed ? "Accepted" : "Wrong Answer"}
                     </div>
-                    <div className="text-[10px] text-slate-500 uppercase tracking-widest">Case {activeTab + 1}</div>
+                    <div className="flex items-center gap-3">
+                      {status === "PASSED" && (
+                        <div className="bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded px-2 py-0.5 flex items-center gap-2 animate-in zoom-in duration-500">
+                          <span className="text-[var(--color-primary)] text-[9px] font-black uppercase tracking-widest">Performance</span>
+                          <span className="text-white text-[10px] font-bold">Beats {problem?.beatsPercentile || 100}%</span>
+                        </div>
+                      )}
+                      <div className="text-[10px] text-slate-500 uppercase tracking-widest">Case {activeTab + 1}</div>
+                    </div>
                   </div>
 
                   <div className="space-y-1">

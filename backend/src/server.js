@@ -35,6 +35,16 @@ class ServerApp {
       // Worker → Server: result of a judged submission
       // The worker emits this after running all test cases.
       // ──────────────────────────────────────────────────────────────────────
+      socket.on("submissionProgress", (data) => {
+        const { submissionId, battleId } = data;
+        if (battleId) {
+          io.to(battleId).emit("submissionProgress", data);
+        } else {
+          // Practice mode or non-battle submission
+          io.emit("submissionProgress", data); // Fallback broadcast
+        }
+      });
+
       socket.on("submissionResult", async (data) => {
         const { submissionId, userId, battleId, status, type, testCaseResults, executionTimeMs } = data;
         console.log(`📨 submissionResult: battle=${battleId} user=${userId} type=${type} status=${status}`);

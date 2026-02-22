@@ -2,6 +2,7 @@ import { Worker } from "bullmq";
 import IORedis from "ioredis";
 
 import JudgeService from "../src/services/judge.service.js";
+import SubmissionService from "../src/services/submission.service.js";
 import { io as ioClient } from "socket.io-client";
 import Database from "../src/config/db.js";
 
@@ -59,7 +60,18 @@ const worker = new Worker(
                 submission.language,
                 submission.code,
                 testcases.map(tc => tc.input),
-                !isRun // earlyExit = true for SUBMIT, false for RUN
+                !isRun, // earlyExit = true for SUBMIT, false for RUN
+                (progress) => {
+                    // Emit progress to frontend via socket
+                    socket.emit("submissionProgress", {
+                        submissionId,
+                        userId: userId || submission.user.id,
+                        battleId: battleId || submission.battleId || null,
+                        index: progress.index,
+                        total,
+                        passed: progress.passed
+                    });
+                }
             );
 
             const judgeMs = Date.now() - t0;
@@ -144,6 +156,12 @@ const worker = new Worker(
                 data: { status: "PASSED", passedTests: total, totalTests: total, executionTimeMs }
             });
 
+            const beatsPercentile = await SubmissionService.calculateBeatsPercentile(
+                submission.problemId,
+                submission.language,
+                executionTimeMs
+            );
+
             socket.emit("submissionResult", {
                 submissionId,
                 userId: userId || submission.user.id,
@@ -152,7 +170,8 @@ const worker = new Worker(
                 type: "SUBMIT",
                 passedTests: total,
                 totalTests: total,
-                executionTimeMs
+                executionTimeMs,
+                beatsPercentile
             });
 
         } catch (err) {

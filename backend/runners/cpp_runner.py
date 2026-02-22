@@ -34,9 +34,11 @@ def handle_job(job):
             timeout=15,
         )
         if comp.returncode != 0:
-            # Compilation failed — report on every test case
-            err = comp.stderr.strip()
-            return {"results": [{"error": f"Compilation Error:\n{err}"}], "stopped_at": 0}
+            err = comp.stderr.strip() or "Standard error captured"
+            return {"type": "finished", "results": [{"error": f"Compilation Error:\n{err}"}], "stopped_at": 0}
+
+        # INITIAL PROGRESS SIGNAL
+        print(json.dumps({"type": "start", "total": len(inputs)}), flush=True)
 
         # ── Run each test case against the compiled binary ────────────────────
         for i, input_data in enumerate(inputs):
@@ -48,30 +50,46 @@ def handle_job(job):
                     text=True,
                     timeout=8,
                 )
-                if result.returncode != 0 and result.stderr:
-                    results.append({"error": result.stderr.strip()})
+                
+                passed = True
+                error = None
+                output = None
+
+                if result.returncode != 0:
+                    passed = False
+                    error = result.stderr.strip() or "Standard error captured"
+                else:
+                    output = result.stdout.strip()
+
+                if passed:
+                    results.append({"output": output})
+                    # STREAMING PROGRESS
+                    print(json.dumps({"type": "progress", "index": i, "passed": True}), flush=True)
+                else:
+                    results.append({"error": error})
+                    # STREAMING PROGRESS (FAILED CASE)
+                    print(json.dumps({"type": "progress", "index": i, "passed": False, "error": error}), flush=True)
                     stopped_at = i
                     if early_exit:
                         break
-                else:
-                    results.append({"output": result.stdout.strip()})
             except subprocess.TimeoutExpired:
                 results.append({"error": "Time Limit Exceeded (8s)"})
+                print(json.dumps({"type": "progress", "index": i, "passed": False, "error": "Time Limit Exceeded"}), flush=True)
                 stopped_at = i
                 if early_exit:
                     break
 
     except subprocess.TimeoutExpired:
-        return {"results": [{"error": "Compilation Time Limit Exceeded (15s)"}], "stopped_at": 0}
+        return {"type": "finished", "results": [{"error": "Compilation Time Limit Exceeded (15s)"}], "stopped_at": 0}
     except Exception as e:
-        return {"results": [{"error": str(e)}], "stopped_at": 0}
+        return {"type": "finished", "results": [{"error": str(e)}], "stopped_at": 0}
     finally:
         try: os.unlink(src)
         except Exception: pass
         try: os.unlink(exe)
         except Exception: pass
 
-    return {"results": results, "stopped_at": stopped_at}
+    return {"type": "finished", "results": results, "stopped_at": stopped_at}
 
 
 for line in sys.stdin:
@@ -82,5 +100,5 @@ for line in sys.stdin:
         job = json.loads(line)
         result = handle_job(job)
     except Exception as e:
-        result = {"results": [{"error": str(e)}], "stopped_at": 0}
+        result = {"type": "finished", "results": [{"error": str(e)}], "stopped_at": 0}
     print(json.dumps(result), flush=True)

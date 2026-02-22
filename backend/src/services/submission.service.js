@@ -81,21 +81,53 @@ class SubmissionService {
     });
   }
 
+  static async calculateBeatsPercentile(problemId, language, executionTimeMs) {
+    if (!executionTimeMs || executionTimeMs === 0) return 0;
+
+    // Get all successful submissions for this problem and language
+    const successfulSubmissions = await Database.client.submission.findMany({
+      where: {
+        problemId,
+        language,
+        status: "PASSED"
+      },
+      select: { executionTimeMs: true }
+    });
+
+    if (successfulSubmissions.length <= 1) return 100;
+
+    // Calculate how many people we beat (everyone who took longer)
+    const slowerCount = successfulSubmissions.filter(s => s.executionTimeMs > executionTimeMs).length;
+    const percentile = (slowerCount / successfulSubmissions.length) * 100;
+
+    return Math.round(percentile);
+  }
+
   static async getSubmissionById(submissionId) {
     const submission = await Database.client.submission.findUnique({
       where: { id: submissionId },
-      select: {
-        id: true,
-        status: true,
-        passedTests: true,
-        totalTests: true,
-        executionTimeMs: true,
-        createdAt: true,
-        language: true,
+      include: {
+        problem: {
+          select: { id: true }
+        }
       }
     });
 
-    return submission;
+    if (!submission) return null;
+
+    let beatsPercentile = 0;
+    if (submission.status === "PASSED") {
+      beatsPercentile = await this.calculateBeatsPercentile(
+        submission.problemId,
+        submission.language,
+        submission.executionTimeMs
+      );
+    }
+
+    return {
+      ...submission,
+      beatsPercentile
+    };
   }
 }
 
