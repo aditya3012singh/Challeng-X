@@ -79,9 +79,31 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
           {activeTab === -1 ? (
             <div className="whitespace-pre-wrap text-slate-300">
               {error && <div className="text-red-400 mb-2 border-l-2 border-red-500 pl-3 py-1 bg-red-500/5 uppercase font-black text-[10px]">Compilation/Runtime Error</div>}
-              {error && <span className="text-red-400">{error}</span>}
-              {!error && output}
-              {!error && !output && <span className="text-slate-600 italic">No console output...</span>}
+              {error && <span className="text-red-400 font-mono">{error}</span>}
+              {!error && testCaseResults && (
+                <div className="mb-6 animate-in slide-in-from-left duration-500">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`text-4xl font-black tracking-tighter uppercase ${status === "PASSED" || status === "success" ? "text-[var(--color-success)]" : "text-red-500"}`}>
+                      {status === "PASSED" || status === "success" ? "Accepted" : "Rejected"}
+                    </div>
+                    <div className="h-8 w-px bg-slate-800"></div>
+                    <div>
+                      <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Pass Count</div>
+                      <div className="text-xl font-mono text-white">
+                        {testCaseResults.filter(r => r.passed).length} / {testCaseResults.length}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-1000 ease-out ${status === "PASSED" || status === "success" ? "bg-[var(--color-success)]" : "bg-red-500"}`}
+                      style={{ width: `${(testCaseResults.filter(r => r.passed).length / testCaseResults.length) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+              {!error && !testCaseResults && output}
+              {!error && !testCaseResults && !output && <span className="text-slate-600 italic">No console output...</span>}
             </div>
           ) : (
             <div className="h-full flex flex-col">

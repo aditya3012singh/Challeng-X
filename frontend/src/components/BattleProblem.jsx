@@ -27,36 +27,48 @@ export const BattleProblem = ({ problem }) => {
       <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
         {problem.difficulty}
       </span>
-      <div className="bg-gray-50 rounded-lg shadow p-6 my-6">
+      <div className="bg-gray-50 rounded-lg shadow p-6 my-6 border-l-4 border-[var(--color-primary)]">
         <h2 className="text-xl font-semibold mb-3 text-gray-800">Description</h2>
         <p className="whitespace-pre-line text-gray-800 text-base leading-relaxed">{problem.description}</p>
       </div>
-      {problem.testcases && problem.testcases.length > 0 && (
+
+      {problem.constraints && (
         <div className="bg-gray-50 rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-3 text-gray-800">Test Cases</h2>
+          <h2 className="text-xl font-semibold mb-3 text-gray-800 uppercase tracking-widest text-xs">Constraints</h2>
+          <pre className="text-gray-700 text-sm font-mono whitespace-pre-line bg-white p-4 border border-gray-100 italic">
+            {problem.constraints}
+          </pre>
+        </div>
+      )}
+
+      {problem.testcases && problem.testcases.filter(tc => tc.isSample || !tc.isHidden).length > 0 && (
+        <div className="bg-gray-50 rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-3 text-gray-800">Sample Cases</h2>
           <div className="space-y-4">
-            {problem.testcases.map((testcase, index) => (
-              <div
-                key={index}
-                className="border border-gray-300 rounded p-4 bg-white"
-              >
-                <h3 className="font-semibold mb-2 text-gray-700">
-                  Test Case {index + 1}
-                </h3>
-                <div className="mb-2">
-                  <strong>Input:</strong>
-                  <pre className="bg-gray-100 p-2 rounded mt-1 text-gray-700">
-                    {testcase.input}
-                  </pre>
+            {problem.testcases
+              .filter(tc => tc.isSample || !tc.isHidden)
+              .map((testcase, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-300 rounded p-4 bg-white"
+                >
+                  <h3 className="font-semibold mb-2 text-gray-700">
+                    Example {index + 1}
+                  </h3>
+                  <div className="mb-2">
+                    <strong>Input:</strong>
+                    <pre className="bg-gray-100 p-2 rounded mt-1 text-gray-700">
+                      {testcase.input}
+                    </pre>
+                  </div>
+                  <div>
+                    <strong>Expected Output:</strong>
+                    <pre className="bg-gray-100 p-2 rounded mt-1 text-gray-700">
+                      {testcase.expected || testcase.output}
+                    </pre>
+                  </div>
                 </div>
-                <div>
-                  <strong>Expected Output:</strong>
-                  <pre className="bg-gray-100 p-2 rounded mt-1 text-gray-700">
-                    {testcase.expected || testcase.output}
-                  </pre>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       )}

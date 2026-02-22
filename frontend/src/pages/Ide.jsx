@@ -242,11 +242,11 @@ export default function Ide() {
     };
 
     const onSubmissionProgress = (data) => {
-      const { submissionId, index, total } = data;
+      const { submissionId, index, total, passed } = data;
       const isMe = submissionId === pendingSubmissionIdRef.current;
       if (isMe) {
         setStatus("running");
-        setMessage(`⏳ Evaluating: Test Case ${index + 1} / ${total}...`);
+        setMessage(`⏳ Evaluating: Test Case ${index + 1} / ${total} (${passed} passed)...`);
       }
     };
 
