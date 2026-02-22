@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import Login from './auth/Login'
@@ -18,50 +18,54 @@ import { TeamBattle } from './pages/TeamBattle'
 import { BattleRoom } from './pages/BattleRoom'
 import { SquidMode } from './pages/SquidMode'
 import Admin from './pages/Admin'
-// import Profile from './pages/Profile'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
 
-  // On mount, always attempt to restore session from cookie
+function App() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
+
+  // Global session restoration on mount
   useEffect(() => {
     if (!isAuthenticated) {
       dispatch(fetchUserProfile()).catch(() => { });
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dispatch, isAuthenticated]);
+
+  // Global Redirect for Active Battles
+  useEffect(() => {
+    if (isAuthenticated && !profileLoading) {
+      const activeBattleId = localStorage.getItem("active_battle_id");
+      const currentPath = location.pathname;
+      const idePattern = /^\/battle\/[^/]+\/ide/;
+
+      // Force return to battle ONLY if visiting landing page or trying to start new engagement
+      const sensitivePaths = ["/", "/matchmaking", "/join-room", "/battles"];
+      if (activeBattleId && sensitivePaths.includes(currentPath) && !idePattern.test(currentPath)) {
+        navigate(`/battle/${activeBattleId}/ide`, { replace: true });
+      }
+    }
+  }, [isAuthenticated, profileLoading, location.pathname, navigate]);
 
   if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
-          <div className="text-[var(--color-primary)] text-xs uppercase tracking-widest font-mono">Authenticating...</div>
+          <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Synchronizing Node...</div>
         </div>
       </div>
     );
   }
 
-  // After auth resolves, check if user has an active battle in localStorage
-  if (isAuthenticated) {
-    const activeBattleId = localStorage.getItem("active_battle_id");
-    const currentPath = window.location.pathname;
-    const idePattern = /^\/battle\/[^/]+\/ide/;
-    if (activeBattleId && !idePattern.test(currentPath)) {
-      return <Navigate to={`/battle/${activeBattleId}/ide`} replace />;
-    }
-  }
-
-  return isAuthenticated ? children : <Navigate to="/login" />;
-};
-
-function App() {
-  const dispatch = useDispatch();
-  const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
-
   return (
-    <Router>
+    <>
       <Navbar />
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -71,9 +75,9 @@ function App() {
           element={<Home />}
         />
         <Route path="/problems" element={
-
-          <Problem />
-
+          <ProtectedRoute>
+            <Problem />
+          </ProtectedRoute>
         } />
         <Route path='/problem/:id' element={
           <ProtectedRoute>
@@ -126,13 +130,8 @@ function App() {
             <Admin />
           </ProtectedRoute>
         } />
-        {/* <Route path='/profile/:userId' element={
-          <ProtectedRoute>
-            <Profile/>
-          </ProtectedRoute>
-        } /> */}
       </Routes>
-    </Router>
+    </>
   )
 }
 

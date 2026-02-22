@@ -80,7 +80,7 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
             <div className="whitespace-pre-wrap text-slate-300">
               {error && <div className="text-red-400 mb-2 border-l-2 border-red-500 pl-3 py-1 bg-red-500/5 uppercase font-black text-[10px]">Compilation/Runtime Error</div>}
               {error && <span className="text-red-400 font-mono">{error}</span>}
-              {!error && testCaseResults && (
+              {!error && Array.isArray(testCaseResults) && testCaseResults.length > 0 && (
                 <div className="mb-6 animate-in slide-in-from-left duration-500">
                   <div className="flex items-center gap-4 mb-4">
                     <div className={`text-4xl font-black tracking-tighter uppercase ${status === "PASSED" || status === "success" ? "text-[var(--color-success)]" : "text-red-500"}`}>
@@ -90,14 +90,14 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
                     <div>
                       <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Pass Count</div>
                       <div className="text-xl font-mono text-white">
-                        {testCaseResults.filter(r => r.passed).length} / {testCaseResults.length}
+                        {testCaseResults.filter(r => r?.passed).length} / {testCaseResults.length}
                       </div>
                     </div>
                   </div>
                   <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-1000 ease-out ${status === "PASSED" || status === "success" ? "bg-[var(--color-success)]" : "bg-red-500"}`}
-                      style={{ width: `${(testCaseResults.filter(r => r.passed).length / testCaseResults.length) * 100}%` }}
+                      style={{ width: `${(testCaseResults.filter(r => r?.passed).length / (testCaseResults.length || 1)) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -128,22 +128,22 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-1 duration-300">
                   <div className="space-y-1">
                     <div className="text-[9px] uppercase text-slate-500 mb-1 font-bold">Input</div>
-                    <div className="bg-[#151515] p-3 rounded border border-slate-800 text-slate-200">
-                      {sampleCases[activeTab]?.input}
+                    <div className="bg-[#151515] p-3 rounded border border-slate-800 text-slate-200 whitespace-pre-wrap">
+                      {sampleCases[activeTab]?.input || <span className="text-slate-600 italic">No input</span>}
                     </div>
                   </div>
                   <div className="space-y-1">
                     <div className="text-[9px] uppercase text-slate-500 mb-1 font-bold">Expected Output</div>
-                    <div className="bg-[#151515] p-3 rounded border border-slate-800 text-slate-200">
-                      {sampleCases[activeTab]?.output || sampleCases[activeTab]?.expected}
+                    <div className="bg-[#151515] p-3 rounded border border-slate-800 text-slate-200 whitespace-pre-wrap">
+                      {sampleCases[activeTab]?.output || sampleCases[activeTab]?.expected || <span className="text-slate-600 italic">No expected output</span>}
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4 animate-in fade-in duration-300">
                   <div className="flex items-center justify-between">
-                    <div className={`text-lg font-black uppercase tracking-tighter ${testCaseResults[activeTab]?.passed ? "text-[var(--color-success)]" : "text-red-500"}`}>
-                      {testCaseResults[activeTab]?.passed ? "Accepted" : "Wrong Answer"}
+                    <div className={`text-lg font-black uppercase tracking-tighter ${testCaseResults?.[activeTab]?.passed ? "text-[var(--color-success)]" : "text-red-500"}`}>
+                      {testCaseResults?.[activeTab]?.passed ? "Accepted" : "Wrong Answer"}
                     </div>
                     <div className="flex items-center gap-3">
                       {status === "PASSED" && (
@@ -158,14 +158,14 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
 
                   <div className="space-y-1">
                     <div className="text-[9px] uppercase text-slate-500 mb-1 font-bold">Your Output</div>
-                    <div className={`p-3 rounded border ${testCaseResults[activeTab]?.passed
+                    <div className={`p-3 rounded border whitespace-pre-wrap ${testCaseResults?.[activeTab]?.passed
                       ? "bg-green-500/5 border-[var(--color-success)]/30 text-[var(--color-success)]"
                       : "bg-red-500/5 border-red-500/30 text-red-400"
                       }`}>
-                      {testCaseResults[activeTab]?.error ? (
+                      {testCaseResults?.[activeTab]?.error ? (
                         <span className="text-red-500 font-bold uppercase text-[10px]">Error: {testCaseResults[activeTab].error}</span>
                       ) : (
-                        testCaseResults[activeTab]?.actual || <span className="text-slate-600 italic">Empty output</span>
+                        testCaseResults?.[activeTab]?.actual || <span className="text-slate-600 italic">Empty output</span>
                       )}
                     </div>
                   </div>

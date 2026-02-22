@@ -114,6 +114,7 @@ export default function Ide() {
   useEffect(() => { userIdRef.current = user?.id; }, [user]);
 
   const isBattleFinished = currentBattle?.status === "FINISHED";
+  const currentStatus = currentBattle?.status;
   const isBattleLoading = !currentBattle;
   const isWaitingForOpponent =
     currentBattle?.status === "WAITING" && !currentBattle?.player2Id;
@@ -155,16 +156,22 @@ export default function Ide() {
 
   // Save active battleId so we can return after a page refresh
   useEffect(() => {
-    if (!isBattleFinished) {
+    if (currentStatus && currentStatus !== "FINISHED") {
       localStorage.setItem("active_battle_id", battleId);
-    } else {
+    } else if (currentStatus === "FINISHED") {
       localStorage.removeItem("active_battle_id");
     }
+  }, [battleId, currentStatus]);
+
+  // Ensure ID is removed on unmount if battle is over
+  useEffect(() => {
     return () => {
-      // Only remove if the battle is finished when leaving
-      if (isBattleFinished) localStorage.removeItem("active_battle_id");
+      // If we're leaving and the battle in store is finished, clear the ID
+      if (currentBattleRef.current?.status === "FINISHED") {
+        localStorage.removeItem("active_battle_id");
+      }
     };
-  }, [battleId, isBattleFinished]);
+  }, []);
 
   // Auto-save code + language to localStorage on every change
   useEffect(() => {
@@ -440,6 +447,7 @@ export default function Ide() {
           <div className="flex items-center justify-between px-6 py-3 bg-black border-b border-white/[0.03] z-50 shrink-0">
             <button
               onClick={() => {
+                localStorage.removeItem("active_battle_id");
                 dispatch(clearCurrentBattle());
                 navigate("/");
               }}
