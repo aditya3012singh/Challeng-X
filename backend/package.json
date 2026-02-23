@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/server.js",
+    "dev": "nodemon src/index.js",
     "worker": "node worker/worker.js",
     "prisma": "prisma",
-    "start": "node src/server.js",
+    "start": "node src/index.js",
     "docker:build": "docker build -t python-runner ./docker/python",
     "docker:test": "node src/testRunner.js"
   },

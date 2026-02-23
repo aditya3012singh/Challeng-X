@@ -26,7 +26,7 @@ function toDockerPath(p) {
 }
 
 // Number of warm containers per language — match worker concurrency
-const POOL_SIZE = parseInt(process.env.JUDGE_POOL_SIZE || "3", 10);
+const POOL_SIZE = parseInt(process.env.JUDGE_POOL_SIZE || "5", 10);
 
 // ─── Language definitions ────────────────────────────────────────────────────
 const LANGUAGE_CONFIG = {
@@ -36,7 +36,7 @@ const LANGUAGE_CONFIG = {
   },
   js: {
     image: "codearena-js",
-    runnerCmd: ["node", "/runners/js_runner.js"],
+    runnerCmd: ["node", "/runners/js_runner.mjs"],
   },
   c: {
     image: "codearena-c",
@@ -111,8 +111,13 @@ class WarmContainer {
       }
     });
 
-    // Suppress stderr noise
-    this._proc.stderr.on("data", () => { });
+    // Capture stderr for debugging
+    this._proc.stderr.on("data", (data) => {
+      const errOut = data.toString().trim();
+      if (errOut) {
+        console.error(`🔴 [judge] ${this.language} container stderr:`, errOut);
+      }
+    });
 
     this._proc.on("exit", (code) => {
       console.warn(`🔄 [judge] ${this.language} container exited (code ${code}) — restarting`);
@@ -121,7 +126,7 @@ class WarmContainer {
         this._pendingResolve({ error: "Container exited unexpectedly" });
         this._pendingResolve = null;
       }
-      setTimeout(() => this._startContainer(), 500);
+      setTimeout(() => this._startContainer(), 1000);
     });
 
     console.log(`🟢 [judge] Warm ${this.language} container ready`);

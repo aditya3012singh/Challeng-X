@@ -182,7 +182,7 @@ const worker = new Worker(
     },
     {
         connection,
-        concurrency: 5,
+        concurrency: parseInt(process.env.WORKER_CONCURRENCY || "10", 10),
     }
 );
 

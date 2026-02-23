@@ -101,7 +101,5 @@ class ServerApp {
   }
 }
 
-ServerApp.start();
-
 export default ServerApp;
 
