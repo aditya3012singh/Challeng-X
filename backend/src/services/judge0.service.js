@@ -17,37 +17,37 @@ const languageMap = {
 
 class Judge0Service {
   static async runCode(language, code, input) {
-  const language_id = languageMap[language];
-  if (!language_id) return { error: `Language ${language} not supported` };
+    const language_id = languageMap[language];
+    if (!language_id) return { error: `Language ${language} not supported` };
 
-  try {
-    // Create submission
-    const submissionResponse = await axios.post(
-      `${JUDGE0_URL}?base64_encoded=false&wait=true`,
-      {
-        source_code: code,
-        stdin: input,
-        language_id,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-RapidAPI-Host": JUDGE0_HOST,
-          "X-RapidAPI-Key": JUDGE0_KEY,
+    try {
+      // Create submission
+      const submissionResponse = await axios.post(
+        `${JUDGE0_URL}?base64_encoded=false&wait=true`,
+        {
+          source_code: code,
+          stdin: input,
+          language_id,
         },
-      }
-    );
-    console.log("Judge0 response:", submissionResponse.data);
-    const { stdout, stderr, compile_output, message } = submissionResponse.data;
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-RapidAPI-Host": JUDGE0_HOST,
+            "X-RapidAPI-Key": JUDGE0_KEY,
+          },
+        }
+      );
+      console.log("Judge0 response:", submissionResponse.data);
+      const { stdout, stderr, compile_output, message } = submissionResponse.data;
 
-    if (stderr || compile_output || message) {
-      return { error: stderr || compile_output || message };
+      if (stderr || compile_output || message) {
+        return { error: stderr || compile_output || message };
+      }
+      console.log("Judge0 outpt:", stdout);
+      return { output: stdout };
+    } catch (err) {
+      return { error: err.message };
     }
-    console.log("Judge0 outpt:", stdout);
-    return { output: stdout };
-  } catch (err) {
-    return { error: err.message };
-  }
   }
 }
 

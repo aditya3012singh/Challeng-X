@@ -53,7 +53,12 @@ function App() {
     }
   }, [isAuthenticated, profileLoading, location.pathname, navigate]);
 
-  if (profileLoading) {
+  // Determine if we should show the global "Synchronizing Node..." loader
+  // We only show it for protected/landing routes while profile is fetching
+  const isAuthRoute = location.pathname === "/login" || location.pathname === "/register";
+  const shouldBlockUI = profileLoading && !isAuthRoute;
+
+  if (shouldBlockUI) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <div className="flex flex-col items-center gap-4">

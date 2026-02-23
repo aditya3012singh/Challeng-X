@@ -49,6 +49,17 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Handle 401 errors (token expired)
+    // 🛡️ CRITICAL: Do NOT attempt refresh logic if the request itself WAS the refresh call!
+    // This prevents a deadlock where the refresh request queues itself.
+    if (error.response?.status === 401 && originalRequest.url?.includes("/auth/refresh")) {
+      isRefreshing = false;
+      processQueue(error, null);
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         // If already refreshing, queue this request
@@ -78,8 +89,8 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         isRefreshing = false;
-        // Redirect to login or handle logout
-        if (typeof window !== 'undefined') {
+        // Redirect if not already handled
+        if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
         return Promise.reject(refreshError);
