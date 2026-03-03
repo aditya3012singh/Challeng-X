@@ -86,10 +86,11 @@ def handle_job(job):
         num_workers = min(cpu_count() or 4, 8)
 
         # ── Run each test case in parallel ─────────────────────────────────────
+        # We use imap (ordered) so we can break early and stop the pool immediately on failure
         with Pool(processes=num_workers) as pool:
             worker_args = [(i, input_data, exe) for i, input_data in enumerate(inputs)]
             
-            for res in pool.imap_unordered(run_test_case, worker_args):
+            for res in pool.imap(run_test_case, worker_args):
                 idx = res["index"]
                 results[idx] = res
                 
@@ -109,10 +110,11 @@ def handle_job(job):
                         "error": res["error"],
                         "passed_so_far": passed_count
                     }), flush=True)
-                    if idx < stopped_at:
-                        stopped_at = idx
+                    stopped_at = idx
+                    if early_exit:
+                        break # 🛑 STOP THE POOL IMMEDIATELY
 
-        # Truncate if early_exit
+        # Truncate if early_exit was triggered
         if early_exit and stopped_at < len(inputs):
             results = results[:stopped_at + 1]
 

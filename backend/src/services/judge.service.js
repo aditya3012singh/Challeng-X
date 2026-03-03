@@ -136,14 +136,14 @@ class WarmContainer {
       const killer = setTimeout(() => {
         if (this._pendingResolve) {
           this._pendingResolve({
-            results: [{ error: "Time Limit Exceeded (15s hard kill)" }],
+            results: [{ error: "Time Limit Exceeded (60s batch hard kill)" }],
             stopped_at: 0,
           });
           this._pendingResolve = null;
           this._onProgress = null;
           try { this._proc.kill("SIGKILL"); } catch { }
         }
-      }, 15_000);
+      }, 60_000);
 
       const origResolve = this._pendingResolve;
       this._pendingResolve = (result) => {

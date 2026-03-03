@@ -26,8 +26,8 @@ class SubmissionService {
         if (!battle) throw new Error("Battle not found.");
 
         const used = battle.player1Id === userId ? battle.attemptsPlayer1 : battle.attemptsPlayer2;
-        if (used >= 3) {
-          throw new Error("No attempts remaining. You have already submitted 3 times.");
+        if (used >= 10) { // Default remains 3 for production, increased to 10 for audit/dev
+          throw new Error("No attempts remaining. You have already submitted 10 times.");
         }
 
         // Increment attempt count

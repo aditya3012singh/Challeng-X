@@ -215,8 +215,8 @@ class BattleService {
       player2Attempts: updatedBattle.attemptsPlayer2
     });
 
-    // Check if both players have failed 3 times
-    if (updatedBattle.attemptsPlayer1 >= 3 && updatedBattle.attemptsPlayer2 >= 3) {
+    // Check if both players have failed 10 times
+    if (updatedBattle.attemptsPlayer1 >= 10 && updatedBattle.attemptsPlayer2 >= 10) {
       // Check if battle is still ongoing (nobody passed)
       if (updatedBattle.status === "ONGOING") {
         await this.handleDoubleFailure(battleId, updatedBattle.player1Id, updatedBattle.player2Id);
@@ -294,9 +294,9 @@ class BattleService {
       where: { id: battleId },
       select: { player1Id: true, player2Id: true, attemptsPlayer1: true, attemptsPlayer2: true }
     });
-    if (!battle) return 3;
+    if (!battle) return 10;
     const used = battle.player1Id === userId ? battle.attemptsPlayer1 : battle.attemptsPlayer2;
-    return Math.max(0, 3 - used);
+    return Math.max(0, 10 - used);
   }
 
   static async getBattleHistory(userId, page = 1, limit = 10) {
