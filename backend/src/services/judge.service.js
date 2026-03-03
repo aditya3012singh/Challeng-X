@@ -26,7 +26,7 @@ function toDockerPath(p) {
 }
 
 // Number of warm containers per language — match worker concurrency
-const POOL_SIZE = parseInt(process.env.JUDGE_POOL_SIZE || "5", 10);
+const POOL_SIZE = parseInt(process.env.JUDGE_POOL_SIZE || "10", 10);
 
 // ─── Language definitions ────────────────────────────────────────────────────
 const LANGUAGE_CONFIG = {
