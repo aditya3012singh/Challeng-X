@@ -1,9 +1,11 @@
+import "dotenv/config"; // ← MUST be first: loads .env so S3/Redis env vars are available
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 
 import JudgeService from "../src/services/judge.service.js";
 import SubmissionService from "../src/services/submission.service.js";
 import BattleService from "../src/services/battle.service.js";
+import S3Service from "../src/services/s3.service.js";
 
 const connection = new IORedis(process.env.REDIS_URL, {
     maxRetriesPerRequest: null,
@@ -34,6 +36,13 @@ const worker = new Worker(
                 if (testcases.length === 0 && submission.problem.testcases.length > 0) {
                     testcases = [submission.problem.testcases[0]];
                 }
+            } else {
+                // For SUBMIT, we also pull the massive hidden test cases from S3 / Redis Cache
+                const cloudTestcases = await S3Service.fetchHiddenTestCases(submission.problem.id);
+                // Filter out any db-based cases that are NOT sample cases if we are migrating entirely to S3
+                console.log("cloudTestcases", cloudTestcases);
+                testcases = testcases.filter(tc => tc.isSample);
+                testcases = [...testcases, ...cloudTestcases];
             }
 
             const total = testcases.length;
@@ -126,7 +135,7 @@ const worker = new Worker(
                 await SubmissionService.updateSubmissionStatus(submissionId, {
                     status: "FAILED",
                     passedTests: firstFailedIndex,
-                    totalTests: submission.problem.testcases.length,
+                    totalTests: total,
                     executionTimeMs
                 });
 
@@ -139,7 +148,7 @@ const worker = new Worker(
                         status: "FAILED",
                         type: "SUBMIT",
                         passedTests: firstFailedIndex,
-                        totalTests: submission.problem.testcases.length,
+                        totalTests: total,
                         failedTestCase: firstFailedIndex + 1,
                         input: failed.input,
                         expectedOutput: failed.expected,

@@ -204,18 +204,28 @@ class WarmContainerPool {
 
 // ─── Initialise pools at module load ────────────────────────────────────────
 
-// Clean up any zombie containers from previous crashed runs before starting new pools
+// Kill ALL stale codearena containers from previous worker crashes before starting fresh pools.
+// We match by image name (ancestor) for every language, running a single rm -f sweep.
+// This prevents zombie containers from building up across restarts.
 try {
-  console.log("🧹 [judge] Cleaning up any leftover codearena containers...");
-  for (const lang of Object.keys(LANGUAGE_CONFIG)) {
-    const image = LANGUAGE_CONFIG[lang].image;
-    const containers = execSync(`docker ps -a -q --filter "ancestor=${image}"`).toString().trim().split('\n').filter(Boolean);
-    if (containers.length > 0) {
-      execSync(`docker rm -f ${containers.join(' ')}`);
+  console.log("🧹 [judge] Cleaning up stale codearena containers...");
+  const allImages = Object.values(LANGUAGE_CONFIG).map((c) => c.image);
+  for (const image of allImages) {
+    try {
+      // -a catches stopped/exited containers too; --rm containers show as running until the daemon cleans up
+      const ids = execSync(`docker ps -a -q --filter "ancestor=${image}"`, { stdio: ["pipe", "pipe", "pipe"] })
+        .toString().trim().split("\n").filter(Boolean);
+      if (ids.length > 0) {
+        console.log(`🗑  [judge] Removing ${ids.length} stale ${image} container(s)...`);
+        execSync(`docker rm -f ${ids.join(" ")}`, { stdio: "pipe" });
+      }
+    } catch {
+      // individual image sweep failed — not fatal
     }
   }
+  console.log("✅ [judge] Stale container cleanup complete.");
 } catch (e) {
-  // Ignore errors during cleanup
+  console.warn("⚠️  [judge] Cleanup step failed (non-fatal):", e.message);
 }
 
 // Containers start immediately and stay warm for the lifetime of the worker.

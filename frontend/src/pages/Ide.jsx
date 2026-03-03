@@ -125,6 +125,7 @@ export default function Ide() {
   const [code, setCode] = useState(savedDraft?.code || LANGUAGES[savedDraft?.language || "java"].defaultCode);
   const [draftSaved, setDraftSaved] = useState(false);
   const [status, setStatus] = useState("idle");
+  const [loadingAction, setLoadingAction] = useState(null);
   const [message, setMessage] = useState("");
   const [testCaseResults, setTestCaseResults] = useState(null);
   const [myAttempts, setMyAttempts] = useState(0);
@@ -379,6 +380,7 @@ export default function Ide() {
 
     setTestCaseResults(null);
     setStatus("running");
+    setLoadingAction(type);
     setMessage("");
 
     if (battleId) {
@@ -503,7 +505,8 @@ export default function Ide() {
                     onRun={() => handleSubmit("RUN")}
                     onSubmit={() => handleSubmit("SUBMIT")}
                     attempts={myAttempts}
-                    status={battleId ? (hasWon || hasLost || (currentBattle && currentBattle.status === "FINISHED") ? "finished" : status) : practiceStatus || status}
+                    status={battleId ? (hasWon || hasLost || (currentBattle && currentBattle.status === "FINISHED") ? "finished" : status) : submissionStatus?.status || status}
+                    loadingAction={loadingAction}
                   />
                   <div className="flex flex-col h-[calc(100%-3rem)]">
                     <div className="flex-1 min-h-0">

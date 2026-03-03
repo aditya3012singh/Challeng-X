@@ -4,7 +4,8 @@ export default function EditorToolbar({
   onRun,
   onSubmit, // New prop
   status,
-  attempts = 0, // New prop
+  attempts = 0,
+  loadingAction,
 }) {
   const attemptsLeft = 3 - attempts;
   const counterText = `${attemptsLeft}/3`;
@@ -24,21 +25,29 @@ export default function EditorToolbar({
         <button
           onClick={onRun}
           disabled={status === "running" || status === "QUEUED"}
-          className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded text-sm font-bold tracking-widest transition-all hover:shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+          className="min-w-[80px] flex items-center justify-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded text-sm font-bold tracking-widest transition-all hover:shadow-[0_0_10px_rgba(255,255,255,0.1)]"
         >
-          RUN
+          {(status === "running" || status === "QUEUED") && loadingAction === "RUN" ? (
+            <span className="w-3.5 h-3.5 border-2 border-[var(--color-primary)] border-t-transparent animate-spin rounded-full"></span>
+          ) : (
+            "RUN"
+          )}
         </button>
 
         <button
           onClick={onSubmit}
           disabled={status === "running" || status === "QUEUED" || attempts >= 3}
-          className={`px-4 py-1.5 rounded text-sm font-black tracking-widest transition-all ${attempts >= 3
+          className={`min-w-[100px] flex items-center justify-center gap-2 px-4 py-1.5 rounded text-sm font-black tracking-widest transition-all ${attempts >= 3
             ? "bg-gray-800 text-gray-500 cursor-not-allowed"
             : "bg-[var(--color-primary)] hover:bg-white text-black transition-all"
             }`}
           style={{ borderRadius: "2px" }}
         >
-          SUBMIT {attempts >= 3 ? "(LIMIT REACHED)" : ""}
+          {(status === "running" || status === "QUEUED") && loadingAction === "SUBMIT" ? (
+            <span className="w-3.5 h-3.5 border-2 border-black border-t-transparent animate-spin rounded-full"></span>
+          ) : (
+            <>SUBMIT {attempts >= 3 ? "(LIMIT REACHED)" : ""}</>
+          )}
         </button>
       </div>
 

@@ -67,13 +67,7 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-hidden flex flex-col">
-        {isRunning && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 opacity-50 bg-[#0a0a0a]/80 backdrop-blur-sm z-20">
-            <div className="w-5 h-5 border-2 border-[var(--color-primary)] border-t-transparent animate-spin rounded-full"></div>
-            <div className="uppercase tracking-[0.2em] font-black text-[9px] animate-pulse text-[var(--color-primary)]">Judicial Evaluation in Progress...</div>
-          </div>
-        )}
+      <div className="flex-1 overflow-hidden flex flex-col relative">
 
         <div className="flex-1 overflow-auto p-4 font-mono text-xs leading-relaxed custom-scrollbar">
           {activeTab === -1 ? (
