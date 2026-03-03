@@ -6,13 +6,19 @@ import App from './App.jsx'
 import { store } from '../store/store.js'
 
 import { BrowserRouter as Router } from 'react-router-dom'
+import { ErrorBoundary } from './components/ErrorBoundary.jsx'
+import { injectStore } from '../lib/axios.js'
+
+injectStore(store);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      <Router>
-        <App />
-      </Router>
+      <ErrorBoundary>
+        <Router>
+          <App />
+        </Router>
+      </ErrorBoundary>
     </Provider>
   </StrictMode>,
 )

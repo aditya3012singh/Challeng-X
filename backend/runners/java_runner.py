@@ -1,126 +1,152 @@
+"""
+Warm container runner for Java submissions — BATCHED protocol.
+Compiles ONCE, then runs each test case input against the same Main.class in parallel using multiprocessing.
+"""
 import sys
 import json
 import subprocess
 import os
-import time
+from multiprocessing import Pool, cpu_count
+
+def run_test_case(args):
+    """Worker function to run a single compiled Java class."""
+    i, input_data = args
+    try:
+        # Run the compiled Main class
+        # -- Limit max heap size to prevent OOM across concurrent JVMs
+        result = subprocess.run(
+            ["java", "-Xmx64m", "Main"], 
+            input=input_data,
+            capture_output=True,
+            text=True,
+            timeout=2.0
+        )
+        
+        passed = True
+        error = None
+        output = None
+
+        if result.returncode != 0:
+            passed = False
+            error = result.stderr.strip() or "Standard error captured"
+        else:
+            output = result.stdout.strip()
+
+        return {
+            "index": i,
+            "passed": passed,
+            "output": output,
+            "error": error
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "index": i,
+            "passed": False,
+            "error": "Time Limit Exceeded (2s)"
+        }
+    except Exception as e:
+        return {
+            "index": i,
+            "passed": False,
+            "error": str(e)
+        }
+
+def handle_job(job):
+    code = job.get("code", "")
+    inputs = job.get("inputs", [])
+    early_exit = job.get("early_exit", True)
+
+    source_file = "Main.java"
+    with open(source_file, "w", encoding="utf-8") as f:
+        f.write(code)
+
+    try:
+        # 1. Compile ONCE
+        compile_process = subprocess.run(
+            ["javac", source_file],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        
+        if compile_process.returncode != 0:
+            err = compile_process.stderr.strip() or "Standard error captured"
+            return {"type": "finished", "results": [{"error": f"Compilation Error:\n{err}"}], "stopped_at": 0}
+
+        # INITIAL PROGRESS SIGNAL
+        print(json.dumps({"type": "start", "total": len(inputs)}), flush=True)
+
+        results = [None] * len(inputs)
+        stopped_at = len(inputs)
+        passed_count = 0
+        
+        # Determine strict bounded pool size (Java is heavy, so we limit to 3-4 concurrent JVMs inside a 256MB boundary)
+        num_workers = min(cpu_count() or 4, 4)
+
+        # 2. Run each test case against the compiled class in parallel
+        with Pool(processes=num_workers) as pool:
+            worker_args = [(i, input_data) for i, input_data in enumerate(inputs)]
+            
+            for res in pool.imap_unordered(run_test_case, worker_args):
+                idx = res["index"]
+                results[idx] = res
+                
+                if res["passed"]:
+                    passed_count += 1
+                    # Note: We use "passed": passed_count for backward compatibility with frontend
+                    print(json.dumps({
+                        "type": "progress", 
+                        "index": idx, 
+                        "passed": passed_count, 
+                        "output": res["output"]
+                    }), flush=True)
+                else:
+                    print(json.dumps({
+                        "type": "progress", 
+                        "index": idx, 
+                        "passed": passed_count, 
+                        "error": res["error"]
+                    }), flush=True)
+                    if idx < stopped_at:
+                        stopped_at = idx
+
+        # After parallel run, if early_exit is on, truncate results to the first failure
+        if early_exit and stopped_at < len(inputs):
+            results = results[:stopped_at + 1]
+
+    except subprocess.TimeoutExpired:
+        return {"type": "finished", "results": [{"error": "Compilation Time Limit Exceeded (10s)"}], "stopped_at": 0}
+    except Exception as e:
+        return {"type": "finished", "results": [{"error": str(e)}], "stopped_at": 0}
+    finally:
+        try: os.unlink(source_file)
+        except Exception: pass
+        try: os.unlink("Main.class")
+        except Exception: pass
+
+    # Format final results
+    formatted_results = []
+    for r in results:
+        if r is None: continue
+        if r["passed"]:
+            formatted_results.append({"output": r["output"]})
+        else:
+            formatted_results.append({"error": r["error"]})
+
+    return {"type": "finished", "results": formatted_results, "stopped_at": stopped_at}
+
 
 def run_java():
-    while True:
-        line = sys.stdin.readline()
+    for line in sys.stdin:
+        line = line.strip()
         if not line:
-            break
-
+            continue
         try:
             job = json.loads(line)
-            code = job.get("code", "")
-            inputs = job.get("inputs", [])
-            early_exit = job.get("early_exit", True)
-
-            # 1. Write the code to Main.java
-            source_file = "Main.java"
-            with open(source_file, "w", encoding="utf-8") as f:
-                f.write(code)
-
-            # 2. Compile strings into Main.class
-            # We redirect stderr to capture compilation errors
-            compile_process = subprocess.run(
-                ["javac", source_file],
-                capture_output=True,
-                text=True
-            )
-
-            if compile_process.returncode != 0:
-                # Compilation failed
-                # Return this error for EVERY input so the judge knows it's broken
-                for index, _ in enumerate(inputs):
-                    sys.stdout.write(json.dumps({
-                        "type": "progress",
-                        "index": index,
-                        "passed": 0,
-                        "error": "Compilation Error:\n" + compile_process.stderr
-                    }) + "\n")
-                    sys.stdout.flush()
-
-                # Tell the judge we are completely finished evaluating this batch
-                sys.stdout.write(json.dumps({
-                    "type": "finished",
-                    "results": [{"error": "Compilation Error:\n" + compile_process.stderr} for _ in inputs],
-                    "stopped_at": 0
-                }) + "\n")
-                sys.stdout.flush()
-                continue
-
-            # 3. Execution Phase (For each inputs array)
-            results = []
-            stopped_at = len(inputs)
-            passed_count = 0
-
-            for i, test_input in enumerate(inputs):
-                start_time = time.time()
-                try:
-                    # Run the compiled Main class
-                    # Imposed a strict 2 second timeout per testcase inside the sandbox itself
-                    run_process = subprocess.run(
-                        ["java", "Main"],
-                        input=test_input,
-                        capture_output=True,
-                        text=True,
-                        timeout=2.0
-                    )
-
-                    if run_process.returncode == 0:
-                        results.append({"output": run_process.stdout})
-                        passed_count += 1
-                        sys.stdout.write(json.dumps({
-                            "type": "progress",
-                            "index": i,
-                            "passed": passed_count,
-                            "output": run_process.stdout
-                        }) + "\n")
-                        sys.stdout.flush()
-                    else:
-                        results.append({"error": "Runtime Error:\n" + run_process.stderr})
-                        sys.stdout.write(json.dumps({
-                            "type": "progress",
-                            "index": i,
-                            "passed": passed_count,
-                            "error": "Runtime Error:\n" + run_process.stderr
-                        }) + "\n")
-                        sys.stdout.flush()
-                        
-                        if early_exit:
-                            stopped_at = i
-                            break
-
-                except subprocess.TimeoutExpired:
-                   results.append({"error": "Time Limit Exceeded (2s)"})
-                   sys.stdout.write(json.dumps({
-                       "type": "progress",
-                       "index": i,
-                       "passed": passed_count,
-                       "error": "Time Limit Exceeded (2s)"
-                   }) + "\n")
-                   sys.stdout.flush()
-                   
-                   if early_exit:
-                       stopped_at = i
-                       break
-
-            # 4. Final summary
-            sys.stdout.write(json.dumps({
-                "type": "finished",
-                "results": results,
-                "stopped_at": stopped_at
-            }) + "\n")
-            sys.stdout.flush()
-
+            result = handle_job(job)
         except Exception as e:
-            sys.stdout.write(json.dumps({
-                "type": "finished",
-                "results": [{"error": "Sandbox Engine Error: " + str(e)}],
-                "stopped_at": 0
-            }) + "\n")
-            sys.stdout.flush()
+            result = {"type": "finished", "results": [{"error": str(e)}], "stopped_at": 0}
+        print(json.dumps(result), flush=True)
 
 if __name__ == "__main__":
     run_java()

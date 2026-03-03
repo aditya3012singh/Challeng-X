@@ -28,6 +28,11 @@ api.interceptors.request.use(
 // Response interceptor
 let isRefreshing = false;
 let failedQueue = [];
+let injectedStore = null;
+
+export const injectStore = (store) => {
+  injectedStore = store;
+};
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(prom => {
@@ -76,12 +81,11 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Lazy import to avoid circular dependency
-        const { default: store } = await import("../store/store.js");
+        if (!injectedStore) throw new Error("Redux store not injected");
         const { refreshAccessToken } = await import("../store/api/auth.thunk.js");
 
-        // Attempt to refresh the token
-        await store.dispatch(refreshAccessToken()).unwrap();
+        // Attempt to refresh the token using injected store
+        await injectedStore.dispatch(refreshAccessToken()).unwrap();
         processQueue(null);
         isRefreshing = false;
         // Retry the original request

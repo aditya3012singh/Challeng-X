@@ -123,7 +123,14 @@ class BattleService {
       include: {
         problem: {
           select: {
-            id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: true
+            id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: {
+              where: {
+                OR: [
+                  { isHidden: false },
+                  { isSample: true }
+                ]
+              }
+            }
           }
         },
         player1: { select: { id: true, username: true, email: true } },

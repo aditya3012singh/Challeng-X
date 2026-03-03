@@ -1,23 +1,24 @@
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { useEffect } from 'react'
-import Login from './auth/Login'
-import Register from './auth/Register'
-import Home from './pages/Home'
-import Navbar from './components/Navbar'
+import { lazy, Suspense, useEffect } from 'react'
 import { fetchUserProfile } from '../store/api/auth.thunk'
 import './App.css'
-import { Problem } from './components/Problem'
-import { ProblemDetail } from './components/ProblemDetails'
-import Ide from './pages/Ide'
-import { Battle } from './pages/Battle'
-import { Leaderboard } from './pages/Leaderboard'
-import JoinRoom from './pages/JoinRoom'
-import { FindMatch } from './pages/FindMatch'
-import { TeamBattle } from './pages/TeamBattle'
-import { BattleRoom } from './pages/BattleRoom'
-import { SquidMode } from './pages/SquidMode'
-import Admin from './pages/Admin'
+
+const Login = lazy(() => import('./auth/Login'))
+const Register = lazy(() => import('./auth/Register'))
+const Home = lazy(() => import('./pages/Home'))
+const Navbar = lazy(() => import('./components/Navbar'))
+const Problem = lazy(() => import('./components/Problem').then(m => ({ default: m.Problem })))
+const ProblemDetail = lazy(() => import('./components/ProblemDetails').then(m => ({ default: m.ProblemDetail })))
+const Ide = lazy(() => import('./pages/Ide'))
+const Battle = lazy(() => import('./pages/Battle').then(m => ({ default: m.Battle })))
+const Leaderboard = lazy(() => import('./pages/Leaderboard').then(m => ({ default: m.Leaderboard })))
+const JoinRoom = lazy(() => import('./pages/JoinRoom'))
+const FindMatch = lazy(() => import('./pages/FindMatch').then(m => ({ default: m.FindMatch })))
+const TeamBattle = lazy(() => import('./pages/TeamBattle').then(m => ({ default: m.TeamBattle })))
+const BattleRoom = lazy(() => import('./pages/BattleRoom').then(m => ({ default: m.BattleRoom })))
+const SquidMode = lazy(() => import('./pages/SquidMode').then(m => ({ default: m.SquidMode })))
+const Admin = lazy(() => import('./pages/Admin'))
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -71,71 +72,82 @@ function App() {
 
   return (
     <>
-      <Navbar />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/"
-          element={<Home />}
-        />
-        <Route path="/problems" element={
-          <ProtectedRoute>
-            <Problem />
-          </ProtectedRoute>
-        } />
-        <Route path='/problem/:id' element={
-          <ProtectedRoute>
-            <ProblemDetail />
-          </ProtectedRoute>
-        } />
-        <Route path='/battles' element={
-          <ProtectedRoute>
-            <Battle />
-          </ProtectedRoute>
-        } />
-        <Route path='/battle/:battleId/ide' element={
-          <ProtectedRoute>
-            <Ide />
-          </ProtectedRoute>
-        } />
-        <Route path='/leaderboard' element={
-          <ProtectedRoute>
-            <Leaderboard />
-          </ProtectedRoute>
-        } />
+      <Suspense fallback={null}>
+        <Navbar />
+      </Suspense>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+            <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Loading Node...</div>
+          </div>
+        </div>
+      }>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/"
+            element={<Home />}
+          />
+          <Route path="/problems" element={
+            <ProtectedRoute>
+              <Problem />
+            </ProtectedRoute>
+          } />
+          <Route path='/problem/:id' element={
+            <ProtectedRoute>
+              <ProblemDetail />
+            </ProtectedRoute>
+          } />
+          <Route path='/battles' element={
+            <ProtectedRoute>
+              <Battle />
+            </ProtectedRoute>
+          } />
+          <Route path='/battle/:battleId/ide' element={
+            <ProtectedRoute>
+              <Ide />
+            </ProtectedRoute>
+          } />
+          <Route path='/leaderboard' element={
+            <ProtectedRoute>
+              <Leaderboard />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/join-room" element={
-          <ProtectedRoute>
-            <JoinRoom />
-          </ProtectedRoute>
-        } />
-        <Route path='/matchmaking' element={
-          <ProtectedRoute>
-            <FindMatch />
-          </ProtectedRoute>
-        } />
-        <Route path='/team-battle' element={
-          <ProtectedRoute>
-            <TeamBattle />
-          </ProtectedRoute>
-        } />
-        <Route path='/battle-room/:battleId' element={
-          <ProtectedRoute>
-            <BattleRoom />
-          </ProtectedRoute>
-        } />
-        <Route path='/squid-mode' element={
-          <ProtectedRoute>
-            <SquidMode />
-          </ProtectedRoute>
-        } />
-        <Route path='/admin' element={
-          <ProtectedRoute>
-            <Admin />
-          </ProtectedRoute>
-        } />
-      </Routes>
+          <Route path="/join-room" element={
+            <ProtectedRoute>
+              <JoinRoom />
+            </ProtectedRoute>
+          } />
+          <Route path='/matchmaking' element={
+            <ProtectedRoute>
+              <FindMatch />
+            </ProtectedRoute>
+          } />
+          <Route path='/team-battle' element={
+            <ProtectedRoute>
+              <TeamBattle />
+            </ProtectedRoute>
+          } />
+          <Route path='/battle-room/:battleId' element={
+            <ProtectedRoute>
+              <BattleRoom />
+            </ProtectedRoute>
+          } />
+          <Route path='/squid-mode' element={
+            <ProtectedRoute>
+              <SquidMode />
+            </ProtectedRoute>
+          } />
+          <Route path='/admin' element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </Suspense>
     </>
   )
 }

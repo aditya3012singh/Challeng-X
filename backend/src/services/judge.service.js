@@ -59,9 +59,9 @@ class WarmContainer {
       "run", "--rm",
       "-i",                        // keep stdin open
       "--network", "none",
-      "--memory", "128m",
-      "--pids-limit", "64",        // Prevent fork bomb CPU/host extraction
-      "--cpus", "1.0",             // Prevent infinite loop monopolizing CPU
+      "--memory", "512m",
+      "--pids-limit", "512",       // Prevent fork bomb CPU/host extraction
+      "--cpus", "2.0",             // Prevent infinite loop monopolizing CPU
       "-v", `${runnersMount}:/runners:ro`,
       this.config.image,
       ...this.config.runnerCmd,
