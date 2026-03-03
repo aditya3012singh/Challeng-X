@@ -15,6 +15,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import logger from "./utils/logger.js";
+import { apiLimiter } from "./middlewares/rateLimit.middleware.js";
 dotenv.config();
 
 class App {
@@ -55,6 +56,10 @@ class App {
     app.use(morgan("combined", { stream: logger.stream }));
 
     app.use(cookieParser());
+
+    // Apply global API rate limiting to all /api routes
+    app.use("/api", apiLimiter);
+
     app.use("/api/auth", AuthRoutes.createRouter());
     app.use("/api/problem", ProblemRoutes.createRouter());
     app.use("/api/testcase", TestcaseRoutes.createRouter());

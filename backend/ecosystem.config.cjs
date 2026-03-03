@@ -3,28 +3,30 @@ module.exports = {
         {
             name: "codearena-api",
             script: "./src/server.js",
-            instances: 1, // You can increase this if you want to run API in cluster mode
+            instances: "max", // Scale across available CPU cores in OCI Ampere A1
+            exec_mode: "cluster", // Enables PM2 load balancing between Node.js instances
             autorestart: true,
             watch: false,
             max_memory_restart: "1G",
             env: {
                 NODE_ENV: "production",
                 PORT: 4000
-                // Ensure you have a .env file in the backend folder or provide variables here
-            }
+            },
+            node_args: "--max-old-space-size=1024" // Prevent V8 garbage collection OOMs
         },
         {
             name: "codearena-worker",
             script: "./worker/worker.js",
-            instances: 1, // Worker handles concurrency internally with bullmq
+            instances: 1, // BullMQ manages concurrency internally, multiple workers are okay but 1 is safer for simple DB connections
             autorestart: true,
             watch: false,
             max_memory_restart: "1G",
             env: {
                 NODE_ENV: "production",
-                WORKER_CONCURRENCY: 10,
-                JUDGE_POOL_SIZE: 5 // Corresponds to number of warm containers
-            }
+                WORKER_CONCURRENCY: 5, // Throttle to prevent overwhelming the small free DB
+                JUDGE_POOL_SIZE: 5
+            },
+            node_args: "--max-old-space-size=1024"
         }
     ]
 };
