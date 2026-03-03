@@ -1,0 +1,120 @@
+// ============= SQUID GAME MODE =============
+
+enum SquidGameStatus {
+  REGISTRATION
+  ROUND_ACTIVE
+  ROUND_ENDED
+  COMPLETED
+}
+
+model SquidGame {
+  id String @id @default(uuid())
+  
+  // Tournament info
+  name String
+  status SquidGameStatus @default(REGISTRATION)
+  maxPlayers Int @default(50)
+  
+  // Round info
+  currentRound Int @default(0)
+  totalRounds Int @default(5)
+  
+  // Players
+  participants SquidGameParticipant[]
+  
+  // Problems per round
+  roundProblems SquidGameRound[]
+  
+  // Leaderboard snapshots
+  leaderboardSnapshots SquidGameLeaderboard[]
+  
+  startedAt DateTime?
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model SquidGameParticipant {
+  id String @id @default(uuid())
+  
+  squidGame SquidGame @relation(fields: [squidGameId], references: [id], onDelete: Cascade)
+  squidGameId String
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  
+  // Elimination info
+  roundsEliminated Int @default(0) // Rounds survived before elimination
+  status String @default("ACTIVE") // ACTIVE, ELIMINATED, WINNER
+  
+  // Score tracking
+  totalScore Int @default(0)
+  roundScores Int[] @default([]) // Array of scores per round
+  
+  joinedAt DateTime @default(now())
+  eliminatedAt DateTime?
+  
+  // Submissions and scores
+  submissions SquidGameSubmission[]
+  
+  @@unique([squidGameId, userId])
+}
+
+model SquidGameRound {
+  id String @id @default(uuid())
+  
+  squidGame SquidGame @relation(fields: [squidGameId], references: [id], onDelete: Cascade)
+  squidGameId String
+  
+  roundNumber Int
+  difficulty Difficulty
+  
+  problem Problem @relation(fields: [problemId], references: [id])
+  problemId String
+  
+  // Round rules
+  timeLimit Int // In seconds
+  playersAtStart Int
+  playersEliminated Int @default(0)
+  
+  startedAt DateTime?
+  endedAt DateTime?
+  
+  submissions SquidGameSubmission[]
+  
+  @@unique([squidGameId, roundNumber])
+}
+
+model SquidGameSubmission {
+  id String @id @default(uuid())
+  
+  round SquidGameRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  roundId String
+  
+  participant SquidGameParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String
+  
+  code String
+  language String
+  
+  status SubmissionStatus
+  score Int @default(0) // Points earned for this submission
+  executionTimeMs Int?
+  testCasesPassed Int @default(0)
+  totalTestCases Int @default(0)
+  
+  submittedAt DateTime @default(now())
+}
+
+model SquidGameLeaderboard {
+  id String @id @default(uuid())
+  
+  squidGame SquidGame @relation(fields: [squidGameId], references: [id], onDelete: Cascade)
+  squidGameId String
+  
+  roundNumber Int
+  playerRankings Json // JSON array of {userId, username, rank, score, status}
+  
+  snapshotAt DateTime @default(now())
+  
+  @@unique([squidGameId, roundNumber])
+}

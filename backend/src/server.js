@@ -3,8 +3,11 @@ dotenv.config();
 import App from "./app.js";
 import http from "http";
 import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import Redis from "ioredis";
 import SquidGameSocket from "./config/squidGameSocket.js";
 import BattleService from "./services/battle.service.js";
+import logger from "./utils/logger.js";
 
 class ServerApp {
   static io = null;
@@ -14,74 +17,70 @@ class ServerApp {
   }
 
   static createIo(server) {
-    return new Server(server, {
+    const io = new Server(server, {
       cors: {
         origin: "*",
         methods: ["GET", "POST"],
       },
     });
+
+    if (process.env.REDIS_URL) {
+      const pubClient = new Redis(process.env.REDIS_URL);
+      const subClient = pubClient.duplicate();
+      io.adapter(createAdapter(pubClient, subClient));
+      logger.info("🔌 Socket.IO Redis Adapter configured successfully");
+    } else {
+      logger.warn("⚠️ REDIS_URL not found. Socket.IO falling back to in-memory adapter (not scalable).");
+    }
+
+    return io;
   }
 
   static registerBaseSocketHandlers(io) {
     io.on("connection", (socket) => {
-      console.log("🟢 User connected:", socket.id);
+      logger.info(`🟢 User connected: ${socket.id}`);
 
       socket.on("joinBattle", (battleId) => {
         socket.join(battleId);
-        console.log(`User joined room ${battleId}`);
-      });
-
-      // ──────────────────────────────────────────────────────────────────────
-      // Worker → Server: result of a judged submission
-      // The worker emits this after running all test cases.
-      // ──────────────────────────────────────────────────────────────────────
-      socket.on("submissionProgress", (data) => {
-        const { submissionId, battleId } = data;
-        if (battleId) {
-          io.to(battleId).emit("submissionProgress", data);
-        } else {
-          // Practice mode or non-battle submission
-          io.emit("submissionProgress", data); // Fallback broadcast
-        }
-      });
-
-      socket.on("submissionResult", async (data) => {
-        const { submissionId, userId, battleId, status, type, testCaseResults, executionTimeMs } = data;
-        console.log(`📨 submissionResult: battle=${battleId} user=${userId} type=${type} status=${status}`);
-
-        try {
-          if (battleId) {
-            if (status === "PASSED" && type === "SUBMIT") {
-              // 1. Forward the individual success result immediately (Progress feedback)
-              io.to(battleId).emit("submissionResult", data);
-
-              // 2. Await the CRITICAL status change in DB before notifying the room of completion
-              // This prevents the loser from re-fetching before the status is 'FINISHED'
-              BattleService.finishBattleService(battleId, userId)
-                .then((result) => {
-                  if (result) {
-                    console.log(`🏆 Battle ${battleId} finished in DB. Winner: ${userId}. Notifying room...`);
-                    io.to(battleId).emit("battleFinished", { winnerId: userId });
-                  } else {
-                    console.log(`ℹ️ Battle ${battleId} already has a winner. Skipping notification for ${userId}.`);
-                  }
-                })
-                .catch((err) => console.error(`❌ finishBattleService error: ${err.message}`));
-
-            } else {
-              // Standard forwarding for failures or RUN types
-              io.to(battleId).emit("submissionResult", data);
-            }
-          }
-        } catch (error) {
-          console.error("Socket submissionResult handler error:", error);
-        }
+        logger.info(`User joined room ${battleId}`);
       });
 
       socket.on("disconnect", () => {
-        console.log("🔴 User disconnected");
+        logger.info("🔴 User disconnected");
       });
     });
+  }
+
+  static setupRedisSubscriber(io) {
+    if (process.env.REDIS_URL) {
+      const subscriber = new Redis(process.env.REDIS_URL);
+
+      subscriber.subscribe("worker_events", (err, count) => {
+        if (err) {
+          logger.error(`Failed to subscribe to worker_events channel: ${err}`);
+        } else {
+          logger.info(`✅ Server subscribed to ${count} Redis channels for worker events`);
+        }
+      });
+
+      subscriber.on("message", (channel, message) => {
+        if (channel === "worker_events") {
+          try {
+            const { event, data } = JSON.parse(message);
+
+            if (data && data.battleId) {
+              io.to(data.battleId).emit(event, data);
+            } else {
+              // Practice mode or non-battle submission
+              io.emit(event, data);
+            }
+
+          } catch (error) {
+            logger.error(`Error parsing worker event message: ${error}`);
+          }
+        }
+      });
+    }
   }
 
   static start() {
@@ -90,13 +89,14 @@ class ServerApp {
 
     this.io = this.createIo(server);
     this.registerBaseSocketHandlers(this.io);
+    this.setupRedisSubscriber(this.io);
 
     // Initialize Squid Game socket handlers
     SquidGameSocket.initializeSquidGameSocket(this.io);
 
     const PORT = process.env.PORT || 4000;
     server.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      logger.info(`🚀 Server running on port ${PORT}`);
     });
   }
 }

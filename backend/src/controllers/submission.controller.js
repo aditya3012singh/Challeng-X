@@ -5,41 +5,41 @@
 import SubmissionService from "../services/submission.service.js";
 
 class SubmissionController {
-  static async submitCode(req, res) {
-  try {
+  static async submitCode(req, res, next) {
+    try {
 
-    const { code, language, battleId, problemId } = req.body;
+      const { code, language, battleId, problemId } = req.body;
 
-    const userId = req.user.id; // from auth middleware
+      const userId = req.user.id; // from auth middleware
 
-    const result = await SubmissionService.processSubmission({
-      userId,
-    //   battleId,
-      problemId,
-      code,
-      language,
-      status:"QUEUED"
-    });
+      const result = await SubmissionService.processSubmission({
+        userId,
+        //   battleId,
+        problemId,
+        code,
+        language,
+        status: "QUEUED"
+      });
 
-  res.status(200).json(result);
+      res.status(200).json(result);
 
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    } catch (err) {
+      next(err);
+    }
   }
-  }
 
-  static async getSubmissionStatus(req, res) {
+  static async getSubmissionStatus(req, res, next) {
     try {
       const { id } = req.params;
       const result = await SubmissionService.getSubmissionById(id);
-      
+
       if (!result) {
         return res.status(404).json({ error: "Submission not found" });
       }
-      
+
       res.status(200).json(result);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      next(err);
     }
   }
 }

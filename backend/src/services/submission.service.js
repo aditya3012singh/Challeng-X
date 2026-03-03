@@ -129,6 +129,29 @@ class SubmissionService {
       beatsPercentile
     };
   }
+
+  /**
+   * Used by worker to fetch submission details along with problem testcases and user id
+   */
+  static async getSubmissionWithProblemAndUser(submissionId) {
+    return await Database.client.submission.findUnique({
+      where: { id: submissionId },
+      include: {
+        problem: { include: { testcases: true } },
+        user: { select: { id: true } }
+      }
+    });
+  }
+
+  /**
+   * Used by worker to update status, passed tests, and execution time
+   */
+  static async updateSubmissionStatus(submissionId, data) {
+    return await Database.client.submission.update({
+      where: { id: submissionId },
+      data
+    });
+  }
 }
 
 export default SubmissionService;

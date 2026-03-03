@@ -11,12 +11,17 @@ import TeamBattleRoutes from "./routes/teamBattle.route.js";
 import SquidGameRoutes from "./routes/squidGame.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import morgan from "morgan";
+import helmet from "helmet";
 import dotenv from "dotenv";
+import logger from "./utils/logger.js";
 dotenv.config();
 
 class App {
   static createApp() {
     const app = express();
+
+    app.use(helmet());
 
     app.use(cors({
       origin: (origin, callback) => {
@@ -45,6 +50,10 @@ class App {
     }));
 
     app.use(express.json());
+
+    // Connect Morgan to Winston: logs HTTP requests to our file-based logger instead of standard console out
+    app.use(morgan("combined", { stream: logger.stream }));
+
     app.use(cookieParser());
     app.use("/api/auth", AuthRoutes.createRouter());
     app.use("/api/problem", ProblemRoutes.createRouter());
@@ -60,6 +69,13 @@ class App {
     // Health Check for production Monitoring
     app.get("/api/health", (req, res) => {
       res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
+    });
+
+    // Centralized Error Handler (must be the last middleware)
+    app.use((err, req, res, next) => {
+      import("./middlewares/errorHandler.middleware.js").then(({ default: errorHandler }) => {
+        errorHandler(err, req, res, next);
+      }).catch(next);
     });
 
     return app;

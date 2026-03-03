@@ -1,0 +1,33 @@
+enum BattleStatus {
+  WAITING
+  ONGOING
+  FINISHED
+}
+
+model Battle {
+  id         String   @id @default(uuid())
+  battleCode String   @unique // 6-digit code for easy sharing
+
+  player1   User @relation("player1", fields: [player1Id], references: [id])
+  player1Id String
+
+  player2   User? @relation("player2", fields: [player2Id], references: [id])
+  player2Id String?
+
+  problem   Problem @relation(fields: [problemId], references: [id])
+  problemId String
+
+  status    BattleStatus @default(WAITING)
+
+  winnerId  String?
+
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  submissions Submission[]
+
+  attemptsPlayer1 Int @default(0)
+  attemptsPlayer2 Int @default(0)
+
+  createdAt DateTime @default(now())
+}

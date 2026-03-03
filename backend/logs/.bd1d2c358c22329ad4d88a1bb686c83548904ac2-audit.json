@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\CodeArena\\backend\\logs\\.bd1d2c358c22329ad4d88a1bb686c83548904ac2-audit.json",
+    "files": [
+        {
+            "date": 1772521848773,
+            "name": "D:\\CodeArena\\backend\\logs\\application-2026-03-03.log",
+            "hash": "bca011ae351decd4bf57344767e17143accc21e8bce17ba0d6e450a5e3d014aa"
+        }
+    ],
+    "hashType": "sha256"
+}

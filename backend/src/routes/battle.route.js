@@ -11,16 +11,18 @@
 import express from "express";
 import BattleController from "../controllers/battle.controller.js";
 import AuthMiddleware from "../middlewares/auth.middleware.js";
+import validateRequest from "../middlewares/validate.middleware.js";
+import { createBattleSchema, joinBattleSchema, submitCodeSchema } from "../validation/battle.schema.js";
 
 class BattleRoutes {
   static createRouter() {
     const router = express.Router();
 
     router.post("/create/random", AuthMiddleware.handle, BattleController.createBattleRandomQuestionController);
-    router.post("/create/selected", AuthMiddleware.handle, BattleController.createBattleWithSelectedQuestionController);
-    router.post("/join", AuthMiddleware.handle, BattleController.joinBattleController);
+    router.post("/create/selected", AuthMiddleware.handle, validateRequest(createBattleSchema), BattleController.createBattleWithSelectedQuestionController);
+    router.post("/join", AuthMiddleware.handle, validateRequest(joinBattleSchema), BattleController.joinBattleController);
     router.get("/:battleId", AuthMiddleware.handle, BattleController.getBattleController);
-    router.post("/:battleId/submit", AuthMiddleware.handle, BattleController.submitBattleCodeController);
+    router.post("/:battleId/submit", AuthMiddleware.handle, validateRequest(submitCodeSchema), BattleController.submitBattleCodeController);
     router.post("/:battleId/forfeit", AuthMiddleware.handle, BattleController.forfeitBattleController);
     router.get(
       "/history",

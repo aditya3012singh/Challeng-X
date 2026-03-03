@@ -3,19 +3,15 @@ import IORedis from "ioredis";
 
 import JudgeService from "../src/services/judge.service.js";
 import SubmissionService from "../src/services/submission.service.js";
-import { io as ioClient } from "socket.io-client";
-import Database from "../src/config/db.js";
+import BattleService from "../src/services/battle.service.js";
 
 const connection = new IORedis(process.env.REDIS_URL, {
     maxRetriesPerRequest: null
 });
 
-// Socket.IO client to emit events back to the main server
-const socket = ioClient(`http://localhost:${process.env.PORT || 4000}`);
-
-socket.on("connect", () => {
-    console.log("✅ Worker connected to Socket.IO server");
-});
+// Redis Publisher to send events to main server without using WebSockets
+const publisher = new IORedis(process.env.REDIS_URL);
+console.log("✅ Worker connected to Redis Pub/Sub");
 
 const worker = new Worker(
     "submissionQueue",
@@ -24,13 +20,7 @@ const worker = new Worker(
         console.log(`📦 Job ${job.id} picked up — submissionId=${submissionId} type=${type || "SUBMIT"} lang=${job.data.language ?? "?"}`);
 
         try {
-            const submission = await Database.client.submission.findUnique({
-                where: { id: submissionId },
-                include: {
-                    problem: { include: { testcases: true } },
-                    user: { select: { id: true } }
-                }
-            });
+            const submission = await SubmissionService.getSubmissionWithProblemAndUser(submissionId);
             if (!submission) throw new Error("Submission not found");
             if (!submission.problem) throw new Error("Submission has no associated problem");
 
@@ -48,10 +38,7 @@ const worker = new Worker(
             const total = testcases.length;
             const t0 = Date.now();
 
-            await Database.client.submission.update({
-                where: { id: submissionId },
-                data: { status: "RUNNING" }
-            });
+            await SubmissionService.updateSubmissionStatus(submissionId, { status: "RUNNING" });
 
             console.log(`⏱  [${submission.language}] Starting ${type} — ${total} test case(s)`);
 
@@ -62,15 +49,18 @@ const worker = new Worker(
                 testcases.map(tc => tc.input),
                 !isRun, // earlyExit = true for SUBMIT, false for RUN
                 (progress) => {
-                    // Emit progress to frontend via socket
-                    socket.emit("submissionProgress", {
-                        submissionId,
-                        userId: userId || submission.user.id,
-                        battleId: battleId || submission.battleId || null,
-                        index: progress.index,
-                        total,
-                        passed: progress.passed
-                    });
+                    // Publish progress to Redjs channel
+                    publisher.publish("worker_events", JSON.stringify({
+                        event: "submissionProgress",
+                        data: {
+                            submissionId,
+                            userId: userId || submission.user.id,
+                            battleId: battleId || submission.battleId || null,
+                            index: progress.index,
+                            total,
+                            passed: progress.passed
+                        }
+                    }));
                 }
             );
 
@@ -106,20 +96,25 @@ const worker = new Worker(
 
             if (isRun) {
                 // Return full details for 'RUN' (all sample cases for the tabbed UI)
-                await Database.client.submission.update({
-                    where: { id: submissionId },
-                    data: { status: firstFailedIndex === -1 ? "PASSED" : "FAILED", passedTests: stopped_at, totalTests: total, executionTimeMs }
-                });
-
-                socket.emit("submissionResult", {
-                    submissionId,
-                    userId: userId || submission.user.id,
-                    battleId: battleId || submission.battleId || null,
+                await SubmissionService.updateSubmissionStatus(submissionId, {
                     status: firstFailedIndex === -1 ? "PASSED" : "FAILED",
-                    type: "RUN",
-                    testCaseResults: runDetails,
+                    passedTests: stopped_at,
+                    totalTests: total,
                     executionTimeMs
                 });
+
+                publisher.publish("worker_events", JSON.stringify({
+                    event: "submissionResult",
+                    data: {
+                        submissionId,
+                        userId: userId || submission.user.id,
+                        battleId: battleId || submission.battleId || null,
+                        status: firstFailedIndex === -1 ? "PASSED" : "FAILED",
+                        type: "RUN",
+                        testCaseResults: runDetails,
+                        executionTimeMs
+                    }
+                }));
                 return;
             }
 
@@ -127,33 +122,40 @@ const worker = new Worker(
             if (firstFailedIndex !== -1) {
                 const failed = runDetails[firstFailedIndex];
 
-                await Database.client.submission.update({
-                    where: { id: submissionId },
-                    data: { status: "FAILED", passedTests: firstFailedIndex, totalTests: submission.problem.testcases.length, executionTimeMs }
-                });
-
-                socket.emit("submissionResult", {
-                    submissionId,
-                    userId: userId || submission.user.id,
-                    battleId: battleId || submission.battleId || null,
+                await SubmissionService.updateSubmissionStatus(submissionId, {
                     status: "FAILED",
-                    type: "SUBMIT",
                     passedTests: firstFailedIndex,
                     totalTests: submission.problem.testcases.length,
-                    failedTestCase: firstFailedIndex + 1,
-                    input: failed.input,
-                    expectedOutput: failed.expected,
-                    actualOutput: failed.actual,
-                    errorMessage: failed.error,
+                    executionTimeMs
                 });
+
+                publisher.publish("worker_events", JSON.stringify({
+                    event: "submissionResult",
+                    data: {
+                        submissionId,
+                        userId: userId || submission.user.id,
+                        battleId: battleId || submission.battleId || null,
+                        status: "FAILED",
+                        type: "SUBMIT",
+                        passedTests: firstFailedIndex,
+                        totalTests: submission.problem.testcases.length,
+                        failedTestCase: firstFailedIndex + 1,
+                        input: failed.input,
+                        expectedOutput: failed.expected,
+                        actualOutput: failed.actual,
+                        errorMessage: failed.error,
+                    }
+                }));
 
                 return;
             }
 
             // All test cases passed for SUBMIT
-            await Database.client.submission.update({
-                where: { id: submissionId },
-                data: { status: "PASSED", passedTests: total, totalTests: total, executionTimeMs }
+            await SubmissionService.updateSubmissionStatus(submissionId, {
+                status: "PASSED",
+                passedTests: total,
+                totalTests: total,
+                executionTimeMs
             });
 
             const beatsPercentile = await SubmissionService.calculateBeatsPercentile(
@@ -162,17 +164,47 @@ const worker = new Worker(
                 executionTimeMs
             );
 
-            socket.emit("submissionResult", {
-                submissionId,
-                userId: userId || submission.user.id,
-                battleId: battleId || submission.battleId || null,
-                status: "PASSED",
-                type: "SUBMIT",
-                passedTests: total,
-                totalTests: total,
-                executionTimeMs,
-                beatsPercentile
-            });
+            // Handle Battle Finish within the Worker (DB layer constraint)
+            let battleFinished = false;
+            let battleWinnerId = null;
+            if (battleId) {
+                try {
+                    const finishResult = await BattleService.finishBattleService(battleId, userId || submission.user.id);
+                    if (finishResult) {
+                        battleFinished = true;
+                        battleWinnerId = userId || submission.user.id;
+                        console.log(`🏆 Battle ${battleId} finished in DB by worker. Winner: ${battleWinnerId}.`);
+                    }
+                } catch (err) {
+                    console.error(`❌ Worker finishBattleService error: ${err.message}`);
+                }
+            }
+
+            publisher.publish("worker_events", JSON.stringify({
+                event: "submissionResult",
+                data: {
+                    submissionId,
+                    userId: userId || submission.user.id,
+                    battleId: battleId || submission.battleId || null,
+                    status: "PASSED",
+                    type: "SUBMIT",
+                    passedTests: total,
+                    totalTests: total,
+                    executionTimeMs,
+                    beatsPercentile
+                }
+            }));
+
+            // Notify clients that the battle is over via pub/sub
+            if (battleFinished) {
+                publisher.publish("worker_events", JSON.stringify({
+                    event: "battleFinished",
+                    data: {
+                        battleId,
+                        winnerId: battleWinnerId
+                    }
+                }));
+            }
 
         } catch (err) {
             console.error(`💥 Job ${job.id} processor error:`, err.message);

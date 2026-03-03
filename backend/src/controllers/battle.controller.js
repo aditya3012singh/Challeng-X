@@ -7,18 +7,18 @@ import BattleService from "../services/battle.service.js";
 import SubmissionService from "../services/submission.service.js";
 
 class BattleController {
-    static async createBattleRandomQuestionController(req, res) {
+    static async createBattleRandomQuestionController(req, res, next) {
         const userId = req.user.id;
         try {
             const battle = await BattleService.createBattleRandomQuestionService(userId);
             // console.log("Created battle with random question:", battle);
             res.status(201).json(battle);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    static async createBattleWithSelectedQuestionController(req, res) {
+    static async createBattleWithSelectedQuestionController(req, res, next) {
         const userId = req.user.id;
         const { problemId } = req.body;
         try {
@@ -26,22 +26,22 @@ class BattleController {
             //  console.log("Created battle with selected question:", battle);
             res.status(201).json(battle);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    static async joinBattleController(req, res) {
+    static async joinBattleController(req, res, next) {
         const userId = req.user.id;
         const { battleCode } = req.body;
         try {
             const battle = await BattleService.joinBattleService(battleCode, userId);
             res.status(200).json(battle);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    static async getBattleController(req, res) {
+    static async getBattleController(req, res, next) {
         const { battleId } = req.params;
         try {
             const battle = await BattleService.getBattle(battleId);
@@ -49,11 +49,11 @@ class BattleController {
             const myUserId = req.user?.id;
             res.status(200).json({ ...battle, myUserId });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    static async submitBattleCodeController(req, res) {
+    static async submitBattleCodeController(req, res, next) {
         const userId = req.user.id;
         const { battleId } = req.params;
         const { code, language, type } = req.body; // type: "RUN" or "SUBMIT"
@@ -88,11 +88,11 @@ class BattleController {
             res.status(200).json(submissionResult);
         } catch (error) {
             console.error("Submit battle code error:", error);
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    static async forfeitBattleController(req, res) {
+    static async forfeitBattleController(req, res, next) {
         const userId = req.user.id;
         const { battleId } = req.params;
 
@@ -104,11 +104,11 @@ class BattleController {
             res.status(200).json({ message: "Battle forfeited successfully", battle: result });
         } catch (error) {
             console.error("Forfeit battle error:", error);
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
 
-    static async battleHistory(req, res) {
+    static async battleHistory(req, res, next) {
 
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -123,7 +123,7 @@ class BattleController {
             res.json(history);
 
         } catch (err) {
-            res.status(500).json({ error: err.message });
+            next(err);
         }
     }
 }

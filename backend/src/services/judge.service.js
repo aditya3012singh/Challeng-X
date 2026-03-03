@@ -10,7 +10,7 @@
  *   stdout ← {"output": "..."}\n  or  {"error": "..."}\n
  */
 
-import { spawn } from "child_process";
+import { spawn, execSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -68,6 +68,8 @@ class WarmContainer {
       "-i",                        // keep stdin open
       "--network", "none",
       "--memory", "128m",
+      "--pids-limit", "64",        // Prevent fork bomb CPU/host extraction
+      "--cpus", "1.0",             // Prevent infinite loop monopolizing CPU
       "-v", `${runnersMount}:/runners:ro`,
       this.config.image,
       ...this.config.runnerCmd,
@@ -209,6 +211,21 @@ class WarmContainerPool {
 }
 
 // ─── Initialise pools at module load ────────────────────────────────────────
+
+// Clean up any zombie containers from previous crashed runs before starting new pools
+try {
+  console.log("🧹 [judge] Cleaning up any leftover codearena containers...");
+  for (const lang of Object.keys(LANGUAGE_CONFIG)) {
+    const image = LANGUAGE_CONFIG[lang].image;
+    const containers = execSync(`docker ps -a -q --filter "ancestor=${image}"`).toString().trim().split('\n').filter(Boolean);
+    if (containers.length > 0) {
+      execSync(`docker rm -f ${containers.join(' ')}`);
+    }
+  }
+} catch (e) {
+  // Ignore errors during cleanup
+}
+
 // Containers start immediately and stay warm for the lifetime of the worker.
 const pools = {};
 for (const lang of Object.keys(LANGUAGE_CONFIG)) {
