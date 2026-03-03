@@ -21,7 +21,7 @@ dotenv.config();
 class App {
   static createApp() {
     const app = express();
-
+    
     app.use(helmet());
 
     app.use(cors({

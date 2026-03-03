@@ -30,17 +30,9 @@ const POOL_SIZE = parseInt(process.env.JUDGE_POOL_SIZE || "5", 10);
 
 // ─── Language definitions ────────────────────────────────────────────────────
 const LANGUAGE_CONFIG = {
-  python: {
-    image: "codearena-python",
-    runnerCmd: ["python3", "-u", "/runners/python_runner.py"],
-  },
-  js: {
-    image: "codearena-js",
-    runnerCmd: ["node", "/runners/js_runner.mjs"],
-  },
-  c: {
-    image: "codearena-c",
-    runnerCmd: ["python3", "-u", "/runners/c_runner.py"],
+  java: {
+    image: "codearena-java",
+    runnerCmd: ["python3", "-u", "/runners/java_runner.py"],
   },
   cpp: {
     image: "codearena-cpp",

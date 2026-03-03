@@ -6,7 +6,8 @@ import SubmissionService from "../src/services/submission.service.js";
 import BattleService from "../src/services/battle.service.js";
 
 const connection = new IORedis(process.env.REDIS_URL, {
-    maxRetriesPerRequest: null
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false
 });
 
 // Redis Publisher to send events to main server without using WebSockets
@@ -215,6 +216,7 @@ const worker = new Worker(
     {
         connection,
         concurrency: parseInt(process.env.WORKER_CONCURRENCY || "10", 10),
+        lockDuration: 60000, // 60 seconds (prevents stalled job issues)
     }
 );
 

@@ -17,9 +17,7 @@ export default function EditorToolbar({
           onChange={(e) => onLanguageChange(e.target.value)}
           className="bg-slate-900 border border-slate-700 text-slate-200 px-3 py-1 rounded text-sm focus:outline-none focus:border-[var(--color-primary)]"
         >
-          <option value="python">Python 3</option>
-          <option value="js">JavaScript (Node.js)</option>
-          <option value="c">C (GCC)</option>
+          <option value="java">Java (JDK 17)</option>
           <option value="cpp">C++ (G++)</option>
         </select>
 

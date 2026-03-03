@@ -11,8 +11,8 @@ import { SubmissionStatus } from "../components/SubmissionStatus";
 
 export const CodeEditorExample = () => {
     const [code, setCode] = useState("");
-    const [language, setLanguage] = useState("python");
-    
+    const [language, setLanguage] = useState("java");
+
     // Use the submission hook
     const { submit, loading, error, status, reset } = useSubmission();
 
@@ -28,13 +28,13 @@ export const CodeEditorExample = () => {
 
             console.log("Submission queued:", result);
             // Result: { submissionId, status: "QUEUED", message }
-            
+
             // The hook automatically:
             // 1. Starts polling every 2 seconds
             // 2. Listens for Socket.IO "submissionResult" events
             // 3. Updates the status state in real-time
             // 4. Stops polling when complete
-            
+
         } catch (err) {
             console.error("Submission failed:", err);
         }
@@ -52,13 +52,11 @@ export const CodeEditorExample = () => {
             {/* Code Editor */}
             <div>
                 <label className="block mb-2 font-semibold">Language</label>
-                <select 
-                    value={language} 
+                <select
+                    value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                     className="px-4 py-2 border rounded mb-4"
                 >
-                    <option value="python">Python</option>
-                    <option value="javascript">JavaScript</option>
                     <option value="java">Java</option>
                     <option value="cpp">C++</option>
                 </select>
@@ -121,7 +119,7 @@ export const BattleIdeExample = ({ battleId, problemId }) => {
     const handleRunCode = async () => {
         await submit({
             code,
-            language: "python",
+            language: "java",
             problemId,
             battleId, // Include battleId for battle submissions
         });
@@ -148,7 +146,7 @@ export const BattleIdeExample = ({ battleId, problemId }) => {
             <div>
                 <h2 className="text-xl font-bold mb-4">Results</h2>
                 <SubmissionStatus status={status} />
-                
+
                 {canProceed && (
                     <button className="mt-4 w-full px-6 py-3 bg-blue-600 text-white rounded font-bold">
                         Proceed to Next Round

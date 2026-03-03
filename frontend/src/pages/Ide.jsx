@@ -15,9 +15,7 @@ import { submitCode, getSubmissionStatus } from "../../store/api/submission.thun
 import { BattleProblem } from "../components/BattleProblem";
 
 const LANGUAGES = {
-  python: { monaco: "python", defaultCode: `print("Hello")` },
-  js: { monaco: "javascript", defaultCode: `console.log("Hello");` },
-  c: { monaco: "c", defaultCode: `#include <stdio.h>\nint main() {\n  printf("Hello\\n");\n  return 0;\n}` },
+  java: { monaco: "java", defaultCode: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World!");\n    }\n}` },
   cpp: { monaco: "cpp", defaultCode: `#include <iostream>\nint main() {\n  std::cout << "Hello\\n";\n  return 0;\n}` }
 };
 
@@ -123,8 +121,8 @@ export default function Ide() {
 
   // Restore draft from localStorage on mount
   const savedDraft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch { return null; } })();
-  const [language, setLanguage] = useState(savedDraft?.language || "python");
-  const [code, setCode] = useState(savedDraft?.code || LANGUAGES[savedDraft?.language || "python"].defaultCode);
+  const [language, setLanguage] = useState(savedDraft?.language || "java");
+  const [code, setCode] = useState(savedDraft?.code || LANGUAGES[savedDraft?.language || "java"].defaultCode);
   const [draftSaved, setDraftSaved] = useState(false);
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");

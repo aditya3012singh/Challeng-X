@@ -23,8 +23,8 @@ module.exports = {
             max_memory_restart: "1G",
             env: {
                 NODE_ENV: "production",
-                WORKER_CONCURRENCY: 5, // Throttle to prevent overwhelming the small free DB
-                JUDGE_POOL_SIZE: 5
+                WORKER_CONCURRENCY: 10, // Increased to 10 since we dropped Python/JS/C wrappers
+                JUDGE_POOL_SIZE: 10
             },
             node_args: "--max-old-space-size=1024"
         }

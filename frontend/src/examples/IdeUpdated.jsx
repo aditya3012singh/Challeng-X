@@ -22,8 +22,6 @@ import { useSubmission } from "../hooks/useSubmission";
 import { SubmissionStatus } from "../components/SubmissionStatus";
 
 const LANGUAGES = {
-  javascript: { monaco: "javascript", defaultCode: `console.log("Hello");` },
-  python: { monaco: "python", defaultCode: `print("Hello")` },
   java: {
     monaco: "java",
     defaultCode: `public class Main {
@@ -60,8 +58,8 @@ export default function IdeUpdated() {
   const isWaitingForOpponent =
     currentBattle?.status === "WAITING" && !currentBattle?.player2Id;
 
-  const [language, setLanguage] = useState("python");
-  const [code, setCode] = useState(LANGUAGES.python.defaultCode);
+  const [language, setLanguage] = useState("java");
+  const [code, setCode] = useState(LANGUAGES.java.defaultCode);
 
   // NEW: Use the submission hook instead of manual state management
   const { submit, loading, status, reset } = useSubmission();
@@ -106,10 +104,10 @@ export default function IdeUpdated() {
         problemId: currentBattle?.problemId,
         battleId,
       });
-      
+
       // No need to manually set status - the hook handles it!
       // Status updates will come via Socket.IO and polling automatically
-      
+
     } catch (error) {
       console.error("Submission error:", error);
     }
@@ -198,7 +196,7 @@ export default function IdeUpdated() {
                       <h3 className="text-sm font-bold text-gray-700 mb-3">
                         Submission Results
                       </h3>
-                      
+
                       {/* Beautiful status component with real-time updates */}
                       <SubmissionStatus status={status} />
 

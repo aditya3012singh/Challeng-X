@@ -10,8 +10,8 @@ export const joinBattleSchema = z.object({
 
 export const submitCodeSchema = z.object({
     code: z.string().min(1, "Code cannot be empty").max(50000, "Code exceeds maximum allowed size (50KB)"),
-    language: z.enum(["python", "js", "cpp", "c"], {
-        errorMap: () => ({ message: "Language must be one of: python, js, cpp, c" })
+    language: z.enum(["java", "cpp"], {
+        errorMap: () => ({ message: "Language must be one of: java, cpp" })
     }),
     type: z.enum(["RUN", "SUBMIT"]).optional().default("SUBMIT"),
 });

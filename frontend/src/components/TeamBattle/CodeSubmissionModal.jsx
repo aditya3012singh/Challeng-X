@@ -69,8 +69,6 @@ export const CodeSubmissionModal = ({
                   onChange={(e) => setLanguage(e.target.value)}
                   className="bg-transparent text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest focus:outline-none cursor-pointer"
                 >
-                  <option value="javascript" className="bg-[#050505]">JavaScript</option>
-                  <option value="python" className="bg-[#050505]">Python</option>
                   <option value="java" className="bg-[#050505]">Java</option>
                   <option value="cpp" className="bg-[#050505]">C++</option>
                 </select>

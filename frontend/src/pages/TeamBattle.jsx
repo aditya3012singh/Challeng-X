@@ -37,7 +37,7 @@ export const TeamBattle = () => {
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [code, setCode] = useState("");
-  const [language, setLanguage] = useState("cpp");
+  const [language, setLanguage] = useState("java");
 
   // NEW JOIN-CODE FLOW STATE
   const [showCreateBattleModal, setShowCreateBattleModal] = useState(false);
