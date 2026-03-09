@@ -8,6 +8,7 @@ import testcaseReducer from "./slices/testcase.slice";
 import matchmakingReducer from "./slices/matchmaking.slice";
 import teamReducer from "./slices/team.slice";
 import teamBattleReducer from "./slices/teamBattle.slice";
+import squidGameReducer from "./slices/squidGame.slice";
 
 export const store = configureStore({
     reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
         matchmaking: matchmakingReducer,
         team: teamReducer,
         teamBattle: teamBattleReducer,
+        squidGame: squidGameReducer,
     },
 });
 

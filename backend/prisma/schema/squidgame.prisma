@@ -15,6 +15,10 @@ model SquidGame {
   status SquidGameStatus @default(REGISTRATION)
   maxPlayers Int @default(50)
   
+  // Host (creator/organizer) — only this user can start the tournament
+  host   User   @relation(fields: [hostId], references: [id])
+  hostId String
+  
   // Round info
   currentRound Int @default(0)
   totalRounds Int @default(5)

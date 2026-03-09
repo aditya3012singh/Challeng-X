@@ -36,6 +36,32 @@ class SquidGameSocket {
       });
 
       /**
+       * Join as a host (receives all code streams)
+       */
+      socket.on("squid_game:join_host", (data) => {
+        const { squidGameId } = data;
+        socket.join(`tournament-${squidGameId}-host`);
+        console.log(`👑 Host joined spectator room for tournament ${squidGameId}`);
+      });
+
+      /**
+       * Sync code from player to host
+       */
+      socket.on("squid_game:code_sync", (data) => {
+        const { squidGameId, userId, username, code, language } = data;
+        // Emit only to the host room
+        squidGameNamespace
+          .to(`tournament-${squidGameId}-host`)
+          .emit("squid_game:host_code_update", {
+            userId,
+            username,
+            code,
+            language,
+            timestamp: new Date()
+          });
+      });
+
+      /**
        * Submit a solution
        * Event: squid_game:submit_solution
        */

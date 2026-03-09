@@ -26,7 +26,7 @@ model User {
   createdTeamBattles TeamBattle[] @relation("battleCreator")
 
   squidGameParticipants SquidGameParticipant[]
-
+  hostedSquidGames      SquidGame[]
   rankPoints Int @default(1000)
   wins       Int @default(0)
   losses     Int @default(0)
