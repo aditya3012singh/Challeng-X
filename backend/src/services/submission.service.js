@@ -45,9 +45,15 @@ class SubmissionService {
 
         // Notify listeners about the attempt update (outside transaction ideally, but we'll do it after)
         // We'll use a post-transaction hook or just emit here since it's non-blocking
-        SocketEmitter.emitToBattle(battleId, "attemptsUpdated", {
+        SocketEmitter.emitToBattle(battleId, "attempts_updated", {
           player1Attempts: updatedBattle.attemptsPlayer1,
           player2Attempts: updatedBattle.attemptsPlayer2
+        });
+
+        // Emit opponent_submitted to room
+        SocketEmitter.emitToBattle(battleId, "opponent_submitted", {
+          userId,
+          status: "pending"
         });
       }
 

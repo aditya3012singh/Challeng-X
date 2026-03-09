@@ -54,6 +54,18 @@ const WaitingForOpponent = ({ battleId, battleCode }) => {
   );
 };
 
+const CountdownOverlay = ({ seconds }) => {
+  if (seconds === null) return null;
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+      <div className="text-center">
+        <h1 className="text-8xl font-black text-white mb-4 animate-pulse">{seconds}</h1>
+        <p className="text-[var(--color-primary)] uppercase tracking-widest text-sm font-bold">Battle begins in...</p>
+      </div>
+    </div>
+  );
+};
+
 // Blocker confirmation overlay shown when the user tries to navigate away mid-battle
 const LeaveConfirmModal = ({ onStay, onLeave }) => (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
@@ -93,6 +105,9 @@ export default function Ide() {
   const [hasWon, setHasWon] = useState(false);
   const [hasLost, setHasLost] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [countdown, setCountdown] = useState(null);
+  const [opponentStatusMsg, setOpponentStatusMsg] = useState("");
+  const [ratingUpdate, setRatingUpdate] = useState(null);
   const { battleId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -226,7 +241,7 @@ export default function Ide() {
     if (!battleId) return;
 
     const socket = getSocket();
-    socket.emit("joinBattle", battleId);
+    socket.emit("join_battle", { battleId }); // Updated payload format based on new standard logic
 
     const onPlayerJoined = () => {
       console.log("Player joined the battle");
@@ -326,25 +341,62 @@ export default function Ide() {
 
     const onConnect = () => {
       console.log("🟢 Socket connected/reconnected, joining battle room:", battleId);
-      socket.emit("joinBattle", battleId);
+      socket.emit("join_battle", { battleId });
+    };
+
+    const onBattleCountdown = ({ seconds }) => {
+      setCountdown(seconds);
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    };
+
+    const MathSign = (num) => num > 0 ? `+${num}` : num;
+    const onRatingUpdate = (data) => {
+      setRatingUpdate(data);
+    };
+
+    const onOpponentSubmitted = () => {
+      setOpponentStatusMsg("⏳ Opponent is submitting their code...");
+      setTimeout(() => setOpponentStatusMsg(""), 5000);
+    };
+
+    const onBattleTimeout = () => {
+      setMessage("⏰ Time's up! The arena has closed the battle resulting in a draw.");
+      setStatus("finished");
+      setHasLost(true);
     };
 
     socket.on("connect", onConnect);
-    socket.on("playerJoined", onPlayerJoined);
-    socket.on("battleStarted", onBattleStarted);
-    socket.on("attemptsUpdated", onAttemptsUpdated);
-    socket.on("submissionProgress", onSubmissionProgress);
-    socket.on("submissionResult", onSubmissionResult);
-    socket.on("battleFinished", onBattleFinished);
+    socket.on("battle_joined", onPlayerJoined);
+    socket.on("battle_countdown", onBattleCountdown);
+    socket.on("battle_start", onBattleStarted);
+    socket.on("attempts_updated", onAttemptsUpdated);
+    socket.on("submission_progress", onSubmissionProgress);
+    socket.on("submission_result", onSubmissionResult);
+    socket.on("opponent_submitted", onOpponentSubmitted);
+    socket.on("rating_update", onRatingUpdate);
+    socket.on("battle_timeout", onBattleTimeout);
+    socket.on("battle_end", onBattleFinished);
 
     return () => {
       socket.off("connect", onConnect);
-      socket.off("playerJoined", onPlayerJoined);
-      socket.off("battleStarted", onBattleStarted);
-      socket.off("attemptsUpdated", onAttemptsUpdated);
-      socket.off("submissionProgress", onSubmissionProgress);
-      socket.off("submissionResult", onSubmissionResult);
-      socket.off("battleFinished", onBattleFinished);
+      socket.off("battle_joined", onPlayerJoined);
+      socket.off("battle_countdown", onBattleCountdown);
+      socket.off("battle_start", onBattleStarted);
+      socket.off("attempts_updated", onAttemptsUpdated);
+      socket.off("submission_progress", onSubmissionProgress);
+      socket.off("submission_result", onSubmissionResult);
+      socket.off("opponent_submitted", onOpponentSubmitted);
+      socket.off("rating_update", onRatingUpdate);
+      socket.off("battle_timeout", onBattleTimeout);
+      socket.off("battle_end", onBattleFinished);
     };
   }, [battleId, dispatch]);
 
@@ -466,7 +518,9 @@ export default function Ide() {
         )}
 
         {/* Main IDE layout */}
-        <div className="flex flex-1 min-h-0">
+        <div className="flex flex-1 min-h-0 relative">
+          <CountdownOverlay seconds={countdown} />
+
           {/* LEFT — Problem */}
           <div className="w-[35%] border-r border-slate-800">
             <BattleProblem problem={currentBattle?.problem} />
@@ -495,6 +549,20 @@ export default function Ide() {
                         <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse"></div>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {opponentStatusMsg && (
+                  <div className="bg-yellow-500/10 border-b border-yellow-500/30 px-6 py-2">
+                    <p className="font-bold text-yellow-500 text-xs animate-pulse tracking-wider uppercase">{opponentStatusMsg}</p>
+                  </div>
+                )}
+
+                {ratingUpdate && isBattleFinished && (
+                  <div className="bg-white/5 border-b border-white/10 px-6 py-2 flex items-center gap-4 text-xs font-mono">
+                    <span className="text-gray-400 uppercase">Rating Updates: </span>
+                    <span className="text-[var(--color-success)]">+30 W</span>
+                    <span className="text-red-500">-20 L</span>
                   </div>
                 )}
 

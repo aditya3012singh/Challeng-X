@@ -61,7 +61,7 @@ const worker = new Worker(
                 (progress) => {
                     // Publish progress to Redjs channel
                     publisher.publish("worker_events", JSON.stringify({
-                        event: "submissionProgress",
+                        event: "submission_progress",
                         data: {
                             submissionId,
                             userId: userId || submission.user.id,
@@ -114,7 +114,7 @@ const worker = new Worker(
                 });
 
                 publisher.publish("worker_events", JSON.stringify({
-                    event: "submissionResult",
+                    event: "submission_result",
                     data: {
                         submissionId,
                         userId: userId || submission.user.id,
@@ -140,7 +140,7 @@ const worker = new Worker(
                 });
 
                 publisher.publish("worker_events", JSON.stringify({
-                    event: "submissionResult",
+                    event: "submission_result",
                     data: {
                         submissionId,
                         userId: userId || submission.user.id,
@@ -191,7 +191,7 @@ const worker = new Worker(
             }
 
             publisher.publish("worker_events", JSON.stringify({
-                event: "submissionResult",
+                event: "submission_result",
                 data: {
                     submissionId,
                     userId: userId || submission.user.id,
@@ -208,7 +208,7 @@ const worker = new Worker(
             // Notify clients that the battle is over via pub/sub
             if (battleFinished) {
                 publisher.publish("worker_events", JSON.stringify({
-                    event: "battleFinished",
+                    event: "battle_end",
                     data: {
                         battleId,
                         winnerId: battleWinnerId

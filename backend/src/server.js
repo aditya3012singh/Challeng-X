@@ -3,11 +3,11 @@ dotenv.config();
 import App from "./app.js";
 import http from "http";
 import { Server } from "socket.io";
-import { createAdapter } from "@socket.io/redis-adapter";
-import Redis from "ioredis";
 import SquidGameSocket from "./config/squidGameSocket.js";
 import BattleService from "./services/battle.service.js";
 import logger from "./utils/logger.js";
+import SocketServer from "./socket/socketServer.js";
+import Redis from "ioredis";
 
 class ServerApp {
   static io = null;
@@ -17,38 +17,7 @@ class ServerApp {
   }
 
   static createIo(server) {
-    const io = new Server(server, {
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-      },
-    });
-
-    if (process.env.REDIS_URL) {
-      const pubClient = new Redis(process.env.REDIS_URL);
-      const subClient = pubClient.duplicate();
-      io.adapter(createAdapter(pubClient, subClient));
-      logger.info("🔌 Socket.IO Redis Adapter configured successfully");
-    } else {
-      logger.warn("⚠️ REDIS_URL not found. Socket.IO falling back to in-memory adapter (not scalable).");
-    }
-
-    return io;
-  }
-
-  static registerBaseSocketHandlers(io) {
-    io.on("connection", (socket) => {
-      logger.info(`🟢 User connected: ${socket.id}`);
-
-      socket.on("joinBattle", (battleId) => {
-        socket.join(battleId);
-        logger.info(`User joined room ${battleId}`);
-      });
-
-      socket.on("disconnect", () => {
-        logger.info("🔴 User disconnected");
-      });
-    });
+    return SocketServer.initialize(server);
   }
 
   static setupRedisSubscriber(io) {
@@ -88,7 +57,6 @@ class ServerApp {
     const server = this.createServer(app);
 
     this.io = this.createIo(server);
-    this.registerBaseSocketHandlers(this.io);
     this.setupRedisSubscriber(this.io);
 
     // Initialize Squid Game socket handlers

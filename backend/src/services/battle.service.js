@@ -71,18 +71,48 @@ class BattleService {
       where: { battleCode },
       data: {
         player2Id,
-        status: "ONGOING",
+        status: "COUNTDOWN",
         startedAt: new Date(),
       }
     });
 
-    SocketEmitter.emitToBattle(battle.id, "playerJoined", {
+    SocketEmitter.emitToBattle(battle.id, "battle_joined", {
       playerId: player2Id
     });
 
-    SocketEmitter.emitToBattle(battle.id, "battleStarted", {
-      startedAt: new Date()
+    SocketEmitter.emitToBattle(battle.id, "battle_countdown", {
+      seconds: 5
     });
+
+    setTimeout(async () => {
+      try {
+        await Database.client.battle.update({
+          where: { id: battle.id },
+          data: { status: "ONGOING", startedAt: new Date() }
+        });
+        SocketEmitter.emitToBattle(battle.id, "battle_start", {
+          startedAt: new Date()
+        });
+
+        // Setup battle timeout (e.g., 30 minutes = 1,800,000 ms)
+        setTimeout(async () => {
+          try {
+            const b = await Database.client.battle.findUnique({ where: { id: battle.id } });
+            if (b && b.status === "ONGOING") {
+              const result = await BattleService.finishBattleService(battle.id, null); // draw
+              if (result) {
+                SocketEmitter.emitToBattle(battle.id, "battle_timeout", { draw: true });
+                SocketEmitter.emitToBattle(battle.id, "battle_end", { winnerId: null, draw: true });
+              }
+            }
+          } catch (e) {
+            console.error("Timeout handler error:", e.message);
+          }
+        }, 1800000); // 30 mins
+      } catch (e) {
+        console.error("Countdown handler error:", e.message);
+      }
+    }, 5000);
 
     return battle;
   }
@@ -171,8 +201,10 @@ class BattleService {
       // Perform background tasks (ranking, cache flush)
       (async () => {
         try {
-          const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
-          await RankingService.updateRanks(winnerId, loserId);
+          if (winnerId) {
+            const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
+            await RankingService.updateRanks(battleId, winnerId, loserId);
+          }
           await RedisClient.client.flushall();
           console.log(`✅ Atomic Battle Finish: ${battleId} (Winner: ${winnerId})`);
         } catch (err) {
@@ -210,7 +242,7 @@ class BattleService {
     });
 
     // Notify listeners about the attempt update
-    SocketEmitter.emitToBattle(battleId, "attemptsUpdated", {
+    SocketEmitter.emitToBattle(battleId, "attempts_updated", {
       player1Attempts: updatedBattle.attemptsPlayer1,
       player2Attempts: updatedBattle.attemptsPlayer2
     });
@@ -250,7 +282,7 @@ class BattleService {
           }
         });
         await RedisClient.client.flushall();
-        SocketEmitter.emitToBattle(battleId, "battleFinished", { winnerId: null, draw: true });
+        SocketEmitter.emitToBattle(battleId, "battle_end", { winnerId: null, draw: true });
         console.log(`✅ Double failure penalties applied for battle ${battleId}`);
       } catch (err) {
         console.error(`❌ handleDoubleFailure error: ${err.message}`);
@@ -283,7 +315,7 @@ class BattleService {
     const result = await this.finishBattleService(battleId, winnerId);
 
     if (result) {
-      SocketEmitter.emitToBattle(battleId, "battleFinished", { winnerId, draw: false });
+      SocketEmitter.emitToBattle(battleId, "battle_end", { winnerId, draw: false });
     }
 
     return result;

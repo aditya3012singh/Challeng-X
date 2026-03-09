@@ -1,0 +1,7 @@
+ReferenceError: Redis is not defined
+    at ServerApp.setupRedisSubscriber (file:///D:/CodeArena/backend/src/server.js:24:26)
+    at ServerApp.start (file:///D:/CodeArena/backend/src/server.js:59:10)
+    at file:///D:/CodeArena/backend/src/index.js:4:11
+    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+    at async run (file:///D:/CodeArena/backend/test_crash.js:13:9)

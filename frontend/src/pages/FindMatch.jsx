@@ -18,7 +18,7 @@ export const FindMatch = () => {
         const socket = getSocket();
 
         // Listen for match found
-        socket.on("matchFound", (data) => {
+        socket.on("match_found", (data) => {
             console.log("Match found!", data);
             dispatch(setMatchFound(data));
         });
@@ -37,7 +37,7 @@ export const FindMatch = () => {
         }
 
         return () => {
-            socket.off("matchFound");
+            socket.off("match_found");
             socket.off("matchmakingError");
             if (statusInterval) clearInterval(statusInterval);
         };
