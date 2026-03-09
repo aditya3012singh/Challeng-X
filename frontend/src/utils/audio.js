@@ -7,60 +7,52 @@ export const playSound = (type) => {
         audioCtx.resume();
     }
 
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-
     const now = audioCtx.currentTime;
 
+    // Helper to create a basic synth voice with a simple envelope
+    const playTone = (freq, type, duration, vol) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+
+        // Quick attack, smooth decay
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + duration);
+        return osc;
+    };
+
     if (type === 'submit') {
-        // Rising futuristic sweep
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(300, now);
-        oscillator.frequency.exponentialRampToValueAtTime(800, now + 0.3);
-        gainNode.gain.setValueAtTime(0.1, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        oscillator.start(now);
-        oscillator.stop(now + 0.3);
+        // Quick, high-tech 'blip'
+        const osc = playTone(800, 'sine', 0.2, 0.1);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
     } else if (type === 'success') {
-        // Triumphant double chime
-        oscillator.type = 'square';
-        oscillator.frequency.setValueAtTime(440, now);
-        oscillator.frequency.setValueAtTime(659.25, now + 0.1); // Jump to E5
-        gainNode.gain.setValueAtTime(0.1, now);
-        gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
-        oscillator.start(now);
-        oscillator.stop(now + 0.4);
+        // Soft, pleasant double chime (UI confirmation)
+        playTone(523.25, 'triangle', 0.15, 0.1); // C5
+        setTimeout(() => playTone(659.25, 'triangle', 0.4, 0.1), 100); // E5
     } else if (type === 'error') {
-        // Low buzzer
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(150, now);
-        oscillator.frequency.linearRampToValueAtTime(100, now + 0.3);
-        gainNode.gain.setValueAtTime(0.1, now);
-        gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
-        oscillator.start(now);
-        oscillator.stop(now + 0.3);
+        // Soft, dull thud (modern UI error)
+        const osc = playTone(150, 'sine', 0.3, 0.2);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
     } else if (type === 'victory') {
-        // Epic victory arpeggio
-        oscillator.type = 'square';
-        oscillator.frequency.setValueAtTime(523.25, now); // C5
-        oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
-        oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
-        oscillator.frequency.setValueAtTime(1046.50, now + 0.3); // C6
-        gainNode.gain.setValueAtTime(0.1, now);
-        gainNode.gain.linearRampToValueAtTime(0, now + 0.6);
-        oscillator.start(now);
-        oscillator.stop(now + 0.6);
+        // Ambient, swelling major chord
+        playTone(523.25, 'triangle', 1.5, 0.1); // C5
+        playTone(659.25, 'triangle', 1.5, 0.1); // E5
+        playTone(783.99, 'triangle', 1.5, 0.1); // G5
     } else if (type === 'defeat') {
-        // Descending sad drone
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(300, now);
-        oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.8);
-        gainNode.gain.setValueAtTime(0.1, now);
-        gainNode.gain.linearRampToValueAtTime(0, now + 0.8);
-        oscillator.start(now);
-        oscillator.stop(now + 0.8);
+        // Deep, echoing submarine hum
+        const osc = playTone(100, 'triangle', 1.5, 0.2);
+        osc.frequency.exponentialRampToValueAtTime(60, now + 1.0);
+    } else if (type === 'info') {
+        // Very subtle, single UI blip for opponent actions
+        playTone(600, 'sine', 0.1, 0.05);
     }
 };
