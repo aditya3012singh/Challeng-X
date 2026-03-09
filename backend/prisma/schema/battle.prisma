@@ -1,5 +1,6 @@
 enum BattleStatus {
   WAITING
+  COUNTDOWN
   ONGOING
   FINISHED
 }

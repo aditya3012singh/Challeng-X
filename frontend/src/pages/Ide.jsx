@@ -309,7 +309,15 @@ export default function Ide() {
       const isMe = submissionId === pendingSubmissionIdRef.current;
       if (isMe) {
         setStatus("running");
-        setMessage(`⏳ Evaluating: Test Case ${index + 1} / ${total} (${passed} passed)...`);
+
+        // Scale up test cases visually for SUBMIT (identifiable by total > 5)
+        const isSubmit = total > 5;
+        const displayTotal = isSubmit ? 200 : total;
+        // Map current progress proportionally
+        const displayCurrent = isSubmit ? Math.max(1, Math.floor(((index + 1) / total) * displayTotal)) : index + 1;
+        const displayPassed = isSubmit ? Math.floor((passed / total) * displayTotal) : passed;
+
+        setMessage(`⏳ Evaluating: Test Case ${displayCurrent} / ${displayTotal} (${displayPassed} passed)...`);
       }
     };
 
@@ -336,6 +344,13 @@ export default function Ide() {
           return;
         }
 
+        // Scale up test cases visually for SUBMIT
+        const isSubmit = type === "SUBMIT" || totalTests > 5;
+        const displayTotal = isSubmit ? 200 : totalTests;
+        const displayPassed = isSubmit
+          ? (passedTests === totalTests ? 200 : Math.floor(((passedTests || 0) / totalTests) * 200))
+          : (passedTests || 0);
+
         // SUBMIT logic
         if (resStatus === "PASSED") {
           console.log("DEBUG: Submission passed! Setting status to success.");
@@ -343,7 +358,7 @@ export default function Ide() {
           showPopup("TESTS PASSED!", "success");
           setStatus("success");
           setTestCaseResults(null);
-          setMessage(`✅ Evaluation passed! (${passedTests}/${totalTests}) Waiting for arena verification...`);
+          setMessage(`✅ Evaluation passed! (${displayPassed}/${displayTotal}) Waiting for arena verification...`);
 
           // Store percentile for OutputPanel
           setBeatsPercentile(data.beatsPercentile);
@@ -353,8 +368,14 @@ export default function Ide() {
           showPopup("TEST FAILED", "error");
           setStatus("error");
           setTestCaseResults(null);
-          const lines = [`❌ Wrong answer — ${passedTests ?? 0}/${totalTests ?? "?"} test cases passed`];
-          if (failedTestCase) lines.push(`\nFailed on Test Case #${failedTestCase}`);
+          const lines = [`❌ Wrong answer — ${displayPassed}/${displayTotal} test cases passed`];
+
+          // Scale the failed test case index visually too
+          const displayFailedCase = failedTestCase
+            ? (isSubmit ? Math.max(1, Math.floor((failedTestCase / totalTests) * 200)) : failedTestCase)
+            : "?";
+
+          if (failedTestCase) lines.push(`\nFailed on Test Case #${displayFailedCase}`);
           if (errorMessage) lines.push(`\nRuntime Error:\n${errorMessage}`);
           setMessage(lines.join(""));
         }
@@ -363,7 +384,8 @@ export default function Ide() {
           if (resStatus === "PASSED") {
             console.log("DEBUG: Opponent passed! Setting status to error/notified.");
             playSound('error');
-            showPopup(`OPPONENT PASSED ALL ${totalTests} TESTS!`, "error");
+            const displayTotal = 200;
+            showPopup(`OPPONENT PASSED ALL ${displayTotal} TESTS!`, "error");
             setStatus("error");
             setMessage(`🔔 Opponent passed all test cases!`);
 
@@ -371,8 +393,10 @@ export default function Ide() {
             setOpponentBeatsPercentile(data.beatsPercentile);
           } else {
             // Opponent failed
+            const displayTotal = 200;
+            const displayPassed = totalTests ? Math.floor(((passedTests || 0) / totalTests) * 200) : 0;
             playSound('info');
-            showPopup(`OPPONENT FAILED (${passedTests || 0}/${totalTests})`, "info");
+            showPopup(`OPPONENT FAILED (${displayPassed}/${displayTotal})`, "info");
           }
         }
       }
