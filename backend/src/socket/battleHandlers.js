@@ -112,3 +112,34 @@ export const handleSpectatorOutputSync = async (io, socket, payload) => {
         logger.error(`Error syncing output to spectator: ${err.message}`);
     }
 };
+
+export const handleAntiCheatFlag = async (io, socket, payload) => {
+    const { battleId, userId, username, type, charCount, flagCount, timestamp } = payload;
+    if (!battleId || !userId) return;
+
+    logger.info(`🚨 ANTI-CHEAT FLAG: ${type} by ${username} (${userId}) in battle ${battleId} — Flag #${flagCount}${charCount ? ` (${charCount} chars)` : ""}`);
+
+    try {
+        // Cache cumulative flag counts in Redis
+        const flagKey = `anti_cheat:${battleId}:${userId}`;
+        await RedisClient.client.hincrby(flagKey, type, 1);
+        await RedisClient.client.expire(flagKey, 3600); // TTL 1 hour
+
+        const flagData = {
+            userId,
+            username,
+            type,
+            charCount,
+            flagCount,
+            timestamp
+        };
+
+        // Broadcast to the spectator room so viewers see the cheat alert
+        socket.to(`spectator_${battleId}`).emit("anti_cheat_alert", flagData);
+
+        // Also broadcast to the battle room so the opponent sees it
+        socket.to(battleId).emit("opponent_cheat_flag", flagData);
+    } catch (err) {
+        logger.error(`Error handling anti-cheat flag: ${err.message}`);
+    }
+};

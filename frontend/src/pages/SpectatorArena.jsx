@@ -27,6 +27,7 @@ export default function SpectatorArena() {
 
     const [p1Output, setP1Output] = useState({ output: "", status: "idle", testCaseResults: null, beatsPercentile: 0, loadingAction: null });
     const [p2Output, setP2Output] = useState({ output: "", status: "idle", testCaseResults: null, beatsPercentile: 0, loadingAction: null });
+    const [cheatAlerts, setCheatAlerts] = useState([]);
 
     useEffect(() => {
         dispatch(clearCurrentBattle());
@@ -92,15 +93,21 @@ export default function SpectatorArena() {
             }, 500);
         };
 
+        const onAntiCheatAlert = (data) => {
+            setCheatAlerts(prev => [data, ...prev].slice(0, 20)); // Keep last 20 alerts
+        };
+
         socket.on("spectator_initial_state", onInitialState);
         socket.on("spectator_code_update", onCodeUpdate);
         socket.on("spectator_output_update", onOutputUpdate);
+        socket.on("anti_cheat_alert", onAntiCheatAlert);
         socket.on("battle_end", onBattleFinished);
 
         return () => {
             socket.off("spectator_initial_state", onInitialState);
             socket.off("spectator_code_update", onCodeUpdate);
             socket.off("spectator_output_update", onOutputUpdate);
+            socket.off("anti_cheat_alert", onAntiCheatAlert);
             socket.off("battle_end", onBattleFinished);
         };
     }, [battleId, currentBattle, dispatch]);
@@ -225,6 +232,31 @@ export default function SpectatorArena() {
                     </div>
                 )}
             </div>
+
+            {/* Anti-Cheat Alert Feed */}
+            {cheatAlerts.length > 0 && (
+                <div className="absolute bottom-4 right-4 z-50 w-80 max-h-60 overflow-y-auto flex flex-col gap-1.5" style={{ scrollbarWidth: "none" }}>
+                    {cheatAlerts.map((alert, i) => (
+                        <div
+                            key={`${alert.timestamp}-${i}`}
+                            className={`px-4 py-2.5 border text-[9px] font-bold uppercase tracking-widest flex items-center gap-2 backdrop-blur-md ${alert.type === "PASTE"
+                                    ? "bg-red-950/90 border-red-500/50 text-red-400"
+                                    : "bg-yellow-950/90 border-yellow-500/50 text-yellow-400"
+                                }`}
+                            style={{ borderRadius: "2px", animation: "fadeIn 0.3s ease-in" }}
+                        >
+                            <span>{alert.type === "PASTE" ? "📋" : "👁️"}</span>
+                            <span className="text-white font-black">{alert.username}</span>
+                            <span>
+                                {alert.type === "PASTE"
+                                    ? `pasted ${alert.charCount} chars`
+                                    : "switched tabs"}
+                            </span>
+                            <span className="ml-auto text-[8px] opacity-60">#{alert.flagCount}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
 
         </div>
     );

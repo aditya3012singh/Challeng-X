@@ -3,7 +3,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import Redis from "ioredis";
 import logger from "../utils/logger.js";
 import { handleQueue } from "./queueHandlers.js";
-import { joinBattleRoom, handleSubmission, joinSpectatorRoom, handleSpectatorCodeSync, handleSpectatorOutputSync } from "./battleHandlers.js";
+import { joinBattleRoom, handleSubmission, joinSpectatorRoom, handleSpectatorCodeSync, handleSpectatorOutputSync, handleAntiCheatFlag } from "./battleHandlers.js";
 import { handleDisconnect, handleReconnect } from "./disconnectHandlers.js";
 
 class SocketServer {
@@ -61,6 +61,7 @@ class SocketServer {
             socket.on("join_spectator", (payload) => joinSpectatorRoom(this.io, socket, payload));
             socket.on("spectator_code_sync", (payload) => handleSpectatorCodeSync(this.io, socket, payload));
             socket.on("spectator_output_sync", (payload) => handleSpectatorOutputSync(this.io, socket, payload));
+            socket.on("anti_cheat_flag", (payload) => handleAntiCheatFlag(this.io, socket, payload));
 
             // 5. Reconnect & Disconnect
             socket.on("rejoin_battle", (payload) => handleReconnect(this.io, socket, payload));

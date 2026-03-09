@@ -182,6 +182,8 @@ export default function Ide() {
   const [myAttempts, setMyAttempts] = useState(0);
   const [beatsPercentile, setBeatsPercentile] = useState(0);
   const [opponentBeatsPercentile, setOpponentBeatsPercentile] = useState(0);
+  const [antiCheatWarning, setAntiCheatWarning] = useState(null);
+  const antiCheatCountRef = useRef({ paste: 0, tabSwitch: 0 });
 
   const showPopup = (text, type) => {
     setGamePopup({ text, type });
@@ -195,6 +197,76 @@ export default function Ide() {
       setMyAttempts(isPlayer1 ? currentBattle.attemptsPlayer1 : currentBattle.attemptsPlayer2);
     }
   }, [currentBattle, user]);
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANTI-CHEAT: Paste Detection (Monaco onDidPaste)
+  // ═══════════════════════════════════════════════════════════════
+  const handleEditorMount = (editor, monaco) => {
+    if (!battleId) return; // Only enable anti-cheat in battle mode
+
+    editor.onDidPaste((e) => {
+      const pastedText = editor.getModel().getValueInRange(e.range);
+      const charCount = pastedText.length;
+
+      if (charCount > 20) {
+        antiCheatCountRef.current.paste += 1;
+        const flagCount = antiCheatCountRef.current.paste;
+
+        // Emit to backend
+        const socket = getSocket();
+        socket.emit("anti_cheat_flag", {
+          battleId,
+          userId: userIdRef.current,
+          username: userRef.current?.username || "Unknown",
+          type: "PASTE",
+          charCount,
+          flagCount,
+          timestamp: Date.now()
+        });
+
+        // Show warning to the player
+        setAntiCheatWarning({
+          type: "PASTE",
+          text: `Paste detected (${charCount} chars) — Flagged #${flagCount}`,
+        });
+        setTimeout(() => setAntiCheatWarning(null), 4000);
+      }
+    });
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANTI-CHEAT: Tab Switch Detection (visibilitychange)
+  // ═══════════════════════════════════════════════════════════════
+  useEffect(() => {
+    if (!battleId || isBattleFinished) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        antiCheatCountRef.current.tabSwitch += 1;
+        const flagCount = antiCheatCountRef.current.tabSwitch;
+
+        const socket = getSocket();
+        socket.emit("anti_cheat_flag", {
+          battleId,
+          userId: userIdRef.current,
+          username: userRef.current?.username || "Unknown",
+          type: "TAB_SWITCH",
+          charCount: 0,
+          flagCount,
+          timestamp: Date.now()
+        });
+
+        setAntiCheatWarning({
+          type: "TAB_SWITCH",
+          text: `Tab switch detected — Flag #${flagCount}`,
+        });
+        setTimeout(() => setAntiCheatWarning(null), 4000);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [battleId, isBattleFinished]);
 
   // Use the custom hook for async submission (practice mode)
   const {
@@ -489,6 +561,10 @@ export default function Ide() {
       setHasLost(true);
     };
 
+    const onOpponentCheatFlag = (data) => {
+      showPopup(`⚠️ Opponent ${data.type === "PASTE" ? `pasted ${data.charCount} chars` : "switched tabs"} (Flag #${data.flagCount})`, "error");
+    };
+
     socket.on("connect", onConnect);
     socket.on("battle_joined", onPlayerJoined);
     socket.on("battle_countdown", onBattleCountdown);
@@ -500,6 +576,7 @@ export default function Ide() {
     socket.on("rating_update", onRatingUpdate);
     socket.on("battle_timeout", onBattleTimeout);
     socket.on("battle_end", onBattleFinished);
+    socket.on("opponent_cheat_flag", onOpponentCheatFlag);
 
     return () => {
       socket.off("connect", onConnect);
@@ -513,6 +590,7 @@ export default function Ide() {
       socket.off("rating_update", onRatingUpdate);
       socket.off("battle_timeout", onBattleTimeout);
       socket.off("battle_end", onBattleFinished);
+      socket.off("opponent_cheat_flag", onOpponentCheatFlag);
     };
   }, [battleId, dispatch]);
 
@@ -647,6 +725,18 @@ export default function Ide() {
           <CountdownOverlay seconds={countdown} />
           <GameToast popup={gamePopup} />
 
+          {/* Anti-Cheat Warning Toast */}
+          {antiCheatWarning && (
+            <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[110] pointer-events-none animate-pulse">
+              <div className="backdrop-blur-md bg-red-950/90 px-6 py-3 border border-red-500 flex items-center gap-3" style={{ borderRadius: "2px" }}>
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-ping absolute"></div>
+                <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                <span className="font-bold tracking-[0.15em] uppercase text-[10px] text-red-400">
+                  ⚠️ {antiCheatWarning.text}
+                </span>
+              </div>
+            </div>
+          )}
           {/* LEFT — Problem */}
           <div className="w-[35%] border-r border-slate-800">
             <BattleProblem problem={currentBattle?.problem} />
@@ -708,6 +798,7 @@ export default function Ide() {
                         language={LANGUAGES[language].monaco}
                         value={code}
                         onChange={(v) => setCode(v || "")}
+                        onMount={handleEditorMount}
                       />
                     </div>
                     <div className="h-64 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10 transition-all duration-300">
