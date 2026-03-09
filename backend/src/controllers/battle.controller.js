@@ -53,6 +53,15 @@ class BattleController {
         }
     }
 
+    static async getLiveBattlesController(req, res, next) {
+        try {
+            const liveBattles = await BattleService.getLiveBattlesService();
+            res.status(200).json(liveBattles);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async submitBattleCodeController(req, res, next) {
         const userId = req.user.id;
         const { battleId } = req.params;

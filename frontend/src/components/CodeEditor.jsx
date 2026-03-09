@@ -1,6 +1,6 @@
 import Editor from "@monaco-editor/react";
 
-export default function CodeEditor({ value, onChange, language }) {
+export default function CodeEditor({ value, onChange, language, readOnly = false }) {
   return (
     <Editor
       height="100%"
@@ -12,6 +12,7 @@ export default function CodeEditor({ value, onChange, language }) {
         fontSize: 14,
         minimap: { enabled: false },
         automaticLayout: true,
+        readOnly: readOnly,
       }}
     />
   );

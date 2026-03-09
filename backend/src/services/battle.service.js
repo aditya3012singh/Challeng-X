@@ -181,6 +181,35 @@ class BattleService {
     };
   }
 
+  static async getLiveBattlesService() {
+    // Fetch all currently active battles for the live spectator directory
+    const liveBattles = await Database.client.battle.findMany({
+      where: {
+        OR: [
+          { status: "ONGOING" },
+          { status: "COUNTDOWN" }
+        ]
+      },
+      orderBy: {
+        startedAt: "desc"
+      },
+      take: 20, // Limit to 20 most recent active battles to prevent payload bloat
+      include: {
+        problem: {
+          select: { title: true, difficulty: true }
+        },
+        player1: {
+          select: { id: true, username: true }
+        },
+        player2: {
+          select: { id: true, username: true }
+        }
+      }
+    });
+
+    return liveBattles;
+  }
+
   static async finishBattleService(battleId, winnerId) {
     // Atomic update: only transition if still ONGOING
     // This prevents race conditions where two players pass at the same time

@@ -246,6 +246,40 @@ export default function Ide() {
     }
   }, [isBattleFinished]);
 
+  // Spectator Code Sync (Throttle at 2000ms)
+  useEffect(() => {
+    if (!battleId || !userIdRef.current || isBattleFinished) return;
+
+    const timer = setTimeout(() => {
+      const socket = getSocket();
+      socket.emit("spectator_code_sync", {
+        battleId,
+        userId: userIdRef.current,
+        code,
+        language
+      });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [code, language, battleId, isBattleFinished]);
+
+  // Spectator Output Sync
+  useEffect(() => {
+    if (!battleId || !userIdRef.current || isBattleFinished) return;
+
+    const socket = getSocket();
+    const currentStatus = battleId ? status : submissionStatus?.status || status;
+    socket.emit("spectator_output_sync", {
+      battleId,
+      userId: userIdRef.current,
+      output: message,
+      status: currentStatus,
+      testCaseResults,
+      beatsPercentile,
+      loadingAction
+    });
+  }, [message, status, submissionStatus, testCaseResults, beatsPercentile, loadingAction, battleId, isBattleFinished]);
+
   // Block back button while battle is ongoing (BrowserRouter compatible)
   useEffect(() => {
     if (isBattleFinished) return;

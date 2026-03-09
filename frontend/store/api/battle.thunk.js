@@ -91,3 +91,32 @@ export const forfeitBattle = createAsyncThunk(
         }
     }
 );
+
+// Fetch live battles for spectator directory
+export const fetchLiveBattles = createAsyncThunk(
+    "battle/fetchLive",
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await api.get("/battle/live");
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { message: err.message });
+        }
+    }
+);
+
+// Find battle by battleCode (for spectate-by-code)
+export const findBattleByCode = createAsyncThunk(
+    "battle/findByCode",
+    async ({ battleCode }, { rejectWithValue }) => {
+        try {
+            const res = await api.get("/battle/live");
+            const battles = res.data;
+            const match = battles.find(b => b.battleCode === battleCode);
+            if (!match) throw new Error("No active battle found with that code");
+            return match;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { message: err.message });
+        }
+    }
+);

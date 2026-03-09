@@ -21,6 +21,10 @@ class BattleRoutes {
     router.post("/create/random", AuthMiddleware.handle, BattleController.createBattleRandomQuestionController);
     router.post("/create/selected", AuthMiddleware.handle, validateRequest(createBattleSchema), BattleController.createBattleWithSelectedQuestionController);
     router.post("/join", AuthMiddleware.handle, validateRequest(joinBattleSchema), BattleController.joinBattleController);
+
+    // Live Directory (must come before /:battleId to prevent param capture)
+    router.get("/live", BattleController.getLiveBattlesController);
+
     router.get("/:battleId", AuthMiddleware.handle, BattleController.getBattleController);
     router.post("/:battleId/submit", AuthMiddleware.handle, validateRequest(submitCodeSchema), BattleController.submitBattleCodeController);
     router.post("/:battleId/forfeit", AuthMiddleware.handle, BattleController.forfeitBattleController);

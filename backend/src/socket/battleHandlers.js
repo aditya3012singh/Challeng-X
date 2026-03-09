@@ -1,4 +1,5 @@
 import logger from "../utils/logger.js";
+import RedisClient from "../cache/redis.client.js";
 
 export const joinBattleRoom = (io, socket, payload) => {
     const { battleId } = payload;
@@ -41,4 +42,73 @@ export const handleSubmission = (io, socket, payload) => {
     socket.to(roomName).emit("opponent_submitted", { status: "pending" });
 
     // The actual submission result would come from the worker/Redis pub-sub.
+};
+
+export const joinSpectatorRoom = async (io, socket, payload) => {
+    const { battleId } = payload;
+    if (!battleId) return;
+
+    const spectatorRoomName = `spectator_${battleId}`;
+    socket.join(spectatorRoomName);
+    logger.info(`Spectator ${socket.id} joined spectator room ${spectatorRoomName}`);
+
+    // Instantly catch them up with any existing P1/P2 code state from Redis
+    try {
+        const stateKey = `battle_code_state:${battleId}`;
+        const outputKey = `battle_output_state:${battleId}`;
+        const [cachedState, cachedOutput] = await Promise.all([
+            RedisClient.client.hgetall(stateKey),
+            RedisClient.client.hgetall(outputKey)
+        ]);
+
+        socket.emit("spectator_initial_state", {
+            codeState: cachedState || {},
+            outputState: cachedOutput || {}
+        });
+    } catch (err) {
+        logger.error(`Error fetching spectator initial state: ${err.message}`);
+    }
+};
+
+export const handleSpectatorCodeSync = async (io, socket, payload) => {
+    const { battleId, userId, code, language } = payload;
+    if (!battleId || !userId) return;
+
+    // Cache the latest code text in Redis so new spectators can instantly see it
+    try {
+        const stateKey = `battle_code_state:${battleId}`;
+        await RedisClient.client.hset(stateKey, userId, JSON.stringify({ code, language }));
+
+        // Broadcast the real-time code delta instantly to ONLY the spectator room
+        socket.to(`spectator_${battleId}`).emit("spectator_code_update", {
+            userId,
+            code,
+            language
+        });
+    } catch (err) {
+        logger.error(`Error syncing code to spectator: ${err.message}`);
+    }
+};
+
+export const handleSpectatorOutputSync = async (io, socket, payload) => {
+    const { battleId, userId, output, status, testCaseResults, beatsPercentile, loadingAction } = payload;
+    if (!battleId || !userId) return;
+
+    try {
+        const outputKey = `battle_output_state:${battleId}`;
+        const outputData = JSON.stringify({ output, status, testCaseResults, beatsPercentile, loadingAction });
+        await RedisClient.client.hset(outputKey, userId, outputData);
+
+        // Broadcast the real-time output panel data instantly
+        socket.to(`spectator_${battleId}`).emit("spectator_output_update", {
+            userId,
+            output,
+            status,
+            testCaseResults,
+            beatsPercentile,
+            loadingAction
+        });
+    } catch (err) {
+        logger.error(`Error syncing output to spectator: ${err.message}`);
+    }
 };

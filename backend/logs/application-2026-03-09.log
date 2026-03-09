@@ -556,3 +556,224 @@
 {"level":"info","message":"::1 - - [09/Mar/2026:04:35:56 +0000] \"POST /api/battle/99e8f9d6-2e56-46c9-b309-c4bc73a193cb/submit HTTP/1.1\" 200 112 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:05:56"}
 {"level":"info","message":"::1 - - [09/Mar/2026:04:36:08 +0000] \"GET /api/battle/99e8f9d6-2e56-46c9-b309-c4bc73a193cb HTTP/1.1\" 200 1657 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:06:08"}
 {"level":"info","message":"::1 - - [09/Mar/2026:04:36:08 +0000] \"GET /api/battle/99e8f9d6-2e56-46c9-b309-c4bc73a193cb HTTP/1.1\" 200 1657 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:06:08"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:15:02"}
+{"level":"info","message":"🚀 Server running on port 4000","timestamp":"2026-03-09 10:15:02"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:15:02"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:15:02"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:15:03"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:15:03"}
+{"level":"info","message":"🟢 User connected: pyCXJQp4Ueqg_AoPAAAB","timestamp":"2026-03-09 10:15:03"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:15:03"}
+{"level":"info","message":"🟢 User connected: bD-JOx3ghCdut1OhAAAD","timestamp":"2026-03-09 10:15:03"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:15:03"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:15:03"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"🚀 Server running on port 4000","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"🟢 User connected: srOteOmLWKHQnGRJAAAB","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"🟢 User connected: QILmS89x2C1A7c3iAAAD","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:15:15"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:47:45 +0000] \"POST /api/battle/create/random HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:17:45"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:47:49 +0000] \"POST /api/auth/refresh HTTP/1.1\" 200 29 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:17:49"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:47:51 +0000] \"POST /api/battle/create/random HTTP/1.1\" 201 332 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:17:51"}
+{"level":"info","message":"User QILmS89x2C1A7c3iAAAD joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:17:51"}
+{"level":"info","message":"User QILmS89x2C1A7c3iAAAD joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:17:51"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:47:54 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1340 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:17:54"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:47:56 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:17:56"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:47:57 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:17:57"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:47:59 +0000] \"POST /api/battle/join HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:17:59"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:47:59 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:17:59"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:00 +0000] \"POST /api/auth/refresh HTTP/1.1\" 200 29 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:18:00"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:01 +0000] \"POST /api/battle/join HTTP/1.1\" 200 390 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:18:01"}
+{"level":"info","message":"User srOteOmLWKHQnGRJAAAB joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:18:01"}
+{"level":"info","message":"User srOteOmLWKHQnGRJAAAB joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:18:01"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:02 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1503 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:18:02"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:06 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1503 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:18:06"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:07 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:18:07"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:08 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:18:08"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:09 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:18:09"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:11 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:18:11"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:12 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:18:12"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:47 +0000] \"GET /api/auth/profile HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:18:47"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:47 +0000] \"GET /api/auth/profile HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:18:47"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:47 +0000] \"POST /api/auth/refresh HTTP/1.1\" 401 12 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:18:47"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:48 +0000] \"GET /api/auth/profile HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:18:48"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:48 +0000] \"GET /api/auth/profile HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:18:48"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:48:48 +0000] \"POST /api/auth/refresh HTTP/1.1\" 401 12 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:18:48"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:49:11 +0000] \"POST /api/auth/register HTTP/1.1\" 201 163 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:19:11"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:49:29 +0000] \"GET /api/auth/profile HTTP/1.1\" 200 204 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:19:29"}
+{"level":"info","message":"🟢 User connected: Mp9Jb_f6Hf3ENYs4AAAF","timestamp":"2026-03-09 10:19:29"}
+{"level":"info","message":"Spectator Mp9Jb_f6Hf3ENYs4AAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:19:29"}
+{"level":"info","message":"Spectator Mp9Jb_f6Hf3ENYs4AAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:19:29"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:49:29 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:19:29"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:49:31 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:19:31"}
+{"level":"info","message":"Spectator Mp9Jb_f6Hf3ENYs4AAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:19:31"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:49:33 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:19:33"}
+{"level":"info","message":"Spectator Mp9Jb_f6Hf3ENYs4AAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:19:33"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:50:18 +0000] \"POST /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9/submit HTTP/1.1\" 200 100 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:20:18"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:50:41 +0000] \"POST /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9/submit HTTP/1.1\" 200 112 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:20:41"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:51:48 +0000] \"POST /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9/submit HTTP/1.1\" 200 112 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:21:48"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:24:30"}
+{"level":"info","message":"🚀 Server running on port 4000","timestamp":"2026-03-09 10:24:30"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:24:30"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:24:30"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:24:30"}
+{"level":"info","message":"🟢 User connected: B5wHJMFbbaj43mGvAAAD","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"🟢 User connected: tgiwblVpnqusBjhVAAAE","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"🟢 User connected: T8-tFY15nMcv4Ya5AAAF","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"User B5wHJMFbbaj43mGvAAAD joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"User tgiwblVpnqusBjhVAAAE joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:24:31"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:54:35 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:24:35"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:54:38 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:24:38"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:24:40"}
+{"level":"info","message":"🚀 Server running on port 4000","timestamp":"2026-03-09 10:24:40"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:24:40"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:24:40"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:24:40"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:24:40"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:24:40"}
+{"level":"info","message":"🟢 User connected: Nskeg9YdNUTEmzrhAAAC","timestamp":"2026-03-09 10:24:41"}
+{"level":"info","message":"🟢 User connected: sCod5dLW03lKzfj3AAAD","timestamp":"2026-03-09 10:24:41"}
+{"level":"info","message":"User Nskeg9YdNUTEmzrhAAAC joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:24:41"}
+{"level":"info","message":"User sCod5dLW03lKzfj3AAAD joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:24:41"}
+{"level":"info","message":"🟢 User connected: XrXLn11a6mTARRXkAAAF","timestamp":"2026-03-09 10:24:41"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:24:41"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:24:41"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:54:45 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:24:45"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:54:47 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:24:47"}
+{"level":"info","message":"User Nskeg9YdNUTEmzrhAAAC joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:24:50"}
+{"level":"info","message":"User sCod5dLW03lKzfj3AAAD joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:24:50"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:54:51 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:24:51"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:54:51 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:24:51"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:54:53 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:24:53"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:54:53 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:24:53"}
+{"level":"info","message":"Spectator XrXLn11a6mTARRXkAAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:25:28"}
+{"level":"info","message":"Spectator XrXLn11a6mTARRXkAAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:25:28"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:55:30 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:25:30"}
+{"level":"info","message":"Spectator XrXLn11a6mTARRXkAAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:25:30"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:56:14 +0000] \"POST /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9/submit HTTP/1.1\" 200 100 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:26:14"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:56:36 +0000] \"POST /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9/submit HTTP/1.1\" 200 100 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:26:36"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:56:58 +0000] \"POST /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9/submit HTTP/1.1\" 200 112 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:26:58"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:57:02 +0000] \"POST /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9/submit HTTP/1.1\" 200 112 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:27:02"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:27:43"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:27:43"}
+{"level":"info","message":"Spectator XrXLn11a6mTARRXkAAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:28:10"}
+{"level":"info","message":"Spectator XrXLn11a6mTARRXkAAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:28:10"}
+{"level":"info","message":"Spectator XrXLn11a6mTARRXkAAAF joined spectator room spectator_d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:28:10"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:58:11 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:28:11"}
+{"level":"info","message":"::1 - - [09/Mar/2026:04:58:13 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:28:13"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"🚀 Server running on port 4000","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:30:50"}
+{"level":"info","message":"🟢 User connected: c1Jpy8SbF0Ymx4PYAAAC","timestamp":"2026-03-09 10:30:51"}
+{"level":"info","message":"🟢 User connected: N6G8sEqplkcjmS-kAAAD","timestamp":"2026-03-09 10:30:51"}
+{"level":"info","message":"User c1Jpy8SbF0Ymx4PYAAAC joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:30:51"}
+{"level":"info","message":"🟢 User connected: C9FCmTZP4N8Ct6E6AAAF","timestamp":"2026-03-09 10:30:53"}
+{"level":"info","message":"User C9FCmTZP4N8Ct6E6AAAF joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:30:53"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:00:57 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:30:57"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:00:59 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 200 1501 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:30:59"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:31:02"}
+{"level":"info","message":"🚀 Server running on port 4000","timestamp":"2026-03-09 10:31:02"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:31:02"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"🟢 User connected: CcyLjWTXTeW7_0bkAAAD","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"🟢 User connected: svOlgyrzPTqh2Lk6AAAE","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"🟢 User connected: JOlccSQG5bZK8MedAAAF","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"User svOlgyrzPTqh2Lk6AAAE joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"User JOlccSQG5bZK8MedAAAF joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:31:03"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:01:08 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:31:08"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:01:10 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:31:10"}
+{"level":"info","message":"🔴 User disconnected: CcyLjWTXTeW7_0bkAAAD, userId: undefined","timestamp":"2026-03-09 10:32:49"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:02:50 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:32:50"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:02:51 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:32:51"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:03:08 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:33:08"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:03:08 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:33:08"}
+{"level":"info","message":"🔴 User disconnected: JOlccSQG5bZK8MedAAAF, userId: undefined","timestamp":"2026-03-09 10:33:28"}
+{"level":"info","message":"🔴 User disconnected: svOlgyrzPTqh2Lk6AAAE, userId: undefined","timestamp":"2026-03-09 10:33:28"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:25 +0000] \"GET /api/auth/profile HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:25"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:25 +0000] \"GET /api/auth/profile HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:25"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:27 +0000] \"POST /api/auth/refresh HTTP/1.1\" 200 29 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:27"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:27 +0000] \"GET /api/auth/profile HTTP/1.1\" 200 197 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:27"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:28 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:28"}
+{"level":"info","message":"🟢 User connected: BSr8OZiTBtiYgRfkAAAI","timestamp":"2026-03-09 10:34:28"}
+{"level":"info","message":"User BSr8OZiTBtiYgRfkAAAI joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:34:28"}
+{"level":"info","message":"User BSr8OZiTBtiYgRfkAAAI joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:34:28"}
+{"level":"info","message":"User BSr8OZiTBtiYgRfkAAAI joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:34:28"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:30 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:30"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:31 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:31"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:33 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:33"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:35 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:35"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:36 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:36"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:44 +0000] \"GET /api/auth/profile HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:44"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:44 +0000] \"GET /api/auth/profile HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:44"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:45 +0000] \"POST /api/auth/refresh HTTP/1.1\" 200 29 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:45"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:46 +0000] \"GET /api/auth/profile HTTP/1.1\" 200 209 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:46"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:46 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:46"}
+{"level":"info","message":"🟢 User connected: 8tTaDVzhwhFfDTe5AAAL","timestamp":"2026-03-09 10:34:46"}
+{"level":"info","message":"User 8tTaDVzhwhFfDTe5AAAL joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:34:46"}
+{"level":"info","message":"User 8tTaDVzhwhFfDTe5AAAL joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:34:46"}
+{"level":"info","message":"User 8tTaDVzhwhFfDTe5AAAL joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:34:46"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:47 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:47"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:49 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:49"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:51 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:51"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:52 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:52"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:54 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:34:54"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:04:59 +0000] \"GET /api/battle/live HTTP/1.1\" 200 1813 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:34:59"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:05:00 +0000] \"GET /api/battle/live HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:35:00"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:05:07 +0000] \"GET /api/team/my HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:35:07"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:05:07 +0000] \"GET /api/team/my HTTP/1.1\" 401 26 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:35:07"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:05:08 +0000] \"GET /api/battle/live HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:35:08"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:05:09 +0000] \"POST /api/auth/refresh HTTP/1.1\" 200 29 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:35:09"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:05:09 +0000] \"GET /api/team/my HTTP/1.1\" 200 12 \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:35:09"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:05:10 +0000] \"GET /api/team/my HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:35:10"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:35:31"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:35:31"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:36:45"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:36:45"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:37:20"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:37:20"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:37:42"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:37:43"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:38:21"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:38:21"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:39:36"}
+{"level":"info","message":"🚀 Server running on port 4000","timestamp":"2026-03-09 10:39:36"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:39:36"}
+{"level":"info","message":"🟢 User connected: CGa-usWc_Ksh-Uz0AAAB","timestamp":"2026-03-09 10:39:38"}
+{"level":"info","message":"User CGa-usWc_Ksh-Uz0AAAB joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:39:38"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:09:44 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:39:44"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:39:46"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:39:46"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:40:17"}
+{"level":"info","message":"🚀 Server running on port 4000","timestamp":"2026-03-09 10:40:17"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:40:17"}
+{"level":"info","message":"🟢 User connected: kpTdxSZbvrxZ58G5AAAB","timestamp":"2026-03-09 10:40:20"}
+{"level":"info","message":"User kpTdxSZbvrxZ58G5AAAB joined battle room d98921f9-6a65-4784-beb2-3886e7776de9","timestamp":"2026-03-09 10:40:20"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:10:26 +0000] \"GET /api/battle/d98921f9-6a65-4784-beb2-3886e7776de9 HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"","timestamp":"2026-03-09 10:40:26"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-03-09 10:40:56"}
+{"level":"info","message":"✅ Server subscribed to 1 Redis channels for worker events","timestamp":"2026-03-09 10:40:56"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:11:03 +0000] \"GET /api/battle/live HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:41:03"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:11:05 +0000] \"GET /api/battle/live HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:41:05"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:11:21 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:41:21"}
+{"level":"info","message":"::1 - - [09/Mar/2026:05:11:21 +0000] \"GET /api/auth/profile HTTP/1.1\" 304 - \"http://localhost:5173/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0\"","timestamp":"2026-03-09 10:41:21"}
+{"level":"info","message":"🟢 User connected: VQJldlMqGaXWnStxAAAD","timestamp":"2026-03-09 10:41:27"}

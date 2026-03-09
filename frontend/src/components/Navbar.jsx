@@ -8,9 +8,10 @@ const Navbar = () => {
   const location = useLocation();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
-  // Hide navbar completely when inside the battle IDE
+  // Hide navbar completely when inside the battle IDE or spectator mode
   const isBattleIde = /^\/battle\/[^/]+\/ide/.test(location.pathname);
-  if (isBattleIde) return null;
+  const isSpectator = /^\/spectate\/[^/]+/.test(location.pathname);
+  if (isBattleIde || isSpectator) return null;
 
   const handleLogout = async () => {
     try {
@@ -26,6 +27,7 @@ const Navbar = () => {
   const navItems = [
     { label: "MATCHMAKING", path: "/matchmaking" },
     { label: "BATTLE ROOM", path: "/battles" },
+    { label: "LIVE ARENAS", path: "/live" },
     { label: "TEAM WARS", path: "/team-battle" },
     { label: "SQUID PROTOCOL", path: "/squid-mode" },
     { label: "JOIN LOBBY", path: "/join-room" },

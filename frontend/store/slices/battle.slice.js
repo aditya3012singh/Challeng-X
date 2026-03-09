@@ -6,13 +6,16 @@ import {
     getBattle,
     submitBattleCode,
     getBattleHistory,
-    forfeitBattle
+    forfeitBattle,
+    fetchLiveBattles,
+    findBattleByCode
 } from "../api/battle.thunk";
 import { login, register, logoutUser } from "../api/auth.thunk";
 
 const initialState = {
     currentBattle: null,
     battleHistory: [],
+    liveBattles: [],
     loading: false,
     error: null,
     submissionResult: null,
@@ -136,6 +139,23 @@ const battleSlice = createSlice({
             .addCase(forfeitBattle.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Failed to forfeit battle";
+            })
+            // Fetch live battles
+            .addCase(fetchLiveBattles.pending, (state) => {
+                state.error = null;
+            })
+            .addCase(fetchLiveBattles.fulfilled, (state, action) => {
+                state.liveBattles = action.payload;
+            })
+            .addCase(fetchLiveBattles.rejected, (state, action) => {
+                state.error = action.payload || "Failed to fetch live battles";
+            })
+            // Find battle by code
+            .addCase(findBattleByCode.fulfilled, (state, action) => {
+                // We don't need to store this; the component will use unwrap()
+            })
+            .addCase(findBattleByCode.rejected, (state, action) => {
+                state.error = action.payload || "Battle not found";
             })
             // Reset state on auth changes
             .addCase(login.fulfilled, (state) => {
