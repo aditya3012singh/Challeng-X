@@ -9,10 +9,11 @@ import CodeEditor from "../components/CodeEditor";
 import OutputPanel from "../components/OutputPanel";
 import { Skeleton } from "../components/Skeleton";
 
+import { submitCode, getSubmissionStatus } from "../../store/api/submission.thunk";
 import { getBattle, submitBattleCode, forfeitBattle } from "../../store/api/battle.thunk";
 import { clearCurrentBattle } from "../../store/slices/battle.slice";
-import { submitCode, getSubmissionStatus } from "../../store/api/submission.thunk";
 import { BattleProblem } from "../components/BattleProblem";
+import { playSound } from "../utils/audio";
 
 const LANGUAGES = {
   java: { monaco: "java", defaultCode: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World!");\n    }\n}` },
@@ -66,6 +67,40 @@ const CountdownOverlay = ({ seconds }) => {
   );
 };
 
+const GameToast = ({ popup }) => {
+  if (!popup) return null;
+  // Use CodeArena theme colors
+  const typeStyles = {
+    success: "border-[var(--color-success)] text-[var(--color-success)]",
+    error: "border-red-500 text-red-500",
+    info: "border-[var(--color-primary)] text-[var(--color-primary)]",
+    victory: "border-[var(--color-primary)] text-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[0_0_40px_rgba(255,204,0,0.2)]", // Assuming primary is gold/yellow
+    defeat: "border-red-500 text-red-500 bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.2)]"
+  };
+
+  const style = typeStyles[popup.type] || typeStyles.info;
+
+  const dotColors = {
+    success: "bg-[var(--color-success)]",
+    error: "bg-red-500",
+    info: "bg-[var(--color-primary)]",
+    victory: "bg-[var(--color-primary)]",
+    defeat: "bg-red-500"
+  };
+
+  return (
+    <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 pointer-events-none">
+      <div className={`backdrop-blur-md bg-[#050505] px-6 py-4 border ${style} flex items-center gap-3`} style={{ borderRadius: "2px" }}>
+        <div className={`w-2 h-2 rounded-full ${dotColors[popup.type]} animate-ping absolute`}></div>
+        <div className={`w-2 h-2 rounded-full ${dotColors[popup.type]}`}></div>
+        <span className="font-bold tracking-[0.2em] uppercase text-xs">
+          {popup.text}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 // Blocker confirmation overlay shown when the user tries to navigate away mid-battle
 const LeaveConfirmModal = ({ onStay, onLeave }) => (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
@@ -108,6 +143,7 @@ export default function Ide() {
   const [countdown, setCountdown] = useState(null);
   const [opponentStatusMsg, setOpponentStatusMsg] = useState("");
   const [ratingUpdate, setRatingUpdate] = useState(null);
+  const [gamePopup, setGamePopup] = useState(null);
   const { battleId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -146,6 +182,11 @@ export default function Ide() {
   const [myAttempts, setMyAttempts] = useState(0);
   const [beatsPercentile, setBeatsPercentile] = useState(0);
   const [opponentBeatsPercentile, setOpponentBeatsPercentile] = useState(0);
+
+  const showPopup = (text, type) => {
+    setGamePopup({ text, type });
+    setTimeout(() => setGamePopup(null), 2500);
+  };
 
   // Sync attempts from battle state
   useEffect(() => {
@@ -238,10 +279,11 @@ export default function Ide() {
 
   // Socket.io connection for real-time updates
   useEffect(() => {
-    if (!battleId) return;
-
     const socket = getSocket();
-    socket.emit("join_battle", { battleId }); // Updated payload format based on new standard logic
+
+    if (battleId) {
+      socket.emit("join_battle", { battleId }); // Updated payload format based on new standard logic
+    }
 
     const onPlayerJoined = () => {
       console.log("Player joined the battle");
@@ -297,6 +339,8 @@ export default function Ide() {
         // SUBMIT logic
         if (resStatus === "PASSED") {
           console.log("DEBUG: Submission passed! Setting status to success.");
+          playSound('success');
+          showPopup("TESTS PASSED!", "success");
           setStatus("success");
           setTestCaseResults(null);
           setMessage(`✅ Evaluation passed! (${passedTests}/${totalTests}) Waiting for arena verification...`);
@@ -305,6 +349,8 @@ export default function Ide() {
           setBeatsPercentile(data.beatsPercentile);
         } else {
           console.log("DEBUG: Submission failed. Setting status to error.");
+          playSound('error');
+          showPopup("TEST FAILED", "error");
           setStatus("error");
           setTestCaseResults(null);
           const lines = [`❌ Wrong answer — ${passedTests ?? 0}/${totalTests ?? "?"} test cases passed`];
@@ -313,13 +359,21 @@ export default function Ide() {
           setMessage(lines.join(""));
         }
       } else {
-        if (type === "SUBMIT" && resStatus === "PASSED") {
-          console.log("DEBUG: Opponent passed! Setting status to error/notified.");
-          setStatus("error");
-          setMessage(`🔔 Opponent passed all test cases!`);
+        if (type === "SUBMIT") {
+          if (resStatus === "PASSED") {
+            console.log("DEBUG: Opponent passed! Setting status to error/notified.");
+            playSound('error');
+            showPopup(`OPPONENT PASSED ALL ${totalTests} TESTS!`, "error");
+            setStatus("error");
+            setMessage(`🔔 Opponent passed all test cases!`);
 
-          // Optionally update problem state if we want to show opponent's beat % too
-          setOpponentBeatsPercentile(data.beatsPercentile);
+            // Optionally update problem state if we want to show opponent's beat % too
+            setOpponentBeatsPercentile(data.beatsPercentile);
+          } else {
+            // Opponent failed
+            playSound('info');
+            showPopup(`OPPONENT FAILED (${passedTests || 0}/${totalTests})`, "info");
+          }
         }
       }
     };
@@ -327,7 +381,9 @@ export default function Ide() {
     const onBattleFinished = (data) => {
       console.log("DEBUG: battleFinished data received:", data);
       const { winnerId, draw } = data;
-      if (draw) {
+      if (draw && !hasLost) {
+        playSound('defeat');
+        showPopup("DRAW!", "defeat");
         setMessage("💀 ARENA WINS: Both players failed all attempts. Points deducted.");
         setStatus("finished");
         setHasLost(true);
@@ -340,8 +396,10 @@ export default function Ide() {
     };
 
     const onConnect = () => {
-      console.log("🟢 Socket connected/reconnected, joining battle room:", battleId);
-      socket.emit("join_battle", { battleId });
+      if (battleId) {
+        console.log("🟢 Socket connected/reconnected, joining battle room:", battleId);
+        socket.emit("join_battle", { battleId });
+      }
     };
 
     const onBattleCountdown = ({ seconds }) => {
@@ -408,13 +466,17 @@ export default function Ide() {
     // If battle finished, check winner
     if (currentBattle.status === "FINISHED") {
       const myUserId = currentBattle.myUserId || userIdRef.current;
-      if (currentBattle.winner && currentBattle.winner.id === myUserId) {
+      if (currentBattle.winner && currentBattle.winner.id === myUserId && !hasWon) {
+        playSound('victory');
+        showPopup("VICTORY!", "victory");
         setMessage(`🏆 You won the battle! (${currentBattle.winner.username})`);
         setHasWon(true);
         setStatus("finished");
       } else if (myUserId === currentBattle.player1?.id || myUserId === currentBattle.player2?.id) {
         // If it wasn't a draw, then you lost
-        if (currentBattle.winnerId) {
+        if (currentBattle.winnerId && !hasLost) {
+          playSound('defeat');
+          showPopup("DEFEAT!", "defeat");
           setMessage(`❌ You lost the battle. Winner: ${currentBattle.winner?.username || "Unknown"}`);
           setHasLost(true);
           setStatus("finished");
@@ -428,6 +490,11 @@ export default function Ide() {
     // Block submission if user has won or lost
     if (hasWon || hasLost || (currentBattle && currentBattle.status === "FINISHED")) {
       return;
+    }
+
+    playSound('submit');
+    if (type === "SUBMIT") {
+      showPopup("SUBMITTING", "info");
     }
 
     setTestCaseResults(null);
@@ -520,6 +587,7 @@ export default function Ide() {
         {/* Main IDE layout */}
         <div className="flex flex-1 min-h-0 relative">
           <CountdownOverlay seconds={countdown} />
+          <GameToast popup={gamePopup} />
 
           {/* LEFT — Problem */}
           <div className="w-[35%] border-r border-slate-800">
