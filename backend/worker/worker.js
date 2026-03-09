@@ -59,6 +59,9 @@ const worker = new Worker(
                 testcases.map(tc => tc.input),
                 !isRun, // earlyExit = true for SUBMIT, false for RUN
                 (progress) => {
+                    // Touch the job lock to prevent stalling on massive evaluations
+                    job.updateProgress(Math.floor((progress.index / total) * 100)).catch(() => { });
+
                     // Publish progress to Redjs channel
                     publisher.publish("worker_events", JSON.stringify({
                         event: "submission_progress",
@@ -225,7 +228,7 @@ const worker = new Worker(
     {
         connection,
         concurrency: parseInt(process.env.WORKER_CONCURRENCY || "10", 10),
-        lockDuration: 60000, // 60 seconds (prevents stalled job issues)
+        lockDuration: 300000, // 5 minutes lock (prevents stalled job issues for massive 200+ testcase runs)
     }
 );
 
