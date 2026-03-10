@@ -11,6 +11,7 @@
     "prisma": "prisma",
     "start": "node src/index.js",
     "seed:s3": "node scripts/seed_s3_testcases.js",
+    "setup:cors": "node scripts/setup_r2_cors.js",
     "docker:build": "docker build -t python-runner ./docker/python",
     "docker:test": "node src/testRunner.js"
   },
@@ -24,6 +25,7 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1000.0",
+    "@aws-sdk/s3-request-presigner": "^3.1005.0",
     "@prisma/client": "^6.19.2",
     "@socket.io/redis-adapter": "^7.2.0",
     "axios": "^1.13.4",

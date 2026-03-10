@@ -6,6 +6,7 @@ import AuthService from "../services/auth.service.js";
 import CookieOptions from "../utils/cookies.js";
 import AuthSchema from "../validation/auth.schema.js";
 import Database from "../config/db.js";
+import S3Service from "../services/s3.service.js";
 
 class AuthController {
     static async login(req, res) {
@@ -109,7 +110,16 @@ class AuthController {
                     rankPoints: true,
                     losses: true,
                     wins: true,
-                    createdAt: true
+                    createdAt: true,
+                    profilePic: true,
+                    linkedin: true,
+                    github: true,
+                    leetcode: true,
+                    gfg: true,
+                    hackerrank: true,
+                    codeforces: true,
+                    instagram: true,
+                    twitter: true
                 }
             });
 
@@ -133,10 +143,10 @@ class AuthController {
 
     static async getPublicProfile(req, res) {
         try {
-            const { userId } = req.params;
+            const { username } = req.params;
 
             const user = await Database.client.user.findUnique({
-                where: { id: userId },
+                where: { username },
                 select: {
                     id: true,
                     username: true,
@@ -145,6 +155,15 @@ class AuthController {
                     losses: true,
                     wins: true,
                     createdAt: true,
+                    profilePic: true,
+                    linkedin: true,
+                    github: true,
+                    leetcode: true,
+                    gfg: true,
+                    hackerrank: true,
+                    codeforces: true,
+                    instagram: true,
+                    twitter: true,
                     // Exclude sensitive information like email and password
                 }
             });
@@ -167,6 +186,71 @@ class AuthController {
         } catch (error) {
             console.error("Get public profile error:", error);
             res.status(500).json({ message: "Failed to fetch user profile" });
+        }
+    }
+    static async updateProfile(req, res) {
+        try {
+            const userId = req.user.id;
+            const updateData = req.body; // Expecting profile fields in body
+
+            // Fields allowed to be updated
+            const allowedFields = [
+                'profilePic', 'linkedin', 'github', 
+                'leetcode', 'gfg', 'hackerrank', 
+                'codeforces', 'instagram', 'twitter'
+            ];
+
+            const dataToUpdate = {};
+            for (const field of allowedFields) {
+                if (updateData[field] !== undefined) {
+                    dataToUpdate[field] = updateData[field];
+                }
+            }
+
+            const updatedUser = await Database.client.user.update({
+                where: { id: userId },
+                data: dataToUpdate,
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    profilePic: true,
+                    linkedin: true,
+                    github: true,
+                    leetcode: true,
+                    gfg: true,
+                    hackerrank: true,
+                    codeforces: true,
+                    instagram: true,
+                    twitter: true
+                }
+            });
+
+            res.json({ message: "Profile updated successfully", user: updatedUser });
+        } catch (error) {
+            console.error("Update profile error:", error);
+            res.status(500).json({ message: "Failed to update profile" });
+        }
+    }
+
+    static async getProfileUploadUrl(req, res) {
+        try {
+            const userId = req.user.id;
+            const { fileName, fileType } = req.query;
+
+            if (!fileName || !fileType) {
+                return res.status(400).json({ message: "fileName and fileType are required" });
+            }
+
+            const extension = fileName.split('.').pop();
+            const key = `avatars/${userId}_${Date.now()}.${extension}`;
+
+            const { uploadUrl, fileUrl } = await S3Service.getPresignedUrl(key, fileType);
+
+            res.json({ uploadUrl, fileUrl });
+        } catch (error) {
+            console.error("Presigned URL error:", error);
+            res.status(500).json({ message: "Failed to generate upload URL" });
         }
     }
 }

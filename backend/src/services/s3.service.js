@@ -1,18 +1,16 @@
-import { S3Client, GetObjectCommand, NoSuchKey } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, PutObjectCommand, NoSuchKey } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import RedisClient from "../cache/redis.client.js";
 
 const s3Config = {
     region: process.env.S3_REGION || "auto",
+    endpoint: process.env.S3_ENDPOINT,
     credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
-    }
+    },
+    forcePathStyle: true, // Required for Cloudflare R2 path-style addressing
 };
-
-// Add custom endpoint for Cloudflare R2 / DigitalOcean Spaces if provided
-if (process.env.S3_ENDPOINT) {
-    s3Config.endpoint = process.env.S3_ENDPOINT;
-}
 
 const s3Client = new S3Client(s3Config);
 const BUCKET_NAME = process.env.S3_BUCKET_NAME || "codearena-testcases";
@@ -94,6 +92,30 @@ class S3Service {
 
         // Invalidate cache
         await RedisClient.client.del(`testcases:hidden:${problemId}`);
+    }
+
+    /**
+     * Generates a presigned URL for uploading a file to R2
+     */
+    static async getPresignedUrl(key, contentType) {
+        const AVATAR_BUCKET = process.env.S3_AVATAR_BUCKET || "profile";
+        
+        const command = new PutObjectCommand({
+            Bucket: AVATAR_BUCKET,
+            Key: key,
+            ContentType: contentType,
+            // Disable SDK-level checksums for presigned URLs to avoid client-side header requirements
+            ChecksumAlgorithm: undefined 
+        });
+
+        // URL expires in 15 minutes (900 seconds)
+        const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
+        
+        // Public URL base
+        const publicBase = process.env.S3_PUBLIC_URL || `https://${AVATAR_BUCKET}.${process.env.S3_ENDPOINT?.split('//')[1]}`;
+        const fileUrl = `${publicBase}/${key}`;
+
+        return { uploadUrl, fileUrl };
     }
 }
 

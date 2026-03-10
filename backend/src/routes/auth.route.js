@@ -15,10 +15,14 @@ class AuthRoutes {
 		router.post("/register", AuthController.Register);
 		router.post("/logout", AuthMiddleware.handle, AuthController.logout);
 		router.get("/profile", AuthMiddleware.handle, AuthController.getProfile);
+		router.put("/profile", AuthMiddleware.handle, AuthController.updateProfile);
 		router.post("/refresh", AuthController.refreshToken);
 
+		// 🖼️ Get presigned URL for profile picture upload
+		router.get("/profile/upload-url", AuthMiddleware.handle, AuthController.getProfileUploadUrl);
+
 		// 👤 Public profile route (no auth required)
-		router.get("/user/:userId", AuthController.getPublicProfile);
+		router.get("/user/:username", AuthController.getPublicProfile);
 
 		return router;
 	}
