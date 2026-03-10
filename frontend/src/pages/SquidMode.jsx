@@ -46,7 +46,7 @@ export const SquidMode = () => {
     }, [tournament, user, isHost, isHostURL]);
 
     const [phase, setPhase] = useState(gameId ? "WAITING" : "LOBBY");
-    const [squidGameId, setSquidGameId] = useState(gameId || null);
+    const [squidGameId, setSquidGameId] = useState(gameId ? gameId.replace(/\/$/, "") : null);
     const [roundInfo, setRoundInfo] = useState(null);
     const [timeLeft, setTimeLeft] = useState(0);
     const [leaderboard, setLeaderboardState] = useState([]);
@@ -214,9 +214,10 @@ export const SquidMode = () => {
 
     useEffect(() => {
         if (gameId && !squidGameId) {
-            setSquidGameId(gameId);
+            const cleanId = gameId.replace(/\/$/, "");
+            setSquidGameId(cleanId);
             setPhase("WAITING");
-            dispatch(getSquidGameStatus({ squidGameId: gameId }));
+            dispatch(getSquidGameStatus({ squidGameId: cleanId }));
         }
     }, [gameId, squidGameId, dispatch]);
 
@@ -275,7 +276,6 @@ export const SquidMode = () => {
         case "PLAYING":
             const isEliminated = Array.isArray(leaderboard) && leaderboard.find(e => String(e.userId) === String(user?.id))?.status === "ELIMINATED";
             if (isHost || isEliminated) {
-                console.log("🦑 Entering SquidMode (Organizer/Spectator View)");
                 return (
                     <OrganizerView
                         tournament={tournament}

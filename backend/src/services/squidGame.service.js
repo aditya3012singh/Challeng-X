@@ -270,6 +270,10 @@ class SquidGameService {
       throw new Error("Tournament not found");
     }
 
+    console.log(`🎮 [Service] Starting Next Round for Tournament ${squidGameId}`);
+    console.log(`   - Current Round: ${squidGame.currentRound}`);
+    console.log(`   - Active Players: ${squidGame.participants.length}`);
+
     const nextRoundNum = squidGame.currentRound + 1;
 
     if (nextRoundNum > squidGame.totalRounds) {
@@ -293,6 +297,18 @@ class SquidGameService {
       data: {
         status: "ROUND_ACTIVE",
         currentRound: nextRoundNum
+      }
+    });
+
+    // Clear drafts for all active participants for the new round
+    await Database.client.squidGameParticipant.updateMany({
+      where: {
+        squidGameId,
+        status: "ACTIVE"
+      },
+      data: {
+        lastCode: null,
+        lastLanguage: null
       }
     });
 
@@ -432,9 +448,21 @@ class SquidGameService {
 
   /**
    * End current round and eliminate players
-   * Eliminates bottom 50% or specified number
+   * Uses configuration from SquidGameConfig
    */
-  static async endRoundAndEliminate(squidGameId, eliminationPercentage = 0.5) {
+  static async endRoundAndEliminate(squidGameId) {
+    const tempSquidGame = await Database.client.squidGame.findUnique({
+      where: { id: squidGameId }
+    });
+
+    if (!tempSquidGame) throw new Error("Tournament not found");
+
+    const config = SquidGameConfig.DIFFICULTY_PROGRESSION[tempSquidGame.currentRound - 1];
+    const eliminationPercentage = config?.eliminationPercentage || 0.5;
+
+    console.log(`🏆 [Service] Ending Round ${tempSquidGame.currentRound} for ${squidGameId}`);
+    console.log(`   - Elimination Target: ${eliminationPercentage * 100}%`);
+
     const squidGame = await Database.client.squidGame.findUnique({
       where: { id: squidGameId },
       include: {
@@ -444,7 +472,7 @@ class SquidGameService {
             submissions: {
               where: {
                 round: {
-                  roundNumber: squidGame.currentRound
+                  roundNumber: tempSquidGame.currentRound
                 }
               }
             }
@@ -452,7 +480,7 @@ class SquidGameService {
         },
         roundProblems: {
           where: {
-            roundNumber: squidGame.currentRound
+            roundNumber: tempSquidGame.currentRound
           }
         }
       }

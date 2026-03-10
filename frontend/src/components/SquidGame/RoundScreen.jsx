@@ -34,12 +34,30 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
         onSubmit({ code, language, type: "RUN" });
     };
 
+    // Reset state when a new round starts
+    useEffect(() => {
+        if (roundInfo?.roundNumber) {
+            console.log("🆕 [RoundScreen] Round changed to:", roundInfo.roundNumber, "- Resetting state");
+            setSubmitted(false);
+            setSubmissionStatus(null);
+            setRunResults(null);
+            hasInitializedRef.current = false; // Allow re-initialization for the new round
+            // Optionally clear code if not already cleared by parent/backend
+            // but usually code is restored by the first useEffect if we want persistence
+            // Since backend clears draft, this will naturally result in empty editor on reload.
+            // For live transition, we might want to manually clear it:
+            if (!tournament?.myStatus?.lastSubmission && !tournament?.myStatus?.participant?.lastCode) {
+                setCode(LANGUAGES[language]?.defaultCode || "");
+            }
+        }
+    }, [roundInfo?.roundNumber]);
+
     // Initialize state from existing submission or draft if available
     useEffect(() => {
         if (!hasInitializedRef.current && tournament?.myStatus) {
             const { lastSubmission, participant } = tournament.myStatus;
             console.log("🔄 [RoundScreen] Initializing from myStatus:", tournament.myStatus);
-            
+
             // Priority: 1. Official Submission, 2. Draft Code
             if (lastSubmission?.code) {
                 setCode(lastSubmission.code);
@@ -52,7 +70,7 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
                     setLanguage(participant.lastLanguage);
                 }
             }
-            
+
             if (lastSubmission) {
                 if (lastSubmission.status === "PASSED") {
                     setSubmissionStatus("PASSED");
@@ -65,7 +83,7 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
                     setSubmitted(false);
                 }
             }
-            
+
             hasInitializedRef.current = true;
         }
     }, [tournament?.myStatus]);

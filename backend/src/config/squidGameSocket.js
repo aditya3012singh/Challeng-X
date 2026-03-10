@@ -106,6 +106,10 @@ class SquidGameSocket {
         try {
           const result = await SquidGameService.endRoundAndEliminate(squidGameId);
 
+          console.log(`📡 [Socket] Host triggered FORCE END for tournament ${squidGameId}`);
+          console.log(`   - Players Eliminated: ${result.eliminatedCount}`);
+          console.log(`   - Players Remaining: ${result.remainingPlayers}`);
+
           // Broadcast round end to all players in tournament
           squidGameNamespace
             .to(`tournament-${squidGameId}`)
