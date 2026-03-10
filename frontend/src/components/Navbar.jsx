@@ -29,7 +29,7 @@ const Navbar = () => {
     { label: "BATTLE ROOM", path: "/battles" },
     { label: "LIVE ARENAS", path: "/live" },
     { label: "TEAM WARS", path: "/team-battle" },
-    { label: "SQUID PROTOCOL", path: "/squid-mode" },
+    { label: "SQUID PROTOCOL", path: "/squid-game" },
     { label: "JOIN LOBBY", path: "/join-room" },
   ];
 

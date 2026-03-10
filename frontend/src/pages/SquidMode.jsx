@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import {
     getSquidGameStatus,
@@ -20,8 +21,13 @@ import { SOCKET_URL, ROUND_CONFIG } from "../components/SquidGame/SquidGameConfi
 // ═══════════════════════════════════════════════════
 export const SquidMode = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { gameId } = useParams();
+    const location = useLocation();
     const { tournament } = useSelector(s => s.squidGame);
     const { user } = useSelector(s => s.auth);
+
+    const isHostURL = location.pathname.endsWith("/host");
 
     // Use stable ID comparison (handle potential string/number mix and whitespace)
     const isHost = tournament?.hostId && user?.id && String(tournament.hostId) === String(user.id);
@@ -30,15 +36,16 @@ export const SquidMode = () => {
         if (tournament && user) {
             console.log("🦑 SquidMode Host Check:", {
                 isHost,
+                isHostURL,
                 tournamentHostId: tournament.hostId,
                 userId: user.id,
                 match: String(tournament.hostId) === String(user.id)
             });
         }
-    }, [tournament, user, isHost]);
+    }, [tournament, user, isHost, isHostURL]);
 
-    const [phase, setPhase] = useState("LOBBY"); // LOBBY, WAITING, PLAYING, ELIMINATION, COMPLETED
-    const [squidGameId, setSquidGameId] = useState(null);
+    const [phase, setPhase] = useState(gameId ? "WAITING" : "LOBBY");
+    const [squidGameId, setSquidGameId] = useState(gameId || null);
     const [roundInfo, setRoundInfo] = useState(null);
     const [timeLeft, setTimeLeft] = useState(0);
     const [leaderboard, setLeaderboardState] = useState([]);
@@ -193,11 +200,24 @@ export const SquidMode = () => {
         }
     }, [tournament?.status, phase]);
 
-    const handleCreateOrJoin = (id) => {
+    const handleCreateOrJoin = (id, options = {}) => {
         setSquidGameId(id);
         dispatch(getSquidGameStatus({ squidGameId: id }));
         setPhase("WAITING");
+        if (options.isHost) {
+            navigate(`/squid-game/${id}/host`);
+        } else {
+            navigate(`/squid-game/${id}`);
+        }
     };
+
+    useEffect(() => {
+        if (gameId && !squidGameId) {
+            setSquidGameId(gameId);
+            setPhase("WAITING");
+            dispatch(getSquidGameStatus({ squidGameId: gameId }));
+        }
+    }, [gameId, squidGameId, dispatch]);
 
     const handleStart = async () => {
         if (!squidGameId) return;

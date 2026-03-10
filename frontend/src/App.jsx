@@ -138,7 +138,17 @@ function App() {
               <BattleRoom />
             </ProtectedRoute>
           } />
-          <Route path='/squid-mode' element={
+          <Route path='/squid-game' element={
+            <ProtectedRoute>
+              <SquidMode />
+            </ProtectedRoute>
+          } />
+          <Route path='/squid-game/:gameId' element={
+            <ProtectedRoute>
+              <SquidMode />
+            </ProtectedRoute>
+          } />
+          <Route path='/squid-game/:gameId/host' element={
             <ProtectedRoute>
               <SquidMode />
             </ProtectedRoute>

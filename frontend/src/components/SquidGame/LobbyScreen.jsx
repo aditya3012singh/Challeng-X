@@ -13,13 +13,13 @@ const LobbyScreen = ({ onCreateOrJoin }) => {
     const handleCreate = async () => {
         if (!name.trim()) return;
         const result = await dispatch(createSquidGame({ name: name.trim() })).unwrap();
-        if (result?.tournament?.id) onCreateOrJoin(result.tournament.id);
+        if (result?.tournament?.id) onCreateOrJoin(result.tournament.id, { isHost: true });
     };
 
     const handleJoin = async () => {
         if (!joinId.trim()) return;
         const result = await dispatch(joinSquidGame({ squidGameId: joinId.trim() })).unwrap();
-        if (result) onCreateOrJoin(joinId.trim());
+        if (result) onCreateOrJoin(joinId.trim(), { isHost: false });
     };
 
     return (
