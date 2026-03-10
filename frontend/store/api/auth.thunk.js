@@ -64,12 +64,24 @@ export const refreshAccessToken = createAsyncThunk(
 
 export const getPublicProfile = createAsyncThunk(
     "auth/getPublicProfile",
-    async (userId, {rejectWithValue}) => {
+    async (username, {rejectWithValue}) => {
         try{
-            const res = await api.get(`/auth/user/${userId}`);
+            const res = await api.get(`/auth/user/${username}`);
             return res.data;
         }catch(err){
             return rejectWithValue(err.response?.data || { message: "Failed to fetch user profile" });
+        }
+    }
+)
+
+export const updateUserProfile = createAsyncThunk(
+    "auth/updateProfile",
+    async (profileData, { rejectWithValue }) => {
+        try {
+            const res = await api.put("/auth/profile", profileData);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { message: "Failed to update profile" });
         }
     }
 )

@@ -21,6 +21,7 @@ const SquidMode = lazy(() => import('./pages/SquidMode').then(m => ({ default: m
 const Admin = lazy(() => import('./pages/Admin'))
 const SpectatorArena = lazy(() => import('./pages/SpectatorArena'))
 const LiveArenas = lazy(() => import('./pages/LiveArenas'))
+const Profile = lazy(() => import('./pages/Profile'))
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -141,6 +142,11 @@ function App() {
           <Route path='/squid-game' element={
             <ProtectedRoute>
               <SquidMode />
+            </ProtectedRoute>
+          } />
+          <Route path='/profile/:username' element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           } />
           <Route path='/squid-game/:gameId' element={

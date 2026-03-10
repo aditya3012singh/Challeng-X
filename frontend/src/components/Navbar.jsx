@@ -29,7 +29,7 @@ const Navbar = () => {
     { label: "BATTLE ROOM", path: "/battles" },
     { label: "LIVE ARENAS", path: "/live" },
     { label: "TEAM WARS", path: "/team-battle" },
-    { label: "SQUID PROTOCOL", path: "/squid-game" },
+    { label: "SQUID GAME", path: "/squid-game" },
     { label: "JOIN LOBBY", path: "/join-room" },
   ];
 
@@ -94,10 +94,14 @@ const Navbar = () => {
                 </div>
 
                 <div className="relative group cursor-pointer">
-                  <div className="w-10 h-10 border border-[var(--color-primary)] p-0.5 rounded-sm">
-                    <div className="w-full h-full bg-[var(--color-primary)]/20 flex items-center justify-center text-[var(--color-primary)] font-bold">
-                      {user?.username?.charAt(0).toUpperCase()}
-                    </div>
+                  <div className="w-10 h-10 border border-[var(--color-primary)] p-0.5 rounded-sm overflow-hidden">
+                    {user?.profilePic ? (
+                      <img src={user.profilePic} alt={user.username} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[var(--color-primary)]/20 flex items-center justify-center text-[var(--color-primary)] font-bold">
+                        {user?.username?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </div>
 
                   {/* Hover Dropdown */}
@@ -108,6 +112,12 @@ const Navbar = () => {
                         <div className="text-2xl font-black text-[var(--color-primary)] tabular-nums">{user?.rankPoints || 1000}</div>
                       </div>
                       <div className="py-2">
+                        <button
+                          onClick={() => navigate(`/profile/${user?.username}`)}
+                          className="block w-full text-left px-6 py-4 text-[9px] font-bold text-slate-400 hover:bg-white/5 hover:text-[var(--color-primary)] transition-all uppercase tracking-[0.2em]"
+                        >
+                          [ Operator Profile ]
+                        </button>
                         <button
                           onClick={() => navigate('/history')}
                           className="block w-full text-left px-6 py-4 text-[9px] font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em]"
