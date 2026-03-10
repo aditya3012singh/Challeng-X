@@ -36,6 +36,17 @@ model User {
   failedLoginCount Int      @default(0)
   lockUntil        DateTime?
 
+  // Profile Fields
+  profilePic String?
+  linkedin   String?
+  github     String?
+  leetcode   String?
+  gfg        String?
+  hackerrank String?
+  codeforces String?
+  instagram  String?
+  twitter    String?
+
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
