@@ -15,6 +15,7 @@ import OrganizerView from "../components/SquidGame/OrganizerView";
 import EliminationScreen from "../components/SquidGame/EliminationScreen";
 import CompletedScreen from "../components/SquidGame/CompletedScreen";
 import { SOCKET_URL, ROUND_CONFIG } from "../components/SquidGame/SquidGameConfig";
+import api from "../../lib/axios";
 
 // ═══════════════════════════════════════════════════
 // MAIN SQUID GAME COMPONENT
@@ -121,7 +122,7 @@ export const SquidMode = () => {
         });
 
         sgSocket.on("submission_result", (data) => {
-            console.log("Real submission result received:", data);
+            console.log("📥 [SquidMode] Real submission result received via sgSocket:", data);
             // We can show a toast or local notification here
         });
 
@@ -224,14 +225,19 @@ export const SquidMode = () => {
         await dispatch(startSquidGame({ squidGameId }));
     };
 
-    const handleSubmitCode = ({ code, language }) => {
-        if (socketRef.current) {
-            socketRef.current.emit("squid_game:submit_solution", {
-                squidGameId,
-                userId: user?.id,
+    const handleSubmitCode = async ({ code, language, type = "SUBMIT" }) => {
+        console.log("🟠 [SquidMode] handleSubmitCode (API) received from child:", { type, gameId });
+        try {
+            await api.post(`/squid-game/${gameId}/submit`, {
                 code,
-                language
+                language,
+                type
             });
+            console.log(`📝 [SquidMode] Submission queued via API for ${type}`);
+        } catch (error) {
+            console.error("❌ [SquidMode] API Submission failed:", error);
+            // Optionally emit a local error to the RoundScreen component
+            alert(`Submission failed: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -267,7 +273,8 @@ export const SquidMode = () => {
             return <WaitingRoom tournament={tournament} onStart={handleStart} isHost={isHost} />;
 
         case "PLAYING":
-            if (isHost || leaderboard.find(e => e.userId === user?.id)?.status === "ELIMINATED") {
+            const isEliminated = Array.isArray(leaderboard) && leaderboard.find(e => String(e.userId) === String(user?.id))?.status === "ELIMINATED";
+            if (isHost || isEliminated) {
                 console.log("🦑 Entering SquidMode (Organizer/Spectator View)");
                 return (
                     <OrganizerView

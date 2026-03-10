@@ -4,6 +4,7 @@ import Database from "../config/db.js";
 import SquidGameConfig from "../constants/squidGameConfig.js";
 import SocketServer from "../socket/socketServer.js";
 import SquidGameSocket from "../config/squidGameSocket.js";
+import SubmissionService from "./submission.service.js";
 
 class SquidGameService {
 
@@ -243,7 +244,8 @@ class SquidGameService {
     squidGameId,
     userId,
     code,
-    language
+    language,
+    type = "SUBMIT"
   ) {
     // 1. Get current round and problem
     const squidGame = await Database.client.squidGame.findUnique({
@@ -269,7 +271,7 @@ class SquidGameService {
       code,
       language,
       squidGameId,
-      type: "SUBMIT"
+      type
     });
   }
 
@@ -489,43 +491,27 @@ class SquidGameService {
 
   /**
    * Get tournament leaderboard
+   * Returns a plain array of participants sorted by score
    */
   static async getSquidGameLeaderboard(squidGameId) {
-    const leaderboards = await Database.client.squidGameLeaderboard.findMany({
+    const participants = await Database.client.squidGameParticipant.findMany({
       where: { squidGameId },
-      orderBy: { roundNumber: "asc" }
+      include: {
+        user: {
+          select: { username: true }
+        }
+      },
+      orderBy: { totalScore: "desc" }
     });
 
-    if (leaderboards.length === 0) {
-      // No snapshots yet, calculate from current state
-      const participants = await Database.client.squidGameParticipant.findMany({
-        where: { squidGameId },
-        include: {
-          user: {
-            select: { username: true }
-          }
-        },
-        orderBy: { totalScore: "desc" }
-      });
-
-      return {
-        currentLeaderboard: participants.map((p, idx) => ({
-          rank: idx + 1,
-          userId: p.userId,
-          username: p.user.username,
-          totalScore: p.totalScore,
-          status: p.status,
-          roundsSurvived: p.roundsEliminated
-        }))
-      };
-    }
-
-    return {
-      leaderboardHistory: leaderboards.map((l) => ({
-        round: l.roundNumber,
-        snapshot: l.playerRankings
-      }))
-    };
+    return participants.map((p, idx) => ({
+      rank: idx + 1,
+      userId: p.userId,
+      username: p.user.username,
+      score: p.totalScore,
+      status: p.status,
+      roundsSurvived: p.roundsEliminated
+    }));
   }
 
   /**

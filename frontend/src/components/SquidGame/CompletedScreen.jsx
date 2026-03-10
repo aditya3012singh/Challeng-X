@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 
 const CompletedScreen = ({ tournament, leaderboard }) => {
     const navigate = useNavigate();
-    const winner = leaderboard[0];
+    const winner = Array.isArray(leaderboard) ? leaderboard[0] : null;
 
     return (
         <div className="min-h-screen bg-[#050505] flex items-center justify-center p-8">
@@ -17,7 +17,7 @@ const CompletedScreen = ({ tournament, leaderboard }) => {
 
                 {/* Final Leaderboard */}
                 <div className="max-w-sm mx-auto mb-10">
-                    {leaderboard.slice(0, 5).map((entry, i) => (
+                    {Array.isArray(leaderboard) && leaderboard.slice(0, 5).map((entry, i) => (
                         <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-white/5">
                             <div className="flex items-center gap-3">
                                 <span className={`text-sm font-black ${i === 0 ? "text-[var(--color-primary)]" : i === 1 ? "text-slate-300" : i === 2 ? "text-amber-600" : "text-slate-600"}`}>

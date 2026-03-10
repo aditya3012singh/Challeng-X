@@ -36,10 +36,10 @@ class SquidGameRoutes {
     router.post("/start", SquidGameController.startSquidGameController);
 
     /**
-     * POST /api/squid-game/submit
+     * POST /api/squid-game/:squidGameId/submit
      * Submit a solution
      */
-    router.post("/submit", SquidGameController.submitSquidGameSolutionController);
+    router.post("/:squidGameId/submit", SquidGameController.submitSquidGameSolutionController);
 
     /**
      * POST /api/squid-game/end-round

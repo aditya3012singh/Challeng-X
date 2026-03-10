@@ -65,7 +65,7 @@ const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStr
                 <div className="flex-1 overflow-y-auto p-12 border-r border-white/5">
                     <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
                         {tournament?.participants?.map((p, i) => {
-                            const lbEntry = leaderboard.find(l => l.userId === p.userId);
+                            const lbEntry = Array.isArray(leaderboard) ? leaderboard.find(l => l.userId === p.userId) : null;
                             const isSelected = selectedPlayerId === p.userId;
                             return (
                                 <div

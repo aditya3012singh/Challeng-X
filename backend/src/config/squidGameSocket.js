@@ -61,34 +61,6 @@ class SquidGameSocket {
           });
       });
 
-      /**
-       * Submit a solution
-       * Event: squid_game:submit_solution
-       */
-      socket.on("squid_game:submit_solution", async (data) => {
-        const {
-          squidGameId,
-          userId,
-          code,
-          language
-        } = data;
-
-        try {
-          await SquidGameService.submitSquidGameSolution(
-            squidGameId,
-            userId,
-            code,
-            language
-          );
-
-          console.log(`📝 Submission queued for user ${userId} in tournament ${squidGameId}`);
-        } catch (error) {
-          socket.emit("error", {
-            message: "Failed to submit solution",
-            error: error.message
-          });
-        }
-      });
 
       /**
        * Request leaderboard update

@@ -98,30 +98,15 @@ class SquidGameController {
   }
 
   /**
-   * Submit solution for Squid Game round
+   * Submit solution for Squid Game round (HTTP version)
    */
   static async submitSquidGameSolutionController(req, res) {
-    const {
-      squidGameId,
-      code,
-      language,
-      status,
-      executionTimeMs,
-      testCasesPassed,
-      totalTestCases
-    } = req.body;
+    const { squidGameId } = req.params;
+    const { code, language, type = "SUBMIT" } = req.body;
     const userId = req.user.id;
 
     try {
-      if (
-        !squidGameId ||
-        !code ||
-        !language ||
-        !status ||
-        executionTimeMs === undefined ||
-        testCasesPassed === undefined ||
-        totalTestCases === undefined
-      ) {
+      if (!squidGameId || !code || !language) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -130,17 +115,15 @@ class SquidGameController {
         userId,
         code,
         language,
-        status,
-        executionTimeMs,
-        testCasesPassed,
-        totalTestCases
+        type
       );
 
-      res.status(201).json({
-        message: "Solution submitted",
+      res.status(200).json({
+        message: "Solution queued for evaluation",
         submission
       });
     } catch (error) {
+      console.error("🦑 [SquidGameController] Submit Error:", error);
       res.status(400).json({ message: error.message });
     }
   }

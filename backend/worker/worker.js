@@ -20,7 +20,7 @@ const worker = new Worker(
     "submissionQueue",
     async (job) => {
         const { submissionId, battleId, squidGameId, userId, type } = job.data;
-        console.log(`📦 Job ${job.id} picked up — submissionId=${submissionId} type=${type || "SUBMIT"} lang=${job.data.language ?? "?"}`);
+        console.log(`📦 Job ${job.id} picked up — subId=${submissionId} type=${type || "SUBMIT"} squidGameId=${squidGameId || "N/A"}`);
 
         try {
             const submission = await SubmissionService.getSubmissionWithProblemAndUser(submissionId);

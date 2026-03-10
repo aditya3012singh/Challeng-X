@@ -36,13 +36,16 @@ class ServerApp {
         if (channel === "worker_events") {
           try {
             const { event, data } = JSON.parse(message);
+            logger.info(`📡 [RedisSub] Event: ${event} for ${data?.squidGameId ? 'Squid' : 'Battle'} ID: ${data?.squidGameId || data?.battleId}`);
 
             if (data && data.battleId) {
               io.to(data.battleId).emit(event, data);
             } else if (data && data.squidGameId) {
               // Route to Squid Game namespace
               const sgNamespace = io.of("/squid-game");
-              sgNamespace.to(`tournament-${data.squidGameId}`).emit(event, data);
+              const room = `tournament-${data.squidGameId}`;
+              logger.info(`🦑 [Emit] Sending ${event} to room ${room} in /squid-game namespace`);
+              sgNamespace.to(room).emit(event, data);
 
               // If it's a final result, update Squid Game state (scoring, leaderboard)
               if (event === "submission_result" && data.type === "SUBMIT") {

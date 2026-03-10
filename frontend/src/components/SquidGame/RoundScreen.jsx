@@ -7,6 +7,7 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
     const [code, setCode] = useState(LANGUAGES.java.defaultCode);
     const [submitted, setSubmitted] = useState(false);
     const [submissionStatus, setSubmissionStatus] = useState("IDLE"); // IDLE, PENDING, PASSED, FAILED
+    const [runResults, setRunResults] = useState(null);
 
     // Get problem from tournament roundProblems (DB) or from socket roundInfo
     const roundNum = tournament?.currentRound || roundInfo?.roundNumber || 1;
@@ -20,9 +21,16 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
     };
 
     const handleSubmit = () => {
+        console.log("🔵 [RoundScreen] handleSubmit clicked, triggering onSubmit...");
         setSubmissionStatus("PENDING");
         setSubmitted(true);
-        onSubmit({ code, language });
+        onSubmit({ code, language, type: "SUBMIT" });
+    };
+
+    const handleRun = () => {
+        setSubmissionStatus("PENDING");
+        setRunResults(null);
+        onSubmit({ code, language, type: "RUN" });
     };
 
     // Listen for my specific result
@@ -30,18 +38,36 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
         if (!socket) return;
 
         const handleResult = (data) => {
+            console.log("📥 [RoundScreen] Received submission_result (prop socket):", data);
             if (data.userId === user?.id) {
-                if (data.status === "PASSED") {
-                    setSubmissionStatus("PASSED");
+                if (data.type === "RUN") {
+                    setRunResults(data.testCaseResults);
+                    setSubmissionStatus("IDLE");
                 } else {
-                    setSubmissionStatus("FAILED");
-                    setSubmitted(false); // Allow re-submission if failed
+                    if (data.status === "PASSED") {
+                        setSubmissionStatus("PASSED");
+                    } else {
+                        setSubmissionStatus("FAILED");
+                        setSubmitted(false); // Allow re-submission if failed
+                    }
                 }
             }
         };
 
+        const handleError = (data) => {
+            console.error("❌ [RoundScreen] Socket Error:", data);
+            setSubmissionStatus("IDLE");
+            setSubmitted(false);
+            // We could use a toast here if available, but for now we reset
+            alert(`Submission Error: ${data.message || "Unknown error"}`);
+        };
+
         socket.on("submission_result", handleResult);
-        return () => socket.off("submission_result", handleResult);
+        socket.on("error", handleError);
+        return () => {
+            socket.off("submission_result", handleResult);
+            socket.off("error", handleError);
+        };
     }, [socket, user?.id]);
 
     const formatTime = (s) => {
@@ -105,6 +131,14 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
                         <option value="cpp">C++</option>
                     </select>
                     <button
+                        onClick={handleRun}
+                        disabled={submitted || submissionStatus === "PENDING" || submissionStatus === "PASSED"}
+                        className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${submissionStatus === "PENDING" ? "bg-white/5 text-white/40 cursor-not-allowed" : "bg-white/10 text-white hover:bg-white/20"}`}
+                        style={{ borderRadius: "2px" }}
+                    >
+                        RUN CODE
+                    </button>
+                    <button
                         onClick={handleSubmit}
                         disabled={submitted || submissionStatus === "PENDING" || submissionStatus === "PASSED"}
                         className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${submissionStatus === "PASSED" ? "bg-green-500 text-white" :
@@ -132,8 +166,43 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
                         {problem?.description || "Loading problem..."}
                     </div>
 
+                    {/* Run Results */}
+                    {runResults && (
+                        <div className="mt-8 border-t border-white/5 pt-6">
+                            <div className="text-[10px] text-slate-600 uppercase tracking-widest font-bold mb-3">Test Results</div>
+                            <div className="space-y-3">
+                                {runResults.map((res, i) => (
+                                    <div key={i} className={`p-3 border ${res.passed ? "border-green-500/20 bg-green-500/5" : "border-red-500/20 bg-red-500/5"}`} style={{ borderRadius: "2px" }}>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Case #{i + 1}</span>
+                                            <span className={`text-[9px] font-black uppercase ${res.passed ? "text-green-400" : "text-red-400"}`}>
+                                                {res.passed ? "PASSED" : "FAILED"}
+                                            </span>
+                                        </div>
+                                        {!res.passed && (
+                                            <div className="space-y-2">
+                                                <div>
+                                                    <div className="text-[8px] text-slate-500 uppercase font-bold">Input:</div>
+                                                    <pre className="text-[10px] text-slate-300 bg-black/40 p-1 mt-1 font-mono">{res.input}</pre>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[8px] text-slate-500 uppercase font-bold">Expected:</div>
+                                                    <pre className="text-[10px] text-green-400/80 bg-black/40 p-1 mt-1 font-mono">{res.expected}</pre>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[8px] text-slate-500 uppercase font-bold">Actual:</div>
+                                                    <pre className="text-[10px] text-red-400/80 bg-black/40 p-1 mt-1 font-mono">{res.actual || res.error || "No output"}</pre>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Mini Leaderboard */}
-                    {leaderboard.length > 0 && (
+                    {Array.isArray(leaderboard) && leaderboard.length > 0 && (
                         <div className="mt-8 border-t border-white/5 pt-6">
                             <div className="text-[10px] text-slate-600 uppercase tracking-widest font-bold mb-3">Live Rankings</div>
                             <div className="space-y-1">
