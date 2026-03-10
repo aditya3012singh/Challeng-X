@@ -59,6 +59,9 @@ model Submission {
   battle    Battle? @relation(fields: [battleId], references: [id])
   battleId  String?
 
+  squidGame   SquidGame? @relation(fields: [squidGameId], references: [id])
+  squidGameId String?
+
   problem   Problem @relation(fields: [problemId], references: [id])
   problemId String
   

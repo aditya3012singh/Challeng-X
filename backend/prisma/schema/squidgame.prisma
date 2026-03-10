@@ -29,6 +29,9 @@ model SquidGame {
   // Problems per round
   roundProblems SquidGameRound[]
   
+  // Real submissions for judge processing
+  submissions Submission[]
+  
   // Leaderboard snapshots
   leaderboardSnapshots SquidGameLeaderboard[]
   

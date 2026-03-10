@@ -89,6 +89,7 @@ class BattleController {
                 code,
                 language,
                 battleId,
+                squidGameId: null,
                 type: type || "SUBMIT"
             });
 

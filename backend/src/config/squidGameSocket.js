@@ -70,37 +70,18 @@ class SquidGameSocket {
           squidGameId,
           userId,
           code,
-          language,
-          status,
-          executionTimeMs,
-          testCasesPassed,
-          totalTestCases
+          language
         } = data;
 
         try {
-
-          const submission = await SquidGameService.submitSquidGameSolution(
+          await SquidGameService.submitSquidGameSolution(
+            squidGameId,
+            userId,
             code,
-            language,
-            status,
-            executionTimeMs,
-            testCasesPassed,
-            totalTestCases
+            language
           );
 
-          // Notify tournament that submission was received
-          squidGameNamespace
-            .to(`tournament-${squidGameId}`)
-            .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.SUBMISSION_RECEIVED, {
-              userId,
-              status,
-              score: submission.score,
-              testCasesPassed,
-              totalTestCases,
-              timestamp: new Date()
-            });
-
-          console.log(`📝 Submission received from ${userId}`);
+          console.log(`📝 Submission queued for user ${userId} in tournament ${squidGameId}`);
         } catch (error) {
           socket.emit("error", {
             message: "Failed to submit solution",
@@ -179,6 +160,56 @@ class SquidGameSocket {
         } catch (error) {
           socket.emit("error", {
             message: "Failed to end round",
+            error: error.message
+          });
+        }
+      });
+
+      /**
+       * Start next round
+       * Event: squid_game:next_round
+       */
+      socket.on("squid_game:next_round", async (data) => {
+        const { squidGameId } = data;
+
+        try {
+          const round = await SquidGameService.startNextRound(squidGameId);
+
+          // Broadcast round start
+          SquidGameSocket.broadcastRoundStart(io, squidGameId, round);
+
+          console.log(`🎮 Next round started for tournament ${squidGameId}`);
+        } catch (error) {
+          socket.emit("error", {
+            message: "Failed to start next round",
+            error: error.message
+          });
+        }
+      });
+
+      /**
+       * Disqualify a player
+       * Event: squid_game:disqualify_player
+       */
+      socket.on("squid_game:disqualify_player", async (data) => {
+        const { squidGameId, userId } = data;
+
+        try {
+          await SquidGameService.disqualifyParticipant(squidGameId, userId);
+
+          // Notify participant they are OUT
+          squidGameNamespace
+            .to(`tournament-${squidGameId}`)
+            .emit(SquidGameConfig.SQUID_GAME_CONFIG.WEBSOCKET_EVENTS.PLAYER_ELIMINATED, {
+              userId,
+              reason: "DISQUALIFIED",
+              timestamp: new Date()
+            });
+
+          console.log(`🚫 Player ${userId} disqualified in tournament ${squidGameId}`);
+        } catch (error) {
+          socket.emit("error", {
+            message: "Failed to disqualify player",
             error: error.message
           });
         }

@@ -153,17 +153,17 @@ class SquidGameService {
       throw new Error("Not enough players to start tournament");
     }
 
-    // Update status
+    // Update status to mark as started, but let startNextRound handle the first round initialization
     const updated = await Database.client.squidGame.update({
       where: { id: squidGameId },
       data: {
-        status: "ROUND_ACTIVE",
-        currentRound: 1,
+        status: "ROUND_ENDED",
+        currentRound: 0,
         startedAt: new Date()
       }
     });
 
-    // Start round 1
+    // Start round 1 (this will increment currentRound to 1)
     await this.startNextRound(squidGameId);
 
     return updated;
@@ -186,13 +186,13 @@ class SquidGameService {
       throw new Error("Tournament not found");
     }
 
-    const roundNumber = squidGame.currentRound;
+    const nextRoundNum = squidGame.currentRound + 1;
 
-    if (roundNumber > squidGame.totalRounds) {
+    if (nextRoundNum > squidGame.totalRounds) {
       throw new Error("All rounds completed");
     }
 
-    const difficultyConfig = SquidGameConfig.DIFFICULTY_PROGRESSION[roundNumber - 1];
+    const difficultyConfig = SquidGameConfig.DIFFICULTY_PROGRESSION[nextRoundNum - 1];
 
     // Get problem for this round
     const problem = await Database.client.problem.findFirst({
@@ -203,11 +203,20 @@ class SquidGameService {
       throw new Error(`No ${difficultyConfig.difficulty} problems available`);
     }
 
+    // Update tournament status and increment round
+    await Database.client.squidGame.update({
+      where: { id: squidGameId },
+      data: {
+        status: "ROUND_ACTIVE",
+        currentRound: nextRoundNum
+      }
+    });
+
     // Create round record
     const round = await Database.client.squidGameRound.create({
       data: {
         squidGameId,
-        roundNumber,
+        roundNumber: nextRoundNum,
         difficulty: difficultyConfig.difficulty,
         problemId: problem.id,
         timeLimit: difficultyConfig.timeLimit,
@@ -228,72 +237,94 @@ class SquidGameService {
   }
 
   /**
-   * Submit a solution for Squid Game round
+   * Submit a solution for Squid Game round (Initiates real judging)
    */
   static async submitSquidGameSolution(
     squidGameId,
     userId,
     code,
-    language,
-    status,
-    executionTimeMs,
-    testCasesPassed,
-    totalTestCases
+    language
   ) {
-    // Get current round
+    // 1. Get current round and problem
     const squidGame = await Database.client.squidGame.findUnique({
       where: { id: squidGameId }
     });
 
-    if (!squidGame) {
-      throw new Error("Tournament not found");
-    }
+    if (!squidGame) throw new Error("Tournament not found");
 
-    const roundId = (
-      await Database.client.squidGameRound.findFirst({
-        where: {
-          squidGameId,
-          roundNumber: squidGame.currentRound
-        }
-      })
-    ).id;
+    const round = await Database.client.squidGameRound.findFirst({
+      where: {
+        squidGameId,
+        roundNumber: squidGame.currentRound
+      }
+    });
 
-    // Get participant
+    if (!round) throw new Error("Round not found");
+
+    // 2. Queue the submission via the standard SubmissionService
+    // This will trigger the judge worker
+    return await SubmissionService.processSubmission({
+      userId,
+      problemId: round.problemId,
+      code,
+      language,
+      squidGameId,
+      type: "SUBMIT"
+    });
+  }
+
+  /**
+   * Process the final result from the judge (called by server listener)
+   */
+  static async handleSquidGameResult(data) {
+    const { squidGameId, userId, code, language, status, executionTimeMs, passedTests, totalTests, score: maybeScore } = data;
+
+    // 1. Get current round
+    const squidGame = await Database.client.squidGame.findUnique({
+      where: { id: squidGameId }
+    });
+
+    const round = await Database.client.squidGameRound.findFirst({
+      where: {
+        squidGameId,
+        roundNumber: squidGame.currentRound
+      }
+    });
+
+    // 2. Calculate score (if not already provided)
+    const score = maybeScore || this.calculateScore(
+      status,
+      executionTimeMs,
+      passedTests,
+      totalTests
+    );
+
+    // 3. Get participant
     const participant = await Database.client.squidGameParticipant.findUnique({
       where: {
         squidGameId_userId: { squidGameId, userId }
       }
     });
 
-    if (!participant) {
-      throw new Error("User not in tournament");
-    }
+    if (!participant) return;
 
-    // Calculate score
-    const score = this.calculateScore(
-      status,
-      executionTimeMs,
-      testCasesPassed,
-      totalTestCases
-    );
-
-    // Create submission
-    const submission = await Database.client.squidGameSubmission.create({
+    // 4. Create internal SquidGameSubmission record for history/round tracking
+    await Database.client.squidGameSubmission.create({
       data: {
-        roundId,
+        roundId: round.id,
         participantId: participant.id,
-        code,
-        language,
+        code: code || "// Redacted",
+        language: language || "unknown",
         status,
         score,
         executionTimeMs,
-        testCasesPassed,
-        totalTestCases,
+        testCasesPassed: passedTests,
+        totalTestCases: totalTests,
         submittedAt: new Date()
       }
     });
 
-    // Update participant score
+    // 5. Update participant total score
     const roundScores = [...(participant.roundScores || []), score];
     const totalScore = roundScores.reduce((a, b) => a + b, 0);
 
@@ -305,7 +336,13 @@ class SquidGameService {
       }
     });
 
-    return submission;
+    // 6. Broadcast updated leaderboard
+    const leaderboard = await this.getSquidGameLeaderboard(squidGameId);
+    if (SocketServer.io) {
+      SquidGameSocket.broadcastLeaderboardUpdate(SocketServer.io, squidGameId, leaderboard);
+    }
+
+    return { score, totalScore };
   }
 
   /**
@@ -432,16 +469,13 @@ class SquidGameService {
       };
     }
 
-    // Move to next round
+    // Move to ROUND_ENDED status (waits for host to click Next Round)
     await Database.client.squidGame.update({
       where: { id: squidGameId },
       data: {
-        currentRound: squidGame.currentRound + 1
+        status: "ROUND_ENDED"
       }
     });
-
-    // Start next round
-    await this.startNextRound(squidGameId);
 
     return {
       roundEnded: true,
@@ -545,6 +579,35 @@ class SquidGameService {
       joinedAt: p.joinedAt,
       eliminatedAt: p.eliminatedAt
     }));
+  }
+
+  /**
+   * Disqualify a participant (Host only)
+   */
+  static async disqualifyParticipant(squidGameId, userId) {
+    const participant = await Database.client.squidGameParticipant.findUnique({
+      where: {
+        squidGameId_userId: { squidGameId, userId }
+      }
+    });
+
+    if (!participant) throw new Error("Participant not found");
+
+    const updatedParticipant = await Database.client.squidGameParticipant.update({
+      where: { id: participant.id },
+      data: {
+        status: "ELIMINATED",
+        eliminatedAt: new Date()
+      }
+    });
+
+    // Broadcast updated leaderboard
+    const leaderboard = await this.getSquidGameLeaderboard(squidGameId);
+    if (SocketServer.io) {
+      SquidGameSocket.broadcastLeaderboardUpdate(SocketServer.io, squidGameId, leaderboard);
+    }
+
+    return updatedParticipant;
   }
 }
 

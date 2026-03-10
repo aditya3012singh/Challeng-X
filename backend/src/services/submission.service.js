@@ -14,7 +14,7 @@ import BattleService from "./battle.service.js";
  * @param {string} [params.type] - RUN or SUBMIT
  */
 class SubmissionService {
-  static async processSubmission({ userId, problemId, code, language, battleId, type = "SUBMIT" }) {
+  static async processSubmission({ userId, problemId, code, language, battleId, squidGameId, type = "SUBMIT" }) {
     return await Database.client.$transaction(async (tx) => {
       // 1. If SUBMIT in a battle, check and increment attempts
       if (battleId && type === "SUBMIT") {
@@ -65,6 +65,7 @@ class SubmissionService {
           code,
           language,
           battleId,
+          squidGameId,
           status: "QUEUED",
           type
         }
@@ -74,6 +75,7 @@ class SubmissionService {
       await submissionQueue.add('processSubmission', {
         submissionId: submission.id,
         battleId: battleId || null,
+        squidGameId: squidGameId || null,
         userId,
         status: "QUEUED",
         type
@@ -132,7 +134,8 @@ class SubmissionService {
 
     return {
       ...submission,
-      beatsPercentile
+      beatsPercentile,
+      squidGameId: submission.squidGameId
     };
   }
 
@@ -144,7 +147,8 @@ class SubmissionService {
       where: { id: submissionId },
       include: {
         problem: { include: { testcases: true } },
-        user: { select: { id: true } }
+        user: { select: { id: true } },
+        squidGame: { select: { id: true } }
       }
     });
   }

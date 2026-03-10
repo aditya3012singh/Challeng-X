@@ -39,6 +39,17 @@ class ServerApp {
 
             if (data && data.battleId) {
               io.to(data.battleId).emit(event, data);
+            } else if (data && data.squidGameId) {
+              // Route to Squid Game namespace
+              const sgNamespace = io.of("/squid-game");
+              sgNamespace.to(`tournament-${data.squidGameId}`).emit(event, data);
+
+              // If it's a final result, update Squid Game state (scoring, leaderboard)
+              if (event === "submission_result" && data.type === "SUBMIT") {
+                import("./services/squidGame.service.js").then(m => {
+                  m.default.handleSquidGameResult(data).catch(err => logger.error(`Error handling squid game result: ${err.message}`));
+                });
+              }
             } else {
               // Practice mode or non-battle submission
               io.emit(event, data);
