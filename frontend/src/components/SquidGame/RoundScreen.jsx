@@ -8,6 +8,7 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
     const [submitted, setSubmitted] = useState(false);
     const [submissionStatus, setSubmissionStatus] = useState("IDLE"); // IDLE, PENDING, PASSED, FAILED
     const [runResults, setRunResults] = useState(null);
+    const hasInitializedRef = useRef(false);
 
     // Get problem from tournament roundProblems (DB) or from socket roundInfo
     const roundNum = tournament?.currentRound || roundInfo?.roundNumber || 1;
@@ -32,6 +33,42 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
         setRunResults(null);
         onSubmit({ code, language, type: "RUN" });
     };
+
+    // Initialize state from existing submission or draft if available
+    useEffect(() => {
+        if (!hasInitializedRef.current && tournament?.myStatus) {
+            const { lastSubmission, participant } = tournament.myStatus;
+            console.log("🔄 [RoundScreen] Initializing from myStatus:", tournament.myStatus);
+            
+            // Priority: 1. Official Submission, 2. Draft Code
+            if (lastSubmission?.code) {
+                setCode(lastSubmission.code);
+                if (lastSubmission.language && LANGUAGES[lastSubmission.language]) {
+                    setLanguage(lastSubmission.language);
+                }
+            } else if (participant?.lastCode) {
+                setCode(participant.lastCode);
+                if (participant.lastLanguage && LANGUAGES[participant.lastLanguage]) {
+                    setLanguage(participant.lastLanguage);
+                }
+            }
+            
+            if (lastSubmission) {
+                if (lastSubmission.status === "PASSED") {
+                    setSubmissionStatus("PASSED");
+                    setSubmitted(true);
+                } else if (lastSubmission.status === "PENDING" || lastSubmission.status === "QUEUED") {
+                    setSubmissionStatus("PENDING");
+                    setSubmitted(true);
+                } else if (lastSubmission.status === "FAILED") {
+                    setSubmissionStatus("FAILED");
+                    setSubmitted(false);
+                }
+            }
+            
+            hasInitializedRef.current = true;
+        }
+    }, [tournament?.myStatus]);
 
     // Listen for my specific result
     useEffect(() => {
@@ -226,7 +263,7 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
                 <div className="w-[65%] bg-[#080808] flex flex-col">
                     <div className="flex-1 min-h-0">
                         <CodeEditor
-                            language={LANGUAGES[language].monaco}
+                            language={LANGUAGES[language]?.monaco || LANGUAGES.java.monaco}
                             value={code}
                             onChange={(v) => setCode(v || "")}
                         />

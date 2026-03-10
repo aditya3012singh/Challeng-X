@@ -71,7 +71,8 @@ const worker = new Worker(
                             battleId: battleId || submission.battleId || null,
                             index: progress.index,
                             total,
-                            passed: progress.passed
+                            passed: progress.passed,
+                            language: submission.language
                         }
                     }));
                 }
@@ -126,7 +127,8 @@ const worker = new Worker(
                         status: firstFailedIndex === -1 ? "PASSED" : "FAILED",
                         type: "RUN",
                         testCaseResults: runDetails,
-                        executionTimeMs
+                        executionTimeMs,
+                        language: submission.language
                     }
                 }));
                 return;
@@ -159,6 +161,7 @@ const worker = new Worker(
                         expectedOutput: failed.expected,
                         actualOutput: failed.actual,
                         errorMessage: failed.error,
+                        language: submission.language
                     }
                 }));
 
@@ -207,7 +210,8 @@ const worker = new Worker(
                     passedTests: total,
                     totalTests: total,
                     executionTimeMs,
-                    beatsPercentile
+                    beatsPercentile,
+                    language: submission.language
                 }
             }));
 

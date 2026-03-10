@@ -47,9 +47,18 @@ class SquidGameSocket {
       /**
        * Sync code from player to host
        */
-      socket.on("squid_game:code_sync", (data) => {
+      socket.on("squid_game:code_sync", async (data) => {
         const { squidGameId, userId, username, code, language } = data;
-        // Emit only to the host room
+        
+        // 1. Persist to DB for crash recovery/reload
+        try {
+          await SquidGameService.updateParticipantDraft(squidGameId, userId, code, language);
+        } catch (err) {
+          // Non-critical, just log it
+          console.error("❌ [Socket] Failed to sync code to DB:", err.message);
+        }
+
+        // 2. Emit only to the host room
         squidGameNamespace
           .to(`tournament-${squidGameId}-host`)
           .emit("squid_game:host_code_update", {

@@ -9,6 +9,28 @@ import SubmissionService from "./submission.service.js";
 class SquidGameService {
 
   /**
+   * Generate a unique 6-digit join code
+   */
+  static async generateJoinCode() {
+    let joinCode;
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 10) {
+      joinCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const existing = await Database.client.squidGame.findUnique({
+        where: { joinCode }
+      });
+      if (!existing) isUnique = true;
+      attempts++;
+    }
+    if (!isUnique) {
+      // Fallback: just use timestamp if somehow random fails multiple times
+      joinCode = Date.now().toString().slice(-6);
+    }
+    return joinCode;
+  }
+
+  /**
    * Create a new Squid Game tournament
    * @param {string} name - Tournament name
    * @param {string} hostId - Creator/host user ID
@@ -16,9 +38,11 @@ class SquidGameService {
    * @returns {Promise<Object>} Created tournament
    */
   static async createSquidGameTournament(name, hostId, maxPlayers = 50) {
+    const joinCode = await this.generateJoinCode();
     const squidGame = await Database.client.squidGame.create({
       data: {
         name,
+        joinCode,
         hostId,
         maxPlayers,
         totalRounds: SquidGameConfig.DIFFICULTY_PROGRESSION.length,
@@ -34,20 +58,30 @@ class SquidGameService {
 
   /**
    * Join a Squid Game tournament
-   * @param {string} squidGameId - Tournament ID
+   * @param {string} joinCode - Tournament 6-digit code or UUID
    * @param {string} userId - User ID
    * @returns {Promise<Object>} Updated tournament
    */
-  static async joinSquidGameTournament(squidGameId, userId) {
+  static async joinSquidGameTournament(codeOrId, userId) {
     // Check if tournament exists and is in REGISTRATION phase
-    const squidGame = await Database.client.squidGame.findUnique({
-      where: { id: squidGameId },
+    let squidGame = await Database.client.squidGame.findUnique({
+      where: { joinCode: codeOrId },
       include: { participants: true }
     });
 
     if (!squidGame) {
+      // Fallback to UUID
+      squidGame = await Database.client.squidGame.findUnique({
+        where: { id: codeOrId },
+        include: { participants: true }
+      });
+    }
+
+    if (!squidGame) {
       throw new Error("Tournament not found");
     }
+
+    const squidGameId = squidGame.id;
 
     if (squidGame.status !== "REGISTRATION") {
       throw new Error("Tournament is not accepting new players");
@@ -97,9 +131,24 @@ class SquidGameService {
   }
 
   /**
+   * Update participant's latest code draft
+   */
+  static async updateParticipantDraft(squidGameId, userId, code, language) {
+    return await Database.client.squidGameParticipant.update({
+      where: {
+        squidGameId_userId: { squidGameId, userId }
+      },
+      data: {
+        lastCode: code,
+        lastLanguage: language
+      }
+    });
+  }
+
+  /**
    * Get tournament status
    */
-  static async getSquidGameStatus(squidGameId) {
+  static async getSquidGameStatus(squidGameId, userId = null) {
     const squidGame = await Database.client.squidGame.findUnique({
       where: { id: squidGameId },
       include: {
@@ -125,7 +174,41 @@ class SquidGameService {
       throw new Error("Tournament not found");
     }
 
-    return squidGame;
+    // If userId provided, find their specific participant record and latest submission for the current round
+    let myStatus = null;
+    if (userId) {
+      const myParticipant = squidGame.participants.find(p => p.userId === userId);
+      if (myParticipant) {
+        const lastSubmission = await Database.client.squidGameSubmission.findFirst({
+          where: {
+            participantId: myParticipant.id,
+            roundId: squidGame.roundProblems.find(rp => rp.roundNumber === squidGame.currentRound)?.id
+          },
+          orderBy: { submittedAt: 'desc' }
+        });
+
+        myStatus = {
+          participant: {
+            id: myParticipant.id,
+            status: myParticipant.status,
+            totalScore: myParticipant.totalScore,
+            lastCode: myParticipant.lastCode,
+            lastLanguage: myParticipant.lastLanguage
+          },
+          lastSubmission: lastSubmission ? {
+            code: lastSubmission.code,
+            language: lastSubmission.language,
+            status: lastSubmission.status,
+            submittedAt: lastSubmission.submittedAt
+          } : null
+        };
+      }
+    }
+
+    return {
+      ...squidGame,
+      myStatus
+    };
   }
 
   /**
@@ -316,7 +399,7 @@ class SquidGameService {
         roundId: round.id,
         participantId: participant.id,
         code: code || "// Redacted",
-        language: language || "unknown",
+        language: language || (participant.language) || "java",
         status,
         score,
         executionTimeMs,

@@ -9,6 +9,7 @@ enum SquidGameStatus {
 
 model SquidGame {
   id String @id @default(uuid())
+  joinCode String @unique // 6-digit unique code
   
   // Tournament info
   name String
@@ -59,6 +60,10 @@ model SquidGameParticipant {
   
   joinedAt DateTime @default(now())
   eliminatedAt DateTime?
+  
+  // Persistence for drafts/last typed code
+  lastCode     String? @db.Text
+  lastLanguage String?
   
   // Submissions and scores
   submissions SquidGameSubmission[]

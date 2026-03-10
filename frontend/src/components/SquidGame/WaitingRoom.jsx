@@ -1,4 +1,5 @@
 const WaitingRoom = ({ tournament, onStart, isHost }) => {
+    console.log("🏨 [WaitingRoom] Tournament Data:", tournament);
     const participants = tournament?.participants || [];
     const maxPlayers = tournament?.maxPlayers || 50;
     const isPastMinimum = participants.length >= 2;
@@ -17,15 +18,15 @@ const WaitingRoom = ({ tournament, onStart, isHost }) => {
                     </p>
                 </div>
 
-                {/* Tournament ID (for sharing) */}
+                {/* Tournament Join Code (for sharing) */}
                 <div className="max-w-md mx-auto mb-12">
-                    <div className="text-[9px] text-slate-600 uppercase tracking-widest font-bold mb-2 text-center">Share this Tournament ID</div>
+                    <div className="text-[9px] text-slate-600 uppercase tracking-widest font-bold mb-2 text-center">Share this Join Code</div>
                     <div
                         className="bg-[#0a0a0a] border border-white/10 px-4 py-3 text-xs font-mono text-[var(--color-primary)] text-center cursor-pointer hover:border-[var(--color-primary)]/30 transition-colors"
-                        onClick={() => navigator.clipboard.writeText(tournament?.id || "")}
+                        onClick={() => navigator.clipboard.writeText(tournament?.joinCode || "")}
                         style={{ borderRadius: "2px" }}
                     >
-                        {tournament?.id}
+                        {tournament?.joinCode}
                         <span className="text-[8px] text-slate-600 ml-3">(click to copy)</span>
                     </div>
                 </div>

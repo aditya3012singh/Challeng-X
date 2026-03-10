@@ -17,9 +17,9 @@ export const createSquidGame = createAsyncThunk(
 // Join an existing tournament
 export const joinSquidGame = createAsyncThunk(
     "squidGame/join",
-    async ({ squidGameId }, { rejectWithValue }) => {
+    async ({ squidGameId, joinCode }, { rejectWithValue }) => {
         try {
-            const res = await api.post("/squid-game/join", { squidGameId });
+            const res = await api.post("/squid-game/join", { squidGameId, joinCode });
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data || { message: err.message });

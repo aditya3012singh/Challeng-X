@@ -18,8 +18,10 @@ const LobbyScreen = ({ onCreateOrJoin }) => {
 
     const handleJoin = async () => {
         if (!joinId.trim()) return;
-        const result = await dispatch(joinSquidGame({ squidGameId: joinId.trim() })).unwrap();
-        if (result) onCreateOrJoin(joinId.trim(), { isHost: false });
+        const result = await dispatch(joinSquidGame({ joinCode: joinId.trim() })).unwrap();
+        if (result?.participant?.squidGameId) {
+            onCreateOrJoin(result.participant.squidGameId, { isHost: false });
+        }
     };
 
     return (
@@ -80,7 +82,7 @@ const LobbyScreen = ({ onCreateOrJoin }) => {
                             <input
                                 value={joinId}
                                 onChange={e => setJoinId(e.target.value)}
-                                placeholder="Paste Tournament ID..."
+                                placeholder="Enter 6-digit Join Code..."
                                 className="bg-[#0a0a0a] border border-white/10 text-white text-xs font-mono px-4 py-3 w-full focus:outline-none focus:border-red-500/50 transition-colors placeholder:text-gray-600"
                                 style={{ borderRadius: "2px" }}
                             />

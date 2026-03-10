@@ -34,16 +34,17 @@ class SquidGameController {
    * Join a Squid Game tournament
    */
   static async joinSquidGameController(req, res) {
-    const { squidGameId } = req.body;
+    const { squidGameId, joinCode } = req.body;
     const userId = req.user.id;
 
     try {
-      if (!squidGameId) {
-        return res.status(400).json({ message: "Tournament ID is required" });
+      const target = joinCode || squidGameId;
+      if (!target) {
+        return res.status(400).json({ message: "Join code or Tournament ID is required" });
       }
 
       const result = await SquidGameService.joinSquidGameTournament(
-        squidGameId,
+        target,
         userId
       );
 
@@ -63,7 +64,7 @@ class SquidGameController {
     const { squidGameId } = req.params;
 
     try {
-      const status = await SquidGameService.getSquidGameStatus(squidGameId);
+      const status = await SquidGameService.getSquidGameStatus(squidGameId, req.user?.id);
 
       res.status(200).json(status);
     } catch (error) {
