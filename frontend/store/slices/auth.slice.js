@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { login, register, logoutUser, fetchUserProfile, refreshAccessToken, getPublicProfile } from "../api/auth.thunk";
+import { login, register, logoutUser, fetchUserProfile, refreshAccessToken, getPublicProfile, updateUserProfile } from "../api/auth.thunk";
 
 const initialState = {
     user: null,
@@ -115,6 +115,20 @@ const authSlice = createSlice({
             .addCase(getPublicProfile.rejected, (state, action) => {
                 state.publicProfileLoading = false;
                 state.publicProfileError = action.payload?.message || "Failed to load profile";
+            })
+            // Update Profile
+            .addCase(updateUserProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateUserProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.user;
+                state.error = null;
+            })
+            .addCase(updateUserProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || "Failed to update profile";
             });
     },
 })

@@ -14,40 +14,50 @@ const Home = () => {
             </div>
 
             <div className="relative z-10">
+            <div className="relative z-10">
                 {/* HERO SECTION */}
-                <section className="min-h-[95vh] flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.012] blur-[150px] rounded-full"></div>
+                <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
+                    {/* Background Visual */}
+                    <div className="absolute inset-0 z-0">
+                        <img 
+                            src="/hero-bg.png" 
+                            alt="Background" 
+                            className="w-full h-full object-cover opacity-20"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/50 via-[#050505] to-[#050505]" />
+                    </div>
 
                     <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
-                        <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-8 pl-4">
-                            Competitive Synthesis // Neural Link
+                        <div className="inline-block px-4 py-1 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">
+                            Evolution of Competitive Coding
                         </div>
 
-                        <h1 className="text-7xl md:text-9xl font-black tracking-tight leading-[0.85] mb-12 font-[family:var(--font-heading)] uppercase text-white">
-                            {isAuthenticated ? "ENTER THE" : "THE NEW"}<br />
+                        <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.9] mb-8 font-[family:var(--font-heading)] uppercase text-white">
+                            THE ULTIMATE<br />
                             CODE<span className="text-[var(--color-primary)]">ARENA</span>
                         </h1>
 
-                        <p className="max-w-2xl mx-auto text-slate-500 text-lg md:text-xl font-light leading-relaxed mb-16 tracking-wide">
+                        <p className="max-w-2xl mx-auto text-slate-400 text-lg md:text-xl font-medium leading-relaxed mb-12 tracking-tight">
                             {isAuthenticated
-                                ? "Operational clearance granted. Your node is synchronized and ready for high-stakes execution."
-                                : "Elevate your logic. Compete in high-stakes automated arenas. Synchronized execution for the next generation of engineers."}
+                                ? "Welcome back, Operator. Your terminal is primed. Join a battle and prove your dominance in the arena."
+                                : "Master your algorithms, compete in intense real-time battles, and climb the global ranks. The next generation of competitive coding is here."}
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                             <button
                                 onClick={() => navigate(isAuthenticated ? "/matchmaking" : "/register")}
-                                className="px-12 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all transform hover:-translate-y-1 shadow-2xl active:scale-95"
-                                style={{ borderRadius: "2px" }}
+                                className="group relative px-10 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.1em] text-xs hover:bg-white transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(204,255,0,0.3)] active:scale-95"
+                                style={{ borderRadius: "4px" }}
                             >
-                                {isAuthenticated ? "Enter Arena" : "Establish Identity →"}
+                                <span className="relative z-10">{isAuthenticated ? "Start Matching" : "Join the Arena"}</span>
+                                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
                             </button>
                             <button
                                 onClick={() => navigate(isAuthenticated ? "/battles" : "/login")}
-                                className="px-12 py-5 border border-white/10 hover:border-white/30 text-white font-bold uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-white/5"
-                                style={{ borderRadius: "2px" }}
+                                className="px-10 py-5 border border-white/10 hover:border-white/40 text-white font-bold uppercase tracking-[0.1em] text-xs transition-all hover:bg-white/5 backdrop-blur-sm"
+                                style={{ borderRadius: "4px" }}
                             >
-                                {isAuthenticated ? "Live Feed →" : "Login Protocol"}
+                                {isAuthenticated ? "View Battles" : "Login to Terminal"}
                             </button>
                         </div>
                     </div>
@@ -65,47 +75,50 @@ const Home = () => {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid md:grid-cols-3 gap-8 text-left">
                         {[
                             {
                                 title: "1v1 Duel",
-                                desc: "Pure head-to-head algorithm execution. Test your speed and precision against the world's best.",
-                                label: "RANKED_MOD",
-                                meta: "Low Latency"
+                                desc: "The ultimate test of speed. Go head-to-head with another coder to solve a problem first. Winner takes the rank points.",
+                                label: "RANKED BATTLE",
+                                meta: "Fast Paced"
                             },
                             {
-                                title: "Team Battle",
-                                desc: "Collaborative logic construction. Synchronize with your team to dismantle opponent nodes.",
-                                label: "SOCIAL_LINK",
-                                meta: "Multi-Node"
+                                title: "Team War",
+                                desc: "Collaborate with your squad to outscore the opposition. Strategy and coordination are key to winning team battles.",
+                                label: "TEAM PLAY",
+                                meta: "Collaborative"
                             },
                             {
-                                title: "Elimination",
-                                desc: "The ultimate survival protocol. Last operator standing wins the entire pool.",
-                                label: "SURVIVE_PROT",
+                                title: "Squid Game",
+                                desc: "Survival of the smartest. A multi-round elimination tournament where only the fastest coders survive to the end.",
+                                label: "SURVIVAL MODE",
                                 meta: "High Stakes"
                             }
                         ].map((mode, i) => (
                             <div
                                 key={i}
-                                className="premium-card p-14 group cursor-pointer relative overflow-hidden"
-                                style={{ borderRadius: "2px" }}
+                                className="group p-10 bg-[#0a0a0a] border border-white/5 hover:border-[var(--color-primary)]/50 transition-all relative overflow-hidden"
+                                style={{ borderRadius: "12px" }}
                             >
-                                <div className="absolute top-0 right-0 p-8 text-[9px] font-bold text-slate-800 tracking-widest uppercase">
+                                <div className="absolute top-0 right-0 p-6 text-[8px] font-bold text-slate-700 tracking-widest uppercase">
                                     {mode.meta}
                                 </div>
-                                <div className="text-[9px] font-bold text-[var(--color-primary)] tracking-[0.4em] mb-12 pl-1">
-                                    0{i + 1} // {mode.label}
+                                <div className="text-[9px] font-bold text-[var(--color-primary)] tracking-[0.3em] mb-10 pl-1 uppercase">
+                                    Protocol 0{i + 1} // {mode.label}
                                 </div>
-                                <h3 className="text-4xl font-black text-white mb-6 group-hover:text-[var(--color-primary)] transition-colors font-[family:var(--font-heading)] uppercase tracking-tighter">
+                                <h3 className="text-3xl font-black text-white mb-5 group-hover:text-[var(--color-primary)] transition-colors font-[family:var(--font-heading)] uppercase tracking-tight">
                                     {mode.title}
                                 </h3>
-                                <p className="text-slate-500 text-sm leading-relaxed mb-12 font-light tracking-wide h-20 overflow-hidden">
+                                <p className="text-slate-400 text-sm leading-relaxed mb-10 font-medium tracking-tight h-20 overflow-hidden">
                                     {mode.desc}
                                 </p>
-                                <div className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-700 group-hover:text-white transition-all pt-6 border-t border-white/5 inline-block">
-                                    Initialize Execution →
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)] opacity-60 group-hover:opacity-100 transition-all pt-6 border-t border-white/5 inline-flex items-center gap-2">
+                                    Start Playing <span className="text-lg">→</span>
                                 </div>
+                                
+                                {/* Hover Gradient */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                             </div>
                         ))}
                     </div>
@@ -114,25 +127,25 @@ const Home = () => {
                 {/* GLOBAL RANKINGS TERMINAL */}
                 <section className="py-40 bg-white/[0.005] border-y border-white/[0.03]">
                     <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-32 items-center">
-                        <div className="relative">
-                            <div className="absolute -left-20 top-0 text-[100px] font-black text-white/[0.02] -z-10 tracking-tighter leading-none select-none">
-                                TOP100
+                        <div className="relative text-left">
+                            <div className="absolute -left-20 top-0 text-[120px] font-black text-white/[0.01] -z-10 tracking-tighter leading-none select-none">
+                                TOP 100
                             </div>
-                            <h2 className="text-6xl font-black text-white leading-[0.9] mb-10 tracking-tighter uppercase font-[family:var(--font-heading)]">
+                            <h2 className="text-5xl md:text-7xl font-black text-white leading-[0.9] mb-8 tracking-tighter uppercase font-[family:var(--font-heading)]">
                                 GLOBAL<br />
-                                <span className="text-[var(--color-primary)]">CLASSIFICATION</span>
+                                <span className="text-[var(--color-primary)]">LEADERBOARD</span>
                             </h2>
-                            <p className="text-slate-500 text-lg font-light leading-relaxed mb-12 tracking-wide max-w-lg">
-                                Real-time hierarchy of the most efficient computational minds active within the arena. Precision is mandatory.
+                            <p className="text-slate-400 text-lg font-medium leading-relaxed mb-12 tracking-tight max-w-lg">
+                                See where you stand against the world's most elite coders. Every battle won puts you closer to the top.
                             </p>
-                            <div className="flex gap-20">
+                            <div className="flex gap-16">
                                 <div>
-                                    <div className="text-4xl font-black text-white mb-2 tabular-nums">2.4M</div>
-                                    <div className="text-[9px] font-bold text-slate-700 uppercase tracking-widest pl-1">Operations</div>
+                                    <div className="text-5xl font-black text-white mb-1 tabular-nums">2.4M</div>
+                                    <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest pl-1">Problems Solved</div>
                                 </div>
-                                <div className="border-l border-white/10 pl-20">
-                                    <div className="text-4xl font-black text-white mb-2 tabular-nums">148K</div>
-                                    <div className="text-[9px] font-bold text-slate-700 uppercase tracking-widest pl-1">Operators</div>
+                                <div className="border-l border-white/10 pl-16">
+                                    <div className="text-5xl font-black text-white mb-1 tabular-nums">148K</div>
+                                    <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest pl-1">Active Coders</div>
                                 </div>
                             </div>
                         </div>
@@ -181,32 +194,36 @@ const Home = () => {
                 {user && (
                     <section className="py-40 px-6 bg-gradient-to-b from-[#050505] to-black">
                         <div className="max-w-5xl mx-auto">
-                            <div className="premium-card p-14 md:p-24 flex flex-col md:flex-row items-center gap-20 relative overflow-hidden" style={{ borderRadius: "2px" }}>
-                                <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--color-primary)] opacity-[0.015] blur-[120px] -mr-40 -mt-40"></div>
+                            <div className="bg-[#0a0a0a] border border-white/10 p-12 md:p-20 flex flex-col md:flex-row items-center gap-16 relative overflow-hidden" style={{ borderRadius: "24px" }}>
+                                <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--color-primary)] opacity-[0.03] blur-[100px] -mr-40 -mt-40"></div>
 
-                                <div className="w-48 h-48 bg-white/[0.02] border border-white/10 flex items-center justify-center text-6xl font-black text-white shrink-0 relative shadow-2xl">
-                                    <div className="absolute inset-2 border border-white/5"></div>
+                                <div className="w-40 h-40 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex items-center justify-center text-7xl font-black text-white shrink-0 relative overflow-hidden" style={{ borderRadius: "20px" }}>
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-[var(--color-primary)]/10 to-transparent" />
                                     {user.username.charAt(0).toUpperCase()}
                                 </div>
 
                                 <div className="flex-1 text-center md:text-left">
-                                    <div className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-[0.8em] mb-6">Operator Identity // Synchronized</div>
-                                    <h3 className="text-7xl font-black text-white mb-10 tracking-tighter uppercase font-[family:var(--font-heading)]">{user.username}</h3>
+                                    <div className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-[0.5em] mb-4">Operator Verified</div>
+                                    <h3 className="text-6xl font-black text-white mb-8 tracking-tighter uppercase font-[family:var(--font-heading)]">{user.username}</h3>
 
-                                    <div className="flex gap-20 justify-center md:justify-start border-l border-[var(--color-primary)]/20 pl-10">
-                                        <div>
-                                            <div className="text-[9px] text-slate-600 uppercase tracking-widest font-black mb-2">Rank Potential</div>
-                                            <div className="text-3xl font-black text-white tabular-nums">{user.rankPoints || "1200"}</div>
+                                    <div className="flex gap-12 justify-center md:justify-start">
+                                        <div className="bg-white/5 px-6 py-3 rounded-xl border border-white/5">
+                                            <div className="text-[8px] text-slate-500 uppercase tracking-widest font-black mb-1">Rank Points</div>
+                                            <div className="text-2xl font-black text-white tabular-nums">{user.rankPoints || "1000"}</div>
                                         </div>
-                                        <div>
-                                            <div className="text-[9px] text-slate-600 uppercase tracking-widest font-black mb-2">Clearance Level</div>
-                                            <div className="text-3xl font-black text-[var(--color-primary)] italic tracking-tighter">ELITE</div>
+                                        <div className="bg-[var(--color-primary)]/5 px-6 py-3 rounded-xl border border-[var(--color-primary)]/10">
+                                            <div className="text-[8px] text-[var(--color-primary)] opacity-70 uppercase tracking-widest font-black mb-1">Player Rank</div>
+                                            <div className="text-2xl font-black text-[var(--color-primary)]">PRO</div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <button className="px-14 py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all shadow-2xl active:scale-95" style={{ borderRadius: "2px" }}>
-                                    Full Status Check
+                                <button 
+                                    onClick={() => navigate(`/profile/${user.username}`)}
+                                    className="px-10 py-5 bg-white text-black font-black uppercase tracking-[0.1em] text-[10px] hover:bg-[var(--color-primary)] transition-all shadow-xl active:scale-95 shrink-0" 
+                                    style={{ borderRadius: "8px" }}
+                                >
+                                    View Full Profile
                                 </button>
                             </div>
                         </div>
@@ -222,6 +239,7 @@ const Home = () => {
                     All Rights Reserved © 2024 CORE.SYNTHESIS
                 </div>
             </footer>
+        </div>
         </div>
     );
 };
