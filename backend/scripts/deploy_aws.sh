@@ -73,11 +73,8 @@ npm install -g pm2
 echo ">>> Building Sandbox Code Runner Docker Images..."
 cd "$(dirname "$0")/.." # Go to backend root
 # we will use sudo docker to avoid group membership issues during script execution
-sudo docker build -t codearena-c-runner ./docker/c
-sudo docker build -t codearena-cpp-runner ./docker/cpp
-sudo docker build -t codearena-java-runner ./docker/java
-sudo docker build -t codearena-js-runner ./docker/js
-sudo docker build -t codearena-python-runner ./docker/python
+sudo docker build -t codearena-cpp ./docker/cpp
+sudo docker build -t codearena-java ./docker/java
 
 # 7. Install Backend Dependencies
 echo ">>> Installing backend dependencies..."

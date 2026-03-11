@@ -22,6 +22,7 @@ const Admin = lazy(() => import('./pages/Admin'))
 const SpectatorArena = lazy(() => import('./pages/SpectatorArena'))
 const LiveArenas = lazy(() => import('./pages/LiveArenas'))
 const Profile = lazy(() => import('./pages/Profile'))
+const Footer = lazy(() => import('./components/Footer'))
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -173,6 +174,7 @@ function App() {
             </ProtectedRoute>
           } />
         </Routes>
+        <Footer />
       </Suspense>
     </>
   )
