@@ -113,8 +113,14 @@ class WarmContainer {
       }
     });
 
+    this._proc.on("spawn", () => {
+      console.log(`🚀 [judge] ${this.language} container process spawned`);
+    });
+
     this._proc.on("exit", (code) => {
-      console.warn(`🔄 [judge] ${this.language} container exited (code ${code}) — restarting`);
+      if (code !== 0 && code !== null) {
+        console.warn(`🔄 [judge] ${this.language} container exited (code ${code}) — restarting`);
+      }
       this._buffer = "";
       if (this._pendingResolve) {
         this._pendingResolve({ error: "Container exited unexpectedly" });
@@ -123,7 +129,7 @@ class WarmContainer {
       setTimeout(() => this._startContainer(), 1000);
     });
 
-    console.log(`🟢 [judge] Warm ${this.language} container ready`);
+    console.log(`🟢 [judge] Warm ${this.language} container initialized`);
   }
 
   /** Send a batched job and wait for 'finished' JSON. onProgress is called for each test case. */
