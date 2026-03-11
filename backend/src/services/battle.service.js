@@ -234,7 +234,7 @@ class BattleService {
             const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
             await RankingService.updateRanks(battleId, winnerId, loserId);
           }
-          await RedisClient.client.flushall();
+          await RedisClient.client.del("problems:all");
           console.log(`✅ Atomic Battle Finish: ${battleId} (Winner: ${winnerId})`);
         } catch (err) {
           console.error(`❌ Background task error for battle ${battleId}:`, err.message);
@@ -310,7 +310,7 @@ class BattleService {
             losses: { increment: 1 }
           }
         });
-        await RedisClient.client.flushall();
+        await RedisClient.client.del("problems:all");
         SocketEmitter.emitToBattle(battleId, "battle_end", { winnerId: null, draw: true });
         console.log(`✅ Double failure penalties applied for battle ${battleId}`);
       } catch (err) {

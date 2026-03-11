@@ -192,6 +192,8 @@ const worker = new Worker(
                         battleFinished = true;
                         battleWinnerId = userId || submission.user.id;
                         console.log(`🏆 Battle ${battleId} finished in DB by worker. Winner: ${battleWinnerId}.`);
+                    } else {
+                        console.log(`ℹ️ Battle ${battleId} already finished or record missing. Ignoring winner ${userId || submission.user.id}.`);
                     }
                 } catch (err) {
                     console.error(`❌ Worker finishBattleService error: ${err.message}`);
@@ -217,6 +219,7 @@ const worker = new Worker(
 
             // Notify clients that the battle is over via pub/sub
             if (battleFinished) {
+                console.log(`📡 Publishing battle_end event for ${battleId}`);
                 publisher.publish("worker_events", JSON.stringify({
                     event: "battle_end",
                     data: {

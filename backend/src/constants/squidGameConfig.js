@@ -5,19 +5,19 @@ class SquidGameConfig {
   {
     round: 1,
     difficulty: "EASY",
-    timeLimit: 20 * 60, // 20 minutes
+    timeLimit: 3 * 60, // 20 minutes
     eliminationPercentage: 0.2 // Eliminate bottom 20%
   },
   {
     round: 2,
     difficulty: "EASY",
-    timeLimit: 18 * 60, // 18 minutes
+    timeLimit: 3 * 60, // 18 minutes
     eliminationPercentage: 0.25 // Eliminate bottom 25%
   },
   {
     round: 3,
     difficulty: "MEDIUM",
-    timeLimit: 15 * 60, // 15 minutes
+    timeLimit: 10 * 60, // 15 minutes
     eliminationPercentage: 0.33 // Eliminate bottom 33%
   },
   {
@@ -29,7 +29,7 @@ class SquidGameConfig {
   {
     round: 5,
     difficulty: "HARD",
-    timeLimit: 10 * 60, // 10 minutes
+    timeLimit: 15 * 60, // 10 minutes
     eliminationPercentage: 1.0 // Last one standing wins
   }
   ];
