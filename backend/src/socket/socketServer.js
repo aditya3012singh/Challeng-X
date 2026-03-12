@@ -5,12 +5,9 @@ import logger from "../utils/logger.js";
 import { handleQueue } from "./queueHandlers.js";
 import { joinBattleRoom, handleSubmission, joinSpectatorRoom, handleSpectatorCodeSync, handleSpectatorOutputSync, handleAntiCheatFlag } from "./battleHandlers.js";
 import { handleDisconnect, handleReconnect } from "./disconnectHandlers.js";
-import jwt from "jsonwebtoken";
-import cookie from "cookie";
 
 class SocketServer {
     static io = null;
-    static userSockets = new Map(); // userId -> socketId
 
     static initialize(server) {
         this.io = new Server(server, {
@@ -37,32 +34,6 @@ class SocketServer {
             logger.warn("⚠️ REDIS_URL not found. Socket.IO falling back to in-memory adapter.");
         }
 
-        // 🛡️ JWT Authentication Middleware
-        this.io.use((socket, next) => {
-            try {
-                const cookies = cookie.parse(socket.handshake.headers.cookie || "");
-                const token = cookies.accessToken;
-
-                if (!token) {
-                    logger.warn(`🔌 Unauthenticated connection attempt: ${socket.id}`);
-                    return next(); // Allow unauthenticated but won't have userId
-                }
-
-                const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-                socket.userId = decoded.id;
-                socket.userRole = decoded.role;
-                
-                // Store mapping
-                this.userSockets.set(socket.userId, socket.id);
-                
-                logger.info(`🔐 User authenticated [${socket.userId}] connected: ${socket.id}`);
-                next();
-            } catch (err) {
-                logger.error(`❌ Socket Auth Error: ${err.message}`);
-                next(); // Still let them connect, but without user info
-            }
-        });
-
         this.setupEventHandlers();
 
         return this.io;
@@ -74,9 +45,8 @@ class SocketServer {
 
             // 1. Player Connection (Auto-reply based on prompt)
             socket.on("player_connected", (payload) => {
-                const userId = socket.userId || payload?.userId;
-                logger.info(`Player connected event: ${userId}`);
-                if (userId) socket.userId = userId;
+                logger.info(`Player connected event: ${payload?.userId}`);
+                socket.userId = payload?.userId;
                 socket.emit("player_ready");
             });
 
@@ -95,12 +65,7 @@ class SocketServer {
 
             // 5. Reconnect & Disconnect
             socket.on("rejoin_battle", (payload) => handleReconnect(this.io, socket, payload));
-            socket.on("disconnect", () => {
-                if (socket.userId) {
-                    this.userSockets.delete(socket.userId);
-                }
-                handleDisconnect(this.io, socket);
-            });
+            socket.on("disconnect", () => handleDisconnect(this.io, socket));
         });
     }
 }
