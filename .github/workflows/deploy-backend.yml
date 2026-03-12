@@ -21,7 +21,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd CodeArena-SurvivalWars/backend
+            cd ~/codearena/backen d
             git pull origin main
             npm install
             npx prisma generate
