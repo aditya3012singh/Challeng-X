@@ -10,6 +10,7 @@ import cookie from "cookie";
 
 class SocketServer {
     static io = null;
+    static userSockets = new Map(); // userId -> socketId
 
     static initialize(server) {
         this.io = new Server(server, {
@@ -51,6 +52,9 @@ class SocketServer {
                 socket.userId = decoded.id;
                 socket.userRole = decoded.role;
                 
+                // Store mapping
+                this.userSockets.set(socket.userId, socket.id);
+                
                 logger.info(`🔐 User authenticated [${socket.userId}] connected: ${socket.id}`);
                 next();
             } catch (err) {
@@ -91,7 +95,12 @@ class SocketServer {
 
             // 5. Reconnect & Disconnect
             socket.on("rejoin_battle", (payload) => handleReconnect(this.io, socket, payload));
-            socket.on("disconnect", () => handleDisconnect(this.io, socket));
+            socket.on("disconnect", () => {
+                if (socket.userId) {
+                    this.userSockets.delete(socket.userId);
+                }
+                handleDisconnect(this.io, socket);
+            });
         });
     }
 }
