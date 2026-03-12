@@ -4,6 +4,7 @@ import RedisClient from "../cache/redis.client.js";
 import Database from "../config/db.js";
 import BattleCode from "../utils/battleCode.js";
 import ServerApp from "../server.js";
+import S3Service from "./s3.service.js";
 
 const MATCHMAKING_QUEUE = "matchmaking:queue";
 const RANK_THRESHOLD = 200; // Max rank difference for matching
@@ -185,7 +186,12 @@ class MatchmakingService {
         }
       }
     });
-
+    
+    // Pre-cache hidden test cases asynchronously to speed up the first submission
+    S3Service.fetchHiddenTestCases(randomProblem.id).catch(err => 
+      console.error(`[Pre-cache] Matchmaking failed for problem ${randomProblem.id}:`, err.message)
+    );
+    
     // Notify both players via socket
     ServerApp.io?.to(player1.socketId).emit("match_found", {
       battleId: battle.id,

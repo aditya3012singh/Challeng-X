@@ -5,6 +5,7 @@ import Database from "../config/db.js";
 import RankingService from "./ranking.service.js";
 import SocketEmitter from "../config/socket.js";
 import BattleCode from "../utils/battleCode.js";
+import S3Service from "./s3.service.js";
 // • Start timer
 // • Assign problem
 // • End match
@@ -27,6 +28,11 @@ class BattleService {
       }
     });
 
+    // Pre-cache hidden test cases asynchronously to speed up the first submission
+    S3Service.fetchHiddenTestCases(randomProblem.id).catch(err => 
+      console.error(`[Pre-cache] Failed for problem ${randomProblem.id}:`, err.message)
+    );
+
     return battle;
   }
 
@@ -41,6 +47,11 @@ class BattleService {
         battleCode,
       }
     });
+
+    // Pre-cache hidden test cases asynchronously to speed up the first submission
+    S3Service.fetchHiddenTestCases(problemId).catch(err => 
+      console.error(`[Pre-cache] Failed for problem ${problemId}:`, err.message)
+    );
 
     return battle;
   }

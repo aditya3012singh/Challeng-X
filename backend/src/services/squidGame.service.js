@@ -5,6 +5,7 @@ import SquidGameConfig from "../constants/squidGameConfig.js";
 import SocketServer from "../socket/socketServer.js";
 import SquidGameSocket from "../config/squidGameSocket.js";
 import SubmissionService from "./submission.service.js";
+import S3Service from "./s3.service.js";
 
 class SquidGameService {
 
@@ -327,7 +328,12 @@ class SquidGameService {
         problem: true
       }
     });
-
+    
+    // Pre-cache hidden test cases asynchronously to speed up the first round submission
+    S3Service.fetchHiddenTestCases(problem.id).catch(err => 
+      console.error(`[Pre-cache] SquidGame failed for problem ${problem.id}:`, err.message)
+    );
+    
     // Broadcast round start to all participants
     if (SocketServer.io) {
       SquidGameSocket.broadcastRoundStart(SocketServer.io, squidGameId, round);

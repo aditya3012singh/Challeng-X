@@ -23,9 +23,11 @@ const worker = new Worker(
         console.log(`📦 Job ${job.id} picked up — subId=${submissionId} type=${type || "SUBMIT"} squidGameId=${squidGameId || "N/A"}`);
 
         try {
+            console.time(`Job-${job.id}-init`);
             const submission = await SubmissionService.getSubmissionWithProblemAndUser(submissionId);
             if (!submission) throw new Error("Submission not found");
             if (!submission.problem) throw new Error("Submission has no associated problem");
+            console.timeEnd(`Job-${job.id}-init`);
 
             // Filter testcases based on type (RUN only uses sample cases)
             let testcases = submission.problem.testcases;
@@ -38,9 +40,11 @@ const worker = new Worker(
                 }
             } else {
                 // For SUBMIT, we also pull the massive hidden test cases from S3 / Redis Cache
+                console.time(`Job-${job.id}-fetch-s3`);
                 const cloudTestcases = await S3Service.fetchHiddenTestCases(submission.problem.id);
+                // console.log("cloudTestcases", cloudTestcases); // Removed to avoid terminal lag
+                console.timeEnd(`Job-${job.id}-fetch-s3`);
                 // Filter out any db-based cases that are NOT sample cases if we are migrating entirely to S3
-                console.log("cloudTestcases", cloudTestcases);
                 testcases = testcases.filter(tc => tc.isSample);
                 testcases = [...testcases, ...cloudTestcases];
             }
@@ -186,6 +190,7 @@ const worker = new Worker(
             let battleFinished = false;
             let battleWinnerId = null;
             if (battleId) {
+                console.time(`Job-${job.id}-battle-finish`);
                 try {
                     const finishResult = await BattleService.finishBattleService(battleId, userId || submission.user.id);
                     if (finishResult) {
@@ -198,6 +203,7 @@ const worker = new Worker(
                 } catch (err) {
                     console.error(`❌ Worker finishBattleService error: ${err.message}`);
                 }
+                console.timeEnd(`Job-${job.id}-battle-finish`);
             }
 
             publisher.publish("worker_events", JSON.stringify({
