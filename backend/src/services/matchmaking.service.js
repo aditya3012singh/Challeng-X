@@ -19,7 +19,17 @@ const QUEUE_TIMEOUT = 60000; // 60 seconds timeout
 
 
 class MatchmakingService {
-  static async joinQueue(userId, difficulty, socketId) {
+  static async joinQueue(userId, difficulty) {
+    // Find user's socket ID from active connections
+    const sockets = await ServerApp.io.fetchSockets();
+    const userSocket = sockets.find(s => s.userId === userId);
+    
+    if (!userSocket) {
+      throw new Error("No active socket connection found for user. Please refresh.");
+    }
+
+    const socketId = userSocket.id;
+
     // Get user's rank points
     const user = await Database.client.user.findUnique({
       where: { id: userId },
