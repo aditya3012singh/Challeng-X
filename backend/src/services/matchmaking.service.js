@@ -14,7 +14,6 @@ const QUEUE_TIMEOUT = 60000; // 60 seconds timeout
  * Add player to matchmaking queue
  * @param {string} userId 
  * @param {string} difficulty - EASY, MEDIUM, or HARD
- * @param {string} socketId - Socket connection ID
  */
 
 
