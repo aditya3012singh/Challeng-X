@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: codearena-backend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - ./backend/.env.production
+    depends_on:
+      - redis
+    networks:
+      - codearena-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: codearena-redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - codearena-network
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: codearena-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./backend/deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - backend
+    networks:
+      - codearena-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: codearena-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt:rw
+      - ./certbot/www:/var/www/certbot:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  codearena-network:
+    driver: bridge
+
+volumes:
+  redis-data:
