@@ -10,6 +10,7 @@
  *   stdout ← {"output": "..."}\n  or  {"error": "..."}\n
  */
 
+import env from "../config/env.js";
 import { spawn, execSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -17,7 +18,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // backend/src/services/ → go up 2 levels → backend/ → runners/
-const RUNNERS_DIR = process.env.CODEARENA_RUNNERS_PATH || path.resolve(__dirname, "../../runners");
+const RUNNERS_DIR = env.CODEARENA_RUNNERS_PATH || path.resolve(__dirname, "../../runners");
 console.log(`[judge] RUNNERS_DIR = ${RUNNERS_DIR}`);
 
 // Convert a Windows absolute path to a Docker-compatible /drive/... path
@@ -26,7 +27,7 @@ function toDockerPath(p) {
 }
 
 // Number of warm containers per language — match worker concurrency
-const POOL_SIZE = parseInt(process.env.JUDGE_POOL_SIZE || "10", 10);
+const POOL_SIZE = env.JUDGE_POOL_SIZE;
 
 // ─── Language definitions ────────────────────────────────────────────────────
 const LANGUAGE_CONFIG = {

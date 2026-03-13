@@ -1,4 +1,4 @@
-import "dotenv/config"; // ← MUST be first: loads .env so S3/Redis env vars are available
+import env from "../src/config/env.js";
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 
@@ -6,15 +6,24 @@ import JudgeService from "../src/services/judge.service.js";
 import SubmissionService from "../src/services/submission.service.js";
 import BattleService from "../src/services/battle.service.js";
 import S3Service from "../src/services/s3.service.js";
+import logger from "../src/utils/logger.js";
 
-const connection = new IORedis(process.env.REDIS_URL, {
+const redisOptions = {
     maxRetriesPerRequest: null,
-    enableReadyCheck: false
-});
+    enableReadyCheck: false,
+    retryStrategy: (times) => Math.min(times * 50, 2000),
+};
 
-// Redis Publisher to send events to main server without using WebSockets
-const publisher = new IORedis(process.env.REDIS_URL);
-console.log("✅ Worker connected to Redis Pub/Sub");
+const connection = env.REDIS_URL 
+    ? new IORedis(env.REDIS_URL, redisOptions) 
+    : new IORedis({ ...redisOptions, host: env.REDIS_HOST, port: env.REDIS_PORT, password: env.REDIS_PASSWORD });
+
+// Redis Publisher to send events to main server
+const publisher = env.REDIS_URL 
+    ? new IORedis(env.REDIS_URL, { maxRetriesPerRequest: null }) 
+    : new IORedis({ ...redisOptions, host: env.REDIS_HOST, port: env.REDIS_PORT, password: env.REDIS_PASSWORD });
+
+logger.info("✅ Worker connected to Redis Pub/Sub");
 
 const worker = new Worker(
     "submissionQueue",

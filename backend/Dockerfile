@@ -38,9 +38,10 @@ COPY --from=builder /app ./
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-EXPOSE 4000
-
 # Set production environment
 ENV NODE_ENV=production
+ARG PORT=4000
+ENV PORT=${PORT}
+EXPOSE ${PORT}
 
 CMD ["npm", "start"]

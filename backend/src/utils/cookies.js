@@ -1,6 +1,8 @@
-const isProd = process.env.NODE_ENV === "production";
-const cookieSameSite = process.env.COOKIE_SAMESITE || (isProd ? "none" : "lax");
-const cookieSecure = process.env.COOKIE_SECURE === "true" || isProd;
+import env from "../config/env.js";
+
+const isProd = env.NODE_ENV === "production";
+const cookieSameSite = (isProd ? "none" : "lax");
+const cookieSecure = isProd;
 
 class CookieOptions {
   static accessCookieOptions = {

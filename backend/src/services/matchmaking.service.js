@@ -1,13 +1,15 @@
 // Matchmaking service - finds opponents for battles
 
 import RedisClient from "../cache/redis.client.js";
+import env from "../config/env.js";
 import Database from "../config/db.js";
 import BattleCode from "../utils/battleCode.js";
-import ServerApp from "../server.js";
+import SocketEmitter from "../config/socket.js";
 import S3Service from "./s3.service.js";
+import logger from "../utils/logger.js";
 
 const MATCHMAKING_QUEUE = "matchmaking:queue";
-const RANK_THRESHOLD = 200; // Max rank difference for matching
+const RANK_THRESHOLD = env.MATCHMAKING_RANK_THRESHOLD || 2000;
 const QUEUE_TIMEOUT = 60000; // 60 seconds timeout
 
 /**
@@ -59,6 +61,8 @@ class MatchmakingService {
       user.rankPoints,
       userId
     );
+
+    logger.info(`[Matchmaking] User ${user.username} (${userId}) joined ${difficulty} queue with rank ${user.rankPoints}`);
 
     // Try to find a match immediately
     await MatchmakingService.findMatch(userId, difficulty);
@@ -131,6 +135,8 @@ static async leaveQueue(userId) {
 
     const opponentData = JSON.parse(opponentDataStr);
 
+    logger.info(`[Matchmaking] Match found: ${currentPlayer.username} vs ${opponentData.username}`);
+
     // Create battle
     await MatchmakingService.createMatchedBattle(currentPlayer, opponentData, difficulty);
   }
@@ -155,10 +161,10 @@ static async leaveQueue(userId) {
 
     if (problems.length === 0) {
       // Notify players - no problems available
-      ServerApp.io?.to(player1.socketId).emit("matchmakingError", {
+      SocketEmitter.io?.to(player1.socketId).emit("matchmakingError", {
         message: "No problems available for this difficulty"
       });
-      ServerApp.io?.to(player2.socketId).emit("matchmakingError", {
+      SocketEmitter.io?.to(player2.socketId).emit("matchmakingError", {
         message: "No problems available for this difficulty"
       });
       return;
@@ -196,14 +202,14 @@ static async leaveQueue(userId) {
     );
     
     // Notify both players via socket
-    ServerApp.io?.to(player1.socketId).emit("match_found", {
+    SocketEmitter.io?.to(player1.socketId).emit("match_found", {
       battleId: battle.id,
       battleCode: battle.battleCode,
       opponent: player2.username,
       problem: battle.problem
     });
-
-    ServerApp.io?.to(player2.socketId).emit("match_found", {
+  
+    SocketEmitter.io?.to(player2.socketId).emit("match_found", {
       battleId: battle.id,
       battleCode: battle.battleCode,
       opponent: player1.username,

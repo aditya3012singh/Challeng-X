@@ -1,18 +1,28 @@
 import Redis from "ioredis";
+import env from "../config/env.js";
+import logger from "../utils/logger.js";
+
+const redisConfig = {
+  host: env.REDIS_HOST,
+  port: env.REDIS_PORT,
+  password: env.REDIS_PASSWORD,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
+  maxRetriesPerRequest: null,
+};
 
 class RedisClient {
-  static client = new Redis({
-    host: process.env.REDIS_HOST || "redis",
-    port: process.env.REDIS_PORT || 6379
-  });
+  static client = env.REDIS_URL ? new Redis(env.REDIS_URL, redisConfig) : new Redis(redisConfig);
 }
 
 RedisClient.client.on("connect", () => {
-  console.log("✅ Redis connected");
+  logger.info("✅ Redis connected");
 });
 
 RedisClient.client.on("error", (err) => {
-  console.error("❌ Redis error:", err);
+  logger.error("❌ Redis error:", err);
 });
 
-export default RedisClient;
+export default RedisClient;

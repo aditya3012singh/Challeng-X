@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import env from "./config/env.js";
 import App from "./app.js";
 import http from "http";
 import { Server } from "socket.io";
@@ -7,6 +6,7 @@ import SquidGameSocket from "./config/squidGameSocket.js";
 import BattleService from "./services/battle.service.js";
 import logger from "./utils/logger.js";
 import SocketServer from "./socket/socketServer.js";
+import SocketEmitter from "./config/socket.js";
 import Redis from "ioredis";
 
 class ServerApp {
@@ -21,8 +21,8 @@ class ServerApp {
   }
 
   static setupRedisSubscriber(io) {
-    if (process.env.REDIS_URL) {
-      const subscriber = new Redis(process.env.REDIS_URL);
+    if (env.REDIS_URL) {
+      const subscriber = new Redis(env.REDIS_URL);
 
       subscriber.subscribe("worker_events", (err, count) => {
         if (err) {
@@ -71,12 +71,22 @@ class ServerApp {
     const server = this.createServer(app);
 
     this.io = this.createIo(server);
+    SocketEmitter.setIo(this.io);
     this.setupRedisSubscriber(this.io);
 
     // Initialize Squid Game socket handlers
     SquidGameSocket.initializeSquidGameSocket(this.io);
 
-    const PORT = process.env.PORT || 4000;
+    const PORT = env.PORT;
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        logger.error(`❌ Port ${PORT} is already in use. Please kill the process holding it.`);
+      } else {
+        logger.error(`❌ Server error: ${err.message}`);
+      }
+      process.exit(1);
+    });
+
     server.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
     });

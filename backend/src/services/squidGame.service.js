@@ -2,7 +2,7 @@
 
 import Database from "../config/db.js";
 import SquidGameConfig from "../constants/squidGameConfig.js";
-import SocketServer from "../socket/socketServer.js";
+import SocketEmitter from "../config/socket.js";
 import SquidGameSocket from "../config/squidGameSocket.js";
 import SubmissionService from "./submission.service.js";
 import S3Service from "./s3.service.js";
@@ -335,8 +335,8 @@ class SquidGameService {
     );
     
     // Broadcast round start to all participants
-    if (SocketServer.io) {
-      SquidGameSocket.broadcastRoundStart(SocketServer.io, squidGameId, round);
+    if (SocketEmitter.io) {
+      SquidGameSocket.broadcastRoundStart(SocketEmitter.io, squidGameId, round);
     }
 
     return round;
@@ -445,8 +445,8 @@ class SquidGameService {
 
     // 6. Broadcast updated leaderboard
     const leaderboard = await this.getSquidGameLeaderboard(squidGameId);
-    if (SocketServer.io) {
-      SquidGameSocket.broadcastLeaderboardUpdate(SocketServer.io, squidGameId, leaderboard);
+    if (SocketEmitter.io) {
+      SquidGameSocket.broadcastLeaderboardUpdate(SocketEmitter.io, squidGameId, leaderboard);
     }
 
     return { score, totalScore };
@@ -706,8 +706,8 @@ class SquidGameService {
 
     // Broadcast updated leaderboard
     const leaderboard = await this.getSquidGameLeaderboard(squidGameId);
-    if (SocketServer.io) {
-      SquidGameSocket.broadcastLeaderboardUpdate(SocketServer.io, squidGameId, leaderboard);
+    if (SocketEmitter.io) {
+      SquidGameSocket.broadcastLeaderboardUpdate(SocketEmitter.io, squidGameId, leaderboard);
     }
 
     return updatedParticipant;

@@ -13,9 +13,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
-import dotenv from "dotenv";
+import env from "./config/env.js";
 import logger from "./utils/logger.js";
-dotenv.config();
 
 class App {
   static createApp() {
@@ -24,10 +23,8 @@ class App {
     app.use(helmet());
 
     const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      process.env.FRONTEND_URL,
-      ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+      env.FRONTEND_URL,
+      ...env.ALLOWED_ORIGINS
     ].filter(Boolean);
 
     app.use(cors({
@@ -36,7 +33,7 @@ class App {
         if (!origin) return callback(null, true);
 
         // In development, allow any localhost origin
-        if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
+        if (env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
           return callback(null, true);
         }
 

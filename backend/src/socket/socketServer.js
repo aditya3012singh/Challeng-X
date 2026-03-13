@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import Redis from "ioredis";
+import env from "../config/env.js";
 import logger from "../utils/logger.js";
 import { handleQueue } from "./queueHandlers.js";
 import { joinBattleRoom, handleSubmission, joinSpectatorRoom, handleSpectatorCodeSync, handleSpectatorOutputSync, handleAntiCheatFlag } from "./battleHandlers.js";
@@ -11,10 +12,8 @@ class SocketServer {
 
     static initialize(server) {
         const allowedOrigins = [
-            'http://localhost:5173',
-            'http://localhost:5174',
-            process.env.FRONTEND_URL,
-            ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+            env.FRONTEND_URL,
+            ...env.ALLOWED_ORIGINS
         ].filter(Boolean);
 
         this.io = new Server(server, {
@@ -35,9 +34,19 @@ class SocketServer {
             },
         });
 
-        if (process.env.REDIS_URL) {
+        if (env.REDIS_URL || env.REDIS_HOST) {
             try {
-                const pubClient = new Redis(process.env.REDIS_URL);
+                const redisConfig = {
+                    host: env.REDIS_HOST,
+                    port: env.REDIS_PORT,
+                    password: env.REDIS_PASSWORD,
+                    maxRetriesPerRequest: null,
+                };
+                
+                const pubClient = env.REDIS_URL 
+                    ? new Redis(env.REDIS_URL, { maxRetriesPerRequest: null }) 
+                    : new Redis(redisConfig);
+                
                 const subClient = pubClient.duplicate();
 
                 pubClient.on('error', (err) => logger.error(`Redis PubClient Error: ${err.message}`));
@@ -49,7 +58,7 @@ class SocketServer {
                 logger.warn(`⚠️ Failed to configure Socket.IO Redis Adapter: ${err.message}. Falling back to in-memory adapter.`);
             }
         } else {
-            logger.warn("⚠️ REDIS_URL not found. Socket.IO falling back to in-memory adapter.");
+            logger.warn("⚠️ Redis configuration not found. Socket.IO falling back to in-memory adapter.");
         }
 
         this.setupEventHandlers();

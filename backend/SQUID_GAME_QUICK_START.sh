@@ -8,9 +8,9 @@
 # 2. Replace TOURNAMENT_ID with the ID returned from create
 # 3. Run commands in order
 
-BASE_URL="http://localhost:4000"
-JWT_TOKEN="your-jwt-token-here"
-TOURNAMENT_ID=""
+BASE_URL="${BASE_URL:-http://localhost:4000}"
+JWT_TOKEN="${JWT_TOKEN:-your-jwt-token-here}"
+TOURNAMENT_ID="${TOURNAMENT_ID:-}"
 
 # ============================================
 # 1. CREATE TOURNAMENT

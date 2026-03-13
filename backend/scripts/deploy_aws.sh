@@ -41,10 +41,11 @@ else
 fi
 
 # 3. Start Redis Server via Docker
-echo ">>> Starting Redis container..."
+REDIS_PORT="${REDIS_PORT:-6379}"
+echo ">>> Starting Redis container on port $REDIS_PORT..."
 if ! sudo docker ps | grep -q 'codearena-redis'; then
-    sudo docker run -d --name codearena-redis -p 6379:6379 --restart always redis:7-alpine
-    echo ">>> Redis started on port 6379."
+    sudo docker run -d --name codearena-redis -p "$REDIS_PORT:6379" --restart always redis:7-alpine
+    echo ">>> Redis started on port $REDIS_PORT."
 else
     echo ">>> Redis is already running."
 fi
