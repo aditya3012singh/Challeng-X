@@ -67,28 +67,31 @@ class MatchmakingService {
   }
 
   /**
-   * Remove player from matchmaking queue
-   * @param {string} userId 
-   */
-  static async leaveQueue(userId) {
-    const queueDataStr = await RedisClient.client.get(`matchmaking:user:${userId}`);
+/**
+ * Remove player from matchmaking queue
+ * @param {string} userId
+ */
+static async leaveQueue(userId) {
 
-    if (!queueDataStr) {
-      throw new Error("Not in queue");
-    }
+  const queueDataStr = await RedisClient.client.get(`matchmaking:user:${userId}`);
 
-    const queueData = JSON.parse(queueDataStr);
-
-    // Remove from all difficulty queues
-    await Promise.all([
-      RedisClient.client.del(`matchmaking:user:${userId}`),
-      RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:EASY`, userId),
-      RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:MEDIUM`, userId),
-      RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:HARD`, userId)
-    ]);
-
-    return { message: "Removed from queue" };
+  // If user already not in queue, don't crash server
+  if (!queueDataStr) {
+    return { message: "User already not in queue" };
   }
+
+  const queueData = JSON.parse(queueDataStr);
+
+  // Remove from all queues
+  await Promise.all([
+    RedisClient.client.del(`matchmaking:user:${userId}`),
+    RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:EASY`, userId),
+    RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:MEDIUM`, userId),
+    RedisClient.client.zrem(`${MATCHMAKING_QUEUE}:HARD`, userId)
+  ]);
+
+  return { message: "Removed from queue" };
+}
 
   /**
    * Find a match for a player
