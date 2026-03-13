@@ -1,0 +1,56 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/codearena-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/codearena-backend:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code (for docker-compose.yml)
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/CodeArena || git clone https://github.com/${{ github.repository }} ~/CodeArena
+            cd ~/CodeArena
+            git pull origin main
+            
+            # Create production env from secret
+            echo "${{ secrets.ENV_PRODUCTION }}" > ./backend/.env.production
+            
+            # Pull latest images and restart
+            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+            docker-compose pull backend worker
+            docker-compose up -d
+            
+            # Optional: Clean up old images
+            docker image prune -f

@@ -17,7 +17,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // backend/src/services/ → go up 2 levels → backend/ → runners/
-const RUNNERS_DIR = path.resolve(__dirname, "../../runners");
+const RUNNERS_DIR = process.env.CODEARENA_RUNNERS_PATH || path.resolve(__dirname, "../../runners");
 console.log(`[judge] RUNNERS_DIR = ${RUNNERS_DIR}`);
 
 // Convert a Windows absolute path to a Docker-compatible /drive/... path

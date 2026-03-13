@@ -34,13 +34,26 @@ fi
 # 4. Create Directory Structure
 mkdir -p certbot/conf certbot/www
 
-# 5. Instructions for user
+# 5. Build Language Runners
+echo "🛠 Building Language Runner Images..."
+sudo docker build -t codearena-java ./backend/docker/java
+sudo docker build -t codearena-cpp ./backend/docker/cpp
+sudo docker build -t codearena-python ./backend/docker/python
+sudo docker build -t codearena-c ./backend/docker/c
+sudo docker build -t codearena-js ./backend/docker/js
+
+# 6. Detect Host Path for Runners
+export CODEARENA_RUNNERS_PATH="$(pwd)/backend/runners"
+echo "CODEARENA_RUNNERS_PATH=${CODEARENA_RUNNERS_PATH}" >> .env
+
+# 7. Instructions for user
 echo "--------------------------------------------------------"
-echo "✅ Prerequisites installed!"
+echo "✅ Prerequisites installed and Runner images built!"
 echo "Next Steps:"
 echo "1. Create ./backend/.env.production with your secrets."
 echo "2. Update server_name in ./backend/deploy/nginx.conf with your domain."
-echo "3. Run 'docker-compose up -d' to start the services."
-echo "4. Obtain SSL Certificate (First time only):"
+echo "3. Run 'export CODEARENA_RUNNERS_PATH=$(pwd)/backend/runners' (or it's already in .env)"
+echo "4. Run 'docker-compose up -d' to start the services."
+echo "5. Obtain SSL Certificate (First time only):"
 echo "   docker-compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot/ -d yourdomain.com"
 echo "--------------------------------------------------------"

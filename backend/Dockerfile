@@ -9,6 +9,10 @@ COPY package*.json ./
 # Install ALL dependencies (including devDependencies for build if needed)
 RUN npm ci
 
+# Copy Prisma schema for generation
+COPY prisma ./prisma/
+RUN npx prisma generate
+
 # Copy source code and other necessary files
 COPY . .
 
@@ -19,6 +23,9 @@ RUN rm -rf .env node_modules
 FROM node:20-alpine
 
 WORKDIR /app
+
+# Install Docker CLI for sibling container orchestration
+RUN apk add --no-cache docker-cli
 
 # Copy only production dependencies
 COPY package*.json ./

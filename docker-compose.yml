@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   backend:
+    image: ${DOCKERHUB_USERNAME:-your-username}/codearena-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -10,8 +11,32 @@ services:
     environment:
       - NODE_ENV=production
       - REDIS_URL=redis://redis:6379
+      - CODEARENA_RUNNERS_PATH=${CODEARENA_RUNNERS_PATH}
     env_file:
       - ./backend/.env.production
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - redis
+    networks:
+      - codearena-network
+
+  worker:
+    image: ${DOCKERHUB_USERNAME:-your-username}/codearena-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: codearena-worker
+    command: npm run worker:prod
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - CODEARENA_RUNNERS_PATH=${CODEARENA_RUNNERS_PATH}
+    env_file:
+      - ./backend/.env.production
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - redis
     networks:
