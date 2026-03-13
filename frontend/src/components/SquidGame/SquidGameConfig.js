@@ -11,4 +11,4 @@ export const ROUND_CONFIG = [
     { round: 5, difficulty: "HARD", time: "10 min", eliminate: "All but Winner" },
 ];
 
-export const SOCKET_URL = import.meta.env.VITE_API_URL || "http://56.228.2.167:4000";
+export const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";

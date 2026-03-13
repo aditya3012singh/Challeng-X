@@ -10,10 +10,28 @@ class SocketServer {
     static io = null;
 
     static initialize(server) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:5174',
+            process.env.FRONTEND_URL,
+            ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+        ].filter(Boolean);
+
         this.io = new Server(server, {
             cors: {
-                origin: "*",
+                origin: (origin, callback) => {
+                    // In development, allow any localhost origin
+                    if (process.env.NODE_ENV === 'development' && (!origin || origin.startsWith('http://localhost:'))) {
+                        return callback(null, true);
+                    }
+                    if (!origin || allowedOrigins.includes(origin)) {
+                        callback(null, true);
+                    } else {
+                        callback(new Error(`Origin ${origin} not allowed by CORS`));
+                    }
+                },
                 methods: ["GET", "POST"],
+                credentials: true
             },
         });
 

@@ -23,6 +23,13 @@ class App {
     
     app.use(helmet());
 
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      process.env.FRONTEND_URL,
+      ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+    ].filter(Boolean);
+
     app.use(cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl)
@@ -33,17 +40,10 @@ class App {
           return callback(null, true);
         }
 
-        // In production, use specific allowed origins
-        const allowedOrigins = [
-          'http://localhost:5173',
-          'http://localhost:5174',
-          process.env.FRONTEND_URL
-        ].filter(Boolean);
-
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
-          callback(new Error('Not allowed by CORS'));
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
         }
       },
       credentials: true, // 🔥 REQUIRED for cookies
