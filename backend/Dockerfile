@@ -1,5 +1,5 @@
 # Production Build Stage
-FROM node:20-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -20,12 +20,12 @@ COPY . .
 RUN rm -rf .env node_modules
 
 # Stage 2: Run Stage
-FROM node:20-alpine
+FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# Install Docker CLI for sibling container orchestration
-RUN apk add --no-cache docker-cli
+# Install Docker CLI and OpenSSL for sibling container orchestration and Prisma
+RUN apt-get update -y && apt-get install -y docker.io openssl && rm -rf /var/lib/apt/lists/*
 
 # Copy only production dependencies
 COPY package*.json ./
@@ -33,6 +33,9 @@ RUN npm ci --only=production
 
 # Copy built app (or source if no build step) from builder
 COPY --from=builder /app ./
+
+# Generate Prisma Client in the final image
+RUN npx prisma generate
 
 # Create a non-root user for security (Optional: requires GID matching host docker group)
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
