@@ -34,9 +34,9 @@ RUN npm ci --only=production
 # Copy built app (or source if no build step) from builder
 COPY --from=builder /app ./
 
-# Create a non-root user for security
+# Create a non-root user for security (Optional: requires GID matching host docker group)
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
+# USER appuser 
 
 # Set production environment
 ENV NODE_ENV=production
