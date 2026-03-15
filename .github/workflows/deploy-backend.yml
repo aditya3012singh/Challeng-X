@@ -25,6 +25,21 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             cd ~/codearena/backend
             git pull origin main
+            
+            # Create production environment file from secrets
+            echo "${{ secrets.ENV_PRODUCTION }}" > .env
+            
+            # Install dependencies and update Prisma client
             npm install
             npx prisma generate
-            pm2 restart ecosystem.config.cjs
+            
+            # Run database migrations
+            npx prisma migrate deploy
+            
+            # Ensure Docker Runner Images are built
+            docker build -t codearena-java ./docker/java
+            docker build -t codearena-cpp ./docker/cpp
+            
+            # Restart PM2 processes with updated environment
+            pm2 restart ecosystem.config.cjs --update-env
+            pm2 save
