@@ -31,7 +31,7 @@ sudo systemctl enable nginx
 
 echo ">>> 4. Setting up SSL via Certbot Let's Encrypt..."
 echo "You will be prompted to enter your email address for renewal notices."
-sudo certbot --nginx -d api.codearena.live
+sudo certbot --nginx -d api-codearena.duckdns.org
 
 echo "=========================================================="
 echo " Setup complete! Nginx is now securing your API."
