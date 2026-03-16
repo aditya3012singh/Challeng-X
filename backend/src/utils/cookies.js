@@ -1,8 +1,13 @@
 import env from "../config/env.js";
 
 const isProd = env.NODE_ENV === "production";
-const cookieSameSite = (isProd ? "none" : "lax");
-const cookieSecure = isProd;
+
+// Calculate Secure and SameSite based on environment
+// 🛡️ CRITICAL: If using HTTP on EC2, Secure=true will block cookies.
+// We allow Secure=false even in prod IF we detect it's not a secure context (though in code we usually rely on env)
+// For now, let's make it conditional on a new var or just safer defaults.
+const cookieSecure = isProd && !env.FRONTEND_URL.startsWith("http://"); 
+const cookieSameSite = isProd ? (cookieSecure ? "none" : "lax") : "lax";
 
 class CookieOptions {
   static accessCookieOptions = {
