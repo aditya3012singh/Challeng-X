@@ -87,7 +87,7 @@ const worker = new Worker(
                             passed: progress.passed,
                             language: submission.language
                         }
-                    }));
+                    })).catch(err => console.error("Redis publish error PROGRESS:", err));
                 }
             );
 
@@ -143,7 +143,7 @@ const worker = new Worker(
                         executionTimeMs,
                         language: submission.language
                     }
-                }));
+                })).catch(err => console.error("Redis publish error RUN:", err));
                 return;
             }
 
@@ -176,7 +176,7 @@ const worker = new Worker(
                         errorMessage: failed.error,
                         language: submission.language
                     }
-                }));
+                })).catch(err => console.error("Redis publish error FAILED submit:", err));
 
                 return;
             }
@@ -230,7 +230,7 @@ const worker = new Worker(
                     beatsPercentile,
                     language: submission.language
                 }
-            }));
+            })).catch(err => console.error("Redis publish error PASSED submit:", err));
 
             // Notify clients that the battle is over via pub/sub
             if (battleFinished) {
@@ -241,7 +241,7 @@ const worker = new Worker(
                         battleId,
                         winnerId: battleWinnerId
                     }
-                }));
+                })).catch(err => console.error("Redis publish error BATTLE_END:", err));
             }
 
         } catch (err) {

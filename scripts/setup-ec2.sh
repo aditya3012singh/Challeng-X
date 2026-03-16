@@ -39,8 +39,6 @@ echo "🛠 Building Language Runner Images..."
 sudo docker build -t codearena-java ./backend/docker/java
 sudo docker build -t codearena-cpp ./backend/docker/cpp
 sudo docker build -t codearena-python ./backend/docker/python
-sudo docker build -t codearena-c ./backend/docker/c
-sudo docker build -t codearena-js ./backend/docker/js
 
 # 6. Detect Host Path for Runners
 export CODEARENA_RUNNERS_PATH="$(pwd)/backend/runners"
