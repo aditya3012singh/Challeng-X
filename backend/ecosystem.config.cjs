@@ -2,7 +2,7 @@ module.exports = {
     apps: [
         {
             name: "codearena-api",
-            script: "./src/server.js",
+            script: "./src/index.js",
             instances: "max", // Scale across available CPU cores in OCI Ampere A1
             exec_mode: "cluster", // Enables PM2 load balancing between Node.js instances
             autorestart: true,
