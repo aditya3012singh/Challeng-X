@@ -16,9 +16,16 @@ class ServerApp {
     return http.createServer(app);
   }
 
-  static createIo(server) {
-    return SocketServer.initialize(server);
+  const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://localhost:5173",
+      "https://luminous-banoffee-e60548.netlify.app",
+      "https://codearena-survivalwars.netlify.app"
+    ],
+    credentials: true
   }
+});
 
   static setupRedisSubscriber(io) {
     if (env.REDIS_URL) {

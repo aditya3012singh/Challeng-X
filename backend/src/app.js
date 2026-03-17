@@ -22,30 +22,18 @@ class App {
     
     app.use(helmet());
 
-    const allowedOrigins = [
-      env.FRONTEND_URL,
-      ...env.ALLOWED_ORIGINS
-    ].filter(Boolean);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://code-arena-survival-wars.vercel.app",
+  "https://luminous-banoffee-e60548.netlify.app",
+"https://codearena-survivalwars.netlify.app"
+];
 
-    app.use(cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl)
-        if (!origin) return callback(null, true);
-
-        // In development, allow any localhost origin
-        if (env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
-          return callback(null, true);
-        }
-
-        if (allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error(`Origin ${origin} not allowed by CORS`));
-        }
-      },
-      credentials: true, // 🔥 REQUIRED for cookies
-    }));
-
+app.use(cors({
+	origin:true,
+	credentials:true
+}));
     app.use(express.json());
 
     // Connect Morgan to Winston: logs HTTP requests to our file-based logger instead of standard console out
@@ -67,11 +55,16 @@ class App {
     app.use("/api/team-battle", TeamBattleRoutes.createRouter());
     app.use("/api/squid-game", SquidGameRoutes.createRouter());
 
-    // Health Check for production Monitoring
+    app.get("/", (req, res) => {
+      res.status(200).json({ status: "your are live", timestamp: new Date().toISOString() });
+    });// Health Check for production Monitoring
     app.get("/api/health", (req, res) => {
       res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
     });
-
+	    // 404 Handler for undefined routes
+    app.use((req, res, next) => {
+      res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+    });
     // Centralized Error Handler (must be the last middleware)
     app.use((err, req, res, next) => {
       import("./middlewares/errorHandler.middleware.js").then(({ default: errorHandler }) => {
