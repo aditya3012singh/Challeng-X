@@ -7,8 +7,8 @@ let socket = null;
 export const getSocket = () => {
   if (!socket) {
     socket = io(SOCKET_URL, {
-      auth: {
-        token: localStorage.getItem("accessToken")
+      auth: (cb) => {
+        cb({ token: localStorage.getItem("accessToken") });
       },
       withCredentials: true,
       transports: ['websocket'],
@@ -31,7 +31,7 @@ export const getSocket = () => {
 };
 
 export const isSocketConnected = () => {
-    return socket && socket.connected;
+  return socket && socket.connected;
 };
 
 export const disconnectSocket = () => {
