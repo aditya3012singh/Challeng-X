@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getSocket } from "../../lib/socket";
+import { getSocket, isSocketConnected } from "../../lib/socket";
 import { joinMatchmaking, leaveMatchmaking, getQueueStatus } from "../../store/api/matchmaking.thunk";
 import { setMatchFound, resetMatchmaking } from "../../store/slices/matchmaking.slice";
 
 export const FindMatch = () => {
     const [selectedDifficulty, setSelectedDifficulty] = useState("MEDIUM");
+    const [connected, setConnected] = useState(isSocketConnected());
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -16,6 +17,12 @@ export const FindMatch = () => {
 
     useEffect(() => {
         const socket = getSocket();
+
+        const onConnect = () => setConnected(true);
+        const onDisconnect = () => setConnected(false);
+
+        socket.on("connect", onConnect);
+        socket.on("disconnect", onDisconnect);
 
         // Listen for match found
         socket.on("match_found", (data) => {
@@ -37,6 +44,8 @@ export const FindMatch = () => {
         }
 
         return () => {
+            socket.off("connect", onConnect);
+            socket.off("disconnect", onDisconnect);
             socket.off("match_found");
             socket.off("matchmakingError");
             if (statusInterval) clearInterval(statusInterval);
@@ -182,11 +191,15 @@ export const FindMatch = () => {
 
                         <button
                             onClick={handleJoinQueue}
-                            disabled={loading}
-                            className="w-full py-6 bg-[var(--color-primary)] text-black font-black text-xs uppercase tracking-[0.4em] hover:bg-white transition-all transform active:scale-95 shadow-2xl"
+                            disabled={loading || !connected}
+                            className={`w-full py-6 font-black text-xs uppercase tracking-[0.4em] transition-all transform active:scale-95 shadow-2xl ${
+                                (loading || !connected) 
+                                ? "bg-slate-800 text-slate-500 cursor-not-allowed opacity-50" 
+                                : "bg-[var(--color-primary)] text-black hover:bg-white"
+                            }`}
                             style={{ borderRadius: "2px" }}
                         >
-                            {loading ? "Establishing Link..." : "Initialize Matchmaking →"}
+                            {!connected ? "Initializing Socket..." : loading ? "Establishing Link..." : "Initialize Matchmaking →"}
                         </button>
                     </div>
                 )}

@@ -12,8 +12,11 @@ class MatchmakingController {
     }
 
     if (!socketId) {
+        console.warn(`[Matchmaking] Join failed for user ${userId}: No socket ID provided`);
         return res.status(400).json({ message: "Socket ID required" });
     }
+
+    console.log(`[Matchmaking] User ${userId} joining queue for ${difficulty} with socket ${socketId}`);
 
     try {
         const result = await MatchmakingService.joinQueue(userId, difficulty, socketId);
