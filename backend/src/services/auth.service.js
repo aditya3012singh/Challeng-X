@@ -176,7 +176,7 @@ class AuthService {
     res
       .cookie("accessToken", newAccessToken, CookieOptions.accessCookieOptions)
       .cookie("refreshToken", newRefreshToken, CookieOptions.refreshCookieOptions)
-      .json({ message: "Token refreshed" });
+      .json({ message: "Token refreshed", accessToken: newAccessToken });
   }
 }
 

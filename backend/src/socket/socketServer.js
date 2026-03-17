@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import Redis from "ioredis";
+import jwt from "jsonwebtoken";
 import env from "../config/env.js";
 import logger from "../utils/logger.js";
 import { handleQueue } from "./queueHandlers.js";
@@ -61,21 +62,37 @@ class SocketServer {
             logger.warn("⚠️ Redis configuration not found. Socket.IO falling back to in-memory adapter.");
         }
 
+        this.setupMiddleware();
         this.setupEventHandlers();
 
         return this.io;
     }
 
+    static setupMiddleware() {
+        this.io.use((socket, next) => {
+            const token = socket.handshake.auth?.token;
+
+            if (!token) {
+                logger.warn(`🛑 Connection rejected: No token provided (${socket.id})`);
+                return next(new Error("Authentication error: Token required"));
+            }
+
+            try {
+                const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET);
+                socket.user = decoded;
+                socket.userId = decoded.id; // Map for convenience
+                logger.info(`🔐 Socket Authenticated: ${decoded.id} (${socket.id})`);
+                next();
+            } catch (err) {
+                logger.warn(`🛑 Connection rejected: Invalid token (${socket.id})`);
+                next(new Error("Authentication error: Invalid token"));
+            }
+        });
+    }
+
     static setupEventHandlers() {
         this.io.on("connection", (socket) => {
-            logger.info(`🟢 User connected: ${socket.id}`);
-
-            // 1. Player Connection (Auto-reply based on prompt)
-            socket.on("player_connected", (payload) => {
-                logger.info(`Player connected event: ${payload?.userId}`);
-                socket.userId = payload?.userId;
-                socket.emit("player_ready");
-            });
+            logger.info(`🟢 User connected: ${socket.id} (User: ${socket.userId})`);
 
             // 2. Queue Handlers
             socket.on("join_queue", (payload) => handleQueue(this.io, socket, payload));

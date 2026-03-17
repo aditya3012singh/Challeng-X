@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://api-codearena.duckdns.org/api",
   withCredentials: true,
   timeout: 10000,
   headers: {
@@ -16,6 +16,12 @@ api.interceptors.request.use(
     if (import.meta.env.DEV) {
       console.log(`📤 ${config.method.toUpperCase()} ${config.url}`);
     }
+    
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     // Cookies are automatically sent via withCredentials: true
     return config;
   },

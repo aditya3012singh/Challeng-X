@@ -27,6 +27,7 @@ class AuthController {
                 .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
                 .json({
                     message: "Login successful",
+                    accessToken,
                     user: {
                         id: user.id,
                         username: user.username,
@@ -60,6 +61,7 @@ class AuthController {
                 .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
                 .json({
                     message,
+                    accessToken,
                     user: {
                         id: user.id,
                         username: user.username,

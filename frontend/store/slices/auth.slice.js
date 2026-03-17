@@ -38,6 +38,9 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload.user;
+                if (action.payload.accessToken) {
+                    localStorage.setItem("accessToken", action.payload.accessToken);
+                }
                 state.error = null;
             })
             .addCase(login.rejected, (state, action) => {
@@ -54,6 +57,9 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload.user;
+                if (action.payload.accessToken) {
+                    localStorage.setItem("accessToken", action.payload.accessToken);
+                }
                 state.error = null;
             })
             .addCase(register.rejected, (state, action) => {
@@ -68,6 +74,7 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.user = null;
                 state.isAuthenticated = false;
+                localStorage.removeItem("accessToken");
                 state.error = null;
             })
             .addCase(logoutUser.rejected, (state, action) => {
@@ -75,6 +82,7 @@ const authSlice = createSlice({
                 // Still clear state even if logout fails
                 state.user = null;
                 state.isAuthenticated = false;
+                localStorage.removeItem("accessToken");
             })
             // Fetch Profile
             .addCase(fetchUserProfile.pending, (state) => {
@@ -93,14 +101,18 @@ const authSlice = createSlice({
                 state.user = null;
             })
             // Refresh Token
-            .addCase(refreshAccessToken.fulfilled, (state) => {
+            .addCase(refreshAccessToken.fulfilled, (state, action) => {
                 // Token refreshed successfully, cookies updated
                 state.isAuthenticated = true;
+                if (action.payload.accessToken) {
+                    localStorage.setItem("accessToken", action.payload.accessToken);
+                }
             })
             .addCase(refreshAccessToken.rejected, (state) => {
                 // Token refresh failed, user needs to login again
                 state.isAuthenticated = false;
                 state.user = null;
+                localStorage.removeItem("accessToken");
             })
             // Get Public Profile
             .addCase(getPublicProfile.pending, (state) => {
