@@ -35,10 +35,10 @@ export const isSocketConnected = () => {
 };
 
 export const refreshSocketToken = (newToken) => {
-    if (socket) {
-        socket.auth = { token: newToken };
-        console.log("🔄 Socket auth token updated");
-    }
+  if (socket) {
+    socket.auth = { token: newToken };
+    console.log("🔄 Socket auth token updated");
+  }
 };
 
 export const disconnectSocket = () => {

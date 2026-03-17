@@ -20,15 +20,28 @@ class SocketServer {
         this.io = new Server(server, {
             cors: {
                 origin: (origin, callback) => {
-                    // In development, allow any localhost origin
+                    const normalizedOrigin = origin ? origin.toLowerCase().trim() : null;
+                    const normalizedAllowed = allowedOrigins.map(o => o.toLowerCase().trim());
+
+                    // 1. Development bypass
                     if (process.env.NODE_ENV === 'development' && (!origin || origin.startsWith('http://localhost:'))) {
                         return callback(null, true);
                     }
-                    if (!origin || allowedOrigins.includes(origin)) {
-                        callback(null, true);
-                    } else {
-                        callback(new Error(`Origin ${origin} not allowed by CORS`));
+
+                    // 2. Exact match or no origin
+                    if (!origin || normalizedAllowed.includes(normalizedOrigin)) {
+                        logger.info(`🔌 [SocketCORS] ACCEPTED: ${origin}`);
+                        return callback(null, true);
                     }
+
+                    // 3. Pattern match for Netlify/Vercel (very common for rejections)
+                    if (normalizedOrigin.includes('netlify.app') || normalizedOrigin.includes('vercel.app')) {
+                        logger.info(`🔌 [SocketCORS] PATTERN ACCEPTED: ${origin}`);
+                        return callback(null, true);
+                    }
+
+                    logger.warn(`🛑 [SocketCORS] REJECTED: "${origin}" (Allowed: ${normalizedAllowed.join(", ")})`);
+                    callback(new Error(`Origin ${origin} not allowed by CORS`));
                 },
                 methods: ["GET", "POST"],
                 credentials: true
@@ -43,11 +56,11 @@ class SocketServer {
                     password: env.REDIS_PASSWORD,
                     maxRetriesPerRequest: null,
                 };
-                
-                const pubClient = env.REDIS_URL 
-                    ? new Redis(env.REDIS_URL, { maxRetriesPerRequest: null }) 
+
+                const pubClient = env.REDIS_URL
+                    ? new Redis(env.REDIS_URL, { maxRetriesPerRequest: null })
                     : new Redis(redisConfig);
-                
+
                 const subClient = pubClient.duplicate();
 
                 pubClient.on('error', (err) => logger.error(`Redis PubClient Error: ${err.message}`));
@@ -73,19 +86,19 @@ class SocketServer {
             const token = socket.handshake.auth?.token;
 
             if (!token) {
-                logger.warn(`🛑 Connection rejected: No token provided (${socket.id})`);
+                logger.warn(`🛑 [SocketAuth] No token provided (${socket.id})`);
                 return next(new Error("Authentication error: Token required"));
             }
 
             try {
-                const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET);
+                const decoded = jwt.verify(token.trim(), env.JWT_ACCESS_SECRET);
                 socket.user = decoded;
-                socket.userId = decoded.id; // Map for convenience
-                logger.info(`🔐 Socket Authenticated: ${decoded.id} (${socket.id})`);
+                socket.userId = decoded.id;
+                logger.info(`🔐 [SocketAuth] SUCCESS: ${decoded.id} (${socket.id})`);
                 next();
             } catch (err) {
-                logger.warn(`🛑 Connection rejected: Invalid token (${socket.id})`);
-                next(new Error("Authentication error: Invalid token"));
+                logger.warn(`🛑 [SocketAuth] FAILED: ${err.message} (${socket.id})`);
+                next(new Error(`Authentication error: ${err.message}`));
             }
         });
     }
