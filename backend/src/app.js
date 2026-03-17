@@ -20,6 +20,9 @@ class App {
   static createApp() {
     const app = express();
     
+    // Enable trust proxy for secure cookies behind Nginx
+    app.set('trust proxy', 1);
+
     app.use(helmet());
 
 const allowedOrigins = [
