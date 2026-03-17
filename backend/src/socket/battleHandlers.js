@@ -10,6 +10,9 @@ export const joinBattleRoom = (io, socket, payload) => {
     logger.info(`User ${socket.id} joined battle room ${roomName}`);
 
     // Acknowledge join
+    const sockets = io.sockets.adapter.rooms.get(roomName);
+    const count = sockets ? (sockets.size || sockets.length) : 0;
+    logger.info(`🏰 Room ${roomName} now has ${count} member(s)`);
     socket.emit("battle_joined", { battleId, status: "success" });
 
     // Simulate a countdown and start if this was the last player

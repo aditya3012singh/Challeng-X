@@ -97,7 +97,9 @@ class SocketServer {
             // Always join a private room for user-specific events (e.g., practice results)
             const userRoom = `user_${socket.userId}`;
             socket.join(userRoom);
-            logger.info(`🏠 User ${socket.userId} joined private room: ${userRoom}`);
+            const sockets = this.io.sockets.adapter.rooms.get(userRoom);
+            const count = sockets ? (sockets.size || sockets.length) : 0;
+            logger.info(`🏠 User ${socket.userId} joined private room: ${userRoom} (Total in room: ${count})`);
 
             // 2. Queue Handlers
             socket.on("join_queue", (payload) => handleQueue(this.io, socket, payload));
