@@ -8,6 +8,16 @@ import BattleService from "../src/services/battle.service.js";
 import S3Service from "../src/services/s3.service.js";
 import logger from "../src/utils/logger.js";
 
+process.on("uncaughtException", (err) => {
+    console.error("💥 Uncaught Exception:", err);
+    process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("💥 Unhandled Rejection at:", promise, "reason:", reason);
+    process.exit(1);
+});
+
 const redisOptions = {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
@@ -130,6 +140,7 @@ const worker = new Worker(
                     executionTimeMs
                 });
 
+                console.log(`📡 [Worker] Publishing RUN result for subId=${submissionId} (userId=${userId || submission.user.id}, battleId=${battleId || submission.battleId || null})`);
                 publisher.publish("worker_events", JSON.stringify({
                     event: "submission_result",
                     data: {
@@ -143,7 +154,8 @@ const worker = new Worker(
                         executionTimeMs,
                         language: submission.language
                     }
-                })).catch(err => console.error("Redis publish error RUN:", err));
+                })).then(() => console.log(`✅ [Worker] Published RUN result successfully`))
+                  .catch(err => console.error("Redis publish error RUN:", err));
                 return;
             }
 
@@ -158,6 +170,7 @@ const worker = new Worker(
                     executionTimeMs
                 });
 
+                console.log(`📡 [Worker] Publishing FAILED submit result for subId=${submissionId} (userId=${userId || submission.user.id})`);
                 publisher.publish("worker_events", JSON.stringify({
                     event: "submission_result",
                     data: {
@@ -176,7 +189,8 @@ const worker = new Worker(
                         errorMessage: failed.error,
                         language: submission.language
                     }
-                })).catch(err => console.error("Redis publish error FAILED submit:", err));
+                })).then(() => console.log(`✅ [Worker] Published FAILED result successfully`))
+                  .catch(err => console.error("Redis publish error FAILED submit:", err));
 
                 return;
             }
@@ -215,6 +229,7 @@ const worker = new Worker(
                 console.timeEnd(`Job-${job.id}-battle-finish`);
             }
 
+            console.log(`📡 [Worker] Publishing PASSED submit result for subId=${submissionId} (userId=${userId || submission.user.id})`);
             publisher.publish("worker_events", JSON.stringify({
                 event: "submission_result",
                 data: {
@@ -230,7 +245,8 @@ const worker = new Worker(
                     beatsPercentile,
                     language: submission.language
                 }
-            })).catch(err => console.error("Redis publish error PASSED submit:", err));
+            })).then(() => console.log(`✅ [Worker] Published PASSED result successfully`))
+              .catch(err => console.error("Redis publish error PASSED submit:", err));
 
             // Notify clients that the battle is over via pub/sub
             if (battleFinished) {
