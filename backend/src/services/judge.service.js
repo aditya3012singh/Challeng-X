@@ -130,7 +130,14 @@ class WarmContainer {
       setTimeout(() => this._startContainer(), 1000);
     });
 
-    console.log(`🟢 [judge] Warm ${this.language} container initialized`);
+    this._proc.on("error", (err) => {
+        console.error(`❌ [judge] Failed to start ${this.language} container:`, err.message);
+        if (err.code === 'ENOENT') {
+            console.error("🛑 [judge] 'docker' command not found. Please ensure Docker is installed and in your PATH.");
+        }
+    });
+
+    console.log(`🟢 [judge] Warm ${this.language} container initialization attempt started`);
   }
 
   /** Send a batched job and wait for 'finished' JSON. onProgress is called for each test case. */
@@ -214,8 +221,18 @@ class WarmContainerPool {
 // Kill ALL stale codearena containers from previous worker crashes before starting fresh pools.
 // We match by image name (ancestor) for every language, running a single rm -f sweep.
 // This prevents zombie containers from building up across restarts.
+// Check if docker is available before trying to clean up
+let dockerAvailable = false;
 try {
-  console.log("🧹 [judge] Cleaning up stale codearena containers...");
+    execSync("docker --version", { stdio: "ignore" });
+    dockerAvailable = true;
+} catch (e) {
+    console.warn("⚠️  [judge] Docker not found in PATH. Judge containers will not be available.");
+}
+
+if (dockerAvailable) {
+    try {
+      console.log("🧹 [judge] Cleaning up stale codearena containers...");
   const allImages = Object.values(LANGUAGE_CONFIG).map((c) => c.image);
   for (const image of allImages) {
     try {
@@ -234,12 +251,15 @@ try {
 } catch (e) {
   console.warn("⚠️  [judge] Cleanup step failed (non-fatal):", e.message);
 }
+}
 
-// Containers start immediately and stay warm for the lifetime of the worker.
+console.log(`🏗️  [judge] Starting runner pools (Size: ${POOL_SIZE})...`);
 const pools = {};
 for (const lang of Object.keys(LANGUAGE_CONFIG)) {
+  console.log(`⏱️  [judge] Initializing pool for: ${lang}`);
   pools[lang] = new WarmContainerPool(lang, POOL_SIZE);
 }
+console.log("✅ [judge] All runner pools initialized.");
 
 // Clean up containers when the worker process exits
 const shutdown = () => {

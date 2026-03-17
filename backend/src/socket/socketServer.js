@@ -94,6 +94,9 @@ class SocketServer {
         this.io.on("connection", (socket) => {
             logger.info(`🟢 User connected: ${socket.id} (User: ${socket.userId})`);
 
+            // Always join a private room for user-specific events (e.g., practice results)
+            socket.join(`user_${socket.userId}`);
+
             // 2. Queue Handlers
             socket.on("join_queue", (payload) => handleQueue(this.io, socket, payload));
 
