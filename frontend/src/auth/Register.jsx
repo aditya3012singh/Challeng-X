@@ -66,9 +66,18 @@ const Register = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.012] blur-[180px] rounded-full"></div>
       </div>
 
-      <div className="relative max-w-md w-full z-10">
+      <div className="relative max-w-3xl w-full z-10">
         <div className="premium-card p-12 lg:p-16 shadow-2xl" style={{ borderRadius: "2px" }}>
-          <div className="text-center mb-12">
+          <div className="flex flex-col items-center mb-12">
+            <Link to="/" className="flex items-center gap-3 group mb-8 scale-125">
+              <div className="w-10 h-10 bg-[var(--color-primary)] text-black flex items-center justify-center font-black text-xl shadow-[0_0_20px_rgba(255,170,0,0.2)] transition-all" style={{ borderRadius: "2px" }}>
+                CA
+              </div>
+              <div className="text-left">
+                <span className="text-lg font-bold tracking-tight text-white block leading-none">CODE</span>
+                <span className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] block leading-none mt-1">ARENA</span>
+              </div>
+            </Link>
             <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Register</div>
             <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Create Account</h2>
           </div>
@@ -80,75 +89,81 @@ const Register = () => {
               </div>
             )}
 
-            <div className="space-y-8">
-              <div>
-                <label htmlFor="username" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Username
-                </label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
-                  style={{ borderRadius: "2px" }}
-                  placeholder="e.g. johndoe"
-                  value={formData.username}
-                  onChange={handleChange}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+              {/* Left Column: Identifying info */}
+              <div className="space-y-8">
+                <div>
+                  <label htmlFor="username" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
+                    Username
+                  </label>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                    style={{ borderRadius: "2px" }}
+                    placeholder="e.g. johndoe"
+                    value={formData.username}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                    style={{ borderRadius: "2px" }}
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Email Address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
-                  style={{ borderRadius: "2px" }}
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
+              {/* Right Column: Security info */}
+              <div className="space-y-8">
+                <div>
+                  <label htmlFor="password" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                    style={{ borderRadius: "2px" }}
+                    placeholder="••••••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="password" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
-                  style={{ borderRadius: "2px" }}
-                  placeholder="••••••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
-                  style={{ borderRadius: "2px" }}
-                  placeholder="••••••••••••"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
+                    Confirm Password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                    style={{ borderRadius: "2px" }}
+                    placeholder="••••••••••••"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
 

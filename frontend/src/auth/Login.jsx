@@ -45,7 +45,16 @@ const Login = () => {
 
       <div className="relative max-w-md w-full z-10">
         <div className="premium-card p-12 lg:p-16 shadow-2xl" style={{ borderRadius: "2px" }}>
-          <div className="text-center mb-12">
+          <div className="flex flex-col items-center mb-12">
+            <Link to="/" className="flex items-center gap-3 group mb-8 scale-125">
+              <div className="w-10 h-10 bg-[var(--color-primary)] text-black flex items-center justify-center font-black text-xl shadow-[0_0_20px_rgba(255,170,0,0.2)] transition-all" style={{ borderRadius: "2px" }}>
+                CA
+              </div>
+              <div className="text-left">
+                <span className="text-lg font-bold tracking-tight text-white block leading-none">CODE</span>
+                <span className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] block leading-none mt-1">ARENA</span>
+              </div>
+            </Link>
             <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Sign In</div>
             <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Welcome Back</h2>
           </div>

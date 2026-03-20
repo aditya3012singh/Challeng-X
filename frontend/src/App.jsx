@@ -76,9 +76,11 @@ function App() {
 
   return (
     <>
-      <Suspense fallback={null}>
-        <Navbar />
-      </Suspense>
+      {!isAuthRoute && (
+        <Suspense fallback={null}>
+          <Navbar />
+        </Suspense>
+      )}
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center bg-[#050505]">
           <div className="flex flex-col items-center gap-4">
