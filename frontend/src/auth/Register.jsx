@@ -69,21 +69,21 @@ const Register = () => {
       <div className="relative max-w-md w-full z-10">
         <div className="premium-card p-12 lg:p-16 shadow-2xl" style={{ borderRadius: "2px" }}>
           <div className="text-center mb-12">
-            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Establishing Identity // Register</div>
-            <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">New Operative</h2>
+            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Register</div>
+            <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Create Account</h2>
           </div>
 
           <form className="space-y-10" onSubmit={handleSubmit}>
             {(error || validationError) && (
               <div className="border border-red-500/20 bg-red-500/5 text-red-500 p-6 text-[10px] font-bold uppercase tracking-widest text-center" style={{ borderRadius: "2px" }}>
-                ⚠ Registration Exception: {validationError || (error.message || error)}
+                ⚠ Registration Failed: {validationError || (error.message || error)}
               </div>
             )}
 
             <div className="space-y-8">
               <div>
                 <label htmlFor="username" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Operator Designation
+                  Username
                 </label>
                 <input
                   id="username"
@@ -92,7 +92,7 @@ const Register = () => {
                   required
                   className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
-                  placeholder="USERNAME_X"
+                  placeholder="e.g. johndoe"
                   value={formData.username}
                   onChange={handleChange}
                 />
@@ -100,7 +100,7 @@ const Register = () => {
 
               <div>
                 <label htmlFor="email" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Communication Node
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -109,7 +109,7 @@ const Register = () => {
                   required
                   className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
-                  placeholder="OPERATOR@CORE.ARENA"
+                  placeholder="your@email.com"
                   value={formData.email}
                   onChange={handleChange}
                 />
@@ -117,7 +117,7 @@ const Register = () => {
 
               <div>
                 <label htmlFor="password" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Secure Key Generation
+                  Password
                 </label>
                 <input
                   id="password"
@@ -135,7 +135,7 @@ const Register = () => {
 
               <div>
                 <label htmlFor="confirmPassword" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Confirm Strategy Key
+                  Confirm Password
                 </label>
                 <input
                   id="confirmPassword"
@@ -159,15 +159,15 @@ const Register = () => {
                 className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
                 style={{ borderRadius: "2px" }}
               >
-                {loading ? "Initializing Identity..." : "Authorize Access →"}
+                {loading ? "Creating Account..." : "Sign Up →"}
               </button>
             </div>
 
             <div className="text-center">
               <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
-                Authorized operative?{" "}
+                Already have an account?{" "}
                 <Link to="/login" className="text-white hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/10">
-                  Enter Portal
+                  Login
                 </Link>
               </p>
             </div>
