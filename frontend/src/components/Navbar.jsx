@@ -142,7 +142,7 @@ const Navbar = () => {
                 Login
               </Link>
               <Link to="/register" className="px-8 py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl" style={{ borderRadius: "2px" }}>
-                Establish Identity
+                Register
               </Link>
             </div>
           )}

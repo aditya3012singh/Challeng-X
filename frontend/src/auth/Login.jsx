@@ -46,21 +46,21 @@ const Login = () => {
       <div className="relative max-w-md w-full z-10">
         <div className="premium-card p-12 lg:p-16 shadow-2xl" style={{ borderRadius: "2px" }}>
           <div className="text-center mb-12">
-            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Identity Verification // Secure</div>
-            <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Access Portal</h2>
+            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Sign In</div>
+            <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Welcome Back</h2>
           </div>
 
           <form className="space-y-10" onSubmit={handleSubmit}>
             {error && (
               <div className="border border-red-500/20 bg-red-500/5 text-red-500 p-6 text-[10px] font-bold uppercase tracking-widest text-center" style={{ borderRadius: "2px" }}>
-                ⚠ Authorization Fail: {error.message || error}
+                ⚠ Login Failed: {error.message || error}
               </div>
             )}
 
             <div className="space-y-8">
               <div>
                 <label htmlFor="email" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Origin Address
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -69,7 +69,7 @@ const Login = () => {
                   required
                   className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
-                  placeholder="OPERATOR@CORE.ARENA"
+                  placeholder="your@email.com"
                   value={formData.email}
                   onChange={handleChange}
                 />
@@ -77,7 +77,7 @@ const Login = () => {
 
               <div>
                 <label htmlFor="password" className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                  Secure Key
+                  Password
                 </label>
                 <input
                   id="password"
@@ -101,15 +101,15 @@ const Login = () => {
                 className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
                 style={{ borderRadius: "2px" }}
               >
-                {loading ? "Authenticating..." : "Initialize Link →"}
+                {loading ? "Signing In..." : "Sign In →"}
               </button>
             </div>
 
             <div className="text-center">
               <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
-                New operative?{" "}
+                Don't have an account?{" "}
                 <Link to="/register" className="text-white hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/10">
-                  Request Access
+                  Sign Up
                 </Link>
               </p>
             </div>
