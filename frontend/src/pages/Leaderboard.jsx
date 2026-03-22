@@ -74,10 +74,10 @@ export const Leaderboard = () => {
 
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-20 text-center">
-        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Operational Status // Ranks</div>
+        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Global Rankings</div>
         <h1 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Global Leaderboard</h1>
         <p className="text-slate-500 text-lg font-light max-w-2xl mx-auto">
-          Classification of high-efficiency computational operatives.
+          Top players from around the world.
         </p>
       </div>
 
@@ -88,8 +88,8 @@ export const Leaderboard = () => {
             <thead>
               <tr className="border-b border-white/5 bg-white/[0.01]">
                 <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">Rank</th>
-                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">Operator</th>
-                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 text-center">Protocol Wins</th>
+                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">Player</th>
+                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 text-center">Wins</th>
                 <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 text-center">Defeats</th>
                 <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 text-right">ELO Rating</th>
               </tr>
@@ -147,7 +147,7 @@ export const Leaderboard = () => {
                 disabled={currentPage === 1}
                 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white disabled:opacity-20 transition-colors"
               >
-                ← Previous Segment
+                ← Previous Page
               </button>
 
               <div className="flex gap-6">
@@ -173,7 +173,7 @@ export const Leaderboard = () => {
                 disabled={currentPage === totalPages}
                 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white disabled:opacity-20 transition-colors"
               >
-                Next Segment →
+                Next Page →
               </button>
             </div>
           )}
@@ -183,21 +183,21 @@ export const Leaderboard = () => {
       {/* Footer Stats Summary */}
       <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
         <div className="premium-card p-10 border-l border-[var(--color-primary)]/20" style={{ borderRadius: "2px" }}>
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Network Nodes</p>
+          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Total Players</p>
           <p className="text-4xl font-black text-white tabular-nums">
             {rankings[0]?.total || 0}
           </p>
         </div>
 
         <div className="premium-card p-10" style={{ borderRadius: "2px" }}>
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Protocol Page</p>
+          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Current Page</p>
           <p className="text-4xl font-black text-white tabular-nums">
             {currentPage}<span className="text-slate-800 mx-2">/</span>{totalPages}
           </p>
         </div>
 
         <div className="premium-card p-10" style={{ borderRadius: "2px" }}>
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Visible Operands</p>
+          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Players on Page</p>
           <p className="text-4xl font-black text-[var(--color-primary)] tabular-nums">
             {rankings.length}
           </p>

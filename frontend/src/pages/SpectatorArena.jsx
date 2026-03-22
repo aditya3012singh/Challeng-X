@@ -116,7 +116,7 @@ export default function SpectatorArena() {
         return (
             <div className="h-screen flex items-center justify-center bg-[#050505]">
                 <div className="text-[var(--color-primary)] animate-pulse tracking-widest font-mono text-xs uppercase">
-                    Tuning into broadcast...
+                    Connecting to live match...
                 </div>
             </div>
         );
@@ -128,7 +128,7 @@ export default function SpectatorArena() {
             <div className="h-12 border-b border-white/10 flex items-center justify-between px-6 shrink-0 bg-black z-50">
                 <div className="flex items-center gap-4">
                     <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                    <span className="text-red-500 font-bold uppercase tracking-widest text-xs">Live Spectator</span>
+                    <span className="text-red-500 font-bold uppercase tracking-widest text-xs">Watching Live</span>
                 </div>
                 <div className="text-xs font-mono text-gray-500">
                     Battle Code: <span className="text-white font-bold">{currentBattle.battleCode}</span>
@@ -137,7 +137,7 @@ export default function SpectatorArena() {
                     onClick={() => navigate("/")}
                     className="text-xs text-gray-400 hover:text-white uppercase tracking-widest transition-colors"
                 >
-                    [ Leave ]
+                    Leave
                 </button>
             </div>
 

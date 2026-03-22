@@ -237,9 +237,9 @@ export const TeamBattle = () => {
       <div className="max-w-7xl mx-auto px-6">
         {/* Header Section */}
         <div className="mb-20 text-center">
-          <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Tactical Cluster // Social</div>
+          <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Team Battles</div>
           <h1 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Team Battle</h1>
-          <p className="text-slate-500 text-lg font-light max-w-2xl mx-auto">Build your consensus. Coordinate your logic. Overload the opponent node.</p>
+          <p className="text-slate-500 text-lg font-light max-w-2xl mx-auto">Work together with your team to solve problems and win matches.</p>
         </div>
 
         {/* Quick Action Buttons */}
@@ -249,14 +249,14 @@ export const TeamBattle = () => {
             className="px-10 py-4 bg-[var(--color-primary)] text-black font-bold uppercase tracking-widest text-xs hover:bg-white transition-all transform hover:-translate-y-1 shadow-lg"
             style={{ borderRadius: "2px" }}
           >
-            Create Battle Protocol
+            Create Team Battle
           </button>
           <button
             onClick={() => setShowJoinBattleModal(true)}
             className="px-10 py-4 border border-white/10 text-white font-bold uppercase tracking-widest text-xs hover:border-white transition-all transform hover:-translate-y-1"
             style={{ borderRadius: "2px" }}
           >
-            Proxy Join Battle
+            Join Team Battle
           </button>
         </div>
 

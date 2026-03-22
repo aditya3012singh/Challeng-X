@@ -143,12 +143,12 @@ const Profile = () => {
         return (
             <div className="min-h-screen pt-24 bg-[#050505] flex flex-col items-center justify-center text-center px-4">
                 <h2 className="text-2xl font-bold text-gray-400 mb-4 font-mono uppercase tracking-widest">Profile Not Found</h2>
-                <p className="text-gray-500 mb-8 max-w-md">The operator profile you are looking for does not exist or has been decommissioned.</p>
+                <p className="text-gray-500 mb-8 max-w-md">The user profile you are looking for does not exist or has been deleted.</p>
                 <button 
                     onClick={() => navigate('/')}
                     className="px-6 py-3 bg-[var(--color-primary)] text-black font-bold font-mono uppercase tracking-widest hover:bg-white transition-all rounded-sm"
                 >
-                    Return to Base
+                    Return Home
                 </button>
             </div>
         );
@@ -198,7 +198,7 @@ const Profile = () => {
                 
                 {/* Header Action */}
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold font-mono text-[var(--color-primary)] tracking-tight">PLAYER_PROFILE</h1>
+                    <h1 className="text-2xl font-bold font-mono text-[var(--color-primary)] tracking-tight">PLAYER PROFILE</h1>
                     
                     {isOwner && (
                         !isEditing ? (
@@ -223,7 +223,7 @@ const Profile = () => {
                                     disabled={saving}
                                 >
                                     {saving ? <Activity size={14} className="animate-spin" /> : <Check size={14} />} 
-                                    {saving ? 'Saving...' : 'Save Config'}
+                                    {saving ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
                         )
@@ -323,7 +323,7 @@ const Profile = () => {
                         {/* Stats Card */}
                         <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
                             <h3 className="text-sm font-mono text-gray-500 mb-4 flex items-center gap-2">
-                                <Trophy size={14} /> BATTLE_STATISTICS
+                                <Trophy size={14} /> MATCH STATISTICS
                             </h3>
                             
                             <div className="space-y-4">
@@ -370,7 +370,7 @@ const Profile = () => {
                         {/* Coding Platforms */}
                         <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
                             <h3 className="text-sm font-mono text-gray-500 mb-4 flex items-center gap-2">
-                                <Code size={14} /> CODING_PROFILES
+                                <Code size={14} /> CODING PROFILES
                             </h3>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -396,7 +396,7 @@ const Profile = () => {
                         {/* Social Links */}
                         <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
                             <h3 className="text-sm font-mono text-gray-500 mb-4 flex items-center gap-2">
-                                <LayoutDashboard size={14} /> SOCIAL_NETWORK
+                                <LayoutDashboard size={14} /> SOCIAL MEDIA
                             </h3>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

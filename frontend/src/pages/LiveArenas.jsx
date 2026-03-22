@@ -142,7 +142,7 @@ export default function LiveArenas() {
                 <div className="flex items-center justify-between flex-wrap gap-6">
                     <div>
                         <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-2">
-                            Broadcast // Active
+                            Live Matches
                         </div>
                         <h1 className="text-4xl font-black text-white uppercase tracking-tighter font-[family:var(--font-heading)]">
                             Live Arenas
@@ -163,7 +163,7 @@ export default function LiveArenas() {
                         <p className="text-gray-700 text-sm">When players start battling, their arenas will appear here.</p>
                         <div className="mt-8 flex items-center justify-center gap-2 text-[9px] text-gray-600 uppercase tracking-widest">
                             <div className="w-1 h-1 rounded-full bg-gray-600 animate-pulse"></div>
-                            Scanning for signals...
+                            Checking for matches...
                         </div>
                     </div>
                 ) : (
