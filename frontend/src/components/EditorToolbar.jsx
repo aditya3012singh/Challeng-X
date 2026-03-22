@@ -60,7 +60,7 @@ export default function EditorToolbar({
         </div>
 
         <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em]">
-          {status === "running" && "JUDGING..."}
+          {status === "running" && "RUNNING..."}
           {status === "success" && "SUCCESS"}
           {status === "error" && "ERROR"}
         </span>

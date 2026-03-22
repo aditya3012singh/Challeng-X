@@ -68,7 +68,7 @@ function App() {
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
-          <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Synchronizing Node...</div>
+          <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Connecting...</div>
         </div>
       </div>
     );
@@ -85,7 +85,7 @@ function App() {
         <div className="min-h-screen flex items-center justify-center bg-[#050505]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
-            <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Loading Node...</div>
+            <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Loading...</div>
           </div>
         </div>
       }>

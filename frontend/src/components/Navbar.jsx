@@ -89,7 +89,7 @@ const Navbar = () => {
               {/* User Profile */}
               <div className="flex items-center gap-4">
                 <div className="text-right hidden md:block">
-                  <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">OPERATOR</div>
+                  <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">PLAYER</div>
                   <div className="text-sm font-bold text-white leading-none">{user?.username}</div>
                 </div>
 
@@ -116,19 +116,19 @@ const Navbar = () => {
                           onClick={() => navigate(`/profile/${user?.username}`)}
                           className="block w-full text-left px-6 py-4 text-[9px] font-bold text-slate-400 hover:bg-white/5 hover:text-[var(--color-primary)] transition-all uppercase tracking-[0.2em]"
                         >
-                          [ Operator Profile ]
+                          My Profile
                         </button>
                         <button
                           onClick={() => navigate('/history')}
                           className="block w-full text-left px-6 py-4 text-[9px] font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em]"
                         >
-                          [ Battle History ]
+                          Match History
                         </button>
                         <button
                           onClick={handleLogout}
                           className="block w-full text-left px-6 py-4 text-[9px] font-bold text-red-500/80 hover:bg-red-500 hover:text-white transition-all uppercase tracking-[0.2em] border-t border-white/5"
                         >
-                          Disconnect Node
+                          Logout
                         </button>
                       </div>
                     </div>
