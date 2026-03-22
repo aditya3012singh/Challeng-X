@@ -99,7 +99,7 @@ export const FindMatch = () => {
                 {matchFound ? (
                     // Match Found Screen - REFINED
                     <div className="premium-card p-20 text-center shadow-2xl animate-in zoom-in duration-500" style={{ borderRadius: "2px" }}>
-                        <div className="text-[10px] font-bold tracking-[1em] text-[var(--color-success)] uppercase mb-8">Signal Locked</div>
+                        <div className="text-[10px] font-bold tracking-[1em] text-[var(--color-success)] uppercase mb-8">Match Found</div>
 
                         <h1 className="text-6xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Opponent Found</h1>
 
@@ -110,7 +110,7 @@ export const FindMatch = () => {
                             </div>
                         </div>
 
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em] animate-pulse">Initializing Neural Link...</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em] animate-pulse">Joining Match...</p>
                     </div>
                 ) : inQueue ? (
                     // Searching Screen - SOPHISTICATED
@@ -123,19 +123,19 @@ export const FindMatch = () => {
                             </div>
                         </div>
 
-                        <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Searching Perimeter</div>
-                        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Scanning Node</h1>
+                        <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Searching</div>
+                        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Finding Opponent</h1>
                         <p className="text-slate-500 text-sm font-light mb-16 tracking-widest">
-                            Locating <span className="text-white font-bold">{selectedDifficulty}</span> operands for engagement.
+                            Locating <span className="text-white font-bold">{selectedDifficulty}</span> players for a match.
                         </p>
 
                         <div className="grid grid-cols-2 gap-12 mb-16 max-w-md mx-auto">
                             <div className="text-left border-l border-white/10 pl-6">
-                                <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Queue Depth</p>
+                                <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Players Waiting</p>
                                 <p className="text-3xl font-black text-white tabular-nums">{queueSize}</p>
                             </div>
                             <div className="text-left border-l border-white/10 pl-6">
-                                <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Est. Latency</p>
+                                <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Estimated Wait</p>
                                 <p className="text-3xl font-black text-[var(--color-success)] tabular-nums">{formatTime(waitTime)}</p>
                             </div>
                         </div>
@@ -144,20 +144,20 @@ export const FindMatch = () => {
                             onClick={handleLeaveQueue}
                             className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-600 hover:text-red-500 transition-colors"
                         >
-                            [ Disconnect Search ]
+                            Cancel Search
                         </button>
                     </div>
                 ) : (
                     // Selection Screen - PREMIUM
                     <div className="premium-card p-16 lg:p-20 relative overflow-hidden" style={{ borderRadius: "2px" }}>
-                        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">Combat Initiation</div>
+                        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">Find a Match</div>
                         <h1 className="text-6xl font-black text-white mb-12 tracking-tighter uppercase font-[family:var(--font-heading)]">
                             Enter Arena
                         </h1>
 
                         <div className="mb-20">
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mb-10 text-center">
-                                Complexity Protocol
+                                Choose Difficulty
                             </label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 {["EASY", "MEDIUM", "HARD"].map((diff) => (
@@ -199,7 +199,7 @@ export const FindMatch = () => {
                             }`}
                             style={{ borderRadius: "2px" }}
                         >
-                            {!connected ? "Initializing Socket..." : loading ? "Establishing Link..." : "Initialize Matchmaking →"}
+                            {!connected ? "Connecting..." : loading ? "Searching..." : "Find Match →"}
                         </button>
                     </div>
                 )}

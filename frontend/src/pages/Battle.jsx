@@ -83,9 +83,9 @@ export const Battle = () => {
 
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="text-center mb-16">
-          <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Engagement Hub // Solo</div>
+          <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Match Center</div>
           <h1 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
-            Strategic Controller
+            Create a Match
           </h1>
         </div>
 
@@ -100,7 +100,7 @@ export const Battle = () => {
                 }`}
               style={{ borderRadius: "1px" }}
             >
-              Random // Adapt
+              Random Match
             </button>
             <button
               onClick={() => setActiveTab("selected")}
@@ -110,7 +110,7 @@ export const Battle = () => {
                 }`}
               style={{ borderRadius: "1px" }}
             >
-              Custom // Select
+              Custom Match
             </button>
             <button
               onClick={() => setActiveTab("join")}
@@ -120,7 +120,7 @@ export const Battle = () => {
                 }`}
               style={{ borderRadius: "1px" }}
             >
-              Join // Access
+              Join Match
             </button>
           </div>
         </div>
@@ -128,7 +128,7 @@ export const Battle = () => {
         {/* Error */}
         {error && (
           <div className="mb-12 p-6 border border-red-500/20 bg-red-500/5 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center animate-pulse" style={{ borderRadius: "2px" }}>
-            ⚠ Security Exception: {error}
+            ⚠ Error: {error}
           </div>
         )}
 
@@ -139,10 +139,10 @@ export const Battle = () => {
           {activeTab === "random" && (
             <div className="text-center max-w-lg mx-auto">
               <div className="mb-12">
-                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Zero Parameter</div>
-                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Quick Deployment</h2>
+                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Quick Start</div>
+                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Random Match</h2>
                 <p className="text-slate-500 text-sm font-light leading-relaxed">
-                  Instant matchmaking with randomized constraints. Designed for operatives requiring immediate engagement and adaptability testing.
+                  Instant matchmaking with a random problem. Perfect for players who want to jump straight into the action.
                 </p>
               </div>
 
@@ -152,7 +152,7 @@ export const Battle = () => {
                 className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
                 style={{ borderRadius: "2px" }}
               >
-                {loading ? "Initializing..." : "Execute Deployment Sequence →"}
+                {loading ? "Initializing..." : "Start Match →"}
               </button>
             </div>
           )}
@@ -161,22 +161,22 @@ export const Battle = () => {
           {activeTab === "selected" && (
             <div className="w-full max-w-lg mx-auto">
               <div className="text-center mb-12">
-                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Manual Override</div>
-                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Custom Configuration</h2>
+                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Custom Choice</div>
+                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Custom Match</h2>
                 <p className="text-slate-500 text-sm font-light leading-relaxed">
-                  Define specific engagement parameters by selecting a target dataset for combat analysis.
+                  Choose a specific problem to solve and challenge yourself or others.
                 </p>
               </div>
 
               <form onSubmit={handleCreateSelected}>
                 <div className="mb-12">
                   <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
-                    Select Target Problem
+                    Choose a Problem
                   </label>
 
                   {problemsLoading ? (
                     <div className="text-center py-6 text-slate-700 text-[10px] font-bold tracking-widest animate-pulse">
-                      Scanning Database...
+                      Loading Problems...
                     </div>
                   ) : (
                     <select
@@ -186,7 +186,7 @@ export const Battle = () => {
                       style={{ borderRadius: "2px" }}
                       required
                     >
-                      <option value="">-- Select Dataset --</option>
+                      <option value="">-- Select Problem --</option>
                       {problems.map((problem) => (
                         <option key={problem.id} value={problem.id} className="bg-[#050505]">
                           [{problem.difficulty}] {problem.title}
@@ -202,7 +202,7 @@ export const Battle = () => {
                   className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
                   style={{ borderRadius: "2px" }}
                 >
-                  {loading ? "Establishing..." : "Initialize Private Lobby →"}
+                  {loading ? "Creating..." : "Create Private Match →"}
                 </button>
               </form>
             </div>
@@ -212,17 +212,17 @@ export const Battle = () => {
           {activeTab === "join" && (
             <div className="w-full max-w-lg mx-auto">
               <div className="text-center mb-12">
-                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Link Establishment</div>
-                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Access Encryption</h2>
+                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Join Lobby</div>
+                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Enter Match Code</h2>
                 <p className="text-slate-500 text-sm font-light leading-relaxed">
-                  Input designated access credentials to merge with a pre-established engagement node.
+                  Enter a match code to join an existing game with other players.
                 </p>
               </div>
 
               <form onSubmit={handleJoinBattle}>
                 <div className="mb-12 text-center">
                   <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-6">
-                    Subroutine Identifier
+                    Match Code
                   </label>
                   <input
                     type="text"
@@ -241,7 +241,7 @@ export const Battle = () => {
                   className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
                   style={{ borderRadius: "2px" }}
                 >
-                  {loading ? "Authenticating..." : "Establish Link Sequence →"}
+                  {loading ? "Joining..." : "Join Match →"}
                 </button>
               </form>
             </div>

@@ -39,8 +39,8 @@ const Home = () => {
 
                         <p className="max-w-2xl mx-auto text-slate-400 text-lg md:text-xl font-medium leading-relaxed mb-12 tracking-tight">
                             {isAuthenticated
-                                ? "Welcome back, Operator. Your terminal is primed. Join a battle and prove your dominance in the arena."
-                                : "Master your algorithms, compete in intense real-time battles, and climb the global ranks. The next generation of competitive coding is here."}
+                                ? "Welcome back. You're ready to play. Join a match and prove your skills in the arena."
+                                : "Master your algorithms, compete in intense real-time matches, and climb the global ranks. The next generation of competitive coding is here."}
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -49,15 +49,14 @@ const Home = () => {
                                 className="group relative px-10 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.1em] text-xs hover:bg-white transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(204,255,0,0.3)] active:scale-95"
                                 style={{ borderRadius: "4px" }}
                             >
-                                <span className="relative z-10">{isAuthenticated ? "Start Matching" : "Join the Arena"}</span>
-                                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                                {isAuthenticated ? "Start Matching" : "Join the Arena"}
                             </button>
                             <button
                                 onClick={() => navigate(isAuthenticated ? "/battles" : "/login")}
                                 className="px-10 py-5 border border-white/10 hover:border-white/40 text-white font-bold uppercase tracking-[0.1em] text-xs transition-all hover:bg-white/5 backdrop-blur-sm"
                                 style={{ borderRadius: "4px" }}
                             >
-                                {isAuthenticated ? "View Battles" : "Login to Terminal"}
+                                {isAuthenticated ? "View Matches" : "Login"}
                             </button>
                         </div>
                     </div>
@@ -67,11 +66,11 @@ const Home = () => {
                 <section className="py-40 px-6 max-w-7xl mx-auto border-t border-white/[0.03]">
                     <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
                         <div>
-                            <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-4">Engagement Types</div>
-                            <h2 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Select Protocol</h2>
+                            <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-4">Game Modes</div>
+                            <h2 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Choose Game Mode</h2>
                         </div>
                         <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em] mb-1">
-                            [ 03 Modules Available ]
+                            [ 03 Modes Available ]
                         </p>
                     </div>
 
@@ -105,7 +104,7 @@ const Home = () => {
                                     {mode.meta}
                                 </div>
                                 <div className="text-[9px] font-bold text-[var(--color-primary)] tracking-[0.3em] mb-10 pl-1 uppercase">
-                                    Protocol 0{i + 1} // {mode.label}
+                                    Mode 0{i + 1} // {mode.label}
                                 </div>
                                 <h3 className="text-3xl font-black text-white mb-5 group-hover:text-[var(--color-primary)] transition-colors font-[family:var(--font-heading)] uppercase tracking-tight">
                                     {mode.title}
@@ -183,14 +182,14 @@ const Home = () => {
                                     className="w-full mt-14 py-5 border border-white/5 hover:bg-white hover:text-black text-[10px] font-black uppercase tracking-[0.5em] transition-all"
                                     style={{ borderRadius: "2px" }}
                                 >
-                                    Access Full Terminal
+                                    View Leaderboard
                                 </button>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* OPERATOR STATUS CONSOLE */}
+                {/* PLAYER PROFILE */}
                 {user && (
                     <section className="py-40 px-6 bg-gradient-to-b from-[#050505] to-black">
                         <div className="max-w-5xl mx-auto">
@@ -203,7 +202,7 @@ const Home = () => {
                                 </div>
 
                                 <div className="flex-1 text-center md:text-left">
-                                    <div className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-[0.5em] mb-4">Operator Verified</div>
+                                    <div className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-[0.5em] mb-4">Player Profile</div>
                                     <h3 className="text-6xl font-black text-white mb-8 tracking-tighter uppercase font-[family:var(--font-heading)]">{user.username}</h3>
 
                                     <div className="flex gap-12 justify-center md:justify-start">
@@ -233,10 +232,10 @@ const Home = () => {
 
             <footer className="py-24 border-t border-white/[0.03] text-center bg-black/40">
                 <div className="text-[9px] font-bold text-slate-700 uppercase tracking-[1em] mb-4">
-                    Synchronized Code Execution // Code Arena v1.2
+                    Real-time Coding Platform // Code Arena v1.2
                 </div>
                 <div className="text-slate-800 text-[8px] font-bold uppercase tracking-widest">
-                    All Rights Reserved © 2024 CORE.SYNTHESIS
+                    All Rights Reserved © 2024 CODE ARENA
                 </div>
             </footer>
         </div>
