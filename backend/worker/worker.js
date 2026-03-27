@@ -38,8 +38,8 @@ logger.info("✅ Worker connected to Redis Pub/Sub");
 const worker = new Worker(
     "submissionQueue",
     async (job) => {
-        const { submissionId, battleId, squidGameId, userId, type } = job.data;
-        console.log(`📦 Job ${job.id} picked up — subId=${submissionId} type=${type || "SUBMIT"} squidGameId=${squidGameId || "N/A"}`);
+        const { submissionId, battleId, squidGameId, contestId, userId, type } = job.data;
+        console.log(`📦 Job ${job.id} picked up — subId=${submissionId} type=${type || "SUBMIT"} squidGameId=${squidGameId || "N/A"} contestId=${contestId || "N/A"}`);
 
         try {
             console.time(`Job-${job.id}-init`);
@@ -148,6 +148,7 @@ const worker = new Worker(
                         userId: userId || submission.user.id,
                         battleId: battleId || submission.battleId || null,
                         squidGameId: squidGameId || (submission.squidGame ? submission.squidGame.id : null),
+                        contestId: contestId || (submission.contest ? submission.contest.id : null),
                         status: firstFailedIndex === -1 ? "PASSED" : "FAILED",
                         type: "RUN",
                         testCaseResults: runDetails,
@@ -178,6 +179,7 @@ const worker = new Worker(
                         userId: userId || submission.user.id,
                         battleId: battleId || submission.battleId || null,
                         squidGameId: squidGameId || (submission.squidGame ? submission.squidGame.id : null),
+                        contestId: contestId || (submission.contest ? submission.contest.id : null),
                         status: "FAILED",
                         type: "SUBMIT",
                         passedTests: firstFailedIndex,
@@ -237,6 +239,7 @@ const worker = new Worker(
                     userId: userId || submission.user.id,
                     battleId: battleId || submission.battleId || null,
                     squidGameId: squidGameId || (submission.squidGame ? submission.squidGame.id : null),
+                    contestId: contestId || (submission.contest ? submission.contest.id : null),
                     status: "PASSED",
                     type: "SUBMIT",
                     passedTests: total,

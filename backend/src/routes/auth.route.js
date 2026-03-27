@@ -24,6 +24,10 @@ class AuthRoutes {
 		// 👤 Public profile route (no auth required)
 		router.get("/user/:username", AuthController.getPublicProfile);
 
+		// 🔑 Password Reset Routes
+		router.post("/forgot-password", AuthController.forgotPassword);
+		router.post("/reset-password/:token", AuthController.resetPassword);
+
 		return router;
 	}
 }

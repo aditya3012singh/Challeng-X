@@ -14,19 +14,29 @@ import BattleService from "./battle.service.js";
  * @param {string} [params.type] - RUN or SUBMIT
  */
 class SubmissionService {
-  static async processSubmission({ userId, problemId, code, language, battleId, squidGameId, type = "SUBMIT" }) {
+  static async processSubmission({ userId, problemId, code, language, battleId, squidGameId, contestId, type = "SUBMIT" }) {
     return await Database.client.$transaction(async (tx) => {
       // 1. If SUBMIT in a battle, check and increment attempts
       if (battleId && type === "SUBMIT") {
-        const battle = await tx.battle.findUnique({
+        // Try Battle first
+        let battle = await tx.battle.findUnique({
           where: { id: battleId },
           select: { player1Id: true, player2Id: true, attemptsPlayer1: true, attemptsPlayer2: true }
         });
 
+        let isTeamMatch = false;
+        if (!battle) {
+          battle = await tx.teamBattleMatch.findUnique({
+            where: { id: battleId },
+            select: { player1Id: true, player2Id: true, attemptsPlayer1: true, attemptsPlayer2: true }
+          });
+          if (battle) isTeamMatch = true;
+        }
+
         if (!battle) throw new Error("Battle not found.");
 
         const used = battle.player1Id === userId ? battle.attemptsPlayer1 : battle.attemptsPlayer2;
-        if (used >= 10) { // Default remains 3 for production, increased to 10 for audit/dev
+        if (used >= 10) {
           throw new Error("No attempts remaining. You have already submitted 10 times.");
         }
 
@@ -38,13 +48,20 @@ class SubmissionService {
           updateData.attemptsPlayer2 = { increment: 1 };
         }
 
-        const updatedBattle = await tx.battle.update({
-          where: { id: battleId },
-          data: updateData
-        });
+        let updatedBattle;
+        if (isTeamMatch) {
+          updatedBattle = await tx.teamBattleMatch.update({
+            where: { id: battleId },
+            data: updateData
+          });
+        } else {
+          updatedBattle = await tx.battle.update({
+            where: { id: battleId },
+            data: updateData
+          });
+        }
 
-        // Notify listeners about the attempt update (outside transaction ideally, but we'll do it after)
-        // We'll use a post-transaction hook or just emit here since it's non-blocking
+        // Notify listeners about the attempt update
         SocketEmitter.emitToBattle(battleId, "attempts_updated", {
           player1Attempts: updatedBattle.attemptsPlayer1,
           player2Attempts: updatedBattle.attemptsPlayer2
@@ -66,6 +83,7 @@ class SubmissionService {
           language,
           battleId,
           squidGameId,
+          contestId,
           status: "QUEUED",
           type
         }
@@ -76,6 +94,7 @@ class SubmissionService {
         submissionId: submission.id,
         battleId: battleId || null,
         squidGameId: squidGameId || null,
+        contestId: contestId || null,
         userId,
         status: "QUEUED",
         type
@@ -148,7 +167,8 @@ class SubmissionService {
       include: {
         problem: { include: { testcases: true } },
         user: { select: { id: true } },
-        squidGame: { select: { id: true } }
+        squidGame: { select: { id: true } },
+        contest: { select: { id: true } }
       }
     });
   }

@@ -5,7 +5,18 @@ import jwt from "jsonwebtoken";
 import env from "../config/env.js";
 import logger from "../utils/logger.js";
 import { handleQueue } from "./queueHandlers.js";
-import { joinBattleRoom, handleSubmission, joinSpectatorRoom, handleSpectatorCodeSync, handleSpectatorOutputSync, handleAntiCheatFlag } from "./battleHandlers.js";
+import { 
+    joinBattleRoom, 
+    handleSubmission, 
+    joinSpectatorRoom, 
+    handleSpectatorCodeSync, 
+    handleSpectatorOutputSync, 
+    handleAntiCheatFlag,
+    joinTeamBattleLobby,
+    handleStartCountdown,
+    handleFinalBattleStart
+} from "./battleHandlers.js";
+import { handleTeamMessage } from "./teamChat.handler.js";
 import { handleDisconnect, handleReconnect } from "./disconnectHandlers.js";
 
 class SocketServer {
@@ -121,13 +132,19 @@ class SocketServer {
             socket.on("join_battle", (payload) => joinBattleRoom(this.io, socket, payload));
             socket.on("submit_code", (payload) => handleSubmission(this.io, socket, payload));
 
-            // 4. Spectator Handlers
+            // 4. Team Battle Handlers
+            socket.on("join_team_lobby", (payload) => joinTeamBattleLobby(this.io, socket, payload));
+            socket.on("start_battle_countdown", (payload) => handleStartCountdown(this.io, socket, payload));
+            socket.on("trigger_final_battle_start", (payload) => handleFinalBattleStart(this.io, socket, payload));
+            socket.on("send_team_message", (payload) => handleTeamMessage(this.io, socket, payload));
+
+            // 5. Spectator Handlers
             socket.on("join_spectator", (payload) => joinSpectatorRoom(this.io, socket, payload));
             socket.on("spectator_code_sync", (payload) => handleSpectatorCodeSync(this.io, socket, payload));
             socket.on("spectator_output_sync", (payload) => handleSpectatorOutputSync(this.io, socket, payload));
             socket.on("anti_cheat_flag", (payload) => handleAntiCheatFlag(this.io, socket, payload));
 
-            // 5. Reconnect & Disconnect
+            // 6. Reconnect & Disconnect
             socket.on("rejoin_battle", (payload) => handleReconnect(this.io, socket, payload));
             socket.on("disconnect", () => handleDisconnect(this.io, socket));
         });

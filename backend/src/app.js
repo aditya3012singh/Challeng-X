@@ -9,6 +9,7 @@ import MatchmakingRoutes from "./routes/matchmaking.route.js";
 import TeamRoutes from "./routes/team.route.js";
 import TeamBattleRoutes from "./routes/teamBattle.route.js";
 import SquidGameRoutes from "./routes/squidGame.route.js";
+import ContestRoutes from "./routes/contest.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
@@ -57,6 +58,7 @@ app.use(cors({
     app.use("/api/team", TeamRoutes.createRouter());
     app.use("/api/team-battle", TeamBattleRoutes.createRouter());
     app.use("/api/squid-game", SquidGameRoutes.createRouter());
+    app.use("/api/contest", ContestRoutes.createRouter());
 
     app.get("/", (req, res) => {
       res.status(200).json({ status: "your are live", timestamp: new Date().toISOString() });

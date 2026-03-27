@@ -159,7 +159,7 @@ class BattleService {
   // }
 
   static async getBattle(battleId) {
-    const battle = await Database.client.battle.findUnique({
+    let battle = await Database.client.battle.findUnique({
       where: { id: battleId },
       include: {
         problem: {
@@ -178,17 +178,60 @@ class BattleService {
         player2: { select: { id: true, username: true, email: true } },
       }
     });
+
+    let isTeamMatch = false;
+
+    // If not found in 1v1 Battle, check TeamBattleMatch
+    if (!battle) {
+      const teamMatch = await Database.client.teamBattleMatch.findUnique({
+        where: { id: battleId },
+        include: {
+          problem: {
+            select: {
+              id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: {
+                where: {
+                  OR: [
+                    { isHidden: false },
+                    { isSample: true }
+                  ]
+                }
+              }
+            }
+          },
+          player1: { select: { id: true, username: true, email: true } },
+          player2: { select: { id: true, username: true, email: true } },
+          teamBattle: true,
+        }
+      });
+
+      if (teamMatch) {
+        isTeamMatch = true;
+        // Map TeamBattleMatch to Battle structure
+        battle = {
+          ...teamMatch,
+          endedAt: teamMatch.completedAt, // Normalize field name
+          battleCode: teamMatch.teamBattle.battleCode, // Use parent battle code
+        };
+      }
+    }
+
+    if (!battle) {
+      throw new Error("Battle not found");
+    }
+
     // Add winner details if available
     let winner = null;
     if (battle.winnerId) {
       if (battle.player1 && battle.player1.id === battle.winnerId) winner = battle.player1;
       else if (battle.player2 && battle.player2.id === battle.winnerId) winner = battle.player2;
     }
+
     return {
       ...battle,
       player1: battle.player1,
       player2: battle.player2,
       winner,
+      isTeamMatch,
     };
   }
 
@@ -221,50 +264,18 @@ class BattleService {
     return liveBattles;
   }
 
-  static async finishBattleService(battleId, winnerId) {
-    // Atomic update: only transition if still ONGOING
-    // This prevents race conditions where two players pass at the same time
-    try {
-      const battleResult = await Database.client.battle.update({
-        where: {
-          id: battleId,
-          status: "ONGOING" // Essential for atomicity
-        },
-        data: {
-          status: "FINISHED",
-          endedAt: new Date(),
-          winnerId,
-        },
-        include: { player1: true, player2: true }
-      });
-
-      // Perform background tasks (ranking, cache flush)
-      (async () => {
-        try {
-          if (winnerId) {
-            const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
-            await RankingService.updateRanks(battleId, winnerId, loserId);
-          }
-          await RedisClient.client.del("problems:all");
-          console.log(`✅ Atomic Battle Finish: ${battleId} (Winner: ${winnerId})`);
-        } catch (err) {
-          console.error(`❌ Background task error for battle ${battleId}:`, err.message);
-        }
-      })();
-
-      return battleResult;
-    } catch (error) {
-      // P2025 is Prisma's "Record to update not found" error,
-      // which happens here if status is already FINISHED.
-      console.log(`ℹ️ Battle ${battleId} already finished or record missing. Ignoring winner ${winnerId}.`);
-      return null;
-    }
-  }
-
   static async incrementBattleAttempt(battleId, userId) {
-    const battle = await Database.client.battle.findUnique({
+    let battle = await Database.client.battle.findUnique({
       where: { id: battleId }
     });
+
+    let isTeamMatch = false;
+    if (!battle) {
+      battle = await Database.client.teamBattleMatch.findUnique({
+        where: { id: battleId }
+      });
+      if (battle) isTeamMatch = true;
+    }
 
     if (!battle) return;
 
@@ -275,27 +286,83 @@ class BattleService {
       data.attemptsPlayer2 = { increment: 1 };
     }
 
-    const updatedBattle = await Database.client.battle.update({
-      where: { id: battleId },
-      data,
-      include: { player1: true, player2: true }
-    });
+    let updatedBattle;
+    if (isTeamMatch) {
+      updatedBattle = await Database.client.teamBattleMatch.update({
+        where: { id: battleId },
+        data,
+      });
+    } else {
+      updatedBattle = await Database.client.battle.update({
+        where: { id: battleId },
+        data,
+      });
+    }
 
     // Notify listeners about the attempt update
     SocketEmitter.emitToBattle(battleId, "attempts_updated", {
-      player1Attempts: updatedBattle.attemptsPlayer1,
-      player2Attempts: updatedBattle.attemptsPlayer2
+      player1Attempts: updatedBattle.attemptsPlayer1 || 0,
+      player2Attempts: updatedBattle.attemptsPlayer2 || 0
     });
 
-    // Check if both players have failed 10 times
-    if (updatedBattle.attemptsPlayer1 >= 10 && updatedBattle.attemptsPlayer2 >= 10) {
-      // Check if battle is still ongoing (nobody passed)
-      if (updatedBattle.status === "ONGOING") {
-        await this.handleDoubleFailure(battleId, updatedBattle.player1Id, updatedBattle.player2Id);
-      }
-    }
-
     return updatedBattle;
+  }
+
+  static async finishBattleService(battleId, winnerId) {
+    try {
+      // Try Battle first
+      let battleResult = await Database.client.battle.findUnique({ where: { id: battleId } });
+      let isTeamMatch = false;
+      
+      if (!battleResult) {
+        battleResult = await Database.client.teamBattleMatch.findUnique({ where: { id: battleId } });
+        if (battleResult) isTeamMatch = true;
+      }
+
+      if (!battleResult) return null;
+
+      if (isTeamMatch) {
+        battleResult = await Database.client.teamBattleMatch.update({
+          where: { id: battleId, status: "ONGOING" },
+          data: {
+            status: "FINISHED",
+            completedAt: new Date(),
+            winnerId,
+          },
+          include: { player1: true, player2: true }
+        });
+      } else {
+        battleResult = await Database.client.battle.update({
+          where: { id: battleId, status: "ONGOING" },
+          data: {
+            status: "FINISHED",
+            endedAt: new Date(),
+            winnerId,
+          },
+          include: { player1: true, player2: true }
+        });
+      }
+
+      // Perform background tasks (ranking, cache flush)
+      (async () => {
+        try {
+          if (winnerId && !isTeamMatch) {
+            // Only update ranks for 1v1 battles for now (Team ranking is separate)
+            const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
+            await RankingService.updateRanks(battleId, winnerId, loserId);
+          }
+          await RedisClient.client.del("problems:all");
+          console.log(`✅ ${isTeamMatch ? 'Team ' : ''}Battle Finish: ${battleId} (Winner: ${winnerId})`);
+        } catch (err) {
+          console.error(`❌ Background task error for battle ${battleId}:`, err.message);
+        }
+      })();
+
+      return battleResult;
+    } catch (error) {
+      console.log(`ℹ️ Battle ${battleId} already finished or record missing. Ignoring winner ${winnerId}.`);
+      return null;
+    }
   }
 
   static async handleDoubleFailure(battleId, p1Id, p2Id) {

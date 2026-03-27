@@ -8,7 +8,7 @@ class SubmissionController {
   static async submitCode(req, res, next) {
     try {
 
-      const { code, language, battleId, problemId } = req.body;
+      const { code, language, battleId, problemId, contestId } = req.body;
 
       const userId = req.user.id; // from auth middleware
 
@@ -16,6 +16,7 @@ class SubmissionController {
         userId,
         //   battleId,
         problemId,
+        contestId,
         code,
         language,
         status: "QUEUED"
