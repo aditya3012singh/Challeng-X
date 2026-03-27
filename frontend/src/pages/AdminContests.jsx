@@ -11,9 +11,11 @@ const AdminContests = () => {
     title: '',
     description: '',
     startTime: '',
-    endTime: '',
-    problemIds: '' // Commma separated
+    endTime: ''
   });
+
+  const [availableProblems, setAvailableProblems] = useState([]);
+  const [selectedProblems, setSelectedProblems] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -34,7 +36,7 @@ const AdminContests = () => {
     setHandlingProblem(true);
     try {
       // Use standard problem creation endpoint exactly like Admin.jsx
-      const pRes = await axiosInstance.post('/api/problem/create', {
+      const pRes = await axiosInstance.post('/problem/create', {
         title: problemForm.title,
         description: problemForm.description,
         difficulty: problemForm.difficulty,
@@ -43,16 +45,21 @@ const AdminContests = () => {
       });
       const problemId = pRes.data.problem.id;
       
-      await axiosInstance.post('/api/testcase/add', {
+      await axiosInstance.post('/testcase/add', {
         problemId,
         testcases: problemForm.testcases
       });
 
-      // Inject dynamically into main contest form
-      setFormData(prev => ({
-        ...prev,
-        problemIds: prev.problemIds ? `${prev.problemIds}, ${problemId}` : problemId
-      }));
+      // Inject dynamically into main contest form available pool and select it
+      const newLocalProblem = {
+        id: problemId,
+        title: problemForm.title,
+        difficulty: problemForm.difficulty,
+        reward: problemForm.reward
+      };
+      
+      setAvailableProblems(prev => [newLocalProblem, ...prev]);
+      setSelectedProblems(prev => [...prev, problemId]);
 
       setShowProblemModal(false);
       setProblemForm({
@@ -70,8 +77,28 @@ const AdminContests = () => {
   useEffect(() => {
     if (user?.role !== 'ADMIN') {
       navigate('/');
+      return;
     }
+
+    const fetchProblems = async () => {
+      try {
+        const res = await axiosInstance.get('/problem/list');
+        setAvailableProblems(res.data.problems || []);
+      } catch (err) {
+        console.error("Failed to load problems", err);
+      }
+    };
+    
+    fetchProblems();
   }, [user, navigate]);
+
+  const toggleProblemSelection = (problemId) => {
+    setSelectedProblems(prev => 
+      prev.includes(problemId) 
+        ? prev.filter(id => id !== problemId)
+        : [...prev, problemId]
+    );
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -85,11 +112,14 @@ const AdminContests = () => {
     setLoading(true);
     setMessage(null);
 
-    // Parse problem IDs
-    const formattedProblemIds = formData.problemIds
-      .split(',')
-      .map(id => id.trim())
-      .filter(id => id.length > 0);
+    // Use selected array
+    const formattedProblemIds = selectedProblems;
+
+    if (formattedProblemIds.length === 0) {
+      alert('Security Exception: You must select at least 1 problem for the contest.');
+      setLoading(false);
+      return;
+    }
 
     try {
       await axiosInstance.post('/contest/create', {
@@ -105,9 +135,9 @@ const AdminContests = () => {
         title: '',
         description: '',
         startTime: '',
-        endTime: '',
-        problemIds: ''
+        endTime: ''
       });
+      setSelectedProblems([]);
       setTimeout(() => navigate('/contests'), 2000);
     } catch (error) {
       console.error('Error creating contest:', error);
@@ -207,8 +237,8 @@ const AdminContests = () => {
             <div>
               <div className="flex justify-between items-center mb-3">
                  <div className="flex gap-2 items-center">
-                   <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Target Vectors (Problem IDs)</label>
-                   <span className="text-[8px] tracking-widest font-mono text-gray-500 bg-white/5 px-2 py-0.5 rounded">COMMA SEPARATED</span>
+                   <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Target Vectors (Select Problems)</label>
+                   <span className="text-[8px] tracking-widest font-mono text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded">{selectedProblems.length} SELECTED</span>
                  </div>
                  <button 
                    type="button" 
@@ -219,16 +249,31 @@ const AdminContests = () => {
                    🚀 Create Custom Problem
                  </button>
               </div>
-              <textarea
-                name="problemIds"
-                value={formData.problemIds}
-                onChange={handleChange}
-                className="w-full bg-[#050505] border border-white/10 px-4 py-5 text-[var(--color-primary)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-xs h-32 leading-relaxed"
-                style={{ borderRadius: "2px" }}
-                placeholder="550e8400-e29b-41d4-a716-446655440000, 7f8h9j2k-qwer-4567-zxcv-987poiu1234..."
-                required
-              />
-               <p className="text-[8px] text-gray-600 mt-2">You can copy Problem UUIDs directly from the "Manage Problems" matrix.</p>
+              
+              <div className="w-full bg-[#050505] border border-white/10 p-3 transition-all text-sm h-56 overflow-y-auto" style={{ borderRadius: "2px" }}>
+                {availableProblems.map(p => (
+                   <div 
+                     key={p.id}
+                     onClick={() => toggleProblemSelection(p.id)}
+                     className={`cursor-pointer flex items-center justify-between p-4 mb-3 transition-all ${selectedProblems.includes(p.id) ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/50' : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]'}`}
+                     style={{ borderRadius: "2px" }}
+                   >
+                     <div>
+                       <div className={`text-xs font-bold uppercase tracking-wider ${selectedProblems.includes(p.id) ? 'text-[var(--color-primary)]' : 'text-white'}`}>{p.title}</div>
+                       <div className="text-[9px] text-gray-500 font-mono mt-1">{p.difficulty} • {p.reward} pts</div>
+                     </div>
+                     <div className={`flex items-center justify-center w-5 h-5 rounded-sm border transition-all ${selectedProblems.includes(p.id) ? 'bg-[var(--color-primary)] border-[var(--color-primary)]' : 'border-gray-600 bg-black/20'}`}>
+                        {selectedProblems.includes(p.id) && <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                     </div>
+                   </div>
+                ))}
+                {availableProblems.length === 0 && (
+                   <div className="text-center py-12 text-[10px] text-slate-500 uppercase tracking-widest flex flex-col items-center gap-4">
+                     <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                     Parsing Database Vectors...
+                   </div>
+                )}
+              </div>
             </div>
 
             <div className="pt-4">

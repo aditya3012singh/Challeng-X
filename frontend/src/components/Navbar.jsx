@@ -34,6 +34,10 @@ const Navbar = () => {
     { label: "JOIN LOBBY", path: "/join-room" },
   ];
 
+  if (user?.role === "ADMIN") {
+    navItems.push({ label: "HOST CONTEST", path: "/admin-contests" });
+  }
+
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-[#050505]/80 backdrop-blur-md border-b border-white/[0.03] font-[family:var(--font-heading)]">
       <div className="max-w-[1800px] mx-auto px-6 h-20 flex justify-between items-center">
@@ -119,6 +123,22 @@ const Navbar = () => {
                         >
                           My Profile
                         </button>
+                        {user?.role === "ADMIN" && (
+                          <>
+                            <button
+                              onClick={() => navigate("/admin")}
+                              className="block w-full text-left px-6 py-4 text-[9px] font-bold text-[var(--color-primary)] hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em] border-t border-white/5"
+                            >
+                              Admin Dashboard
+                            </button>
+                            <button
+                              onClick={() => navigate("/admin-contests")}
+                              className="block w-full text-left px-6 py-4 text-[9px] font-bold text-[var(--color-primary)] hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em] border-t border-white/5"
+                            >
+                              Host Contest
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => navigate('/history')}
                           className="block w-full text-left px-6 py-4 text-[9px] font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em]"
