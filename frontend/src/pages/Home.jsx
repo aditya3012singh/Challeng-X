@@ -70,34 +70,45 @@ const Home = () => {
                             <h2 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Choose Game Mode</h2>
                         </div>
                         <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em] mb-1">
-                            [ 03 Modes Available ]
+                            [ 04 Modes Available ]
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8 text-left">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-left">
                         {[
                             {
                                 title: "1v1 Duel",
                                 desc: "The ultimate test of speed. Go head-to-head with another coder to solve a problem first. Winner takes the rank points.",
                                 label: "RANKED BATTLE",
-                                meta: "Fast Paced"
+                                meta: "Fast Paced",
+                                path: "/matchmaking"
                             },
                             {
                                 title: "Team War",
                                 desc: "Collaborate with your squad to outscore the opposition. Strategy and coordination are key to winning team battles.",
                                 label: "TEAM PLAY",
-                                meta: "Collaborative"
+                                meta: "Collaborative",
+                                path: "/team-battle"
                             },
                             {
                                 title: "Squid Game",
                                 desc: "Survival of the smartest. A multi-round elimination tournament where only the fastest coders survive to the end.",
                                 label: "SURVIVAL MODE",
-                                meta: "High Stakes"
+                                meta: "High Stakes",
+                                path: "/squid-game"
+                            },
+                            {
+                                title: "Contests",
+                                desc: "Compete against hundreds of developers simultaneously in scheduled events. Climb the live global leaderboard.",
+                                label: "TOURNAMENTS",
+                                meta: "Mass Movement",
+                                path: "/contests"
                             }
                         ].map((mode, i) => (
                             <div
                                 key={i}
-                                className="group p-10 bg-[#0a0a0a] border border-white/5 hover:border-[var(--color-primary)]/50 transition-all relative overflow-hidden"
+                                onClick={() => navigate(mode.path)}
+                                className="group p-10 bg-[#0a0a0a] border border-white/5 hover:border-[var(--color-primary)]/50 transition-all relative overflow-hidden cursor-pointer"
                                 style={{ borderRadius: "12px" }}
                             >
                                 <div className="absolute top-0 right-0 p-6 text-[8px] font-bold text-slate-700 tracking-widest uppercase">

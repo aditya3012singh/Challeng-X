@@ -27,6 +27,7 @@ const Navbar = () => {
   const navItems = [
     { label: "MATCHMAKING", path: "/matchmaking" },
     { label: "BATTLE ROOM", path: "/battles" },
+    { label: "CONTESTS", path: "/contests" },
     { label: "LIVE ARENAS", path: "/live" },
     { label: "TEAM WARS", path: "/team-battle" },
     { label: "SQUID GAME", path: "/squid-game" },

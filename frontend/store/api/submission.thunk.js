@@ -4,13 +4,14 @@ import api from "../../lib/axios";
 // Submit code (async - returns immediately with submissionId)
 export const submitCode = createAsyncThunk(
     "submission/submit",
-    async ({ code, language, problemId, battleId }, { rejectWithValue }) => {
+    async ({ code, language, problemId, battleId, contestId }, { rejectWithValue }) => {
         try {
             const res = await api.post("/submissions/submit", {
                 code,
                 language,
                 problemId,
                 battleId,
+                contestId,
             });
             return res.data; // Returns: { submissionId, status: "QUEUED", message }
         } catch (err) {

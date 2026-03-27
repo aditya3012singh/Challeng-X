@@ -21,14 +21,15 @@ export const useSubmission = () => {
     /**
      * Submit code and start tracking
      */
-    const handleSubmit = useCallback(async ({ code, language, problemId, battleId }) => {
+    const handleSubmit = useCallback(async ({ code, language, problemId, battleId, contestId }) => {
         try {
             // Submit code
             const result = await dispatch(submitCode({ 
                 code, 
                 language, 
                 problemId, 
-                battleId 
+                battleId,
+                contestId
             })).unwrap();
             
             // Start polling for status

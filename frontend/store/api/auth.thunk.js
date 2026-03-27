@@ -85,3 +85,27 @@ export const updateUserProfile = createAsyncThunk(
         }
     }
 )
+
+export const forgotPassword = createAsyncThunk(
+    "auth/forgotPassword",
+    async (email, { rejectWithValue }) => {
+        try {
+            const res = await api.post("/auth/forgot-password", { email });
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { message: "Failed to request password reset" });
+        }
+    }
+)
+
+export const resetPassword = createAsyncThunk(
+    "auth/resetPassword",
+    async ({ token, newPassword }, { rejectWithValue }) => {
+        try {
+            const res = await api.post(`/auth/reset-password/${token}`, { newPassword });
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { message: "Failed to reset password" });
+        }
+    }
+)

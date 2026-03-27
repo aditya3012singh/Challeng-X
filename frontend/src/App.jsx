@@ -2,10 +2,13 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import { useSelector, useDispatch } from 'react-redux'
 import { lazy, Suspense, useEffect } from 'react'
 import { fetchUserProfile } from '../store/api/auth.thunk'
+import { getSocket } from '../lib/socket'
 import './App.css'
 
 const Login = lazy(() => import('./auth/Login'))
 const Register = lazy(() => import('./auth/Register'))
+const ForgotPassword = lazy(() => import('./auth/ForgotPassword'))
+const ResetPassword = lazy(() => import('./auth/ResetPassword'))
 const Home = lazy(() => import('./pages/Home'))
 const Navbar = lazy(() => import('./components/Navbar'))
 const Problem = lazy(() => import('./components/Problem').then(m => ({ default: m.Problem })))
@@ -22,12 +25,44 @@ const Admin = lazy(() => import('./pages/Admin'))
 const SpectatorArena = lazy(() => import('./pages/SpectatorArena'))
 const LiveArenas = lazy(() => import('./pages/LiveArenas'))
 const Profile = lazy(() => import('./pages/Profile'))
+const Contests = lazy(() => import('./pages/Contests'))
+const ContestDetail = lazy(() => import('./pages/ContestDetail'))
+const ContestArena = lazy(() => import('./pages/ContestArena'))
 const Footer = lazy(() => import('./components/Footer'))
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
+// Global Socket Listener for Redirections
+const GlobalSocketListener = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const socket = getSocket();
+    
+    // Handle team battle invitations/pulls
+    socket.on("team_battle_invite", (data) => {
+      console.log("Global Pull Received:", data);
+      
+      // Store the active battle ID
+      localStorage.setItem("active_battle_id", data.battleId);
+      
+      // Navigate to the battle room
+      navigate(`/battle-room/${data.battleId}`, { replace: true });
+    });
+
+    return () => {
+      socket.off("team_battle_invite");
+    };
+  }, [isAuthenticated, user, navigate]);
+
+  return null;
 };
 
 function App() {
@@ -76,6 +111,7 @@ function App() {
 
   return (
     <>
+      <GlobalSocketListener />
       {!isAuthRoute && (
         <Suspense fallback={null}>
           <Navbar />
@@ -92,6 +128,8 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route
             path="/"
             element={<Home />}
@@ -173,6 +211,21 @@ function App() {
           <Route path="/live" element={
             <ProtectedRoute>
               <LiveArenas />
+            </ProtectedRoute>
+          } />
+          <Route path="/contests" element={
+            <ProtectedRoute>
+              <Contests />
+            </ProtectedRoute>
+          } />
+          <Route path="/contests/:id" element={
+            <ProtectedRoute>
+              <ContestDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/contest/:contestId/arena/:problemId" element={
+            <ProtectedRoute>
+              <ContestArena />
             </ProtectedRoute>
           } />
         </Routes>
