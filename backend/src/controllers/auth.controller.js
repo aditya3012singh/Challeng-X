@@ -255,6 +255,41 @@ class AuthController {
             res.status(500).json({ message: "Failed to generate upload URL" });
         }
     }
+    static async forgotPassword(req, res) {
+        const validationResult = AuthSchema.forgotPasswordSchema.safeParse(req.body);
+        if (!validationResult.success) {
+            return res.status(400).json({ message: validationResult.error.errors[0].message });
+        }
+
+        try {
+            const result = await AuthService.forgotPasswordService(validationResult.data.email);
+            // Including `devTokenHint` only for local environment UI population ease
+            res.json(result); 
+        } catch (error) {
+            console.error("Forgot password error:", error);
+            res.status(500).json({ message: "Failed to process forgot password request" });
+        }
+    }
+
+    static async resetPassword(req, res) {
+        // Support token either deeply nested in body or passed via path params
+        const token = req.params.token || req.body.token;
+        const newPassword = req.body.newPassword;
+
+        const validationResult = AuthSchema.resetPasswordSchema.safeParse({ token, newPassword });
+        if (!validationResult.success) {
+            return res.status(400).json({ message: validationResult.error.errors[0].message });
+        }
+
+        try {
+            const result = await AuthService.resetPasswordService(token, newPassword);
+            res.json(result);
+        } catch (error) {
+            console.error("Reset password error:", error);
+            const status = error.message === "Token is invalid or has expired" ? 400 : 500;
+            res.status(status).json({ message: error.message || "Failed to reset password" });
+        }
+    }
 }
 
 export default AuthController;

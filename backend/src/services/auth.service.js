@@ -1,6 +1,7 @@
 import Database from "../config/db.js";
 import bcrypt from "bcrypt";
 import JwtService from "../utils/jwt.js";
+import crypto from "crypto";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
@@ -177,6 +178,76 @@ class AuthService {
       .cookie("accessToken", newAccessToken, CookieOptions.accessCookieOptions)
       .cookie("refreshToken", newRefreshToken, CookieOptions.refreshCookieOptions)
       .json({ message: "Token refreshed", accessToken: newAccessToken });
+  }
+  static async forgotPasswordService(email) {
+    const user = await Database.client.user.findUnique({ where: { email } });
+    if (!user) {
+      // Return a success message anyway so we don't leak registered emails
+      return { message: "If an account with that email exists, a reset link has been sent." };
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    // Hash token for database
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    // Expiry: 15 minutes from now
+    const tokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    // Save token and expiry
+    await Database.client.user.update({
+      where: { email },
+      data: {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: tokenExpiry,
+      },
+    });
+
+    // Mock Email Service - Logging to Console for Development
+    console.log(`\n======================================================`);
+    console.log(`[EMAIL MOCK] Forgot Password Request for ${email}`);
+    console.log(`Click this link to reset password:`);
+    console.log(`http://localhost:5173/reset-password/${resetToken}`);
+    console.log(`======================================================\n`);
+
+    // In a real production app, you would integrate Nodemailer or AWS SES here
+    
+    return {
+       message: "If an account with that email exists, a reset link has been sent.",
+       devTokenHint: resetToken // Exposing solely so we can auto-fill this in local development frontend
+    };
+  }
+
+  static async resetPasswordService(token, newPassword) {
+    // Re-hash the provided token to compare with DB
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await Database.client.user.findFirst({
+      where: {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: { gte: new Date() }, // ensure it hasn't expired
+      },
+    });
+
+    if (!user) {
+      throw new Error("Token is invalid or has expired");
+    }
+
+    // Hash the new password
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password and clear the reset fields
+    await Database.client.user.update({
+      where: { id: user.id },
+      data: {
+        password: newHashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      },
+    });
+
+    return { message: "Password has been successfully reset" };
   }
 }
 
