@@ -120,7 +120,10 @@ const Admin = () => {
         {/* Header */}
         <div className="flex justify-between items-end mb-20">
           <div>
-            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Command Center // Oversight</div>
+            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4 flex gap-6 items-center">
+              <span>Command Center // Oversight</span>
+              <a href="/admin-contests" className="text-white hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/20">Manage Contests →</a>
+            </div>
             <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Dataset Management</h1>
           </div>
           <div className="flex gap-12 text-right">

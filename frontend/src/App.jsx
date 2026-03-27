@@ -22,6 +22,7 @@ const TeamBattle = lazy(() => import('./pages/TeamBattle').then(m => ({ default:
 const BattleRoom = lazy(() => import('./pages/BattleRoom').then(m => ({ default: m.BattleRoom })))
 const SquidMode = lazy(() => import('./pages/SquidMode').then(m => ({ default: m.SquidMode })))
 const Admin = lazy(() => import('./pages/Admin'))
+const AdminContests = lazy(() => import('./pages/AdminContests'))
 const SpectatorArena = lazy(() => import('./pages/SpectatorArena'))
 const LiveArenas = lazy(() => import('./pages/LiveArenas'))
 const Profile = lazy(() => import('./pages/Profile'))
@@ -203,6 +204,11 @@ function App() {
           <Route path='/admin' element={
             <ProtectedRoute>
               <Admin />
+            </ProtectedRoute>
+          } />
+          <Route path='/admin-contests' element={
+            <ProtectedRoute>
+              <AdminContests />
             </ProtectedRoute>
           } />
           <Route path="/spectate/:battleId" element={
