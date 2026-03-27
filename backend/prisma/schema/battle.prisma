@@ -6,21 +6,21 @@ enum BattleStatus {
 }
 
 model Battle {
-  id         String   @id @default(uuid())
-  battleCode String   @unique // 6-digit code for easy sharing
+  id         String @id @default(uuid())
+  battleCode String @unique // 6-digit code for easy sharing
 
-  player1   User @relation("player1", fields: [player1Id], references: [id])
+  player1   User   @relation("player1", fields: [player1Id], references: [id])
   player1Id String
 
-  player2   User? @relation("player2", fields: [player2Id], references: [id])
+  player2   User?   @relation("player2", fields: [player2Id], references: [id])
   player2Id String?
 
   problem   Problem @relation(fields: [problemId], references: [id])
   problemId String
 
-  status    BattleStatus @default(WAITING)
+  status BattleStatus @default(WAITING)
 
-  winnerId  String?
+  winnerId String?
 
   startedAt DateTime?
   endedAt   DateTime?

@@ -11,6 +11,8 @@ async function main() {
   await prisma.submission.deleteMany({});
   await prisma.battle.deleteMany({});
   await prisma.squidGameRound.deleteMany({});
+  await prisma.teamBattleMatch.deleteMany({});
+  await prisma.contestProblem.deleteMany({});
   await prisma.problem.deleteMany({});
   console.log("🧹 Wiped old problems and testcases.");
 

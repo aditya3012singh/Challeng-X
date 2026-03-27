@@ -1,0 +1,51 @@
+enum ContestStatus {
+  UPCOMING
+  ACTIVE
+  FINISHED
+}
+
+model Contest {
+  id          String        @id @default(uuid())
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  status      ContestStatus @default(UPCOMING)
+
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+
+  problems     ContestProblem[]
+  participants ContestParticipant[]
+  submissions  Submission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContestProblem {
+  id        String @id @default(uuid())
+  contestId String
+  problemId String
+  points    Int    @default(100)
+  order     Int // e.g., 0 for A, 1 for B, 2 for C
+
+  contest Contest @relation(fields: [contestId], references: [id])
+  problem Problem @relation(fields: [problemId], references: [id])
+
+  @@unique([contestId, problemId])
+}
+
+model ContestParticipant {
+  id        String @id @default(uuid())
+  contestId String
+  userId    String
+  score     Int    @default(0)
+  penaltyMs Int    @default(0)
+  rank      Int?
+
+  contest Contest @relation(fields: [contestId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([contestId, userId])
+}

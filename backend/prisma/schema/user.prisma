@@ -4,11 +4,11 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
+  id       String @id @default(uuid())
+  username String @unique
+  email    String @unique
+  password String
+  role     Role   @default(USER)
 
   battlesAsPlayer1 Battle[] @relation("player1")
   battlesAsPlayer2 Battle[] @relation("player2")
@@ -16,28 +16,35 @@ model User {
   teamMemberships TeamMember[]
   teamsCreated    Team[]       @relation("creator")
 
-  submissions Submission[]
+  submissions           Submission[]
   teamBattleSubmissions TeamBattleSubmission[]
-  
+
   teamBattleMatchesAsPlayer1 TeamBattleMatch[] @relation("match_player1")
   teamBattleMatchesAsPlayer2 TeamBattleMatch[] @relation("match_player2")
-  
+
   // Team battles created by this user
   createdTeamBattles TeamBattle[] @relation("battleCreator")
 
   squidGameParticipants SquidGameParticipant[]
   hostedSquidGames      SquidGame[]
-  rankPoints Int @default(1000)
-  wins       Int @default(0)
-  losses     Int @default(0)
-  
+
+  createdContests      Contest[]
+  participatedContests ContestParticipant[]
+  rankPoints           Int                  @default(1000)
+  wins                 Int                  @default(0)
+  losses               Int                  @default(0)
+
   refreshTokenHash String?
-  tokenVersion     Int      @default(0) 
-  failedLoginCount Int      @default(0)
+  tokenVersion     Int       @default(0)
+  failedLoginCount Int       @default(0)
   lockUntil        DateTime?
 
   // Profile Fields
   profilePic String?
+
+  // Password Reset Fields
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
   linkedin   String?
   github     String?
   leetcode   String?

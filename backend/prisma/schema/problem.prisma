@@ -28,54 +28,58 @@ model Problem {
 
   timeLimitMs Int @default(2000)
 
-  testcases   TestCase[]
-  battles     Battle[]
+  testcases         TestCase[]
+  battles           Battle[]
   teamBattleMatches TeamBattleMatch[]
-  squidGameRounds SquidGameRound[]
+  squidGameRounds   SquidGameRound[]
+  contestProblems   ContestProblem[]
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   submissions Submission[]
 }
 
 model TestCase {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   problem   Problem @relation(fields: [problemId], references: [id])
   problemId String
 
-  input     String
-  output    String
+  input  String
+  output String
 
-  isHidden  Boolean @default(true)
-  isSample  Boolean @default(false)
+  isHidden Boolean @default(true)
+  isSample Boolean @default(false)
 }
 
 model Submission {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  user      User   @relation(fields: [userId], references: [id])
-  userId    String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 
-  battle    Battle? @relation(fields: [battleId], references: [id])
-  battleId  String?
+  battle   Battle? @relation(fields: [battleId], references: [id])
+  battleId String?
 
   squidGame   SquidGame? @relation(fields: [squidGameId], references: [id])
   squidGameId String?
 
+  contest   Contest? @relation(fields: [contestId], references: [id])
+  contestId String?
+
   problem   Problem @relation(fields: [problemId], references: [id])
   problemId String
-  
-  code      String
-  language  String
 
-  status    SubmissionStatus @default(PENDING)
+  code     String
+  language String
+
+  status SubmissionStatus @default(PENDING)
 
   passedTests Int?
   totalTests  Int?
 
   executionTimeMs Int?
 
-  type      SubmissionType @default(SUBMIT)
+  type SubmissionType @default(SUBMIT)
 
   createdAt DateTime @default(now())
 }

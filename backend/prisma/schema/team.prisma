@@ -1,12 +1,12 @@
 model Team {
-  id        String   @id @default(uuid())
-  name      String
-  teamCode  String   @unique // 6-digit code for easy sharing
+  id       String @id @default(uuid())
+  name     String
+  teamCode String @unique // 6-digit code for easy sharing
 
-  creator   User @relation("creator", fields: [creatorId], references: [id])
+  creator   User   @relation("creator", fields: [creatorId], references: [id])
   creatorId String
 
-  members   TeamMember[]
+  members TeamMember[]
 
   teamBattlesAsTeam1 TeamBattle[] @relation("team1")
   teamBattlesAsTeam2 TeamBattle[] @relation("team2")
@@ -29,35 +29,35 @@ model TeamMember {
 }
 
 model TeamBattle {
-  id        String   @id @default(uuid())
-  battleCode String  @unique
-  joinCode  String   @unique // For Team2 to join
+  id         String @id @default(uuid())
+  battleCode String @unique
+  joinCode   String @unique // For Team2 to join
 
   // Team1: Creator of the battle
-  team1   Team @relation("team1", fields: [team1Id], references: [id])
-  team1Id String
-  createdBy User @relation("battleCreator", fields: [createdByUserId], references: [id]) // Team1 leader
+  team1           Team   @relation("team1", fields: [team1Id], references: [id])
+  team1Id         String
+  createdBy       User   @relation("battleCreator", fields: [createdByUserId], references: [id]) // Team1 leader
   createdByUserId String
 
   // Team2: Joins with code
-  team2   Team? @relation("team2", fields: [team2Id], references: [id])
-  team2Id String?
+  team2          Team?   @relation("team2", fields: [team2Id], references: [id])
+  team2Id        String?
   joinedByUserId String? // First person from Team2 to join (for tracking)
 
   maxTeamSize Int // 2, 3, 4, or 5
-  
+
   // Status: WAITING -> ONGOING -> FINISHED
-  status      BattleStatus @default(WAITING)
+  status BattleStatus @default(WAITING)
 
   // Individual matches between paired team members
-  matches TeamBattleMatch[]
+  matches     TeamBattleMatch[]
   submissions TeamBattleSubmission[]
 
-  team1Wins Int @default(0)
-  team2Wins Int @default(0)
+  team1Wins    Int     @default(0)
+  team2Wins    Int     @default(0)
   winnerTeamId String?
 
-  startedAt DateTime?
+  startedAt   DateTime?
   completedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -92,10 +92,10 @@ model TeamBattleMatch {
   player1Output String?
   player2Output String?
 
-  status     BattleStatus @default(WAITING)
-  winnerId   String? // The user ID of the winner
+  status   BattleStatus @default(WAITING)
+  winnerId String? // The user ID of the winner
 
-  startedAt DateTime?
+  startedAt   DateTime?
   completedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -103,7 +103,7 @@ model TeamBattleMatch {
 }
 
 model TeamBattleSubmission {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
   teamBattle   TeamBattle @relation(fields: [teamBattleId], references: [id], onDelete: Cascade)
   teamBattleId String
