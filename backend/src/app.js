@@ -16,6 +16,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import env from "./config/env.js";
 import logger from "./utils/logger.js";
+import passport from "./config/passport.js";
 
 class App {
   static createApp() {
@@ -44,6 +45,7 @@ app.use(cors({
     app.use(morgan("combined", { stream: logger.stream }));
 
     app.use(cookieParser());
+    app.use(passport.initialize());
 
     // Apply global API rate limiting to all /api routes
     // app.use("/api", apiLimiter);

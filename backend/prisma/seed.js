@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -14,8 +15,27 @@ async function main() {
   await prisma.teamBattleMatch.deleteMany({});
   await prisma.contestProblem.deleteMany({});
   await prisma.problem.deleteMany({});
-  console.log("🧹 Wiped old problems and testcases.");
+  console.log("🧹 Wiped old problems and testcases.\n");
 
+  console.log("Generating Admin User...");
+  const hashedAdminPassword = await bcrypt.hash("admin123", 10);
+  await prisma.user.upsert({
+    where: { email: "admin@codearena.com" },
+    update: {
+      role: "ADMIN",
+      password: hashedAdminPassword
+    },
+    create: {
+      email: "admin@codearena.com",
+      username: "CodeArenaAdmin",
+      password: hashedAdminPassword,
+      role: "ADMIN",
+      rankPoints: 5000
+    }
+  });
+  console.log("✅ Admin user seeded (admin@codearena.com / admin123)\n");
+
+  const problemMap = new Map();
   // ─── 1. Sum of Two Numbers ───────────────────────────────────────────────
   const p1 = await prisma.problem.create({
     data: {

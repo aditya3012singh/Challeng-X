@@ -4,6 +4,7 @@
 import express from "express";
 import AuthController from "../controllers/auth.controller.js";
 import AuthMiddleware from "../middlewares/auth.middleware.js";
+import passport from "passport";
 // import { authLimiter } from "../middlewares/rateLimit.middleware.js";
 
 class AuthRoutes {
@@ -27,6 +28,13 @@ class AuthRoutes {
 		// 🔑 Password Reset Routes
 		router.post("/forgot-password", AuthController.forgotPassword);
 		router.post("/reset-password/:token", AuthController.resetPassword);
+
+		// 🌐 Social Login Routes
+		router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+		router.get("/google/callback", passport.authenticate("google", { session: false }), AuthController.socialAuthCallback);
+
+		router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
+		router.get("/github/callback", passport.authenticate("github", { session: false }), AuthController.socialAuthCallback);
 
 		return router;
 	}

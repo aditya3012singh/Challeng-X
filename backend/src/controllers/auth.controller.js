@@ -7,6 +7,9 @@ import CookieOptions from "../utils/cookies.js";
 import AuthSchema from "../validation/auth.schema.js";
 import Database from "../config/db.js";
 import S3Service from "../services/s3.service.js";
+import JwtService from "../utils/jwt.js";
+import env from "../config/env.js";
+import passport from "passport";
 
 class AuthController {
     static async login(req, res) {
@@ -288,6 +291,32 @@ class AuthController {
             console.error("Reset password error:", error);
             const status = error.message === "Token is invalid or has expired" ? 400 : 500;
             res.status(status).json({ message: error.message || "Failed to reset password" });
+        }
+    }
+
+    static async socialAuthCallback(req, res) {
+        try {
+            const user = req.user;
+            if (!user) return res.redirect(`${env.FRONTEND_URL}/login?error=auth_failed`);
+
+            const accessToken = JwtService.generateAccessToken({
+                id: user.id,
+                role: user.role,
+            });
+
+            const refreshToken = JwtService.generateRefreshToken({ id: user.id });
+            const refreshTokenHash = await Database.client.user.update({
+                where: { id: user.id },
+                data: { refreshTokenHash: await import("bcrypt").then(b => b.default.hash(refreshToken, 10)) }
+            });
+
+            res
+                .cookie("accessToken", accessToken, CookieOptions.accessCookieOptions)
+                .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
+                .redirect(`${env.FRONTEND_URL}/?auth_success=true`);
+        } catch (error) {
+            console.error("Social auth callback error:", error);
+            res.redirect(`${env.FRONTEND_URL}/login?error=server_error`);
         }
     }
 }
