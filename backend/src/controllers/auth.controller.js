@@ -313,7 +313,7 @@ class AuthController {
             res
                 .cookie("accessToken", accessToken, CookieOptions.accessCookieOptions)
                 .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
-                .redirect(`${env.FRONTEND_URL}/?auth_success=true`);
+                .redirect(`${env.FRONTEND_URL}/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}&auth_success=true`);
         } catch (error) {
             console.error("Social auth callback error:", error);
             res.redirect(`${env.FRONTEND_URL}/login?error=server_error`);

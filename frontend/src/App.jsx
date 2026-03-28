@@ -72,12 +72,27 @@ function App() {
   const location = useLocation();
   const { isAuthenticated, profileLoading } = useSelector((state) => state.auth);
 
-  // Global session restoration on mount
+  // Global session restoration and OAuth token capture on mount
   useEffect(() => {
-    if (!isAuthenticated) {
+    const params = new URLSearchParams(location.search);
+    const urlToken = params.get("accessToken");
+    const urlRefreshToken = params.get("refreshToken");
+
+    if (urlToken) {
+      localStorage.setItem("accessToken", urlToken);
+      if (urlRefreshToken) localStorage.setItem("refreshToken", urlRefreshToken);
+      
+      // Clean up URL for security
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Trigger profile fetch immediately since we now have a token
+      dispatch(fetchUserProfile()).catch(() => { });
+    } else if (!isAuthenticated) {
+      // Normal refresh/fetch if no token in URL
       dispatch(fetchUserProfile()).catch(() => { });
     }
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, isAuthenticated, location.search]);
 
   // Global Redirect for Active Battles
   useEffect(() => {
