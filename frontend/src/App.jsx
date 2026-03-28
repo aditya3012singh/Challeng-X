@@ -6,7 +6,7 @@ import { getSocket } from '../lib/socket'
 import './App.css'
 
 const Login = lazy(() => import('./auth/Login'))
-const Register = lazy(() => import('./auth/Register'))
+// Registration is now handled via OAuth on the login page
 const ForgotPassword = lazy(() => import('./auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('./auth/ResetPassword'))
 const Home = lazy(() => import('./pages/Home'))
@@ -96,7 +96,7 @@ function App() {
 
   // Determine if we should show the global "Synchronizing Node..." loader
   // We only show it for protected/landing routes while profile is fetching
-  const isAuthRoute = location.pathname === "/login" || location.pathname === "/register";
+  const isAuthRoute = location.pathname === "/login";
   const shouldBlockUI = profileLoading && !isAuthRoute;
 
   if (shouldBlockUI) {
@@ -128,7 +128,7 @@ function App() {
       }>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Navigate to="/login" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route

@@ -45,11 +45,11 @@ const Home = () => {
 
                         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                             <button
-                                onClick={() => navigate(isAuthenticated ? "/matchmaking" : "/register")}
+                                onClick={() => navigate(isAuthenticated ? "/matchmaking" : "/login")}
                                 className="group relative px-10 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.1em] text-xs hover:bg-white transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(204,255,0,0.3)] active:scale-95"
                                 style={{ borderRadius: "4px" }}
                             >
-                                {isAuthenticated ? "Start Matching" : "Join the Arena"}
+                                {isAuthenticated ? "Start Matching" : "Access the Arena"}
                             </button>
                             <button
                                 onClick={() => navigate(isAuthenticated ? "/battles" : "/login")}

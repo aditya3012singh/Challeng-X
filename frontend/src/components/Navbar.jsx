@@ -159,11 +159,8 @@ const Navbar = () => {
             </>
           ) : (
             <div className="flex gap-4">
-              <Link to="/login" className="px-6 py-2 text-[10px] font-bold text-white hover:text-[var(--color-primary)] transition-colors uppercase tracking-widest flex items-center">
-                Login
-              </Link>
-              <Link to="/register" className="px-8 py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl" style={{ borderRadius: "2px" }}>
-                Register
+              <Link to="/login" className="px-8 py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl flex items-center" style={{ borderRadius: "2px" }}>
+                ACCESS THE ARENA →
               </Link>
             </div>
           )}
