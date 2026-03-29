@@ -6,6 +6,7 @@ import RankingService from "./ranking.service.js";
 import SocketEmitter from "../config/socket.js";
 import BattleCode from "../utils/battleCode.js";
 import S3Service from "./s3.service.js";
+import RewardService from "./reward.service.js";
 // • Start timer
 // • Assign problem
 // • End match
@@ -350,6 +351,8 @@ class BattleService {
             // Only update ranks for 1v1 battles for now (Team ranking is separate)
             const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
             await RankingService.updateRanks(battleId, winnerId, loserId);
+            // Phase 4: Grant rewards
+            await RewardService.grantBattleRewards(battleId);
           }
           await RedisClient.client.del("problems:all");
           console.log(`✅ ${isTeamMatch ? 'Team ' : ''}Battle Finish: ${battleId} (Winner: ${winnerId})`);

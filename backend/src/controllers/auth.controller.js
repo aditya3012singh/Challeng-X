@@ -3,6 +3,7 @@
 // • Issue JWT
 
 import AuthService from "../services/auth.service.js";
+import RewardService from "../services/reward.service.js";
 import CookieOptions from "../utils/cookies.js";
 import AuthSchema from "../validation/auth.schema.js";
 import Database from "../config/db.js";
@@ -38,6 +39,9 @@ class AuthController {
                         role: user.role
                     }
                 });
+
+            // Phase 4: Process Daily Reward
+            RewardService.processDailyLogin(user.id);
         } catch (error) {
             res.status(error.status || 401).json({
                 message: error.message || "Authentication failed",
@@ -104,14 +108,13 @@ class AuthController {
     static async getProfile(req, res) {
         try {
             const userId = req.user.id;
-
             const user = await Database.client.user.findUnique({
                 where: { id: userId },
                 select: {
                     id: true,
                     username: true,
                     email: true,
-                    password: true, // we will convert this to a boolean
+                    password: true,
                     role: true,
                     rankPoints: true,
                     losses: true,
@@ -125,7 +128,36 @@ class AuthController {
                     hackerrank: true,
                     codeforces: true,
                     instagram: true,
-                    twitter: true
+                    twitter: true,
+                    cyberCores: true,
+                    dailyLoginStreak: true,
+                    achievements: {
+                        select: {
+                            id: true,
+                            unlockedAt: true,
+                            achievement: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    description: true
+                                }
+                            }
+                        }
+                    },
+                    badges: {
+                        select: {
+                            id: true,
+                            unlockedAt: true,
+                            badge: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    description: true,
+                                    iconUrl: true
+                                }
+                            }
+                        }
+                    }
                 }
             });
 
@@ -137,10 +169,11 @@ class AuthController {
             res.json({ 
                 user: { 
                     ...userWithoutPassword, 
-                    hasPassword: !!password 
+                    hasPassword: !!password
                 } 
             });
         } catch (error) {
+            console.error("Get profile error:", error);
             res.status(500).json({ message: "Failed to fetch profile" });
         }
     }
@@ -176,7 +209,35 @@ class AuthController {
                     codeforces: true,
                     instagram: true,
                     twitter: true,
-                    // Exclude sensitive information like email and password
+                    cyberCores: true,
+                    dailyLoginStreak: true,
+                    achievements: {
+                        select: {
+                            id: true,
+                            unlockedAt: true,
+                            achievement: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    description: true
+                                }
+                            }
+                        }
+                    },
+                    badges: {
+                        select: {
+                            id: true,
+                            unlockedAt: true,
+                            badge: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    description: true,
+                                    iconUrl: true
+                                }
+                            }
+                        }
+                    }
                 }
             });
 
@@ -321,7 +382,9 @@ class AuthController {
                 .cookie("accessToken", accessToken, CookieOptions.accessCookieOptions)
                 .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
                 .redirect(`${env.FRONTEND_URL}/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}&auth_success=true`);
-                // .redirect(`${env.FRONTEND_URL}/?auth_success=true`);
+
+            // Phase 4: Process Daily Reward
+            RewardService.processDailyLogin(user.id);
         } catch (error) {
             console.error("Social auth callback error:", error);
             res.redirect(`${env.FRONTEND_URL}/login?error=server_error`);

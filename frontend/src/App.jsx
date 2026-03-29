@@ -31,6 +31,7 @@ const Profile = lazy(() => import('./pages/Profile'))
 const Contests = lazy(() => import('./pages/Contests'))
 const ContestDetail = lazy(() => import('./pages/ContestDetail'))
 const ContestArena = lazy(() => import('./pages/ContestArena'))
+const Achievements = lazy(() => import('./pages/Achievements'))
 const Footer = lazy(() => import('./components/Footer'))
 const GlobalChat = lazy(() => import('./components/GlobalChat'))
 const SocialLobby = lazy(() => import('./components/SocialLobby'))
@@ -243,6 +244,11 @@ function App() {
           <Route path="/contest/:contestId/arena/:problemId" element={
             <ProtectedRoute>
               <ContestArena />
+            </ProtectedRoute>
+          } />
+          <Route path="/achievements" element={
+            <ProtectedRoute>
+              <Achievements />
             </ProtectedRoute>
           } />
         </Routes>

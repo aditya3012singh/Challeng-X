@@ -6,7 +6,7 @@ import { getSocialStatus, toggleFollow, sendFriendRequest, getIncomingRequests, 
 import { 
   User, Users, Mail, LayoutDashboard, Shield, Trophy, Activity, 
   Github, Linkedin, Instagram, Twitter, Edit2, Check, X,
-  ExternalLink, Calendar, Code, Target, Award, Camera, Upload, Zap
+  ExternalLink, Calendar, Code, Target, Award, Camera, Upload, Zap, Flame
 } from 'lucide-react';
 import api from '../../lib/axios';
 import ProfileRadarChart from '../components/profile/ProfileRadarChart';
@@ -260,7 +260,7 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen pb-12 bg-[#050505] text-white selection:bg-[var(--color-primary)] selection:text-black">
+        <div className="min-h-screen pt-12 pb-12 bg-[#050505] text-white selection:bg-[var(--color-primary)] selection:text-black">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 {/* Header Action */}
@@ -511,9 +511,26 @@ const Profile = () => {
                                         <div className="text-[9px] text-gray-600 uppercase font-mono mt-1">Victories</div>
                                     </div>
                                     <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl text-center">
-                                        <div className="text-2xl font-black text-red-500 font-mono">{profileData.losses || 0}</div>
-                                        <div className="text-[9px] text-gray-600 uppercase font-mono mt-1">Defeats</div>
+                                        <div className="text-2xl font-black text-blue-500 font-mono">{profileData.cyberCores || 0}</div>
+                                        <div className="text-[9px] text-gray-600 uppercase font-mono mt-1">Cyber-Cores</div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-6">
+                                <div className="bg-white/[0.01] border border-white/5 p-4 rounded-xl flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Flame size={16} className="text-orange-500" />
+                                        <span className="text-[10px] text-gray-400 uppercase font-mono">Daily Streak</span>
+                                    </div>
+                                    <span className="text-sm font-black text-white font-mono">{profileData.dailyLoginStreak || 0} Days</span>
+                                </div>
+                                <div className="bg-white/[0.01] border border-white/5 p-4 rounded-xl flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Award size={16} className="text-purple-500" />
+                                        <span className="text-[10px] text-gray-400 uppercase font-mono">Badges</span>
+                                    </div>
+                                    <span className="text-sm font-black text-white font-mono">{profileData.achievements?.length || 0} Earned</span>
                                 </div>
                             </div>
 
@@ -529,6 +546,33 @@ const Profile = () => {
                                 <div className="text-[10px] text-right text-gray-700 mt-2 font-mono italic">Total Encounters: {totalMatches}</div>
                             </div>
                         </div>
+
+                        {/* Earned Badges Section */}
+                        {(profileData.achievements?.length > 0) && (
+                            <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
+                                <h3 className="text-sm font-mono text-gray-500 mb-6 flex items-center gap-2">
+                                    <Award size={14} /> EARNED BADGES
+                                </h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                    {profileData.achievements.map((ach) => (
+                                        <div key={ach.id} className="group relative">
+                                            <div className="aspect-square bg-[#111] border border-[#222] hover:border-[var(--color-primary)]/40 transition-all p-4 flex flex-col items-center justify-center text-center gap-2" style={{ borderRadius: '4px' }}>
+                                                <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-[var(--color-primary)] group-hover:scale-110 transition-transform">
+                                                    <Trophy size={20} />
+                                                </div>
+                                                <span className="text-[9px] font-black text-white uppercase tracking-tighter truncate w-full">{ach.badge.name}</span>
+                                            </div>
+                                            {/* Tooltip */}
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black border border-white/10 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all text-center z-10 pointer-events-none shadow-2xl">
+                                                <div className="text-[10px] font-black text-[var(--color-primary)] uppercase mb-1">{ach.badge.name}</div>
+                                                <div className="text-[8px] text-slate-400 font-medium leading-relaxed">{ach.badge.description}</div>
+                                                <div className="text-[7px] text-slate-600 uppercase mt-2">Unlocked {new Date(ach.unlockedAt).toLocaleDateString()}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Match History (New) */}
                         <MatchHistory 

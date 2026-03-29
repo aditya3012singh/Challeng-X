@@ -1,0 +1,47 @@
+enum Rarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+model Badge {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  iconUrl     String
+  rarity      Rarity   @default(COMMON)
+  users       UserBadge[]
+  createdAt   DateTime @default(now())
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  criteria    Json     // e.g., { "type": "WINS", "threshold": 10 }
+  rewardType  String   // CORES, BADGE
+  rewardValue String   // Amount or Badge ID
+  users       UserAchievement[]
+  createdAt   DateTime @default(now())
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  unlockedAt    DateTime @default(now())
+  @@unique([userId, achievementId])
+}
+
+model UserBadge {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  badgeId    String
+  badge      Badge    @relation(fields: [badgeId], references: [id])
+  unlockedAt DateTime @default(now())
+  @@unique([userId, badgeId])
+}

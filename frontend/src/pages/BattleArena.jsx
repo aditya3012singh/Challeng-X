@@ -56,8 +56,13 @@ const BattleArena = () => {
     const [isResizing, setIsResizing] = useState(false);
     
     // Timer state
+    // Timer state
     const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes in seconds
     const [timerActive, setTimerActive] = useState(false);
+    
+    // Responsive state
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+    const [mobileTab, setMobileTab] = useState("problem"); // problem, editor, console, status
     
     const socket = getSocket();
     const editorRef = useRef(null);
@@ -131,13 +136,12 @@ const BattleArena = () => {
     }, [isResizing]);
 
     useEffect(() => {
-        window.addEventListener("mousemove", resize);
-        window.addEventListener("mouseup", stopResizing);
-        return () => {
-            window.removeEventListener("mousemove", resize);
-            window.removeEventListener("mouseup", stopResizing);
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 1024);
         };
-    }, [resize, stopResizing]);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     // Handle Forfeit
     const handleForfeit = async () => {
@@ -439,64 +443,81 @@ const BattleArena = () => {
                     <Power size={14} className="group-hover:rotate-90 transition-transform" />
                     <span className="text-[10px] font-black uppercase tracking-widest">Abandon</span>
                 </button>
-            </header>            {/* MAIN ARENA CONTENT */}
-            <main className="flex-1 flex overflow-hidden relative">
+            </header>
+
+            {/* MAIN ARENA CONTENT */}
+            <main className={`flex-1 flex overflow-hidden relative ${isMobile ? 'flex-col' : 'flex-row'}`}>
                 
-                {/* LEFT SIDEBAR - Problem (Resizable) */}
-                <div 
-                    className="h-full border-r border-white/5 bg-[#080808] flex flex-col relative group/sidebar"
-                    style={{ width: `${sidebarWidth}px`, minWidth: '300px' }}
-                >
-                    {/* Resize Handle */}
-                    <div 
-                        onMouseDown={startResizing}
-                        className={`absolute -right-1 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizing ? 'bg-[var(--color-primary)]' : 'hover:bg-[var(--color-primary)]/30'}`}
-                    />
-
-                    <div className="flex border-b border-white/5 shrink-0">
-                        <button
-                            onClick={() => setActiveTab("description")}
-                            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${activeTab === "description" ? "text-[var(--color-primary)] bg-white/5 shadow-[inset_0_-2px_0_var(--color-primary)]" : "text-slate-600 hover:text-slate-300"}`}
-                        >
-                            <Target size={14} /> Problem
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("console")}
-                            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${activeTab === "console" ? "text-[var(--color-primary)] bg-white/5 shadow-[inset_0_-2px_0_var(--color-primary)]" : "text-slate-600 hover:text-slate-300"}`}
-                        >
-                            <Terminal size={14} /> Console {status !== "idle" && <div className="w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full animate-ping" />}
-                        </button>
+                {/* MOBILE TABS - Tablet/Phone Only */}
+                {isMobile && (
+                    <div className="flex bg-[#0a0a0a] border-b border-white/5 shrink-0 h-12">
+                        {['problem', 'editor', 'console', 'status'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setMobileTab(tab)}
+                                className={`flex-1 text-[9px] font-black uppercase tracking-widest transition-all relative ${mobileTab === tab ? "text-[var(--color-primary)]" : "text-slate-500"}`}
+                            >
+                                {tab}
+                                {mobileTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]" />}
+                            </button>
+                        ))}
                     </div>
+                )}
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-                        {activeTab === "description" ? (
-                            <div className="space-y-12">
+                {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
+                {(!isMobile || mobileTab === "problem" || mobileTab === "console") && (
+                <div 
+                    className={`h-full border-r border-white/5 bg-[#080808] flex flex-col relative group/sidebar ${isMobile ? 'flex-1 w-full' : ''}`}
+                    style={{ width: isMobile ? '100%': `${sidebarWidth}px`, minWidth: isMobile ? '100%' : '300px' }}
+                >
+                    {/* Resize Handle - Desktop Only */}
+                    {!isMobile && (
+                        <div 
+                            onMouseDown={startResizing}
+                            className={`absolute -right-1 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizing ? 'bg-[var(--color-primary)]' : 'hover:bg-[var(--color-primary)]/30'}`}
+                        />
+                    )}
+
+                    {!isMobile && (
+                        <div className="flex border-b border-white/5 shrink-0">
+                            <button
+                                onClick={() => setActiveTab("description")}
+                                className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${activeTab === "description" ? "text-[var(--color-primary)] bg-white/5 shadow-[inset_0_-2px_0_var(--color-primary)]" : "text-slate-600 hover:text-slate-300"}`}
+                            >
+                                <Target size={14} /> Problem
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("console")}
+                                className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${activeTab === "console" ? "text-[var(--color-primary)] bg-white/5 shadow-[inset_0_-2px_0_var(--color-primary)]" : "text-slate-600 hover:text-slate-300"}`}
+                            >
+                                <Terminal size={14} /> Console {status !== "idle" && <div className="w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full animate-ping" />}
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8">
+                        {((isMobile && mobileTab === "problem") || (!isMobile && activeTab === "description")) ? (
+                            <div className="space-y-8 lg:space-y-12">
                                 <section>
-                                    <div className="flex items-center justify-between mb-8">
+                                    <div className="flex items-center justify-between mb-4 lg:mb-8">
                                         <div className="px-3 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-black uppercase tracking-widest">
                                             {problem.difficulty}
                                         </div>
-                                        <div className="flex gap-4">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[8px] text-slate-600 uppercase font-bold mb-1">Success Rate</span>
-                                                <span className="text-xs text-white font-mono">84.2%</span>
-                                            </div>
-                                        </div>
                                     </div>
-                                    <h2 className="text-2xl font-black text-white mb-6 tracking-tight uppercase leading-tight">{problem.title}</h2>
-                                    <div className="prose prose-invert prose-sm max-w-none text-slate-400 font-light leading-relaxed mb-12">
+                                    <h2 className="text-xl lg:text-2xl font-black text-white mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem.title}</h2>
+                                    <div className="prose prose-invert prose-sm max-w-none text-slate-400 font-light leading-relaxed mb-8 lg:mb-12">
                                         {problem.description}
                                     </div>
                                 </section>
 
                                 {problem.constraints && (
                                     <section>
-                                        <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                                        <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
                                             <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> System Constraints
                                         </h3>
                                         <ul className="space-y-3">
                                             {problem.constraints.map((c, i) => (
-                                                <li key={i} className="flex items-start gap-3 text-xs text-slate-500 italic">
+                                                <li key={i} className="flex items-start gap-3 text-[11px] lg:text-xs text-slate-500 italic">
                                                     <div className="mt-1.5 w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_5px_var(--color-primary)]" />
                                                     {c}
                                                 </li>
@@ -504,70 +525,51 @@ const BattleArena = () => {
                                         </ul>
                                     </section>
                                 )}
-
-                                <div className="space-y-8">
-                                    {problem.testcases?.filter(t => t.isSample).map((tc, i) => (
-                                        <div key={i} className="space-y-4">
-                                            <h3 className="text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">Example {i + 1}</h3>
-                                            <div className="bg-black/40 border border-white/5 p-4 rounded-xl space-y-3">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <div className="text-[8px] font-bold text-slate-600 uppercase mb-1">Input</div>
-                                                        <code className="text-[10px] text-slate-300">{tc.input}</code>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-[8px] font-bold text-slate-600 uppercase mb-1">Expected</div>
-                                                        <code className="text-[10px] text-[var(--color-primary)]">{tc.expected || tc.output}</code>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
                         ) : (
                             renderConsole()
                         )}
                     </div>
 
-                    {/* ACTIONS POD */}
-                    <div className="p-6 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0">
-                        <button 
-                            onClick={() => handleRun("RUN")}
-                            disabled={status === "running"}
-                            className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-white hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2"
-                        >
-                            <Play size={12} fill="currentColor" /> Run Test
-                        </button>
-                        <button 
-                            onClick={() => handleRun("SUBMIT")}
-                            disabled={status === "running"}
-                            className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all active:scale-95 shadow-[0_0_20px_rgba(204,255,0,0.1)] flex items-center justify-center gap-2"
-                        >
-                            <Send size={12} fill="currentColor" /> Submit Data
-                        </button>
-                    </div>
+                    {/* ACTIONS POD - Desktop Only here, mobile shows it inside editor tab */}
+                    {!isMobile && (
+                        <div className="p-6 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0">
+                            <button 
+                                onClick={() => handleRun("RUN")}
+                                disabled={status === "running"}
+                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-white hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <Play size={12} fill="currentColor" /> Run Test
+                            </button>
+                            <button 
+                                onClick={() => handleRun("SUBMIT")}
+                                disabled={status === "running"}
+                                className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all active:scale-95 shadow-[0_0_20px_rgba(204,255,0,0.1)] flex items-center justify-center gap-2"
+                            >
+                                <Send size={12} fill="currentColor" /> Submit Data
+                            </button>
+                        </div>
+                    )}
                 </div>
+                )}
 
                 {/* CENTER - CODE EDITOR */}
-                <div className="flex-1 flex flex-col bg-[#050505] min-w-[400px]">
+                {(!isMobile || mobileTab === "editor") && (
+                <div className={`flex-1 flex flex-col bg-[#050505] min-w-0 lg:min-w-[400px]`}>
                     {/* EDITOR TOOLBAR */}
-                    <div className="h-12 border-b border-white/5 bg-[#080808] flex items-center justify-between px-6 shrink-0">
-                        <div className="flex items-center gap-6">
-                            <div className="flex items-center gap-2 border-r border-white/10 pr-6">
+                    <div className="h-10 lg:h-12 border-b border-white/5 bg-[#080808] flex items-center justify-between px-4 lg:px-6 shrink-0">
+                        <div className="flex items-center gap-4 lg:gap-6">
+                            <div className="flex items-center gap-2 border-r border-white/10 pr-4 lg:pr-6">
                                 <Globe size={14} className="text-slate-500" />
                                 <select 
                                     value={language}
                                     onChange={handleLanguageChange}
-                                    className="bg-transparent text-[10px] font-black text-white outline-none uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"
+                                    className="bg-transparent text-[9px] lg:text-[10px] font-black text-white outline-none uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"
                                 >
                                     {Object.keys(LANGUAGES).map(lang => (
                                         <option key={lang} value={lang} className="bg-[#0a0a0a]">{lang}</option>
                                     ))}
                                 </select>
-                            </div>
-                            <div className="text-[9px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
-                                <div className="w-1 h-1 rounded-full bg-green-500" /> Auto-sync Active
                             </div>
                         </div>
                     </div>
@@ -585,26 +587,52 @@ const BattleArena = () => {
                             }}
                             options={{
                                 minimap: { enabled: false },
-                                fontSize: 13,
+                                fontSize: isMobile ? 12 : 13,
                                 fontFamily: "var(--font-mono)",
                                 fontLigatures: true,
                                 scrollBeyondLastLine: false,
                                 automaticLayout: true,
                                 padding: { top: 20 },
                                 cursorStyle: "block",
-                                lineNumbersMinChars: 3,
+                                lineNumbersMinChars: isMobile ? 2 : 3,
                                 renderLineHighlight: "all",
                                 scrollbar: {
-                                    vertical: "hidden",
-                                    horizontal: "hidden"
-                                }
+                                    vertical: "auto",
+                                    horizontal: "auto",
+                                    verticalScrollbarSize: 8,
+                                    horizontalScrollbarSize: 8,
+                                },
+                                quickSuggestions: !isMobile,
+                                hover: { enabled: !isMobile },
                             }}
                         />
                     </div>
-                </div>
 
-                {/* RIGHT SIDEBAR - Opponent Progress & Anti-Cheat */}
-                <aside className="w-[300px] border-l border-white/5 flex flex-col bg-[#080808] shrink-0">
+                    {/* MOBILE ACTIONS POD */}
+                    {isMobile && (
+                        <div className="p-4 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0">
+                            <button 
+                                onClick={() => handleRun("RUN")}
+                                disabled={status === "running"}
+                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-center gap-2"
+                            >
+                                <Play size={12} fill="currentColor" /> Run
+                            </button>
+                            <button 
+                                onClick={() => handleRun("SUBMIT")}
+                                disabled={status === "running"}
+                                className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                            >
+                                <Send size={12} fill="currentColor" /> Submit
+                            </button>
+                        </div>
+                    )}
+                </div>
+                )}
+
+                {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Static, Mobile: Tabbed) */}
+                {(!isMobile || mobileTab === "status") && (
+                <aside className={`w-full lg:w-[300px] border-l border-white/5 flex flex-col bg-[#080808] shrink-0`}>
                     <div className="p-6 border-b border-white/5 bg-[#0a0a0a]">
                         <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Match Status</div>
                         
@@ -671,6 +699,7 @@ const BattleArena = () => {
                         </div>
                     </div>
                 </aside>
+                )}
             </main>
 
             {/* PREMIUM FINISH OVERLAY */}

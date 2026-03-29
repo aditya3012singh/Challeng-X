@@ -41,6 +41,7 @@ const Navbar = () => {
     { label: "LIVE ARENAS", path: "/live" },
     { label: "TEAM WARS", path: "/team-battle" },
     { label: "SQUID GAME", path: "/squid-game" },
+    { label: "ACHIEVEMENTS", path: "/achievements" },
     { label: "JOIN LOBBY", path: "/join-room" },
   ];
 
@@ -141,11 +142,17 @@ const Navbar = () => {
                   </div>
 
                   {/* Desktop Dropdown */}
-                  <div className="absolute right-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-[-10px] group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto z-50">
+                  <div className="absolute right-0 top-full pt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-[-10px] group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto z-50">
                     <div className="bg-[#050505] border border-white/10 shadow-2xl overflow-hidden" style={{ borderRadius: "2px" }}>
-                      <div className="p-5 border-b border-white/5 text-center bg-white/[0.01]">
-                        <div className="text-[8px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-2">Current Rating</div>
-                        <div className="text-2xl font-black text-[var(--color-primary)] tabular-nums">{user?.rankPoints || 1000}</div>
+                      <div className="grid grid-cols-2 border-b border-white/5 bg-white/[0.01]">
+                        <div className="p-4 border-r border-white/5 text-center">
+                          <div className="text-[8px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-1">Rating</div>
+                          <div className="text-xl font-black text-[var(--color-primary)] tabular-nums">{user?.rankPoints || 1000}</div>
+                        </div>
+                        <div className="p-4 text-center">
+                          <div className="text-[8px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-1">Cores</div>
+                          <div className="text-xl font-black text-blue-500 tabular-nums">{user?.cyberCores || 0}</div>
+                        </div>
                       </div>
                       <div className="py-2">
                         <button
@@ -219,8 +226,16 @@ const Navbar = () => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[20px] font-black text-[var(--color-primary)] tabular-nums">{user?.rankPoints || 1000}</div>
-                <div className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">ELO RATING</div>
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[14px] font-black text-white tabular-nums">{user?.rankPoints || 1000}</span>
+                    <span className="text-[7px] font-bold text-slate-600 uppercase tracking-widest">ELO</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] font-black text-blue-500 tabular-nums">{user?.cyberCores || 0}</span>
+                    <span className="text-[7px] font-bold text-slate-600 uppercase tracking-widest">CORES</span>
+                  </div>
+                </div>
               </div>
             </div>
 
