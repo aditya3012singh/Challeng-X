@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axiosInstance from "../../lib/axios";
 import { getSocket } from "../../lib/socket";
+import { toast } from "react-hot-toast";
 
 export default function ContestDetail() {
     const { id } = useParams();
@@ -87,7 +88,7 @@ export default function ContestDetail() {
             // Optimistically reload
             window.location.reload();
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to register");
+            toast.error(err.response?.data?.message || "Failed to register");
         } finally {
             setSubmitting(false);
         }

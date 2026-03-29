@@ -8,6 +8,7 @@ import {
   Github, Linkedin, Instagram, Twitter, Edit2, Check, X,
   ExternalLink, Calendar, Code, Target, Award, Camera, Upload, Zap, Flame
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import api from '../../lib/axios';
 import ProfileRadarChart from '../components/profile/ProfileRadarChart';
 import MatchHistory from '../components/profile/MatchHistory';
@@ -118,12 +119,12 @@ const Profile = () => {
 
         // Basic validation
         if (!file.type.startsWith('image/')) {
-            alert('Please select an image file');
+            toast.error('Please select an image file');
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            alert('File size should be less than 5MB');
+            toast.error('File size should be less than 5MB');
             return;
         }
 
@@ -153,7 +154,7 @@ const Profile = () => {
             
         } catch (error) {
             console.error("Upload error:", error);
-            alert("Failed to upload image. Please try again.");
+            toast.error("Failed to upload image. Please try again.");
         } finally {
             setUploading(false);
         }

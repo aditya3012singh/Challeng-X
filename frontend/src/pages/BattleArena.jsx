@@ -6,7 +6,7 @@ import {
     Zap, Terminal, Clock, Shield, ChevronLeft,
     Activity, Play, Send, X, Trophy, AlertTriangle,
     Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code,
-    ChevronUp, ChevronDown, ChevronRight, MousePointer2, Loader2
+    ChevronUp, ChevronDown, ChevronRight, MousePointer2, Loader2, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -14,6 +14,7 @@ import { getSocket } from "../../lib/socket";
 import { getBattle, submitBattleCode, forfeitBattle } from "../../store/api/battle.thunk";
 import { clearCurrentBattle } from "../../store/slices/battle.slice";
 import { playSound } from "../utils/audio";
+import { toast } from "react-hot-toast";
 
 const LANGUAGES = {
     java: { monaco: "java", defaultCode: `public class Main {\n    public static void main(String[] args) {\n        // Your code here\n        System.out.println("Hello World!");\n    }\n}` },
@@ -56,6 +57,8 @@ const BattleArena = () => {
     const [activeTab, setActiveTab] = useState("description"); // description, console
     const [sidebarWidth, setSidebarWidth] = useState(400); // px
     const [isResizing, setIsResizing] = useState(false);
+    const [rightSidebarWidth, setRightSidebarWidth] = useState(350); // px
+    const [isResizingRight, setIsResizingRight] = useState(false);
 
     // Timer state
     // Timer state
@@ -67,6 +70,7 @@ const BattleArena = () => {
     const [mobileTab, setMobileTab] = useState("problem"); // problem, editor, console, status
     const [showMobileTools, setShowMobileTools] = useState(false);
     const [runningAction, setRunningAction] = useState(null); // "RUN" or "SUBMIT"
+    const [showForfeitModal, setShowForfeitModal] = useState(false);
 
     const socket = getSocket();
     const editorRef = useRef(null);
@@ -128,16 +132,36 @@ const BattleArena = () => {
 
     const stopResizing = useCallback(() => {
         setIsResizing(false);
+        setIsResizingRight(false);
     }, []);
 
     const resize = useCallback((e) => {
         if (isResizing) {
             const newWidth = e.clientX;
-            if (newWidth > 200 && newWidth < window.innerWidth * 0.6) {
+            if (newWidth > 200 && newWidth < window.innerWidth * 0.45) {
                 setSidebarWidth(newWidth);
             }
         }
-    }, [isResizing]);
+        if (isResizingRight) {
+            const newWidth = window.innerWidth - e.clientX;
+            if (newWidth > 200 && newWidth < window.innerWidth * 0.45) {
+                setRightSidebarWidth(newWidth);
+            }
+        }
+    }, [isResizing, isResizingRight]);
+
+    const startResizingRight = useCallback((e) => {
+        setIsResizingRight(true);
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener("mousemove", resize);
+        window.addEventListener("mouseup", stopResizing);
+        return () => {
+            window.removeEventListener("mousemove", resize);
+            window.removeEventListener("mouseup", stopResizing);
+        };
+    }, [resize, stopResizing]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -148,10 +172,18 @@ const BattleArena = () => {
     }, []);
 
     // Handle Forfeit
-    const handleForfeit = async () => {
-        if (window.confirm("Are you sure you want to leave this match? This will count as a loss.")) {
+    const handleForfeit = () => {
+        setShowForfeitModal(true);
+    };
+
+    const confirmForfeit = async () => {
+        try {
             await dispatch(forfeitBattle({ battleId })).unwrap();
+            setShowForfeitModal(false);
             navigate('/battles');
+        } catch (err) {
+            console.error(err);
+            setShowForfeitModal(false);
         }
     };
 
@@ -247,6 +279,15 @@ const BattleArena = () => {
                     message: data.type === "TAB_SWITCH" ? "Opponent switched tabs" : "Opponent pasted code"
                 });
                 setTimeout(() => setOpponentAlert(null), 8000);
+            }
+
+            if (event === "battle_joined" || event === "battle_countdown" || event === "battle_start") {
+                if (battleId) {
+                    dispatch(getBattle({ battleId }));
+                    if (event === "battle_joined") {
+                        toast.success("Opponent joined the arena!");
+                    }
+                }
             }
 
             if (event === "battle_end") {
@@ -464,6 +505,14 @@ const BattleArena = () => {
         );
     };
 
+    const copySpectateLink = () => {
+        const link = `${window.location.origin}/spectate/${battleId}`;
+        navigator.clipboard.writeText(link);
+        // We could add a toast here, but simple alert or temporary text change is fine
+        setMessage("Spectate link copied!");
+        setTimeout(() => setMessage(status === "result" ? "Submission Successful!" : ""), 3000);
+    };
+
     if ((loading && !currentBattle) || !currentBattle || !problem) {
         return (
             <div className="h-screen flex items-center justify-center bg-[#050505]">
@@ -491,8 +540,16 @@ const BattleArena = () => {
                     </button>
                     <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-ping" />
-                        <h1 className="text-sm font-black tracking-tighter uppercase text-white">
-                            Match ID: <span className="text-[var(--color-primary)]">{battleId?.slice(-8) || "..."}</span>
+                        <h1 className="text-sm font-black tracking-tighter uppercase text-white flex items-center gap-3">
+                            Battle Code: <span className="text-[var(--color-primary)] font-mono">{currentBattle?.battleCode || "......"}</span>
+                            <button 
+                                onClick={copySpectateLink}
+                                className="ml-2 px-2 py-1 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[9px] text-slate-400 hover:text-white flex items-center gap-2"
+                                style={{ borderRadius: "2px" }}
+                                title="Copy Spectate Link"
+                            >
+                                <Send size={10} /> Share
+                            </button>
                         </h1>
                     </div>
                 </div>
@@ -551,7 +608,7 @@ const BattleArena = () => {
 
                 {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
                 <div
-                    className={`flex-1 min-h-0 border-r border-white/5 bg-[#080808] relative group/sidebar 
+                    className={`min-h-0 border-r border-white/5 bg-[#080808] relative group/sidebar shrink-0
                         ${mobileTab === "problem" || mobileTab === "console" ? "flex flex-col" : "hidden lg:flex lg:flex-col"}`}
                     style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
                 >
@@ -582,60 +639,85 @@ const BattleArena = () => {
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8">
                         {((isMobile && mobileTab === "problem") || (!isMobile && activeTab === "description")) ? (
-                            <div className="space-y-8 lg:space-y-12">
-                                <section>
-                                    <div className="flex items-center justify-between mb-4 lg:mb-8">
-                                        <div className="px-3 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-black uppercase tracking-widest">
-                                            {problem.difficulty}
+                            (!opponent && currentBattle?.status !== "FINISHED") ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-8 animate-in fade-in zoom-in duration-700">
+                                    <div className="relative">
+                                        <div className="w-20 h-20 border-2 border-dashed border-[var(--color-primary)]/20 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
+                                            <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full absolute -top-1 left-1/2 -translate-x-1/2" />
+                                        </div>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Users size={32} className="text-slate-700 animate-pulse" />
                                         </div>
                                     </div>
-                                    <h2 className="text-xl lg:text-2xl font-black text-white mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem.title}</h2>
-                                    <div className="prose prose-invert prose-sm max-w-none text-slate-400 font-light leading-relaxed mb-8 lg:mb-12">
-                                        {problem.description}
+                                    <div className="space-y-4 max-w-xs">
+                                        <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-white">Signal Blocked</h3>
+                                        <p className="text-[10px] text-slate-500 font-mono italic leading-relaxed">
+                                            Mission objectives are encrypted. The data stream will initialize once an opponent synchronizes with this sector.
+                                        </p>
+                                        <div className="pt-4">
+                                            <div className="text-[8px] font-bold text-[var(--color-primary)] uppercase tracking-widest mb-2 opacity-50">Awaiting Target Acquisition...</div>
+                                            <div className="h-1 w-full bg-white/5 overflow-hidden">
+                                                <div className="h-full bg-[var(--color-primary)]/30 w-1/3 animate-[shimmer_2s_infinite]" />
+                                            </div>
+                                        </div>
                                     </div>
-                                </section>
-
-                                {problem.testcases?.some(tc => tc.isSample) && (
+                                </div>
+                            ) : (
+                                <div className="space-y-8 lg:space-y-12">
                                     <section>
-                                        <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
-                                            <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Sample Test Cases
-                                        </h3>
-                                        <div className="space-y-4">
-                                            {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
-                                                <div key={i} className="bg-white/5 border border-white/5 p-4 rounded-sm">
-                                                    <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">Example {i + 1}</div>
-                                                    <div className="grid grid-cols-1 gap-4">
-                                                        <div>
-                                                            <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Input</div>
-                                                            <pre className="p-3 bg-black/40 text-[11px] text-white font-mono overflow-x-auto border border-white/5">{tc.input}</pre>
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Expected Output</div>
-                                                            <pre className="p-3 bg-black/40 text-[11px] text-[var(--color-primary)] font-mono overflow-x-auto border border-white/5">{tc.output}</pre>
+                                        <div className="flex items-center justify-between mb-4 lg:mb-8">
+                                            <div className="px-3 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-black uppercase tracking-widest">
+                                                {problem?.difficulty || "MISSION DATA"}
+                                            </div>
+                                        </div>
+                                        <h2 className="text-xl lg:text-2xl font-black text-white mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem?.title}</h2>
+                                        <div className="prose prose-invert prose-sm max-w-none text-slate-400 font-light leading-relaxed mb-8 lg:mb-12">
+                                            {problem?.description}
+                                        </div>
+                                    </section>
+
+                                    {problem?.testcases?.some(tc => tc.isSample) && (
+                                        <section>
+                                            <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
+                                                <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Sample Test Cases
+                                            </h3>
+                                            <div className="space-y-4">
+                                                {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
+                                                    <div key={i} className="bg-white/5 border border-white/5 p-4 rounded-sm">
+                                                        <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">Example {i + 1}</div>
+                                                        <div className="grid grid-cols-1 gap-4">
+                                                            <div>
+                                                                <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Input</div>
+                                                                <pre className="p-3 bg-black/40 text-[11px] text-white font-mono overflow-x-auto border border-white/5">{tc.input}</pre>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Expected Output</div>
+                                                                <pre className="p-3 bg-black/40 text-[11px] text-[var(--color-primary)] font-mono overflow-x-auto border border-white/5">{tc.output}</pre>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </section>
-                                )}
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
 
-                                {problem.constraints && (
-                                    <section>
-                                        <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
-                                            <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> System Constraints
-                                        </h3>
-                                        <ul className="space-y-3">
-                                            {(typeof problem.constraints === 'string' ? problem.constraints.split('\n') : problem.constraints).map((c, i) => (
-                                                <li key={i} className="flex items-start gap-3 text-[11px] lg:text-xs text-slate-500 italic">
-                                                    <div className="mt-1.5 w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_5px_var(--color-primary)]" />
-                                                    {c}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </section>
-                                )}
-                            </div>
+                                    {problem?.constraints && (
+                                        <section>
+                                            <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
+                                                <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> System Constraints
+                                            </h3>
+                                            <ul className="space-y-3">
+                                                {(typeof problem.constraints === 'string' ? problem.constraints.split('\n') : problem.constraints).map((c, i) => (
+                                                    <li key={i} className="flex items-start gap-3 text-[11px] lg:text-xs text-slate-500 italic">
+                                                        <div className="mt-1.5 w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_5px_var(--color-primary)]" />
+                                                        {c}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </section>
+                                    )}
+                                </div>
+                            )
                         ) : (
                             renderConsole()
                         )}
@@ -759,9 +841,19 @@ const BattleArena = () => {
                     )}
                 </div>
 
-                {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Static, Mobile: Tabbed) */}
-                <aside className={`w-full lg:w-[300px] flex-1 min-h-0 border-l border-white/5 bg-[#080808] shrink-0 
-                    ${mobileTab === "status" ? "flex flex-col" : "hidden lg:flex lg:flex-col"}`}>
+                {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Resizable, Mobile: Tabbed) */}
+                <aside 
+                    className={`min-h-0 border-l border-white/5 bg-[#080808] shrink-0 relative group/match
+                        ${mobileTab === "status" ? "flex flex-col w-full" : "hidden lg:flex lg:flex-col"}`}
+                    style={{ width: isMobile ? '100%' : `${rightSidebarWidth}px` }}
+                >
+                    {/* Resize Handle - Desktop Only */}
+                    {!isMobile && (
+                        <div
+                            onMouseDown={startResizingRight}
+                            className={`absolute -left-1 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizingRight ? 'bg-[var(--color-primary)]' : 'hover:bg-[var(--color-primary)]/30'}`}
+                        />
+                    )}
                     <div className="p-6 border-b border-white/5 bg-[#0a0a0a]">
                         <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Match Status</div>
 
@@ -933,6 +1025,55 @@ const BattleArena = () => {
                     </div>
                 </div>
             )}
+
+            {/* CONFIRMATION MODAL */}
+            <AnimatePresence>
+                {showForfeitModal && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="w-full max-w-md bg-[#0a0a0a] border border-white/10 p-10 shadow-2xl relative overflow-hidden"
+                            style={{ borderRadius: "2px" }}
+                        >
+                            <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50" />
+                            
+                            <div className="flex items-center gap-4 text-red-500 mb-6">
+                                <AlertTriangle size={24} />
+                                <div className="text-[10px] font-black uppercase tracking-[0.4em]">Signal Termination</div>
+                            </div>
+                            
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4 leading-tight">Abort Match?</h3>
+                            <p className="text-slate-500 text-xs font-mono leading-relaxed mb-10">
+                                This action will result in an immediate forfeit. Your performance metrics will be recorded as a failure for this sector.
+                            </p>
+                            
+                            <div className="flex gap-4">
+                                <button 
+                                    onClick={() => setShowForfeitModal(false)}
+                                    className="flex-1 py-4 border border-white/5 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:text-white hover:bg-white/5 transition-all"
+                                    style={{ borderRadius: "2px" }}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={confirmForfeit}
+                                    className="flex-1 py-4 bg-red-500 text-white font-black uppercase tracking-widest text-[10px] hover:bg-red-400 transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                                    style={{ borderRadius: "2px" }}
+                                >
+                                    Confirm Abandon
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import axiosInstance from '../../lib/axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const AdminContests = () => {
   const { user } = useSelector((state) => state.auth);
@@ -68,7 +69,7 @@ const AdminContests = () => {
       });
     } catch (err) {
       console.error(err);
-      alert('Security Exception: Failed to generate custom problem payload.');
+      toast.error('Security Exception: Failed to generate custom problem payload.');
     } finally {
       setHandlingProblem(false);
     }
@@ -116,7 +117,7 @@ const AdminContests = () => {
     const formattedProblemIds = selectedProblems;
 
     if (formattedProblemIds.length === 0) {
-      alert('Security Exception: You must select at least 1 problem for the contest.');
+      toast.error('Security Exception: You must select at least 1 problem for the contest.');
       setLoading(false);
       return;
     }
@@ -141,7 +142,7 @@ const AdminContests = () => {
       setTimeout(() => navigate('/contests'), 2000);
     } catch (error) {
       console.error('Error creating contest:', error);
-      alert('Security Exception: Failed to create contest. Check if problem IDs are valid UUIDs.');
+      toast.error('Security Exception: Failed to create contest. Check if problem IDs are valid UUIDs.');
     } finally {
       setLoading(false);
     }

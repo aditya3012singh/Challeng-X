@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createTeamBattleByLeader } from "../../../store/api/teamBattle.thunk";
+import { toast } from "react-hot-toast";
 
 export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
   const dispatch = useDispatch();
@@ -15,7 +16,7 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!team1Id) {
-      alert("Please select a team");
+      toast.error("Please select a team");
       return;
     }
 
@@ -32,7 +33,7 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(joinCode);
-    alert("Join code copied!");
+    toast.success("Join code copied!");
   };
 
   if (!isOpen) return null;

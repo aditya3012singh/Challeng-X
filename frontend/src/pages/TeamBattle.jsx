@@ -23,6 +23,7 @@ import { TournamentDisplay } from "../components/TeamBattle/TournamentDisplay";
 import { CodeSubmissionModal } from "../components/TeamBattle/CodeSubmissionModal";
 import { CreateBattleModal } from "../components/TeamBattle/CreateBattleModal";
 import { JoinBattleModal } from "../components/TeamBattle/JoinBattleModal";
+import { toast } from "react-hot-toast";
 
 // Components
 
@@ -42,6 +43,8 @@ export const TeamBattle = () => {
   // NEW JOIN-CODE FLOW STATE
   const [showCreateBattleModal, setShowCreateBattleModal] = useState(false);
   const [showJoinBattleModal, setShowJoinBattleModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({ title: "", message: "", action: null });
 
   const dispatch = useDispatch();
   const { userTeams, loading: teamLoading, error: teamError, successMessage: teamSuccess } = useSelector(
@@ -82,7 +85,7 @@ export const TeamBattle = () => {
   const handleCreateTeam = async (e) => {
     e.preventDefault();
     if (!teamName.trim() || teamName.length < 3) {
-      alert("Team name must be at least 3 characters");
+      toast.error("Team name must be at least 3 characters");
       return;
     }
 
@@ -99,7 +102,7 @@ export const TeamBattle = () => {
   const handleJoinTeam = async (e) => {
     e.preventDefault();
     if (!joinCode.trim()) {
-      alert("Enter a team code");
+      toast.error("Enter a team code");
       return;
     }
 
@@ -113,26 +116,38 @@ export const TeamBattle = () => {
     }
   };
 
-  const handleLeaveTeam = async (teamId) => {
-    if (window.confirm("Are you sure you want to leave this team?")) {
-      try {
-        await dispatch(leaveTeam(teamId)).unwrap();
-        dispatch(getUserTeams());
-      } catch (err) {
-        console.error("Leave team error:", err);
+  const handleLeaveTeam = (teamId) => {
+    setConfirmConfig({
+      title: "Leave Team?",
+      message: "Are you sure you want to leave this team? You will lose access to team matches.",
+      action: async () => {
+        try {
+          await dispatch(leaveTeam(teamId)).unwrap();
+          dispatch(getUserTeams());
+          toast.success("Left team successfully");
+        } catch (err) {
+          console.error("Leave team error:", err);
+        }
       }
-    }
+    });
+    setShowConfirmModal(true);
   };
 
-  const handleDisbandTeam = async (teamId) => {
-    if (window.confirm("Are you sure you want to disband this team?")) {
-      try {
-        await dispatch(disbandTeam(teamId)).unwrap();
-        dispatch(getUserTeams());
-      } catch (err) {
-        console.error("Disband team error:", err);
+  const handleDisbandTeam = (teamId) => {
+    setConfirmConfig({
+      title: "Disband Team?",
+      message: "This action is permanent and will remove all members from the team.",
+      action: async () => {
+        try {
+          await dispatch(disbandTeam(teamId)).unwrap();
+          dispatch(getUserTeams());
+          toast.success("Team disbanded successfully");
+        } catch (err) {
+          console.error("Disband team error:", err);
+        }
       }
-    }
+    });
+    setShowConfirmModal(true);
   };
 
   const handleStartBattle = (team) => {
@@ -143,7 +158,7 @@ export const TeamBattle = () => {
   // Battle handlers
   const handleCreateBattle = async () => {
     if (!selectedTeam || !selectedOpponent) {
-      alert("Select both your team and opponent team");
+      toast.error("Select both your team and opponent team");
       return;
     }
 
@@ -180,7 +195,7 @@ export const TeamBattle = () => {
 
   const handleSubmitMatchCode = async () => {
     if (!code.trim()) {
-      alert("Enter code first");
+      toast.error("Enter code first");
       return;
     }
 
@@ -219,7 +234,7 @@ export const TeamBattle = () => {
   // Utility functions
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert("Team code copied to clipboard!");
+    toast.success("Team code copied to clipboard!");
   };
 
   const getMatchStatus = (match) => {
@@ -333,6 +348,34 @@ export const TeamBattle = () => {
           onClose={() => setShowJoinBattleModal(false)}
           teams={userTeams}
         />
+
+        {/* REUSABLE CONFIRMATION MODAL */}
+        {showConfirmModal && (
+          <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
+            <div className="max-w-md w-full bg-[#0a0a0a] border border-white/10 p-10 shadow-2xl relative overflow-hidden" style={{ borderRadius: "2px" }}>
+              <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50" />
+              <div className="text-[10px] font-bold tracking-[0.4em] text-red-500 uppercase mb-6">Action Confirmation</div>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">{confirmConfig.title}</h3>
+              <p className="text-slate-500 text-xs font-mono leading-relaxed mb-10">{confirmConfig.message}</p>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setShowConfirmModal(false)}
+                  className="flex-1 py-4 border border-white/5 text-slate-500 font-bold uppercase tracking-widest text-[9px] hover:text-white transition-colors"
+                  style={{ borderRadius: "2px" }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => { confirmConfig.action(); setShowConfirmModal(false); }}
+                  className="flex-1 py-4 bg-red-500 text-white font-black uppercase tracking-widest text-[9px] hover:bg-red-400 transition-all shadow-xl"
+                  style={{ borderRadius: "2px" }}
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getBattleById } from "../../store/api/teamBattle.thunk";
 import { TeamChat } from "../components/TeamChat";
 import { getSocket } from "../../lib/socket";
+import { toast } from "react-hot-toast";
 
 export const BattleRoom = () => {
   const { battleId } = useParams();
@@ -24,7 +25,7 @@ export const BattleRoom = () => {
       setBattleData(result);
     } catch (error) {
       console.error("Failed to fetch battle:", error);
-      alert("Failed to load battle room. Redirecting...");
+      toast.error("Failed to load battle room. Redirecting...");
       navigate("/team-battle");
     } finally {
       setLoading(false);
@@ -118,7 +119,7 @@ export const BattleRoom = () => {
   const copyJoinCode = () => {
     if (!battleData?.joinCode) return;
     navigator.clipboard.writeText(battleData.joinCode);
-    alert("Join code copied to clipboard!");
+    toast.success("Join code copied to clipboard!");
   };
 
   if (!battleData || loading) {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getAvailableBattles, joinTeamBattleWithCode } from "../../../store/api/teamBattle.thunk";
+import { toast } from "react-hot-toast";
 
 export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
   const dispatch = useDispatch();
@@ -22,7 +23,7 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
   const handleJoinWithCode = async (e) => {
     e.preventDefault();
     if (!joinCodeInput || !team2Id) {
-      alert("Please enter join code and select a team");
+      toast.error("Please enter join code and select a team");
       return;
     }
 
@@ -41,7 +42,7 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
 
   const handleJoinBattle = async (battleId) => {
     if (!team2Id) {
-      alert("Please select a team first");
+      toast.error("Please select a team first");
       return;
     }
 

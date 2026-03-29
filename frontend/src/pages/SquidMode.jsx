@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
+import { toast } from "react-hot-toast";
 import {
     getSquidGameStatus,
     startSquidGame,
@@ -237,8 +238,7 @@ export const SquidMode = () => {
             console.log(`📝 [SquidMode] Submission queued via API for ${type}`);
         } catch (error) {
             console.error("❌ [SquidMode] API Submission failed:", error);
-            // Optionally emit a local error to the RoundScreen component
-            alert(`Submission failed: ${error.response?.data?.message || error.message}`);
+            toast.error(`Submission failed: ${error.response?.data?.message || error.message}`);
         }
     };
 

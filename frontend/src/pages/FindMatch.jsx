@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getSocket, isSocketConnected } from "../../lib/socket";
 import { joinMatchmaking, leaveMatchmaking, getQueueStatus } from "../../store/api/matchmaking.thunk";
 import { setMatchFound, resetMatchmaking } from "../../store/slices/matchmaking.slice";
+import { toast } from "react-hot-toast";
 
 export const FindMatch = () => {
     const [selectedDifficulty, setSelectedDifficulty] = useState("MEDIUM");
@@ -32,7 +33,7 @@ export const FindMatch = () => {
         });
 
         socket.on("matchmakingError", (data) => {
-            alert(data.message);
+            toast.error(data.message);
             handleLeaveQueue();
         });
 

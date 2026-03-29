@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { joinBattle } from "../../store/api/battle.thunk";
+import { toast } from "react-hot-toast";
 
 const JoinRoom = () => {
   const [code, setCode] = useState("");
@@ -24,7 +25,7 @@ const JoinRoom = () => {
       const res = await dispatch(joinBattle({ battleCode: code })).unwrap();
       navigate(`/battle/${res.id}/ide`);
     } catch (err) {
-      alert(err.message || "Invalid Room Code");
+      toast.error(err.message || "Invalid Room Code");
     } finally {
       setLoading(false);
     }

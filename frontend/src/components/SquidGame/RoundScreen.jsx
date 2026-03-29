@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import CodeEditor from "../CodeEditor";
 import { LANGUAGES } from "./SquidGameConfig";
+import { toast } from "react-hot-toast";
 
 const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, socket, user }) => {
     const [language, setLanguage] = useState("java");
@@ -113,8 +114,7 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
             console.error("❌ [RoundScreen] Socket Error:", data);
             setSubmissionStatus("IDLE");
             setSubmitted(false);
-            // We could use a toast here if available, but for now we reset
-            alert(`Submission Error: ${data.message || "Unknown error"}`);
+            toast.error(`Submission Error: ${data.message || "Unknown error"}`);
         };
 
         socket.on("submission_result", handleResult);

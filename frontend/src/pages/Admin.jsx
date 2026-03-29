@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import axios from '../../lib/axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const Admin = () => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const [problems, setProblems] = useState([]);
   const [editingProblem, setEditingProblem] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [problemToDelete, setProblemToDelete] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -46,8 +49,7 @@ const Admin = () => {
     e.preventDefault();
     try {
       if (editingProblem) {
-        // Update logic would go here if implemented
-        alert('Update functionality not yet fully implemented in this node.');
+        toast.info('Update functionality not yet fully implemented in this node.');
       } else {
         const problemResponse = await axios.post('/api/problem/create', {
           title: formData.title,
@@ -64,7 +66,7 @@ const Admin = () => {
           testcases: formData.testcases
         });
 
-        alert('Protocol Authorized: New problem record established.');
+        toast.success('Protocol Authorized: New problem record established.');
       }
 
       setFormData({
@@ -79,7 +81,7 @@ const Admin = () => {
       fetchProblems();
     } catch (error) {
       console.error('Error:', error);
-      alert('Security Exception: Failed to commit record.');
+      toast.error('Security Exception: Failed to commit record.');
     }
   };
 
@@ -95,15 +97,23 @@ const Admin = () => {
     });
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Authorize Purge: Are you sure you want to permanently delete this protocol record?')) {
-      try {
-        await axios.delete(`/api/problem/${id}`);
-        fetchProblems();
-      } catch (error) {
-        console.error('Error deleting problem:', error);
-        alert('Purge Failed: Record protected or network failure.');
-      }
+  const handleDelete = (id) => {
+    setProblemToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!problemToDelete) return;
+    try {
+      await axios.delete(`/api/problem/${problemToDelete}`);
+      fetchProblems();
+      toast.success('Protocol Purged: Record removed successfully.');
+    } catch (error) {
+      console.error('Error deleting problem:', error);
+      toast.error('Purge Failed: Record protected or network failure.');
+    } finally {
+      setShowDeleteModal(false);
+      setProblemToDelete(null);
     }
   };
 
@@ -303,6 +313,36 @@ const Admin = () => {
           </div>
         </div>
       </div>
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="premium-card max-w-md w-full p-10 relative overflow-hidden" style={{ borderRadius: "2px" }}>
+            <div className="absolute top-0 left-0 w-full h-1 bg-red-900/50" />
+            <div className="text-[10px] font-bold tracking-[0.4em] text-red-500 uppercase mb-6">Security Override Required</div>
+            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">Authorize Purge?</h3>
+            <p className="text-slate-500 text-xs font-mono leading-relaxed mb-10">
+              You are about to permanently delete this protocol record from the central database. This action is irreversible.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => { setShowDeleteModal(false); setProblemToDelete(null); }}
+                className="flex-1 py-4 border border-white/5 text-slate-500 font-bold uppercase tracking-widest text-[9px] hover:text-white transition-colors"
+                style={{ borderRadius: "2px" }}
+              >
+                Abort
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 py-4 bg-red-900/80 text-white font-black uppercase tracking-widest text-[9px] hover:bg-red-500 transition-all shadow-xl"
+                style={{ borderRadius: "2px" }}
+              >
+                Confirm Purge
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
