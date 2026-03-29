@@ -1,6 +1,7 @@
 import Database from "../config/db.js";
 import logger from "../utils/logger.js";
 import RedisClient from "../cache/redis.client.js";
+import NotificationService from "../services/notification.service.js";
 
 class SocialController {
     /**
@@ -74,6 +75,15 @@ class SocialController {
                 data: { senderId, receiverId }
             });
 
+            // Trigger Notification
+            const sender = await Database.client.user.findUnique({ where: { id: senderId } });
+            await NotificationService.createNotification(receiverId, {
+                type: 'FRIEND_REQUEST',
+                title: 'New Friend Request',
+                message: `${sender?.username || 'Someone'} sent you a friend request.`,
+                link: `/profile/${sender?.username}`
+            });
+
             res.json({ message: "Friend request sent" });
         } catch (error) {
             logger.error(`Error sending friend request: ${error.message}`);
@@ -105,6 +115,17 @@ class SocialController {
                 where: { id: requestId },
                 data: { status }
             });
+
+            // Trigger Notification if accepted
+            if (status === 'ACCEPTED') {
+                const receiver = await Database.client.user.findUnique({ where: { id: userId } });
+                await NotificationService.createNotification(request.senderId, {
+                    type: 'FRIEND_REQUEST',
+                    title: 'Friend Request Accepted',
+                    message: `${receiver?.username || 'Someone'} accepted your friend request.`,
+                    link: `/profile/${receiver?.username}`
+                });
+            }
 
             res.json({ message: `Friend request ${status.toLowerCase()}` });
         } catch (error) {

@@ -34,9 +34,17 @@ model Problem {
   squidGameRounds   SquidGameRound[]
   contestProblems   ContestProblem[]
 
+  updatedAt DateTime @default(now()) @updatedAt
   createdAt DateTime @default(now())
 
   submissions Submission[]
+  tags        Tag[]
+}
+
+model Tag {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  problems Problem[]
 }
 
 model TestCase {

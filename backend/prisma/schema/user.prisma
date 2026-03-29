@@ -65,6 +65,11 @@ model User {
   instagram  String?
   twitter    String?
 
+  country    String?
+  region     String?
+
+  notifications Notification[]
+
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 

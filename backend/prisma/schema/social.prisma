@@ -40,3 +40,24 @@ enum RequestStatus {
   ACCEPTED
   REJECTED
 }
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  message   String
+  link      String? // e.g., /battle/:id
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+}
+
+enum NotificationType {
+  FRIEND_REQUEST
+  MATCH_INVITE
+  BATTLE_RESULT
+  SYSTEM
+}
