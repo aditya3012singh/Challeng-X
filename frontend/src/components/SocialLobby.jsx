@@ -10,6 +10,7 @@ import { getSocket } from '../../lib/socket';
 import { getFriends } from '../../store/api/social.thunk';
 import { joinMatchmaking } from '../../store/api/matchmaking.thunk';
 import { setActiveChat, addPrivateMessage, clearActiveChat } from '../../store/slices/chat.slice';
+import { setLobby, addInvite, removeInvite, updateUserPresence } from '../../store/slices/lobby.slice';
 import { getChatHistory } from '../../store/api/chat.thunk';
 
 const SocialLobby = () => {
