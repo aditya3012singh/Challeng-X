@@ -9,10 +9,14 @@ import matchmakingReducer from "./slices/matchmaking.slice";
 import teamReducer from "./slices/team.slice";
 import teamBattleReducer from "./slices/teamBattle.slice";
 import squidGameReducer from "./slices/squidGame.slice";
+import socialReducer from "./slices/social.slice";
+import lobbyReducer from "./slices/lobby.slice";
+import chatReducer from "./slices/chat.slice";
 
 export const store = configureStore({
     reducer: {
         auth: authReducer,
+        social: socialReducer,
         battle: battleReducer,
         leaderboard: leaderboardReducer,
         problem: problemReducer,
@@ -22,6 +26,8 @@ export const store = configureStore({
         team: teamReducer,
         teamBattle: teamBattleReducer,
         squidGame: squidGameReducer,
+        lobby: lobbyReducer,
+        chat: chatReducer,
     },
 });
 

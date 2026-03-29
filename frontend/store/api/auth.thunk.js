@@ -109,3 +109,15 @@ export const resetPassword = createAsyncThunk(
         }
     }
 )
+
+export const changePassword = createAsyncThunk(
+    "auth/changePassword",
+    async ({ oldPassword, newPassword }, { rejectWithValue }) => {
+        try {
+            const res = await api.post("/auth/change-password", { oldPassword, newPassword });
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { message: "Failed to change password" });
+        }
+    }
+)
