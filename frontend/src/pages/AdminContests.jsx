@@ -3,6 +3,11 @@ import { useSelector } from 'react-redux';
 import axiosInstance from '../../lib/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Shield, Plus, Search, Calendar, Clock, Trophy, 
+  ChevronRight, ArrowLeft, Loader2, Target, Activity, Check 
+} from 'lucide-react';
 
 const AdminContests = () => {
   const { user } = useSelector((state) => state.auth);
@@ -159,13 +164,34 @@ const AdminContests = () => {
 
       <div className="max-w-4xl mx-auto relative z-10">
         {/* Header */}
-        <div className="flex justify-between items-end mb-16">
-          <div>
-            <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4 flex gap-6 items-center">
-              <span>Command Center // Tournaments</span>
-              <Link to="/admin" className="text-white hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/20">← Manage Problems</Link>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-16">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <div className="text-[10px] font-black tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6 flex gap-6 items-center">
+              <Activity size={12} />
+              Command Center // Tournaments
+              <Link to="/admin" className="text-white/40 hover:text-[var(--color-primary)] transition-all flex items-center gap-2 group">
+                <ArrowLeft size={10} className="group-hover:-translate-x-1 transition-transform" />
+                Return to Assets
+              </Link>
             </div>
-            <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Contest Operations</h1>
+            <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-[0.85]">
+              Contest<br/>Ops.
+            </h1>
+          </motion.div>
+          
+          <div className="flex items-center gap-8 py-4 px-8 border border-white/5 bg-white/[0.02] font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
+             <div className="flex flex-col items-end gap-1">
+                <span>Database</span>
+                <span className="text-white font-black">{availableProblems.length} VECTORS</span>
+             </div>
+             <div className="h-8 w-[1px] bg-white/10" />
+             <div className="flex flex-col items-end gap-1">
+                <span>Auth Status</span>
+                <span className="text-emerald-500 font-black">ENCRYPTED</span>
+             </div>
           </div>
         </div>
 
@@ -236,18 +262,19 @@ const AdminContests = () => {
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-3">
-                 <div className="flex gap-2 items-center">
-                   <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Target Vectors (Select Problems)</label>
-                   <span className="text-[8px] tracking-widest font-mono text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded">{selectedProblems.length} SELECTED</span>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-3">
+                 <div className="flex gap-4 items-center">
+                   <label className="block text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">Target Vectors</label>
+                   <span className="text-[9px] font-black text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-3 py-1 border border-[var(--color-primary)]/20 uppercase tracking-widest">{selectedProblems.length} Selected</span>
                  </div>
                  <button 
                    type="button" 
                    onClick={() => setShowProblemModal(true)}
-                   className="text-[9px] font-bold uppercase tracking-widest text-[#050505] bg-[var(--color-primary)] px-3 py-1 hover:bg-white transition-colors"
+                   className="text-[9px] font-black uppercase tracking-[0.3em] text-black bg-[var(--color-primary)] px-6 py-2 hover:bg-white transition-all transform active:scale-95 flex items-center gap-2 group"
                    style={{ borderRadius: "2px" }}
                  >
-                   🚀 Create Custom Problem
+                   <Plus size={12} className="group-hover:rotate-90 transition-transform" />
+                   Inject Custom Protocol
                  </button>
               </div>
               
@@ -277,14 +304,18 @@ const AdminContests = () => {
               </div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-10 border-t border-white/5">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all transform active:scale-95 shadow-xl disabled:opacity-50"
+                className="group relative w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.5em] text-[11px] hover:brightness-110 transition-all overflow-hidden disabled:opacity-50"
                 style={{ borderRadius: "2px" }}
               >
-                {loading ? "Transmitting..." : "Authorize Contest Deployment"}
+                <div className="relative z-10 flex items-center justify-center gap-4">
+                  {loading ? <Loader2 className="animate-spin" size={16} /> : <Target size={16} />}
+                  {loading ? "TRANSMITTING ENCRYPTED PAYLOAD..." : "AUTHORIZE CONTEST DEPLOYMENT"}
+                </div>
+                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
               </button>
             </div>
           </form>

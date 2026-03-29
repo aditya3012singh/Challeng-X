@@ -18,14 +18,7 @@ const Home = () => {
                 {/* HERO SECTION */}
                 <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
                     {/* Background Visual */}
-                    <div className="absolute inset-0 z-0">
-                        <img 
-                            src="/hero-bg.png" 
-                            alt="Background" 
-                            className="w-full h-full object-cover opacity-20"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/50 via-[#050505] to-[#050505]" />
-                    </div>
+                   
 
                     <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
                         <div className="inline-block px-4 py-1 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">

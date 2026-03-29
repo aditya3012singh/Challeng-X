@@ -3,7 +3,15 @@ import logger from "../utils/logger.js";
 
 class ContestService {
   static async createContest(creatorId, data) {
-    const { title, description, startTime, endTime, problems } = data;
+    const { title, description, startTime, endTime, problems, problemIds } = data;
+    
+    // Normalize problems payload
+    const normalizedProblems = problems || (problemIds || []).map((id, index) => ({
+      problemId: id,
+      points: 100,
+      order: index
+    }));
+
     return await Database.client.contest.create({
       data: {
         title,
@@ -12,10 +20,10 @@ class ContestService {
         endTime: new Date(endTime),
         creatorId,
         problems: {
-          create: problems.map((p, index) => ({
+          create: normalizedProblems.map((p, index) => ({
             problemId: p.problemId,
             points: p.points || 100,
-            order: index
+            order: p.order ?? index
           }))
         }
       },
@@ -151,7 +159,7 @@ class ContestService {
         });
       } else if (status === "FAILED" && passedCount === 0) { // Penalize if haven't passed
         // 10 minutes penalty standard
-        await prisma.contestParticipant.update({
+        await Database.client.contestParticipant.update({
           where: { id: participant.id },
           data: { penaltyMs: { increment: 10 * 60 * 1000 } }
         });

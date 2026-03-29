@@ -63,16 +63,6 @@ export const Battle = () => {
     navigate(`/battle/${res.id}/ide`);
   };
 
-  const handleJoinBattle = async (e) => {
-    e.preventDefault();
-    if (!battleId.trim()) return;
-
-    const res = await dispatch(
-      joinBattle({ battleCode: battleId.trim() })
-    ).unwrap();
-
-    navigate(`/battle/${res.id}/ide`);
-  };
 
   return (
     <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-20 px-4 sm:px-6 relative overflow-hidden font-[family:var(--font-body)]">
@@ -111,16 +101,6 @@ export const Battle = () => {
               style={{ borderRadius: "1px" }}
             >
               Custom Match
-            </button>
-            <button
-              onClick={() => setActiveTab("join")}
-              className={`px-4 sm:px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "join"
-                ? "bg-[var(--color-primary)] text-black"
-                : "text-slate-500 hover:text-white"
-                }`}
-              style={{ borderRadius: "1px" }}
-            >
-              Join Match
             </button>
           </div>
         </div>
@@ -208,44 +188,6 @@ export const Battle = () => {
             </div>
           )}
 
-          {/* Join Battle */}
-          {activeTab === "join" && (
-            <div className="w-full max-w-lg mx-auto">
-              <div className="text-center mb-12">
-                <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Join Lobby</div>
-                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Enter Match Code</h2>
-                <p className="text-slate-500 text-sm font-light leading-relaxed">
-                  Enter a match code to join an existing game with other players.
-                </p>
-              </div>
-
-              <form onSubmit={handleJoinBattle}>
-                <div className="mb-12 text-center">
-                  <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-6">
-                    Match Code
-                  </label>
-                  <input
-                    type="text"
-                    value={battleId}
-                    onChange={(e) => setBattleId(e.target.value)}
-                    placeholder="CODE (e.g. ALPHA-9)"
-                    className="w-full bg-[#050505] border border-white/10 px-6 py-8 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-center text-2xl tracking-[0.4em] uppercase"
-                    style={{ borderRadius: "2px" }}
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading || !battleId.trim()}
-                  className="w-full py-6 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition-all transform active:scale-95 shadow-xl"
-                  style={{ borderRadius: "2px" }}
-                >
-                  {loading ? "Joining..." : "Join Match →"}
-                </button>
-              </form>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { fetchUserProfile } from '../store/api/auth.thunk'
 import { addNotification } from '../store/slices/notification.slice'
 import { getSocket } from '../lib/socket'
+import { Toaster } from 'react-hot-toast'
 import './App.css'
 
 const Login = lazy(() => import('./auth/Login'))
@@ -45,9 +46,26 @@ const ProtectedRoute = ({ children }) => {
 // Global Socket Listener for Redirections
 const GlobalSocketListener = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    // 1. Handle dynamic import failures (stale build chunks)
+    const handleModuleError = (e) => {
+      const isModuleError = e.message?.includes('Failed to fetch dynamically imported module') || 
+                          e.stack?.includes('Failed to fetch dynamically imported module') ||
+                          e.name === 'ChunkLoadError';
+      
+      if (isModuleError) {
+        console.warn('Stale build detected. Reloading for latest assets...');
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener('error', handleModuleError, true);
+    window.addEventListener('unhandledrejection', (e) => handleModuleError(e.reason));
+
+    // 2. Original socket listeners
     if (!isAuthenticated || !user) return;
 
     const socket = getSocket();
@@ -137,6 +155,25 @@ function App() {
 
   return (
     <MainLayout>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#0a0a0a',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            fontSize: '12px',
+            fontFamily: 'var(--font-mono)',
+            borderRadius: '2px',
+          },
+          success: {
+            iconTheme: {
+              primary: 'var(--color-primary)',
+              secondary: '#000',
+            },
+          },
+        }}
+      />
       <GlobalSocketListener />
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -167,11 +204,7 @@ function App() {
               <BattleArena />
             </ProtectedRoute>
           } />
-          <Route path='/leaderboard' element={
-            <ProtectedRoute>
-              <Leaderboard />
-            </ProtectedRoute>
-          } />
+          <Route path='/leaderboard' element={<Leaderboard />} />
 
           <Route path="/join-room" element={
             <ProtectedRoute>
@@ -226,16 +259,8 @@ function App() {
           <Route path="/spectate/:battleId" element={
             <SpectatorArena />
           } />
-          <Route path="/live" element={
-            <ProtectedRoute>
-              <LiveArenas />
-            </ProtectedRoute>
-          } />
-          <Route path="/contests" element={
-            <ProtectedRoute>
-              <Contests />
-            </ProtectedRoute>
-          } />
+          <Route path="/live" element={<LiveArenas />} />
+          <Route path="/contests" element={<Contests />} />
           <Route path="/contests/:id" element={
             <ProtectedRoute>
               <ContestDetail />
