@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { getProblemById } from "../../store/api/problem.thunk";
 import { createBattleSelected } from "../../store/api/battle.thunk";
+import { Zap, Code, Terminal, Clock, Shield, ChevronLeft, Activity, Play } from 'lucide-react';
 
 export const ProblemDetail = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const id  = useParams();
+    const { id } = useParams();
     const [creatingBattle, setCreatingBattle] = useState(false);
 
     const {
@@ -28,116 +29,147 @@ export const ProblemDetail = () => {
         setCreatingBattle(true);
         try {
             const result = await dispatch(createBattleSelected({ problemId: currentProblem.id })).unwrap();
-            // Navigate to battle page or show success message
-            // Assuming the battle response has a battle ID
             if (result?.id) {
                 navigate(`/battle/${result.id}/ide`);
             }
-            else {
-                alert("Battle created successfully!");
-            }
         } catch (error) {
-            alert(error?.message || "Failed to create battle");
+            console.error("Battle creation error:", error);
         } finally {
             setCreatingBattle(false);
         }
     };
 
-    const getDifficultyColor = (difficulty) => {
+    const getDifficultyStyles = (difficulty) => {
         switch (difficulty?.toUpperCase()) {
             case "EASY":
-                return "bg-green-100 text-green-800";
+                return "text-green-500 bg-green-500/10 border-green-500/20";
             case "MEDIUM":
-                return "bg-yellow-100 text-yellow-800";
+                return "text-yellow-500 bg-yellow-500/10 border-yellow-500/20";
             case "HARD":
-                return "bg-red-100 text-red-800";
+                return "text-red-500 bg-red-500/10 border-red-500/20";
             default:
-                return "bg-gray-100 text-gray-800";
+                return "text-gray-500 bg-gray-500/10 border-gray-500/20";
         }
     };
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="text-xl">Loading...</div>
+            <div className="flex flex-col justify-center items-center min-h-[60vh] gap-4">
+                <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+                <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Decoding Signal...</div>
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="text-xl text-red-600">Error: {error}</div>
-            </div>
-        );
-    }
-
-    if (!currentProblem) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="text-xl">Problem not found</div>
-            </div>
-        );
-    }
+    if (!currentProblem) return null;
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-3">{currentProblem.title}</h1>
-                <div className="flex items-center gap-3">
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getDifficultyColor(currentProblem.difficulty)}`}>
-                        {currentProblem.difficulty}
-                    </span>
-                </div>
-            </div>
-
-            {/* Description */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-3">Description</h2>
-                <p className="text-gray-700 whitespace-pre-line">
-                    {currentProblem.description || "No description available"}
-                </p>
-            </div>
-
-            {/* Test Cases */}
-            {currentProblem.testcases && currentProblem.testcases.length > 0 && (
-                <div className="bg-white rounded-lg shadow p-6 mb-6">
-                    <h2 className="text-xl font-semibold mb-3">Test Cases</h2>
-                    <div className="space-y-4">
-                        {currentProblem.testcases.map((testcase, index) => (
-                            <div key={index} className="border border-gray-200 rounded p-4">
-                                <div className="font-medium mb-2">Test Case {index + 1}</div>
-                                <div className="space-y-1 text-sm">
-                                    <div>
-                                        <span className="font-semibold">Input:</span>{" "}
-                                        <code className="bg-gray-100 px-2 py-1 rounded">
-                                            {testcase.input}
-                                        </code>
-                                    </div>
-                                    <div>
-                                        <span className="font-semibold">Expected Output:</span>{" "}
-                                        <code className="bg-gray-100 px-2 py-1 rounded">
-                                            {testcase.expected || testcase.output}
-                                        </code>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+        <div className="max-w-5xl mx-auto px-4 md:px-8 py-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Navigation Header */}
+            <div className="mb-10 flex items-center gap-4">
+                <button 
+                    onClick={() => navigate('/problems')}
+                    className="p-2 bg-[#0a0a0a] border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-[var(--color-primary)] transition-all"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+                <div>
+                    <div className="text-[10px] font-bold tracking-[0.4em] text-slate-500 uppercase">Challenge Details</div>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-black text-white uppercase tracking-tight">{currentProblem.title}</h1>
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-bold font-mono border ${getDifficultyStyles(currentProblem.difficulty)}`}>
+                            {currentProblem.difficulty}
+                        </span>
                     </div>
                 </div>
-            )}
+            </div>
 
-            {/* Create Battle Button */}
-            <div className="flex justify-center">
-                <button
-                    onClick={handleCreateBattle}
-                    disabled={creatingBattle}
-                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
-                >
-                    {creatingBattle ? "Creating Battle..." : "Create Battle"}
-                </button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Content */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Description Card */}
+                    <div className="premium-card bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 overflow-hidden relative">
+                        <div className="flex items-center gap-3 mb-6 text-[var(--color-primary)]">
+                            <Terminal size={18} />
+                            <h2 className="text-sm font-bold uppercase tracking-[0.2em]">Operational Objective</h2>
+                        </div>
+                        <div className="prose prose-invert max-w-none">
+                            <p className="text-slate-300 leading-relaxed font-light whitespace-pre-line text-lg">
+                                {currentProblem.description}
+                            </p>
+                        </div>
+                        
+                        {/* Test Cases / Examples */}
+                        {currentProblem.testcases && currentProblem.testcases.length > 0 && (
+                            <div className="mt-10 space-y-4">
+                                <div className="flex items-center gap-2 mb-4 text-slate-500">
+                                    <Code size={14} />
+                                    <span className="text-[10px] uppercase font-mono tracking-widest">Protocol Evidence (Test Cases)</span>
+                                </div>
+                                {currentProblem.testcases.slice(0, 2).map((testcase, index) => (
+                                    <div key={index} className="p-6 bg-[#111] border border-white/5 rounded-xl space-y-4">
+                                        <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-slate-600">
+                                            <span>Batch {index + 1}</span>
+                                            <span className="text-[var(--color-primary)]/50">Verified</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <div className="text-[9px] font-bold text-slate-700 uppercase mb-2">Input</div>
+                                                <div className="bg-black/40 p-3 rounded font-mono text-xs text-slate-400 border border-white/5">{testcase.input}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[9px] font-bold text-slate-700 uppercase mb-2">Output</div>
+                                                <div className="bg-black/40 p-3 rounded font-mono text-xs text-[var(--color-primary)]/80 border border-white/5">{testcase.expected || testcase.output}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Sidebar Stats/Actions */}
+                <div className="space-y-6">
+                    {/* Battle Action */}
+                    <div className="premium-card bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 text-center">
+                        <div className="mb-6 p-4 bg-[var(--color-primary)]/5 rounded-2xl border border-[var(--color-primary)]/10">
+                            <Zap size={32} className="mx-auto text-[var(--color-primary)] mb-2" />
+                            <div className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest">Combat Ready</div>
+                        </div>
+                        <button
+                            onClick={handleCreateBattle}
+                            disabled={creatingBattle}
+                            className="w-full py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(204,255,0,0.1)] flex items-center justify-center gap-3 disabled:opacity-50"
+                        >
+                            {creatingBattle ? (
+                                <Activity size={18} className="animate-spin" />
+                            ) : (
+                                <Play size={18} fill="currentColor" />
+                            )}
+                            Initialize Arena
+                        </button>
+                    </div>
+
+                    {/* Stats Card */}
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Clock size={16} className="text-slate-500" />
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time Limit</span>
+                            </div>
+                            <span className="text-sm font-mono text-white">2.0s</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Shield size={16} className="text-slate-500" />
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Complexity</span>
+                            </div>
+                            <span className="text-sm font-mono text-white">Medium</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
-};
+};

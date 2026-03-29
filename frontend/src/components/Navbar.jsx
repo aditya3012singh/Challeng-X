@@ -1,12 +1,15 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoutUser } from "../../store/api/auth.thunk";
+import { Menu, X, User, Shield, LogOut, Award, Activity, History } from 'lucide-react';
+import React, { useState } from 'react';
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Hide navbar completely when inside the battle IDE or spectator mode
   const isBattleIde = /^\/battle\/[^/]+\/ide/.test(location.pathname);
@@ -43,8 +46,8 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-[#050505]/80 backdrop-blur-md border-b border-white/[0.03] font-[family:var(--font-heading)]">
-      <div className="max-w-[1800px] mx-auto px-6 h-20 flex justify-between items-center">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/[0.05] font-[family:var(--font-heading)] transition-all duration-300">
+      <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-20 flex justify-between items-center relative">
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
@@ -57,7 +60,7 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* NAVIGATION */}
+        {/* NAVIGATION (Desktop) */}
         {isAuthenticated && (
           <div className="hidden xl:flex items-center gap-2">
             {navItems.map((item) => (
@@ -81,24 +84,24 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* USER / AUTH */}
-        <div className="flex items-center gap-6">
+        {/* USER / AUTH / MOBILE TOGGLE */}
+        <div className="flex items-center gap-4 md:gap-6">
           {isAuthenticated ? (
             <>
-              {/* Leaderboard Link for Mobile/Tablets */}
+              {/* Leaderboard Link for Desktop */}
               <button
                 onClick={() => navigate("/leaderboard")}
-                className="text-[var(--color-text-muted)] hover:text-white transition hidden md:block"
+                className="text-[var(--color-text-muted)] hover:text-white transition hidden lg:block text-[10px] font-bold tracking-widest"
               >
                 LEADERBOARD
               </button>
 
-              <div className="h-8 w-[1px] bg-gray-800 hidden md:block"></div>
+              <div className="h-8 w-[1px] bg-gray-800 hidden lg:block"></div>
 
-              {/* User Profile */}
+              {/* User Profile (Desktop) */}
               <div className="flex items-center gap-4">
                 <div className="text-right hidden md:block">
-                  <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">PLAYER</div>
+                  <div className="text-[8px] text-[var(--color-text-muted)] uppercase tracking-widest leading-none mb-1">PLAYER</div>
                   <div className="text-sm font-bold text-white leading-none">{user?.username}</div>
                 </div>
 
@@ -113,7 +116,7 @@ const Navbar = () => {
                     )}
                   </div>
 
-                  {/* Hover Dropdown */}
+                  {/* Desktop Dropdown */}
                   <div className="absolute right-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-[-10px] group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto z-50">
                     <div className="bg-[#050505] border border-white/10 shadow-2xl overflow-hidden" style={{ borderRadius: "2px" }}>
                       <div className="p-5 border-b border-white/5 text-center bg-white/[0.01]">
@@ -126,28 +129,6 @@ const Navbar = () => {
                           className="block w-full text-left px-6 py-4 text-[9px] font-bold text-slate-400 hover:bg-white/5 hover:text-[var(--color-primary)] transition-all uppercase tracking-[0.2em]"
                         >
                           My Profile
-                        </button>
-                        {user?.role === "ADMIN" && (
-                          <>
-                            <button
-                              onClick={() => navigate("/admin")}
-                              className="block w-full text-left px-6 py-4 text-[9px] font-bold text-[var(--color-primary)] hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em] border-t border-white/5"
-                            >
-                              Admin Dashboard
-                            </button>
-                            <button
-                              onClick={() => navigate("/admin-contests")}
-                              className="block w-full text-left px-6 py-4 text-[9px] font-bold text-[var(--color-primary)] hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em] border-t border-white/5"
-                            >
-                              Host Contest
-                            </button>
-                          </>
-                        )}
-                        <button
-                          onClick={() => navigate('/history')}
-                          className="block w-full text-left px-6 py-4 text-[9px] font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all uppercase tracking-[0.2em]"
-                        >
-                          Match History
                         </button>
                         <button
                           onClick={handleLogout}
@@ -163,13 +144,88 @@ const Navbar = () => {
             </>
           ) : (
             <div className="flex gap-4">
-              <Link to="/login" className="px-8 py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl flex items-center" style={{ borderRadius: "2px" }}>
-                ACCESS THE ARENA →
+              <Link to="/login" className="px-6 md:px-8 py-2 md:py-3 bg-[var(--color-primary)] text-black text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl flex items-center" style={{ borderRadius: "2px" }}>
+                ARENA ACCESS →
               </Link>
             </div>
           )}
+
+          {/* Mobile Menu Toggle */}
+          <div className="flex xl:hidden items-center">
+            {isAuthenticated && (
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
+                aria-label="Toggle Menu"
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* MOBILE MENU OVERLAY */}
+      {isAuthenticated && (
+        <div className={`xl:hidden fixed inset-0 top-20 bg-[#050505]/95 backdrop-blur-2xl z-[49] transform transition-transform duration-500 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="h-full flex flex-col p-6 overflow-y-auto pb-32">
+            
+            {/* User Quick Stats */}
+            <div className="mb-10 p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl border border-[var(--color-primary)]/50 p-0.5 overflow-hidden text-center justify-center">
+                   {user?.profilePic ? (
+                      <img src={user.profilePic} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#111] flex items-center justify-center text-[var(--color-primary)] font-black text-xl">
+                        {user?.username?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">Authenticated Player</div>
+                  <div className="text-xl font-black text-white leading-none tracking-tight">{user?.username}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[20px] font-black text-[var(--color-primary)] tabular-nums">{user?.rankPoints || 1000}</div>
+                <div className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">ELO RATING</div>
+              </div>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="grid grid-cols-1 gap-1 mb-10">
+              <div className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4 px-4">ARENA PROTOCOLS</div>
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => { navigate(item.path); setIsMenuOpen(false); }}
+                  className={`w-full text-left px-6 py-4 rounded-xl flex items-center justify-between group transition-all ${isActive(item.path) ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-slate-400 hover:bg-white/5'}`}
+                >
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em]">{item.label}</span>
+                  <div className={`w-1.5 h-1.5 rounded-full transition-all ${isActive(item.path) ? 'bg-[var(--color-primary)] shadow-[0_0_10px_rgba(255,170,0,0.5)]' : 'bg-transparent group-hover:bg-white/20'}`} />
+                </button>
+              ))}
+            </div>
+
+            {/* Account Actions */}
+            <div className="mt-auto space-y-2 border-t border-white/5 pt-8">
+              <button 
+                onClick={() => { navigate(`/profile/${user?.username}`); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-4 px-6 py-4 text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-white transition-colors"
+              >
+                <User size={16} className="text-slate-600" /> View Profile
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="w-full flex items-center gap-4 px-6 py-4 text-red-500/80 font-bold text-[10px] uppercase tracking-widest hover:text-red-500 transition-colors"
+              >
+                <LogOut size={16} /> Terminate Session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

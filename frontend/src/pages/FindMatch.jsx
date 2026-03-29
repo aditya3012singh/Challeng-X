@@ -11,6 +11,7 @@ export const FindMatch = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const { currentLobby } = useSelector((state) => state.lobby);
     const { inQueue, loading, error, queueSize, waitTime, matchFound, battleId, opponent } = useSelector(
         (state) => state.matchmaking
     );
@@ -67,7 +68,8 @@ export const FindMatch = () => {
         try {
             await dispatch(joinMatchmaking({
                 difficulty: selectedDifficulty,
-                socketId: socket.id
+                socketId: socket.id,
+                lobbyId: currentLobby?.id
             })).unwrap();
         } catch (err) {
             console.error("Join queue error:", err);
@@ -150,9 +152,11 @@ export const FindMatch = () => {
                 ) : (
                     // Selection Screen - PREMIUM
                     <div className="premium-card p-16 lg:p-20 relative overflow-hidden" style={{ borderRadius: "2px" }}>
-                        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">Find a Match</div>
+                        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">
+                            {currentLobby?.mode === 'TEAM' ? "Squad Mission" : "Find a Match"}
+                        </div>
                         <h1 className="text-6xl font-black text-white mb-12 tracking-tighter uppercase font-[family:var(--font-heading)]">
-                            Enter Arena
+                            {currentLobby?.mode === 'TEAM' ? "Deploy Squad" : "Enter Arena"}
                         </h1>
 
                         <div className="mb-20">

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchUserProfile, updateUserProfile, getPublicProfile } from '../../store/api/auth.thunk';
+import { fetchUserProfile, updateUserProfile, getPublicProfile, changePassword } from '../../store/api/auth.thunk';
+import { getSocialStatus, toggleFollow, sendFriendRequest, getIncomingRequests, respondToFriendRequest } from '../../store/api/social.thunk';
 import { 
-  User, Mail, LayoutDashboard, Shield, Trophy, Activity, 
+  User, Users, Mail, LayoutDashboard, Shield, Trophy, Activity, 
   Github, Linkedin, Instagram, Twitter, Edit2, Check, X,
-  ExternalLink, Calendar, Code, Target, Award, Camera, Upload
+  ExternalLink, Calendar, Code, Target, Award, Camera, Upload, Zap
 } from 'lucide-react';
 import api from '../../lib/axios';
 
@@ -21,6 +22,7 @@ const Profile = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { user: currentUser, publicProfile, publicProfileLoading } = useSelector((state) => state.auth);
+    const { followersCount, followingCount, isFollowing, friendStatus, isLoading: socialLoading } = useSelector((state) => state.social);
     
     const isOwner = currentUser?.username === urlUsername;
     const profileData = isOwner ? currentUser : publicProfile;
@@ -42,12 +44,28 @@ const Profile = () => {
         twitter: ''
     });
 
+    const [passwordData, setPasswordData] = useState({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [passwordStatus, setPasswordStatus] = useState({ loading: false, error: '', success: '' });
+
     useEffect(() => {
         if (!isOwner && urlUsername) {
             dispatch(getPublicProfile(urlUsername));
             setIsEditing(false); // Can't edit someone else's profile
         }
     }, [urlUsername, isOwner, dispatch]);
+
+    useEffect(() => {
+        if (profileData?.id) {
+            dispatch(getSocialStatus(profileData.id));
+        }
+        if (isOwner) {
+            dispatch(getIncomingRequests());
+        }
+    }, [profileData?.id, isOwner, dispatch]);
 
     useEffect(() => {
         if (profileData && isOwner) {
@@ -129,6 +147,30 @@ const Profile = () => {
         }
     };
 
+    const handlePasswordChange = (e) => {
+        setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    };
+
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setPasswordStatus({ ...passwordStatus, error: 'New passwords do not match' });
+            return;
+        }
+
+        setPasswordStatus({ loading: true, error: '', success: '' });
+        try {
+            await dispatch(changePassword({ 
+                oldPassword: passwordData.oldPassword, 
+                newPassword: passwordData.newPassword 
+            })).unwrap();
+            setPasswordStatus({ loading: false, error: '', success: 'Password updated successfully!' });
+            setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+        } catch (error) {
+            setPasswordStatus({ loading: false, error: error.message || 'Failed to update password', success: '' });
+        }
+    };
+
     if (isLoading && !profileData) {
         return (
             <div className="min-h-screen pt-24 bg-[#050505] flex justify-center">
@@ -193,7 +235,7 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen pt-24 pb-12 bg-[#050505] text-white selection:bg-[var(--color-primary)] selection:text-black">
+        <div className="min-h-screen pb-12 bg-[#050505] text-white selection:bg-[var(--color-primary)] selection:text-black">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 {/* Header Action */}
@@ -317,9 +359,106 @@ const Profile = () => {
                                         LVL {Math.floor(profileData.rankPoints / 100)}
                                     </span>
                                 </div>
+
+                                {!isOwner && profileData && (
+                                    <div className="mt-6 flex flex-col gap-2 w-full">
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={() => dispatch(toggleFollow(profileData.id))}
+                                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-mono text-xs uppercase tracking-wider transition-all border ${
+                                                    isFollowing 
+                                                        ? 'bg-transparent border-[#333] text-gray-400 hover:border-red-500/50 hover:text-red-400' 
+                                                        : 'bg-[var(--color-primary)] border-transparent text-black font-bold hover:shadow-[0_0_15px_rgba(204,255,0,0.3)]'
+                                                }`}
+                                            >
+                                                {isFollowing ? <X size={14} /> : <Zap size={14} />}
+                                                {isFollowing ? 'Unfollow' : 'Follow Player'}
+                                            </button>
+                                            
+                                            <button 
+                                                onClick={() => !friendStatus && dispatch(sendFriendRequest(profileData.id))}
+                                                disabled={friendStatus === 'PENDING' || friendStatus === 'ACCEPTED'}
+                                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-mono text-xs uppercase tracking-wider transition-all border ${
+                                                    friendStatus === 'ACCEPTED'
+                                                        ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                                                        : friendStatus === 'PENDING'
+                                                            ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
+                                                            : 'bg-[#111] border-[#333] text-gray-300 hover:border-[var(--color-primary)]'
+                                                }`}
+                                            >
+                                                <Users size={14} />
+                                                {friendStatus === 'ACCEPTED' ? 'Friends' : friendStatus === 'PENDING' ? 'Pending' : 'Add Friend'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
+                        {/* Pending Requests for Owner */}
+                        {isOwner && (useSelector(state => state.social.incomingRequests) || []).length > 0 && (
+                            <div className="bg-[#0a0a0a] border border-yellow-500/20 rounded-xl p-6 shadow-[0_0_20px_rgba(234,179,8,0.05)] animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <h3 className="text-sm font-mono text-yellow-500 mb-4 flex items-center gap-2">
+                                    <Users size={14} /> PENDING CONNECTIONS
+                                </h3>
+                                <div className="space-y-3">
+                                    {(useSelector(state => state.social.incomingRequests) || []).map(req => (
+                                        <div key={req.id} className="flex items-center justify-between p-3 bg-[#111] border border-[#222] rounded-lg group/req">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] border border-[#333] overflow-hidden">
+                                                    {req.sender.profilePic ? (
+                                                        <img src={req.sender.profilePic} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-600 font-bold bg-[#1a1a1a]">
+                                                            {req.sender.username.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className="text-xs font-mono text-gray-300 group-hover/req:text-[var(--color-primary)] transition-colors">{req.sender.username}</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={() => dispatch(respondToFriendRequest({ requestId: req.id, status: 'ACCEPTED' }))}
+                                                    className="p-1.5 rounded-md bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-black transition-all border border-green-500/20"
+                                                    title="Accept"
+                                                >
+                                                    <Check size={12} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => dispatch(respondToFriendRequest({ requestId: req.id, status: 'REJECTED' }))}
+                                                    className="p-1.5 rounded-md bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-black transition-all border border-red-500/20"
+                                                    title="Reject"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Social Stats */}
+                        <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
+                            <h3 className="text-sm font-mono text-gray-500 mb-4 flex items-center gap-2">
+                                <Users size={14} /> NETWORK PRESTIGE
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-[#111] p-4 rounded-xl border border-[#222] text-center group hover:border-[var(--color-primary)] transition-all">
+                                    <div className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-1">Followers</div>
+                                    <div className="text-2xl font-bold font-mono text-white group-hover:text-[var(--color-primary)] transition-colors">{followersCount}</div>
+                                </div>
+                                <div className="bg-[#111] p-4 rounded-xl border border-[#222] text-center group hover:border-[var(--color-primary)] transition-all">
+                                    <div className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-1">Following</div>
+                                    <div className="text-2xl font-bold font-mono text-white group-hover:text-[var(--color-primary)] transition-colors">{followingCount}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Col - Details */}
+                    <div className="lg:col-span-2 space-y-6">
+                        
                         {/* Stats Card */}
                         <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
                             <h3 className="text-sm font-mono text-gray-500 mb-4 flex items-center gap-2">
@@ -361,11 +500,6 @@ const Profile = () => {
                                 </div>
                             </div>
                         </div>
-
-                    </div>
-
-                    {/* Right Col - Details */}
-                    <div className="lg:col-span-2 space-y-6">
                         
                         {/* Coding Platforms */}
                         <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
@@ -412,6 +546,74 @@ const Profile = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Security Section (Only for Owner and Non-OAuth accounts) */}
+                        {isOwner && profileData.hasPassword && (
+                            <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
+                                <h3 className="text-sm font-mono text-gray-500 mb-4 flex items-center gap-2">
+                                    <Shield size={14} /> SECURITY & AUTHENTICATION
+                                </h3>
+
+                                <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-md">
+                                    {passwordStatus.error && (
+                                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-md font-mono">
+                                            {passwordStatus.error}
+                                        </div>
+                                    )}
+                                    {passwordStatus.success && (
+                                        <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-xs p-3 rounded-md font-mono">
+                                            {passwordStatus.success}
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase font-mono text-gray-500">Current Password</label>
+                                        <input 
+                                            type="password"
+                                            name="oldPassword"
+                                            value={passwordData.oldPassword}
+                                            onChange={handlePasswordChange}
+                                            className="w-full bg-[#111] border border-[#222] rounded-md px-3 py-2 text-sm focus:border-[var(--color-primary)] outline-none transition-all"
+                                            required
+                                        />
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-mono text-gray-500">New Password</label>
+                                            <input 
+                                                type="password"
+                                                name="newPassword"
+                                                value={passwordData.newPassword}
+                                                onChange={handlePasswordChange}
+                                                className="w-full bg-[#111] border border-[#222] rounded-md px-3 py-2 text-sm focus:border-[var(--color-primary)] outline-none transition-all"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-mono text-gray-500">Confirm New</label>
+                                            <input 
+                                                type="password"
+                                                name="confirmPassword"
+                                                value={passwordData.confirmPassword}
+                                                onChange={handlePasswordChange}
+                                                className="w-full bg-[#111] border border-[#222] rounded-md px-3 py-2 text-sm focus:border-[var(--color-primary)] outline-none transition-all"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        type="submit"
+                                        disabled={passwordStatus.loading}
+                                        className="w-full py-2 bg-[#111] hover:bg-[#1a1a1a] text-gray-300 border border-[#333] hover:border-[var(--color-primary)] rounded-md transition-all text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-2"
+                                    >
+                                        {passwordStatus.loading ? <Activity size={14} className="animate-spin" /> : <Shield size={14} />}
+                                        Update Password
+                                    </button>
+                                </form>
+                            </div>
+                        )}
                         
                         {/* Meta Info */}
                         <div className="bg-[#0a0a0a] border border-[#222] rounded-xl px-6 py-4 flex justify-between items-center text-xs text-gray-500 font-mono">

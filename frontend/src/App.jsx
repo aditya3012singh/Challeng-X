@@ -11,6 +11,7 @@ const ForgotPassword = lazy(() => import('./auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('./auth/ResetPassword'))
 const Home = lazy(() => import('./pages/Home'))
 const Navbar = lazy(() => import('./components/Navbar'))
+const MainLayout = lazy(() => import('./components/MainLayout'))
 const Problem = lazy(() => import('./components/Problem').then(m => ({ default: m.Problem })))
 const ProblemDetail = lazy(() => import('./components/ProblemDetails').then(m => ({ default: m.ProblemDetail })))
 const Ide = lazy(() => import('./pages/Ide'))
@@ -30,6 +31,8 @@ const Contests = lazy(() => import('./pages/Contests'))
 const ContestDetail = lazy(() => import('./pages/ContestDetail'))
 const ContestArena = lazy(() => import('./pages/ContestArena'))
 const Footer = lazy(() => import('./components/Footer'))
+const GlobalChat = lazy(() => import('./components/GlobalChat'))
+const SocialLobby = lazy(() => import('./components/SocialLobby'))
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -126,30 +129,17 @@ function App() {
   }
 
   return (
-    <>
+    <MainLayout>
       <GlobalSocketListener />
-      {!isAuthRoute && (
-        <Suspense fallback={null}>
-          <Navbar />
-        </Suspense>
-      )}
-      <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
-            <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Loading...</div>
-          </div>
-        </div>
-      }>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Navigate to="/login" replace />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route
-            path="/"
-            element={<Home />}
-          />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Navigate to="/login" replace />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route
+          path="/"
+          element={<Home />}
+        />
           <Route path="/problems" element={
             <ProtectedRoute>
               <Problem />
@@ -250,9 +240,7 @@ function App() {
             </ProtectedRoute>
           } />
         </Routes>
-        <Footer />
-      </Suspense>
-    </>
+    </MainLayout>
   )
 }
 
