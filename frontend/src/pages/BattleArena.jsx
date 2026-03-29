@@ -470,8 +470,8 @@ const BattleArena = () => {
 
                 {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
                 <div 
-                    className={`h-full border-r border-white/5 bg-[#080808] flex flex-col relative group/sidebar 
-                        ${mobileTab === "problem" || mobileTab === "console" ? "flex" : "hidden lg:flex"}`}
+                    className={`h-full border-r border-white/5 bg-[#080808] relative group/sidebar 
+                        ${mobileTab === "problem" || mobileTab === "console" ? "flex flex-col" : "hidden lg:flex lg:flex-col"}`}
                     style={{ width: isMobile ? '100%': `${sidebarWidth}px` }}
                 >
                     {/* Resize Handle - Desktop Only */}
@@ -557,7 +557,7 @@ const BattleArena = () => {
                 </div>
 
                 {/* CENTER - CODE EDITOR */}
-                <div className={`flex-1 flex flex-col bg-[#050505] min-w-0 lg:min-w-[400px] 
+                <div className={`flex-1 flex-col bg-[#050505] min-w-0 lg:min-w-[400px] 
                     ${mobileTab === "editor" ? "flex" : "hidden lg:flex"}`}>
                     {/* EDITOR TOOLBAR */}
                     <div className="h-10 lg:h-12 border-b border-white/5 bg-[#080808] flex items-center justify-between px-4 lg:px-6 shrink-0">
@@ -633,8 +633,8 @@ const BattleArena = () => {
                 </div>
 
                 {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Static, Mobile: Tabbed) */}
-                <aside className={`w-full lg:w-[300px] border-l border-white/5 flex flex-col bg-[#080808] shrink-0 
-                    ${mobileTab === "status" ? "flex" : "hidden lg:flex"}`}>
+                <aside className={`w-full lg:w-[300px] border-l border-white/5 bg-[#080808] shrink-0 
+                    ${mobileTab === "status" ? "flex flex-col" : "hidden lg:flex lg:flex-col"}`}>
                     <div className="p-6 border-b border-white/5 bg-[#0a0a0a]">
                         <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Match Status</div>
                         
