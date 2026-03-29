@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const Home = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -23,6 +24,16 @@ const Home = () => {
                     <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
                         <div className="inline-block px-4 py-1 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">
                             Evolution of Competitive Coding
+                        </div>
+
+                        <div className="mb-10">
+                            <div className="w-24 h-24 mx-auto overflow-hidden flex items-center justify-center">
+                                <img 
+                                    src={logo} 
+                                    alt="CodeArena Logo" 
+                                    className="w-full h-full object-contain scale-[1.5] drop-shadow-[0_0_30px_rgba(255,170,0,0.3)]" 
+                                />
+                            </div>
                         </div>
 
                         <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.9] mb-8 font-[family:var(--font-heading)] uppercase text-white">

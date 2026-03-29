@@ -4,6 +4,7 @@ import { logoutUser } from "../../store/api/auth.thunk";
 import { Menu, X, User, Shield, LogOut, Award, Activity, History, Bell, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
+import logo from "../assets/logo.png";
 import NotificationsDropdown from "./notifications/NotificationsDropdown";
 
 const Navbar = () => {
@@ -83,8 +84,12 @@ const Navbar = () => {
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-[var(--color-primary)] text-black flex items-center justify-center font-black text-xl hover:shadow-[0_0_20px_rgba(255,170,0,0.3)] transition-all" style={{ borderRadius: "2px" }}>
-            CA
+          <div className="w-12 h-10 overflow-hidden" style={{ borderRadius: "2px" }}>
+            <img 
+              src={logo} 
+              alt="CodeArena Logo" 
+              className="w-full h-full object-contain scale-[1.5] transition-transform group-hover:scale-[1.6]" 
+            />
           </div>
           <div>
             <span className="text-lg font-bold tracking-tight text-white block leading-none">CODE</span>
@@ -254,8 +259,12 @@ const Navbar = () => {
             >
               <div className="p-6 flex justify-between items-center border-b border-white/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[var(--color-primary)] text-black flex items-center justify-center font-black text-sm" style={{ borderRadius: "2px" }}>
-                    CA
+                  <div className="w-8 h-8 overflow-hidden" style={{ borderRadius: "2px" }}>
+                    <img 
+                      src={logo} 
+                      alt="CodeArena Logo" 
+                      className="w-full h-full object-contain scale-[1.3]" 
+                    />
                   </div>
                   <span className="text-xs font-bold tracking-widest text-white uppercase">Menu</span>
                 </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../../store/api/auth.thunk";
+import logo from "../assets/logo.png";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -484,7 +485,13 @@ const Login = () => {
         <div className="card">
           {/* Logo */}
           <Link to="/" style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "36px", textDecoration: "none" }}>
-            <div className="logo-mark">CA</div>
+            <div className="w-12 h-12 overflow-hidden flex items-center justify-center">
+              <img 
+                src={logo} 
+                alt="CodeArena Logo" 
+                className="w-full h-full object-contain scale-[1.4]"
+              />
+            </div>
             <div>
               <div className="logo-text-top">CODE</div>
               <div className="logo-text-sub">ARENA</div>
