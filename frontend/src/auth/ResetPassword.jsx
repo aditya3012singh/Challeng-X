@@ -67,7 +67,7 @@ const ResetPassword = () => {
           <form className="space-y-10" onSubmit={handleSubmit}>
             {error && (
               <div className="border border-red-500/20 bg-red-500/5 text-red-500 p-6 text-[10px] font-bold uppercase tracking-widest text-center" style={{ borderRadius: "2px" }}>
-                ⚠ Error: {error}
+                ⚠ Error: {typeof error === 'object' ? (error.message || error.error || JSON.stringify(error)) : error}
               </div>
             )}
             

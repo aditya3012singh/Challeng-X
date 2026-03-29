@@ -398,10 +398,19 @@ class BattleService {
   }
 
   static async forfeitBattle(battleId, forfeiterId) {
-    const battle = await Database.client.battle.findUnique({
+    let battle = await Database.client.battle.findUnique({
       where: { id: battleId },
       include: { player1: true, player2: true }
     });
+
+    let isTeamMatch = false;
+    if (!battle) {
+      battle = await Database.client.teamBattleMatch.findUnique({
+        where: { id: battleId },
+        include: { player1: true, player2: true }
+      });
+      if (battle) isTeamMatch = true;
+    }
 
     if (!battle || battle.status === "FINISHED") {
       return null;

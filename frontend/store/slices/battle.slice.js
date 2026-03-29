@@ -52,7 +52,7 @@ const battleSlice = createSlice({
             })
             .addCase(createBattleRandom.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload || "Failed to create battle";
+                state.error = typeof action.payload === 'object' ? (action.payload.message || action.payload.error || "Failed to create battle") : (action.payload || "Failed to create battle");
             })
             // Create battle selected
             .addCase(createBattleSelected.pending, (state) => {
@@ -66,7 +66,7 @@ const battleSlice = createSlice({
             })
             .addCase(createBattleSelected.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload || "Failed to create battle";
+                state.error = typeof action.payload === 'object' ? (action.payload.message || action.payload.error || "Failed to create battle") : (action.payload || "Failed to create battle");
             })
             // Join battle
             .addCase(joinBattle.pending, (state) => {
@@ -80,7 +80,7 @@ const battleSlice = createSlice({
             })
             .addCase(joinBattle.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload || "Failed to join battle";
+                state.error = typeof action.payload === 'object' ? (action.payload.message || action.payload.error || "Failed to join battle") : (action.payload || "Failed to join battle");
             })
             // Get battle
             .addCase(getBattle.pending, (state) => {
@@ -94,7 +94,7 @@ const battleSlice = createSlice({
             })
             .addCase(getBattle.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload || "Failed to get battle";
+                state.error = typeof action.payload === 'object' ? (action.payload.message || action.payload.error || "Failed to get battle") : (action.payload || "Failed to get battle");
             })
             // Submit battle code
             .addCase(submitBattleCode.pending, (state) => {
@@ -108,7 +108,7 @@ const battleSlice = createSlice({
             })
             .addCase(submitBattleCode.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload || "Failed to submit code";
+                state.error = typeof action.payload === 'object' ? (action.payload.message || action.payload.error || "Failed to submit code") : (action.payload || "Failed to submit code");
             })
             // Get battle history
             .addCase(getBattleHistory.pending, (state) => {
@@ -138,7 +138,7 @@ const battleSlice = createSlice({
             })
             .addCase(forfeitBattle.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload || "Failed to forfeit battle";
+                state.error = typeof action.payload === 'object' ? (action.payload.message || action.payload.error || "Failed to forfeit battle") : (action.payload || "Failed to forfeit battle");
             })
             // Fetch live battles
             .addCase(fetchLiveBattles.pending, (state) => {

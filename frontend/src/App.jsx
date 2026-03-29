@@ -14,7 +14,7 @@ const Navbar = lazy(() => import('./components/Navbar'))
 const MainLayout = lazy(() => import('./components/MainLayout'))
 const Problem = lazy(() => import('./components/Problem').then(m => ({ default: m.Problem })))
 const ProblemDetail = lazy(() => import('./components/ProblemDetails').then(m => ({ default: m.ProblemDetail })))
-const Ide = lazy(() => import('./pages/Ide'))
+const BattleArena = lazy(() => import('./pages/BattleArena'))
 const Battle = lazy(() => import('./pages/Battle').then(m => ({ default: m.Battle })))
 const Leaderboard = lazy(() => import('./pages/Leaderboard').then(m => ({ default: m.Leaderboard })))
 const JoinRoom = lazy(() => import('./pages/JoinRoom'))
@@ -157,7 +157,7 @@ function App() {
           } />
           <Route path='/battle/:battleId/ide' element={
             <ProtectedRoute>
-              <Ide />
+              <BattleArena />
             </ProtectedRoute>
           } />
           <Route path='/leaderboard' element={

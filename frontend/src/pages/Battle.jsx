@@ -128,7 +128,7 @@ export const Battle = () => {
         {/* Error */}
         {error && (
           <div className="mb-12 p-6 border border-red-500/20 bg-red-500/5 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center animate-pulse" style={{ borderRadius: "2px" }}>
-            ⚠ Error: {error}
+            ⚠ Error: {typeof error === 'object' ? (error.message || error.error || JSON.stringify(error)) : error}
           </div>
         )}
 
