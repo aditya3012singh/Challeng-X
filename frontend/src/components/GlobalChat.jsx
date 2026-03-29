@@ -88,7 +88,7 @@ const GlobalChat = () => {
             <button 
                 ref={toggleBtnRef}
                 onClick={toggleChat}
-                className={`fixed left-4 bottom-8 z-50 p-3  rounded-full bg-[#0a0a0a] border border-[#222] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all group ${isOpen ? 'translate-x-[360px]' : ''}`}
+                className={`fixed left-4 bottom-8 z-50 p-3 rounded-full bg-[#0a0a0a] border border-[#222] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all group ${isOpen ? 'translate-x-[calc(100vw-60px)] sm:translate-x-[360px]' : ''}`}
                 title="Global Chat"
             >
                 <div className="relative">
@@ -104,8 +104,8 @@ const GlobalChat = () => {
             {/* Sidebar */}
             <div 
                 ref={sidebarRef}
-                className={`fixed top- left-0 h-full w-[350px] bg-[#050505]/95 backdrop-blur-xl border-r border-[#1a1a1a] z-[45] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.5)] flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
->
+                className={`fixed top-0 left-0 h-full w-full sm:w-[350px] bg-[#050505]/95 backdrop-blur-xl border-r border-[#1a1a1a] z-[60] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.5)] flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            >
                 
                 {/* Header */}
                 <div className="p-4 border-b border-[#222] bg-[#0d0d0d]/80 backdrop-blur-md">
