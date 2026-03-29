@@ -12,6 +12,7 @@ import squidGameReducer from "./slices/squidGame.slice";
 import socialReducer from "./slices/social.slice";
 import lobbyReducer from "./slices/lobby.slice";
 import chatReducer from "./slices/chat.slice";
+import notificationReducer from "./slices/notification.slice";
 
 export const store = configureStore({
     reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
         squidGame: squidGameReducer,
         lobby: lobbyReducer,
         chat: chatReducer,
+        notification: notificationReducer,
     },
 });
 

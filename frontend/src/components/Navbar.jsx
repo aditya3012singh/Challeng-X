@@ -1,15 +1,18 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoutUser } from "../../store/api/auth.thunk";
-import { Menu, X, User, Shield, LogOut, Award, Activity, History } from 'lucide-react';
+import { Menu, X, User, Shield, LogOut, Award, Activity, History, Bell } from 'lucide-react';
 import React, { useState } from 'react';
+import NotificationsDropdown from "./notifications/NotificationsDropdown";
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { unreadCount } = useSelector((state) => state.notification);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   // Hide navbar completely when inside the battle IDE or spectator mode
   const isBattleIde = /^\/battle\/[^/]+\/ide/.test(location.pathname);
@@ -98,6 +101,27 @@ const Navbar = () => {
 
               <div className="h-8 w-[1px] bg-gray-800 hidden lg:block"></div>
 
+              {/* Notifications Bell */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                  className={`relative p-2 transition-all group ${isNotificationsOpen ? 'text-[var(--color-primary)]' : 'text-slate-400 hover:text-white'}`}
+                >
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-600 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-[#050505] shadow-[0_0_10px_rgba(220,38,38,0.5)]">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                <NotificationsDropdown 
+                  isOpen={isNotificationsOpen} 
+                  onClose={() => setIsNotificationsOpen(false)} 
+                />
+              </div>
+
+              <div className="h-8 w-[1px] bg-gray-800 hidden md:block"></div>
+
               {/* User Profile (Desktop) */}
               <div className="flex items-center gap-4">
                 <div className="text-right hidden md:block">
@@ -158,7 +182,14 @@ const Navbar = () => {
                 className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
                 aria-label="Toggle Menu"
               >
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                {isMenuOpen ? <X size={24} /> : (
+                  <div className="relative">
+                    <Menu size={24} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-[#050505]"></span>
+                    )}
+                  </div>
+                )}
               </button>
             )}
           </div>

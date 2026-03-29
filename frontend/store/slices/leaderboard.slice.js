@@ -25,7 +25,7 @@ const leaderboardSlice = createSlice({
             })
             .addCase(fetchLeaderboard.fulfilled, (state, action) => {
                 state.loading = false;
-                state.rankings = action.payload.leaderboard || action.payload;
+                state.rankings = action.payload.data || [];
                 state.currentPage = action.payload.page || 1;
                 state.totalPages = action.payload.totalPages || 1;
                 state.error = null;

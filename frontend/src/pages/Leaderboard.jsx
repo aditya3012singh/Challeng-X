@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLeaderboard } from "../../store/api/leaderboard.thunk";
+import { Globe, MapPin, Users, Trophy } from "lucide-react";
 
 export const Leaderboard = () => {
   const dispatch = useDispatch();
@@ -9,14 +10,20 @@ export const Leaderboard = () => {
     (state) => state.leaderboard
   );
 
+  const [activeFilter, setActiveFilter] = useState('GLOBAL');
+
   useEffect(() => {
-    dispatch(fetchLeaderboard({ page: currentPage, limit: 20 }));
-  }, [dispatch, currentPage]);
+    dispatch(fetchLeaderboard({ page: currentPage, limit: 20, filter: activeFilter }));
+  }, [dispatch, currentPage, activeFilter]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      dispatch(fetchLeaderboard({ page: newPage, limit: 20 }));
+      dispatch(fetchLeaderboard({ page: newPage, limit: 20, filter: activeFilter }));
     }
+  };
+
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
   };
 
   const getRankColor = (rank) => {
@@ -79,6 +86,31 @@ export const Leaderboard = () => {
         <p className="text-slate-500 text-lg font-light max-w-2xl mx-auto">
           Top players from around the world.
         </p>
+
+        {/* Filter Tabs */}
+        <div className="flex justify-center mt-12">
+            <div className="inline-flex bg-white/[0.02] border border-white/5 p-1 rounded-sm gap-1">
+                {[
+                    { id: 'GLOBAL', label: 'Global', icon: Globe },
+                    { id: 'REGIONAL', label: 'Regional', icon: MapPin },
+                    { id: 'FRIENDS', label: 'Friends', icon: Users }
+                ].map(filter => (
+                    <button
+                        key={filter.id}
+                        onClick={() => handleFilterChange(filter.id)}
+                        className={`flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
+                            activeFilter === filter.id 
+                                ? 'bg-[var(--color-primary)] text-black' 
+                                : 'text-slate-500 hover:text-white hover:bg-white/5'
+                        }`}
+                        style={{ borderRadius: '2px' }}
+                    >
+                        <filter.icon size={14} />
+                        {filter.label}
+                    </button>
+                ))}
+            </div>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto mb-16">

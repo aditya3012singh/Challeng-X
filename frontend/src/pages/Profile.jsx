@@ -9,6 +9,8 @@ import {
   ExternalLink, Calendar, Code, Target, Award, Camera, Upload, Zap
 } from 'lucide-react';
 import api from '../../lib/axios';
+import ProfileRadarChart from '../components/profile/ProfileRadarChart';
+import MatchHistory from '../components/profile/MatchHistory';
 
 const DEPARTMENTS = [
   { value: 'leetcode', label: 'LeetCode', icon: Code, color: 'text-yellow-500' },
@@ -51,6 +53,11 @@ const Profile = () => {
     });
     const [passwordStatus, setPasswordStatus] = useState({ loading: false, error: '', success: '' });
 
+    // Analytics state
+    const [analytics, setAnalytics] = useState(null);
+    const [matchHistory, setMatchHistory] = useState([]);
+    const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
     useEffect(() => {
         if (!isOwner && urlUsername) {
             dispatch(getPublicProfile(urlUsername));
@@ -82,6 +89,24 @@ const Profile = () => {
             });
         }
     }, [profileData, isOwner]);
+
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            if (!profileData?.username) return;
+            setAnalyticsLoading(true);
+            try {
+                const { data } = await api.get(`/analytics/${profileData.username}`);
+                setAnalytics(data.analytics);
+                setMatchHistory(data.history);
+            } catch (error) {
+                console.error("Failed to fetch analytics", error);
+            } finally {
+                setAnalyticsLoading(false);
+            }
+        };
+
+        fetchAnalytics();
+    }, [profileData?.username]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -459,47 +484,57 @@ const Profile = () => {
                     {/* Right Col - Details */}
                     <div className="lg:col-span-2 space-y-6">
                         
-                        {/* Stats Card */}
+                        {/* Radar Chart (New) */}
+                        <ProfileRadarChart 
+                            data={analytics?.radarData} 
+                            loading={analyticsLoading} 
+                        />
+                        
+                        {/* Stats Card (Kept but refined) */}
                         <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">
-                            <h3 className="text-sm font-mono text-gray-500 mb-4 flex items-center gap-2">
-                                <Trophy size={14} /> MATCH STATISTICS
+                            <h3 className="text-sm font-mono text-gray-500 mb-6 flex items-center gap-2">
+                                <Trophy size={14} /> ARENA STANDINGS
                             </h3>
                             
-                            <div className="space-y-4">
-                                <div>
-                                    <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-gray-400">Rank Points</span>
-                                        <span className="font-mono text-[var(--color-primary)] font-bold">{profileData.rankPoints}</span>
-                                    </div>
-                                    <div className="h-2 bg-[#111] rounded-full overflow-hidden">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                    <div className="text-[10px] text-gray-600 uppercase font-mono">Combat Rating</div>
+                                    <div className="text-3xl font-black text-[var(--color-primary)] font-mono">{profileData.rankPoints}</div>
+                                    <div className="h-1 bg-[#111] rounded-full overflow-hidden">
                                         <div className="h-full bg-[var(--color-primary)]" style={{ width: `${Math.min(100, (profileData.rankPoints / 2000) * 100)}%` }} />
                                     </div>
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-3 pt-2">
-                                    <div className="bg-[#111] rounded-lg p-3 text-center border border-[#222]">
-                                        <div className="text-2xl font-mono text-green-500">{profileData.wins || 0}</div>
-                                        <div className="text-[10px] text-gray-500 uppercase font-mono mt-1">Victories</div>
+                                
+                                <div className="grid grid-cols-2 gap-4 col-span-2">
+                                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl text-center">
+                                        <div className="text-2xl font-black text-green-500 font-mono">{profileData.wins || 0}</div>
+                                        <div className="text-[9px] text-gray-600 uppercase font-mono mt-1">Victories</div>
                                     </div>
-                                    <div className="bg-[#111] rounded-lg p-3 text-center border border-[#222]">
-                                        <div className="text-2xl font-mono text-red-500">{profileData.losses || 0}</div>
-                                        <div className="text-[10px] text-gray-500 uppercase font-mono mt-1">Defeats</div>
+                                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl text-center">
+                                        <div className="text-2xl font-black text-red-500 font-mono">{profileData.losses || 0}</div>
+                                        <div className="text-[9px] text-gray-600 uppercase font-mono mt-1">Defeats</div>
                                     </div>
-                                </div>
-
-                                <div className="pt-2">
-                                    <div className="flex justify-between text-xs mb-1">
-                                        <span className="text-gray-500 uppercase font-mono">Win Rate</span>
-                                        <span className="font-mono text-gray-300">{winRate}%</span>
-                                    </div>
-                                    <div className="h-1.5 bg-[#111] rounded-full overflow-hidden flex">
-                                        <div className="h-full bg-green-500" style={{ width: `${winRate}%` }} />
-                                        <div className="h-full bg-red-500 flex-1" />
-                                    </div>
-                                    <div className="text-[10px] text-center text-gray-600 mt-2 font-mono">Total Battles: {totalMatches}</div>
                                 </div>
                             </div>
+
+                            <div className="mt-8 pt-6 border-t border-white/5">
+                                <div className="flex justify-between text-[10px] mb-2 font-mono text-gray-500 uppercase">
+                                    <span>Combat Success Rate</span>
+                                    <span className="text-gray-300">{winRate}%</span>
+                                </div>
+                                <div className="h-1.5 bg-[#111] rounded-full overflow-hidden flex">
+                                    <div className="h-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)] transition-all" style={{ width: `${winRate}%` }} />
+                                    <div className="h-full bg-red-500/50 flex-1" />
+                                </div>
+                                <div className="text-[10px] text-right text-gray-700 mt-2 font-mono italic">Total Encounters: {totalMatches}</div>
+                            </div>
                         </div>
+
+                        {/* Match History (New) */}
+                        <MatchHistory 
+                            history={matchHistory} 
+                            loading={analyticsLoading} 
+                        />
                         
                         {/* Coding Platforms */}
                         <div className="bg-[#0a0a0a] border border-[#222] rounded-xl p-6">

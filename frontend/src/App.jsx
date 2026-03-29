@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import { useSelector, useDispatch } from 'react-redux'
 import { lazy, Suspense, useEffect } from 'react'
 import { fetchUserProfile } from '../store/api/auth.thunk'
+import { addNotification } from '../store/slices/notification.slice'
 import { getSocket } from '../lib/socket'
 import './App.css'
 
@@ -61,8 +62,13 @@ const GlobalSocketListener = () => {
       navigate(`/battle-room/${data.battleId}`, { replace: true });
     });
 
+    socket.on("new_notification", (data) => {
+      dispatch(addNotification(data));
+    });
+
     return () => {
       socket.off("team_battle_invite");
+      socket.off("new_notification");
     };
   }, [isAuthenticated, user, navigate]);
 
