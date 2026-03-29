@@ -201,7 +201,3 @@
         background-position: 50px 50px;
     }
 }
-
-.animate-grid {
-    animation: grid-flow 10s linear infinite;
-}

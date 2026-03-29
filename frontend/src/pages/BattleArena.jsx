@@ -5,7 +5,8 @@ import Editor from "@monaco-editor/react";
 import { 
     Zap, Terminal, Clock, Shield, ChevronLeft, 
     Activity, Play, Send, X, Trophy, AlertTriangle, 
-    Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code
+    Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code,
+    ChevronUp, ChevronDown, ChevronRight, MousePointer2
 } from 'lucide-react';
 
 import { getSocket } from "../../lib/socket";
@@ -63,6 +64,7 @@ const BattleArena = () => {
     // Responsive state
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [mobileTab, setMobileTab] = useState("problem"); // problem, editor, console, status
+    const [showMobileTools, setShowMobileTools] = useState(false);
     
     const socket = getSocket();
     const editorRef = useRef(null);
@@ -149,6 +151,24 @@ const BattleArena = () => {
             await dispatch(forfeitBattle({ battleId })).unwrap();
             navigate('/battles');
         }
+    };
+
+    const moveCursor = (direction) => {
+        if (!editorRef.current) return;
+        const editor = editorRef.current;
+        const position = editor.getPosition();
+        let newPosition = { ...position };
+        
+        switch (direction) {
+            case 'up': newPosition.lineNumber = Math.max(1, position.lineNumber - 1); break;
+            case 'down': newPosition.lineNumber = position.lineNumber + 1; break;
+            case 'left': newPosition.column = Math.max(1, position.column - 1); break;
+            case 'right': newPosition.column = position.column + 1; break;
+        }
+        
+        editor.setPosition(newPosition);
+        editor.revealPositionInCenterIfOutsideViewport(newPosition);
+        editor.focus();
     };
 
     // Handle Socket Events
@@ -514,13 +534,38 @@ const BattleArena = () => {
                                     </div>
                                 </section>
 
+                                {problem.testcases?.some(tc => tc.isSample) && (
+                                    <section>
+                                        <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
+                                            <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Sample Test Cases
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
+                                                <div key={i} className="bg-white/5 border border-white/5 p-4 rounded-sm">
+                                                    <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">Example {i + 1}</div>
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        <div>
+                                                            <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Input</div>
+                                                            <pre className="p-3 bg-black/40 text-[11px] text-white font-mono overflow-x-auto border border-white/5">{tc.input}</pre>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Expected Output</div>
+                                                            <pre className="p-3 bg-black/40 text-[11px] text-[var(--color-primary)] font-mono overflow-x-auto border border-white/5">{tc.output}</pre>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+
                                 {problem.constraints && (
                                     <section>
                                         <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
                                             <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> System Constraints
                                         </h3>
                                         <ul className="space-y-3">
-                                            {problem.constraints.map((c, i) => (
+                                            {(typeof problem.constraints === 'string' ? problem.constraints.split('\n') : problem.constraints).map((c, i) => (
                                                 <li key={i} className="flex items-start gap-3 text-[11px] lg:text-xs text-slate-500 italic">
                                                     <div className="mt-1.5 w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_5px_var(--color-primary)]" />
                                                     {c}
@@ -574,6 +619,15 @@ const BattleArena = () => {
                                     ))}
                                 </select>
                             </div>
+                            
+                            {isMobile && (
+                                <button 
+                                    onClick={() => setShowMobileTools(!showMobileTools)}
+                                    className={`p-2 rounded-sm border transition-all ${showMobileTools ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/40 text-[var(--color-primary)]' : 'bg-white/5 border-white/10 text-slate-500'}`}
+                                >
+                                    <MousePointer2 size={14} />
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -609,22 +663,34 @@ const BattleArena = () => {
                                 hover: { enabled: !isMobile },
                             }}
                         />
+
+                        {/* MOBILE D-PAD */}
+                        {isMobile && showMobileTools && (
+                            <div className="absolute bottom-6 right-6 z-50 flex flex-col items-center gap-2 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-90 sm:scale-100">
+                                <button onClick={() => moveCursor('up')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronUp size={20} /></button>
+                                <div className="flex gap-2">
+                                    <button onClick={() => moveCursor('left')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronLeft size={20} /></button>
+                                    <button onClick={() => moveCursor('down')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronDown size={20} /></button>
+                                    <button onClick={() => moveCursor('right')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronRight size={20} /></button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* MOBILE ACTIONS POD */}
+                    {/* MOBILE ACTIONS POD - STICKY FOR BETTER ACCESSIBILITY */}
                     {isMobile && (
-                        <div className="p-4 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0">
+                        <div className="sticky bottom-0 left-0 right-0 p-4 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
                             <button 
                                 onClick={() => handleRun("RUN")}
                                 disabled={status === "running"}
-                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-center gap-2"
+                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-center gap-2 active:scale-95 transition-all"
                             >
                                 <Play size={12} fill="currentColor" /> Run
                             </button>
                             <button 
                                 onClick={() => handleRun("SUBMIT")}
                                 disabled={status === "running"}
-                                className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                                className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,170,0,0.2)]"
                             >
                                 <Send size={12} fill="currentColor" /> Submit
                             </button>
