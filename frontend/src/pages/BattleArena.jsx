@@ -217,6 +217,17 @@ const BattleArena = () => {
                         setMessage(`Submission Failed: ${data.errorMessage || "Error encountered"}`);
                     }
                     setRunningAction(null);
+
+                    // SYNC TO SPECTATORS: Push output results to anyone watching
+                    socket.emit("spectator_output_sync", {
+                        battleId,
+                        userId: user.id,
+                        output: data.output || (data.status === "PASSED" ? "All tests passed." : data.errorMessage),
+                        status: data.status,
+                        testCaseResults: data.testCaseResults,
+                        beatsPercentile: data.beatsPercentile,
+                        loadingAction: null
+                    });
                 } else if (data.userId === opponent?.id) {
                     setOpponentStatus("idle");
                     setOpponentProgress({ passed: data.passedTests || 0, total: data.totalTests || 100 });
@@ -329,6 +340,34 @@ const BattleArena = () => {
             localStorage.setItem(`battle_lang_${battleId}`, language);
         }
     }, [language, battleId]);
+
+    // SYNC TO SPECTATORS: Initial emission when code is loaded
+    useEffect(() => {
+        if (!socket || !battleId || !user || !hasInitializedCode.current) return;
+
+        socket.emit("spectator_code_sync", {
+            battleId,
+            userId: user.id,
+            code,
+            language
+        });
+    }, [hasInitializedCode.current, socket, battleId, user]); // Only run once when initialization finishes
+
+    // SYNC TO SPECTATORS: Debounced real-time code streaming during typing
+    useEffect(() => {
+        if (!socket || !battleId || !user || !hasInitializedCode.current) return;
+
+        const timer = setTimeout(() => {
+            socket.emit("spectator_code_sync", {
+                battleId,
+                userId: user.id,
+                code,
+                language
+            });
+        }, 1000); // 1s debounce to avoid overwhelming the socket
+
+        return () => clearTimeout(timer);
+    }, [code, language]); // Only run when code or language actually change
 
     const handleRun = async (type = "RUN") => {
         if (status === "running") return;
