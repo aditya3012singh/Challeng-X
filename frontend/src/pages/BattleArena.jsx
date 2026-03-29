@@ -6,7 +6,7 @@ import {
     Zap, Terminal, Clock, Shield, ChevronLeft, 
     Activity, Play, Send, X, Trophy, AlertTriangle, 
     Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code,
-    ChevronUp, ChevronDown, ChevronRight, MousePointer2
+    ChevronUp, ChevronDown, ChevronRight, MousePointer2, Loader2
 } from 'lucide-react';
 
 import { getSocket } from "../../lib/socket";
@@ -65,6 +65,7 @@ const BattleArena = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [mobileTab, setMobileTab] = useState("problem"); // problem, editor, console, status
     const [showMobileTools, setShowMobileTools] = useState(false);
+    const [runningAction, setRunningAction] = useState(null); // "RUN" or "SUBMIT"
     
     const socket = getSocket();
     const editorRef = useRef(null);
@@ -214,6 +215,7 @@ const BattleArena = () => {
                     } else {
                         setMessage(`Submission Failed: ${data.errorMessage || "Error encountered"}`);
                     }
+                    setRunningAction(null);
                 } else if (data.userId === opponent?.id) {
                     setOpponentStatus("idle");
                     setOpponentProgress({ passed: data.passedTests || 0, total: data.totalTests || 100 });
@@ -331,6 +333,12 @@ const BattleArena = () => {
         if (status === "running") return;
         
         setStatus("running");
+        setRunningAction(type);
+        if (isMobile) {
+            setTimeout(() => {
+                setMobileTab("console");
+            }, 300);
+        }
         setMessage(type === "RUN" ? "Running tests..." : "Submitting code...");
         setMyProgress({ passed: 0, total: 100 }); // Reset visual progress
 
@@ -339,6 +347,7 @@ const BattleArena = () => {
         } catch (error) {
             setStatus("result");
             setMessage(`❌ Deployment Failed: ${error.message || "Unknown Error"}`);
+            setRunningAction(null);
         }
     };
 
@@ -588,14 +597,14 @@ const BattleArena = () => {
                                 disabled={status === "running"}
                                 className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-white hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <Play size={12} fill="currentColor" /> Run Test
+                                {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run Test
                             </button>
                             <button 
                                 onClick={() => handleRun("SUBMIT")}
                                 disabled={status === "running"}
                                 className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all active:scale-95 shadow-[0_0_20px_rgba(204,255,0,0.1)] flex items-center justify-center gap-2"
                             >
-                                <Send size={12} fill="currentColor" /> Submit Data
+                                {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} fill="currentColor" />} Submit Data
                             </button>
                         </div>
                     )}
@@ -685,14 +694,14 @@ const BattleArena = () => {
                                 disabled={status === "running"}
                                 className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-center gap-2 active:scale-95 transition-all"
                             >
-                                <Play size={12} fill="currentColor" /> Run
+                                {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run
                             </button>
                             <button 
                                 onClick={() => handleRun("SUBMIT")}
                                 disabled={status === "running"}
                                 className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,170,0,0.2)]"
                             >
-                                <Send size={12} fill="currentColor" /> Submit
+                                {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} fill="currentColor" />} Submit
                             </button>
                         </div>
                     )}
