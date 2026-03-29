@@ -28,11 +28,46 @@ export default function SpectatorArena() {
     const [p1Output, setP1Output] = useState({ output: "", status: "idle", testCaseResults: null, beatsPercentile: 0, loadingAction: null });
     const [p2Output, setP2Output] = useState({ output: "", status: "idle", testCaseResults: null, beatsPercentile: 0, loadingAction: null });
     const [cheatAlerts, setCheatAlerts] = useState([]);
+    const initialStateRef = useRef(null);
 
+    const applyInitialState = useCallback((codeState, outputState) => {
+        if (!currentBattle) return;
+        const { player1Id, player2Id } = currentBattle;
+
+        if (player1Id && codeState[player1Id]) {
+            const data = typeof codeState[player1Id] === 'string' ? JSON.parse(codeState[player1Id]) : codeState[player1Id];
+            setP1State(data);
+        }
+        if (player2Id && codeState[player2Id]) {
+            const data = typeof codeState[player2Id] === 'string' ? JSON.parse(codeState[player2Id]) : codeState[player2Id];
+            setP2State(data);
+        }
+
+        if (player1Id && outputState[player1Id]) {
+            const data = typeof outputState[player1Id] === 'string' ? JSON.parse(outputState[player1Id]) : outputState[player1Id];
+            setP1Output(data);
+        }
+        if (player2Id && outputState[player2Id]) {
+            const data = typeof outputState[player2Id] === 'string' ? JSON.parse(outputState[player2Id]) : outputState[player2Id];
+            setP2Output(data);
+        }
+    }, [currentBattle]);
+
+    // Initial Fetch
     useEffect(() => {
         dispatch(clearCurrentBattle());
         dispatch(getBattle({ battleId }));
     }, [battleId, dispatch]);
+
+    // Apply initial state when battle data finally loads
+    useEffect(() => {
+        if (currentBattle && initialStateRef.current) {
+            const { codeState, outputState } = initialStateRef.current;
+            applyInitialState(codeState, outputState);
+            // Clear the ref so we don't re-apply it and overwrite new real-time updates
+            initialStateRef.current = null;
+        }
+    }, [currentBattle, applyInitialState]);
 
     useEffect(() => {
         const socket = getSocket();
@@ -42,24 +77,15 @@ export default function SpectatorArena() {
         }
 
         const onInitialState = (data) => {
-            if (!currentBattle) return;
-
             const { codeState = {}, outputState = {} } = data;
-            const { player1Id, player2Id } = currentBattle;
-
-            if (player1Id && codeState[player1Id]) {
-                setP1State(JSON.parse(codeState[player1Id]));
+            
+            if (!currentBattle) {
+                // Store for later if battle data hasn't arrived
+                initialStateRef.current = { codeState, outputState };
+                return;
             }
-            if (player2Id && codeState[player2Id]) {
-                setP2State(JSON.parse(codeState[player2Id]));
-            }
-
-            if (player1Id && outputState[player1Id]) {
-                setP1Output(JSON.parse(outputState[player1Id]));
-            }
-            if (player2Id && outputState[player2Id]) {
-                setP2Output(JSON.parse(outputState[player2Id]));
-            }
+            
+            applyInitialState(codeState, outputState);
         };
 
         const onCodeUpdate = (data) => {
@@ -110,7 +136,7 @@ export default function SpectatorArena() {
             socket.off("anti_cheat_alert", onAntiCheatAlert);
             socket.off("battle_end", onBattleFinished);
         };
-    }, [battleId, currentBattle, dispatch]);
+    }, [battleId, currentBattle, dispatch, applyInitialState]);
 
     if (!currentBattle) {
         return (

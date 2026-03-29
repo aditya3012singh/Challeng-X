@@ -309,9 +309,9 @@ const BattleArena = () => {
     }, [currentBattle]);
 
     // Set Initial Language/Code with Persistence
-    const hasInitializedCode = useRef(false);
+    const [hasInitializedCode, setHasInitializedCode] = useState(false);
     useEffect(() => {
-        if (currentBattle?.problem && !hasInitializedCode.current) {
+        if (currentBattle?.problem && !hasInitializedCode) {
             // Try to load from localStorage first
             const savedCode = localStorage.getItem(`battle_code_${battleId}`);
             const savedLang = localStorage.getItem(`battle_lang_${battleId}`);
@@ -324,26 +324,26 @@ const BattleArena = () => {
                 setLanguage(defaultLang);
                 setCode(LANGUAGES[defaultLang].defaultCode);
             }
-            hasInitializedCode.current = true;
+            setHasInitializedCode(true);
         }
     }, [currentBattle, battleId]);
 
     // Persist code on change
     useEffect(() => {
-        if (battleId && code && hasInitializedCode.current) {
+        if (battleId && code && hasInitializedCode) {
             localStorage.setItem(`battle_code_${battleId}`, code);
         }
-    }, [code, battleId]);
+    }, [code, battleId, hasInitializedCode]);
 
     useEffect(() => {
-        if (battleId && language && hasInitializedCode.current) {
+        if (battleId && language && hasInitializedCode) {
             localStorage.setItem(`battle_lang_${battleId}`, language);
         }
-    }, [language, battleId]);
+    }, [language, battleId, hasInitializedCode]);
 
     // SYNC TO SPECTATORS: Initial emission when code is loaded
     useEffect(() => {
-        if (!socket || !battleId || !user || !hasInitializedCode.current) return;
+        if (!socket || !battleId || !user || !hasInitializedCode) return;
 
         socket.emit("spectator_code_sync", {
             battleId,
@@ -351,11 +351,11 @@ const BattleArena = () => {
             code,
             language
         });
-    }, [hasInitializedCode.current, socket, battleId, user]); // Only run once when initialization finishes
+    }, [hasInitializedCode, socket, battleId, user]); // Run when initialization finishes
 
     // SYNC TO SPECTATORS: Debounced real-time code streaming during typing
     useEffect(() => {
-        if (!socket || !battleId || !user || !hasInitializedCode.current) return;
+        if (!socket || !battleId || !user || !hasInitializedCode) return;
 
         const timer = setTimeout(() => {
             socket.emit("spectator_code_sync", {
