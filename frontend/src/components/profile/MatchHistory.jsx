@@ -51,7 +51,7 @@ const MatchHistory = ({ history, loading }) => {
                     {sub.problem.difficulty}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-[10px] text-gray-500 font-mono">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-500 font-mono">
                   <span className="flex items-center gap-1 uppercase tracking-tighter">
                     <Code size={10} /> {sub.language}
                   </span>

@@ -64,7 +64,7 @@ const ProfileRadarChart = ({ data, loading }) => {
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 grid grid-cols-5 gap-2 border-t border-white/5 pt-6">
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 border-t border-white/5 pt-6">
         {data.map((item) => (
           <div key={item.subject} className="text-center">
             <div className="text-[8px] font-mono text-gray-600 uppercase mb-1 tracking-tighter">{item.subject}</div>

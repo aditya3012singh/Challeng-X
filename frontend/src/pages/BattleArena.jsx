@@ -5,7 +5,7 @@ import Editor from "@monaco-editor/react";
 import { 
     Zap, Terminal, Clock, Shield, ChevronLeft, 
     Activity, Play, Send, X, Trophy, AlertTriangle, 
-    Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert
+    Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code
 } from 'lucide-react';
 
 import { getSocket } from "../../lib/socket";
@@ -446,29 +446,33 @@ const BattleArena = () => {
             </header>
 
             {/* MAIN ARENA CONTENT */}
-            <main className={`flex-1 flex overflow-hidden relative ${isMobile ? 'flex-col' : 'flex-row'}`}>
+            <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
                 
                 {/* MOBILE TABS - Tablet/Phone Only */}
-                {isMobile && (
-                    <div className="flex bg-[#0a0a0a] border-b border-white/5 shrink-0 h-12">
-                        {['problem', 'editor', 'console', 'status'].map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setMobileTab(tab)}
-                                className={`flex-1 text-[9px] font-black uppercase tracking-widest transition-all relative ${mobileTab === tab ? "text-[var(--color-primary)]" : "text-slate-500"}`}
-                            >
-                                {tab}
-                                {mobileTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]" />}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                <div className="flex lg:hidden bg-[#0a0a0a] border-b border-white/5 shrink-0 h-10">
+                    {[
+                        { id: 'problem', label: 'Problem', icon: Target },
+                        { id: 'editor', label: 'Editor', icon: Code },
+                        { id: 'console', label: 'Console', icon: Terminal },
+                        { id: 'status', label: 'Status', icon: Monitor }
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setMobileTab(tab.id)}
+                            className={`flex-1 flex items-center justify-center gap-1.5 text-[8px] font-black uppercase tracking-widest transition-all relative ${mobileTab === tab.id ? "text-[var(--color-primary)]" : "text-slate-500"}`}
+                        >
+                            <tab.icon size={10} />
+                            {tab.label}
+                            {mobileTab === tab.id && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]" />}
+                        </button>
+                    ))}
+                </div>
 
                 {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
-                {(!isMobile || mobileTab === "problem" || mobileTab === "console") && (
                 <div 
-                    className={`h-full border-r border-white/5 bg-[#080808] flex flex-col relative group/sidebar ${isMobile ? 'flex-1 w-full' : ''}`}
-                    style={{ width: isMobile ? '100%': `${sidebarWidth}px`, minWidth: isMobile ? '100%' : '300px' }}
+                    className={`h-full border-r border-white/5 bg-[#080808] flex flex-col relative group/sidebar 
+                        ${mobileTab === "problem" || mobileTab === "console" ? "flex" : "hidden lg:flex"}`}
+                    style={{ width: isMobile ? '100%': `${sidebarWidth}px` }}
                 >
                     {/* Resize Handle - Desktop Only */}
                     {!isMobile && (
@@ -551,11 +555,10 @@ const BattleArena = () => {
                         </div>
                     )}
                 </div>
-                )}
 
                 {/* CENTER - CODE EDITOR */}
-                {(!isMobile || mobileTab === "editor") && (
-                <div className={`flex-1 flex flex-col bg-[#050505] min-w-0 lg:min-w-[400px]`}>
+                <div className={`flex-1 flex flex-col bg-[#050505] min-w-0 lg:min-w-[400px] 
+                    ${mobileTab === "editor" ? "flex" : "hidden lg:flex"}`}>
                     {/* EDITOR TOOLBAR */}
                     <div className="h-10 lg:h-12 border-b border-white/5 bg-[#080808] flex items-center justify-between px-4 lg:px-6 shrink-0">
                         <div className="flex items-center gap-4 lg:gap-6">
@@ -628,11 +631,10 @@ const BattleArena = () => {
                         </div>
                     )}
                 </div>
-                )}
 
                 {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Static, Mobile: Tabbed) */}
-                {(!isMobile || mobileTab === "status") && (
-                <aside className={`w-full lg:w-[300px] border-l border-white/5 flex flex-col bg-[#080808] shrink-0`}>
+                <aside className={`w-full lg:w-[300px] border-l border-white/5 flex flex-col bg-[#080808] shrink-0 
+                    ${mobileTab === "status" ? "flex" : "hidden lg:flex"}`}>
                     <div className="p-6 border-b border-white/5 bg-[#0a0a0a]">
                         <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Match Status</div>
                         
@@ -699,7 +701,6 @@ const BattleArena = () => {
                         </div>
                     </div>
                 </aside>
-                )}
             </main>
 
             {/* PREMIUM FINISH OVERLAY */}
