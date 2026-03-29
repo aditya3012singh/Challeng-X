@@ -17,6 +17,7 @@
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.4",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0",
     "monaco-editor": "^0.55.1",
     "react": "^19.2.0",
