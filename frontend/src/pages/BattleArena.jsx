@@ -2,12 +2,13 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Editor from "@monaco-editor/react";
-import { 
-    Zap, Terminal, Clock, Shield, ChevronLeft, 
-    Activity, Play, Send, X, Trophy, AlertTriangle, 
+import {
+    Zap, Terminal, Clock, Shield, ChevronLeft,
+    Activity, Play, Send, X, Trophy, AlertTriangle,
     Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code,
     ChevronUp, ChevronDown, ChevronRight, MousePointer2, Loader2
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { getSocket } from "../../lib/socket";
 import { getBattle, submitBattleCode, forfeitBattle } from "../../store/api/battle.thunk";
@@ -29,44 +30,44 @@ const BattleArena = () => {
     const { currentBattle, loading } = useSelector((state) => state.battle);
     const { problem, player1, player2 } = currentBattle || {};
     const opponent = player1?.id === user?.id ? player2 : player1;
-    
+
     // Editor State
     const [code, setCode] = useState("");
     const [language, setLanguage] = useState("java");
     const [theme, setTheme] = useState("vs-dark");
-    
+
     // Match State
     const [status, setStatus] = useState("idle"); // idle, running, result, finished
     const [message, setMessage] = useState("");
     const [countdown, setCountdown] = useState(null);
     const [isFinished, setIsFinished] = useState(false);
     const [winner, setWinner] = useState(null);
-    
+
     // Progress Tracking
     const [myProgress, setMyProgress] = useState({ passed: 0, total: 0 });
     const [opponentProgress, setOpponentProgress] = useState({ passed: 0, total: 0 });
     const [opponentStatus, setOpponentStatus] = useState("idle"); // idle, submitting
     const [opponentAlert, setOpponentAlert] = useState(null); // { type, message }
-    
+
     const [testResults, setTestResults] = useState([]); // Array of { input, expected, actual, passed, error }
     const [pendingSubmissionId, setPendingSubmissionId] = useState(null);
-    
+
     // Multi-panel focus
     const [activeTab, setActiveTab] = useState("description"); // description, console
     const [sidebarWidth, setSidebarWidth] = useState(400); // px
     const [isResizing, setIsResizing] = useState(false);
-    
+
     // Timer state
     // Timer state
     const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes in seconds
     const [timerActive, setTimerActive] = useState(false);
-    
+
     // Responsive state
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [mobileTab, setMobileTab] = useState("problem"); // problem, editor, console, status
     const [showMobileTools, setShowMobileTools] = useState(false);
     const [runningAction, setRunningAction] = useState(null); // "RUN" or "SUBMIT"
-    
+
     const socket = getSocket();
     const editorRef = useRef(null);
     const terminalEndRef = useRef(null);
@@ -159,14 +160,14 @@ const BattleArena = () => {
         const editor = editorRef.current;
         const position = editor.getPosition();
         let newPosition = { ...position };
-        
+
         switch (direction) {
             case 'up': newPosition.lineNumber = Math.max(1, position.lineNumber - 1); break;
             case 'down': newPosition.lineNumber = position.lineNumber + 1; break;
             case 'left': newPosition.column = Math.max(1, position.column - 1); break;
             case 'right': newPosition.column = position.column + 1; break;
         }
-        
+
         editor.setPosition(newPosition);
         editor.revealPositionInCenterIfOutsideViewport(newPosition);
         editor.focus();
@@ -189,7 +190,7 @@ const BattleArena = () => {
                 if (data.userId === user?.id) {
                     setStatus("result");
                     setActiveTab("console");
-                    
+
                     if (data.type === "SUBMIT" && data.status === "FAILED") {
                         setTestResults([{
                             input: data.input,
@@ -308,7 +309,7 @@ const BattleArena = () => {
                 setCode(savedCode);
                 setLanguage(savedLang);
             } else {
-                const defaultLang = "java"; 
+                const defaultLang = "java";
                 setLanguage(defaultLang);
                 setCode(LANGUAGES[defaultLang].defaultCode);
             }
@@ -331,7 +332,7 @@ const BattleArena = () => {
 
     const handleRun = async (type = "RUN") => {
         if (status === "running") return;
-        
+
         setStatus("running");
         setRunningAction(type);
         if (isMobile) {
@@ -442,7 +443,7 @@ const BattleArena = () => {
 
     return (
         <div className="h-screen bg-[#050505] text-slate-300 flex flex-col overflow-hidden font-mono selection:bg-[var(--color-primary)] selection:text-black">
-            
+
             {/* MATCH HEADER */}
             <header className="h-14 border-b border-white/5 bg-[#0a0a0a] flex items-center justify-between px-6 shrink-0 relative z-40">
                 <div className="flex items-center gap-6">
@@ -464,7 +465,7 @@ const BattleArena = () => {
 
                 <div className="h-4 w-[1px] bg-white/10 mx-2" />
 
-                <button 
+                <button
                     onClick={handleForfeit}
                     className="flex items-center gap-2 px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 transition-all group"
                     style={{ borderRadius: "2px" }}
@@ -476,36 +477,48 @@ const BattleArena = () => {
 
             {/* MAIN ARENA CONTENT */}
             <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-                
-                {/* MOBILE TABS - Tablet/Phone Only */}
-                <div className="flex lg:hidden bg-[#0a0a0a] border-b border-white/5 shrink-0 h-10">
-                    {[
-                        { id: 'problem', label: 'Problem', icon: Target },
-                        { id: 'editor', label: 'Editor', icon: Code },
-                        { id: 'console', label: 'Console', icon: Terminal },
-                        { id: 'status', label: 'Status', icon: Monitor }
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setMobileTab(tab.id)}
-                            className={`flex-1 flex items-center justify-center gap-1.5 text-[8px] font-black uppercase tracking-widest transition-all relative ${mobileTab === tab.id ? "text-[var(--color-primary)]" : "text-slate-500"}`}
-                        >
-                            <tab.icon size={10} />
-                            {tab.label}
-                            {mobileTab === tab.id && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]" />}
-                        </button>
-                    ))}
+
+                {/* MOBILE TABS - PREMIUM SEGMENTED CONTROL */}
+                <div className="flex lg:hidden bg-[#0a0a0a] border-b border-white/10 shrink-0 h-12 px-2 items-center">
+                    <div className="flex w-full bg-white/5 rounded-lg p-1 relative h-9">
+                        {[
+                            { id: 'problem', label: 'Problem', icon: Target },
+                            { id: 'editor', label: 'Editor', icon: Code },
+                            { id: 'console', label: 'Console', icon: Terminal },
+                            { id: 'status', label: 'Status', icon: Monitor }
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setMobileTab(tab.id)}
+                                className={`flex-1 flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-colors relative z-10 ${mobileTab === tab.id ? "text-white" : "text-slate-500 hover:text-slate-300"}`}
+                            >
+                                <tab.icon size={11} />
+                                <span className={isMobile ? "hidden xs:inline" : "inline"}>{tab.label}</span>
+                                {mobileTab === tab.id && (
+                                    <motion.div
+                                        layoutId="mobileTabPill"
+                                        className="absolute inset-0 bg-white/10 rounded-md shadow-[0_0_15px_rgba(255,255,255,0.05)] border border-white/10"
+                                        initial={false}
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                                    />
+                                )}
+                                {tab.id === 'console' && status === 'running' && (
+                                    <div className="absolute top-1 right-1 w-1 h-1 bg-[var(--color-primary)] rounded-full animate-ping" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
-                <div 
+                <div
                     className={`flex-1 min-h-0 border-r border-white/5 bg-[#080808] relative group/sidebar 
                         ${mobileTab === "problem" || mobileTab === "console" ? "flex flex-col" : "hidden lg:flex lg:flex-col"}`}
-                    style={{ width: isMobile ? '100%': `${sidebarWidth}px` }}
+                    style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
                 >
                     {/* Resize Handle - Desktop Only */}
                     {!isMobile && (
-                        <div 
+                        <div
                             onMouseDown={startResizing}
                             className={`absolute -right-1 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizing ? 'bg-[var(--color-primary)]' : 'hover:bg-[var(--color-primary)]/30'}`}
                         />
@@ -592,14 +605,14 @@ const BattleArena = () => {
                     {/* ACTIONS POD - Desktop Only here, mobile shows it inside editor tab */}
                     {!isMobile && (
                         <div className="p-6 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0">
-                            <button 
+                            <button
                                 onClick={() => handleRun("RUN")}
                                 disabled={status === "running"}
                                 className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-white hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
                                 {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run Test
                             </button>
-                            <button 
+                            <button
                                 onClick={() => handleRun("SUBMIT")}
                                 disabled={status === "running"}
                                 className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all active:scale-95 shadow-[0_0_20px_rgba(204,255,0,0.1)] flex items-center justify-center gap-2"
@@ -618,7 +631,7 @@ const BattleArena = () => {
                         <div className="flex items-center gap-4 lg:gap-6">
                             <div className="flex items-center gap-2 border-r border-white/10 pr-4 lg:pr-6">
                                 <Globe size={14} className="text-slate-500" />
-                                <select 
+                                <select
                                     value={language}
                                     onChange={handleLanguageChange}
                                     className="bg-transparent text-[9px] lg:text-[10px] font-black text-white outline-none uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"
@@ -628,9 +641,9 @@ const BattleArena = () => {
                                     ))}
                                 </select>
                             </div>
-                            
+
                             {isMobile && (
-                                <button 
+                                <button
                                     onClick={() => setShowMobileTools(!showMobileTools)}
                                     className={`p-2 rounded-sm border transition-all ${showMobileTools ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/40 text-[var(--color-primary)]' : 'bg-white/5 border-white/10 text-slate-500'}`}
                                 >
@@ -689,14 +702,14 @@ const BattleArena = () => {
                     {/* MOBILE ACTIONS POD - STICKY FOR BETTER ACCESSIBILITY */}
                     {isMobile && (
                         <div className="sticky bottom-0 left-0 right-0 p-4 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
-                            <button 
+                            <button
                                 onClick={() => handleRun("RUN")}
                                 disabled={status === "running"}
                                 className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-center gap-2 active:scale-95 transition-all"
                             >
                                 {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run
                             </button>
-                            <button 
+                            <button
                                 onClick={() => handleRun("SUBMIT")}
                                 disabled={status === "running"}
                                 className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,170,0,0.2)]"
@@ -712,7 +725,7 @@ const BattleArena = () => {
                     ${mobileTab === "status" ? "flex flex-col" : "hidden lg:flex lg:flex-col"}`}>
                     <div className="p-6 border-b border-white/5 bg-[#0a0a0a]">
                         <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Match Status</div>
-                        
+
                         <div className="space-y-8">
                             {/* LOCAL PROGRESS */}
                             <div className="space-y-3">
@@ -721,7 +734,7 @@ const BattleArena = () => {
                                     <span className="text-[var(--color-primary)] font-mono text-xs font-black">{myProgress.passed}/{myProgress.total || 0}</span>
                                 </div>
                                 <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
-                                    <div 
+                                    <div
                                         className="h-full bg-[var(--color-primary)] transition-all duration-500 shadow-[0_0_10px_var(--color-primary)]"
                                         style={{ width: `${(myProgress.passed / (myProgress.total || 1)) * 100}%` }}
                                     />
@@ -742,20 +755,20 @@ const BattleArena = () => {
                                     </div>
                                     <span className="text-slate-500 font-mono text-xs">{opponentProgress.passed}/{opponentProgress.total || 0}</span>
                                 </div>
-                                
+
                                 {opponentAlert && (
                                     <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest animate-pulse flex items-center gap-2">
                                         <ShieldAlert size={12} />
                                         {opponentAlert.message}
                                     </div>
                                 ) || (
-                                    <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
-                                        <div 
-                                            className="h-full bg-white/20 transition-all duration-500"
-                                            style={{ width: `${(opponentProgress.passed / (opponentProgress.total || 1)) * 100}%` }}
-                                        />
-                                    </div>
-                                )}
+                                        <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
+                                            <div
+                                                className="h-full bg-white/20 transition-all duration-500"
+                                                style={{ width: `${(opponentProgress.passed / (opponentProgress.total || 1)) * 100}%` }}
+                                            />
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     </div>
@@ -804,8 +817,8 @@ const BattleArena = () => {
 
                     {/* Confetti Particles for Winner */}
                     {winner === user?.id && [...Array(40)].map((_, i) => (
-                        <div 
-                            key={i} 
+                        <div
+                            key={i}
                             className="confetti"
                             style={{
                                 left: `${Math.random() * 100}%`,
@@ -820,7 +833,7 @@ const BattleArena = () => {
 
                     <div className="max-w-2xl w-full bg-[#0a0a0a]/80 border border-white/10 p-12 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "4px" }}>
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent opacity-50" />
-                        
+
                         <div className="flex flex-col items-center">
                             <div className={`mb-12 relative ${winner === user?.id ? 'winner-trophy' : ''}`}>
                                 <div className="w-32 h-32 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative z-10">
@@ -836,14 +849,14 @@ const BattleArena = () => {
                             <div className="text-[12px] font-black text-[var(--color-primary)] tracking-[1em] uppercase mb-4 opacity-70">
                                 {winner === user?.id ? "Superiority Established" : "Signal Terminated"}
                             </div>
-                            
+
                             <h1 className="text-8xl font-black text-white tracking-tighter uppercase mb-2 leading-none">
                                 {winner === user?.id ? "You Won" : "Match Over"}
                             </h1>
-                            
+
                             <p className="text-slate-500 text-sm font-medium mb-12 uppercase tracking-[0.2em]">
-                                {winner === user?.id 
-                                    ? "Competitive objectives completed with high efficiency." 
+                                {winner === user?.id
+                                    ? "Competitive objectives completed with high efficiency."
                                     : "Operational failure. Opponent achieved target first."}
                             </p>
 
@@ -864,13 +877,13 @@ const BattleArena = () => {
                             </div>
 
                             <div className="flex gap-6 w-full">
-                                <button 
+                                <button
                                     onClick={() => navigate('/battles')}
                                     className="flex-1 py-5 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-[11px] hover:bg-white hover:text-black transition-all"
                                 >
                                     Return to Lobby
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setIsFinished(false)}
                                     className="flex-2 px-12 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[11px] hover:brightness-125 transition-all shadow-[0_0_30px_var(--color-primary)] shadow-opacity-20"
                                 >

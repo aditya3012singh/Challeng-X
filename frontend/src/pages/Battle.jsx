@@ -75,7 +75,7 @@ export const Battle = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-24 px-6 relative overflow-hidden font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-20 px-4 sm:px-6 relative overflow-hidden font-[family:var(--font-body)]">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.015] blur-[180px] rounded-full"></div>
@@ -84,7 +84,7 @@ export const Battle = () => {
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="text-center mb-16">
           <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Match Center</div>
-          <h1 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
+          <h1 className="text-4xl sm:text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
             Create a Match
           </h1>
         </div>
@@ -94,7 +94,7 @@ export const Battle = () => {
           <div className="inline-flex bg-white/[0.02] p-1 border border-white/5" style={{ borderRadius: "2px" }}>
             <button
               onClick={() => setActiveTab("random")}
-              className={`px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "random"
+              className={`px-4 sm:px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "random"
                 ? "bg-[var(--color-primary)] text-black"
                 : "text-slate-500 hover:text-white"
                 }`}
@@ -104,7 +104,7 @@ export const Battle = () => {
             </button>
             <button
               onClick={() => setActiveTab("selected")}
-              className={`px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "selected"
+              className={`px-4 sm:px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "selected"
                 ? "bg-[var(--color-primary)] text-black"
                 : "text-slate-500 hover:text-white"
                 }`}
@@ -114,7 +114,7 @@ export const Battle = () => {
             </button>
             <button
               onClick={() => setActiveTab("join")}
-              className={`px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "join"
+              className={`px-4 sm:px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "join"
                 ? "bg-[var(--color-primary)] text-black"
                 : "text-slate-500 hover:text-white"
                 }`}
@@ -133,7 +133,7 @@ export const Battle = () => {
         )}
 
         {/* Tab Content Card - PREMIUM */}
-        <div className="premium-card p-16 lg:p-20 relative overflow-hidden" style={{ borderRadius: "2px" }}>
+        <div className="premium-card p-8 sm:p-16 lg:p-20 relative overflow-hidden" style={{ borderRadius: "2px" }}>
 
           {/* Random Battle */}
           {activeTab === "random" && (

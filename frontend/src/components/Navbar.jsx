@@ -1,8 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoutUser } from "../../store/api/auth.thunk";
-import { Menu, X, User, Shield, LogOut, Award, Activity, History, Bell } from 'lucide-react';
-import React, { useState } from 'react';
+import { Menu, X, User, Shield, LogOut, Award, Activity, History, Bell, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
 import NotificationsDropdown from "./notifications/NotificationsDropdown";
 
 const Navbar = () => {
@@ -13,6 +14,21 @@ const Navbar = () => {
   const { unreadCount } = useSelector((state) => state.notification);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const sidebarRef = useRef(null);
+
+  // Close sidebar on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target) && isMenuOpen) {
+        // Check if the click was NOT on the toggle button
+        if (!event.target.closest('.mobile-menu-toggle')) {
+          setIsMenuOpen(false);
+        }
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
 
   // Hide navbar completely when inside the battle IDE or spectator mode
   const isBattleIde = /^\/battle\/[^/]+\/ide/.test(location.pathname);
@@ -104,7 +120,7 @@ const Navbar = () => {
 
               {/* Notifications Bell */}
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                   className={`relative p-2 transition-all group ${isNotificationsOpen ? 'text-[var(--color-primary)]' : 'text-slate-400 hover:text-white'}`}
                 >
@@ -115,9 +131,9 @@ const Navbar = () => {
                     </span>
                   )}
                 </button>
-                <NotificationsDropdown 
-                  isOpen={isNotificationsOpen} 
-                  onClose={() => setIsNotificationsOpen(false)} 
+                <NotificationsDropdown
+                  isOpen={isNotificationsOpen}
+                  onClose={() => setIsNotificationsOpen(false)}
                 />
               </div>
 
@@ -184,9 +200,9 @@ const Navbar = () => {
           {/* Mobile Menu Toggle */}
           <div className="flex xl:hidden items-center">
             {isAuthenticated && (
-              <button 
+              <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
+                className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors mobile-menu-toggle"
                 aria-label="Toggle Menu"
               >
                 {isMenuOpen ? <X size={24} /> : (
@@ -203,75 +219,112 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* MOBILE MENU OVERLAY */}
-      {isAuthenticated && (
-        <div className={`xl:hidden fixed inset-0 top-20 bg-[#050505]/95 backdrop-blur-2xl z-[49] transform transition-transform duration-500 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-          <div className="h-full flex flex-col p-6 overflow-y-auto pb-32">
-            
-            {/* User Quick Stats */}
-            <div className="mb-10 p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl border border-[var(--color-primary)]/50 p-0.5 overflow-hidden text-center justify-center">
-                   {user?.profilePic ? (
-                      <img src={user.profilePic} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-[#111] flex items-center justify-center text-[var(--color-primary)] font-black text-xl">
-                        {user?.username?.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">Authenticated Player</div>
-                  <div className="text-xl font-black text-white leading-none tracking-tight">{user?.username}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[14px] font-black text-white tabular-nums">{user?.rankPoints || 1000}</span>
-                    <span className="text-[7px] font-bold text-slate-600 uppercase tracking-widest">ELO</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[14px] font-black text-blue-500 tabular-nums">{user?.cyberCores || 0}</span>
-                    <span className="text-[7px] font-bold text-slate-600 uppercase tracking-widest">CORES</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* MOBILE SIDEBAR NAVIGATION */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="xl:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+            />
 
-            {/* Navigation Links */}
-            <div className="grid grid-cols-1 gap-1 mb-10">
-              <div className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4 px-4">ARENA PROTOCOLS</div>
-              {navItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => { navigate(item.path); setIsMenuOpen(false); }}
-                  className={`w-full text-left px-6 py-4 rounded-xl flex items-center justify-between group transition-all ${isActive(item.path) ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-slate-400 hover:bg-white/5'}`}
+            {/* Sidebar */}
+            <motion.div
+              ref={sidebarRef}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="xl:hidden fixed top-0 right-0 h-screen w-[280px] bg-[#050505] border-l border-white/10 z-[101] shadow-2xl flex flex-col"
+            >
+              <div className="p-6 flex justify-between items-center border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[var(--color-primary)] text-black flex items-center justify-center font-black text-sm" style={{ borderRadius: "2px" }}>
+                    CA
+                  </div>
+                  <span className="text-xs font-bold tracking-widest text-white uppercase">Menu</span>
+                </div>
+                <button 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 text-slate-400 hover:text-white transition-colors"
                 >
-                  <span className="text-[11px] font-bold uppercase tracking-[0.2em]">{item.label}</span>
-                  <div className={`w-1.5 h-1.5 rounded-full transition-all ${isActive(item.path) ? 'bg-[var(--color-primary)] shadow-[0_0_10px_rgba(255,170,0,0.5)]' : 'bg-transparent group-hover:bg-white/20'}`} />
+                  <X size={20} />
                 </button>
-              ))}
-            </div>
+              </div>
 
-            {/* Account Actions */}
-            <div className="mt-auto space-y-2 border-t border-white/5 pt-8">
-              <button 
-                onClick={() => { navigate(`/profile/${user?.username}`); setIsMenuOpen(false); }}
-                className="w-full flex items-center gap-4 px-6 py-4 text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-white transition-colors"
-              >
-                <User size={16} className="text-slate-600" /> View Profile
-              </button>
-              <button 
-                onClick={handleLogout}
-                className="w-full flex items-center gap-4 px-6 py-4 text-red-500/80 font-bold text-[10px] uppercase tracking-widest hover:text-red-500 transition-colors"
-              >
-                <LogOut size={16} /> Terminate Session
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <div className="flex-1 overflow-y-auto p-6 custom-scrollbar min-h-0">
+                {/* User Info (Compact) */}
+                <div className="mb-10 p-4 bg-white/[0.02] border border-white/5 rounded-lg">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-sm border border-[var(--color-primary)]/40 p-0.5 overflow-hidden">
+                      {user?.profilePic ? (
+                        <img src={user.profilePic} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-[#111] flex items-center justify-center text-[var(--color-primary)] font-black text-sm">
+                          {user?.username?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-white leading-none mb-1">{user?.username}</div>
+                      <div className="text-[8px] text-slate-500 uppercase tracking-widest leading-none">Authenticated</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                    <div>
+                      <div className="text-[7px] font-bold text-slate-600 uppercase mb-0.5">Rating</div>
+                      <div className="text-xs font-black text-white tabular-nums">{user?.rankPoints || 1000}</div>
+                    </div>
+                    <div>
+                      <div className="text-[7px] font-bold text-slate-600 uppercase mb-0.5">Cores</div>
+                      <div className="text-xs font-black text-blue-500 tabular-nums">{user?.cyberCores || 0}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Primary Navigation */}
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-[9px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4">Protocols</div>
+                    <div className="space-y-1">
+                      {navItems.map((item) => (
+                        <button
+                          key={item.path}
+                          onClick={() => { navigate(item.path); setIsMenuOpen(false); }}
+                          className={`w-full text-left px-4 py-3 rounded-md flex items-center justify-between group transition-all ${isActive(item.path) ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                        >
+                          <span className="text-[10px] font-bold uppercase tracking-[0.1em]">{item.label}</span>
+                          <ChevronRight size={12} className={`opacity-0 group-hover:opacity-100 transition-all ${isActive(item.path) ? 'opacity-100' : ''}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="p-6 border-t border-white/5 space-y-2">
+                <button 
+                  onClick={() => { navigate(`/profile/${user?.username}`); setIsMenuOpen(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 font-bold text-[9px] uppercase tracking-widest hover:bg-white/5 transition-all rounded-md"
+                >
+                  <User size={14} /> My Profile
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-red-500/80 font-bold text-[9px] uppercase tracking-widest hover:bg-red-500/10 transition-all rounded-md"
+                >
+                  <LogOut size={14} /> Terminate
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

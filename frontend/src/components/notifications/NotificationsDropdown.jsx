@@ -9,7 +9,7 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const dropdownRef = useRef(null);
-    const { notifications, unreadCount, loading } = useSelector(state => state.notification);
+    const { notifications = [], unreadCount = 0, loading = false } = useSelector(state => state.notification || {});
 
     useEffect(() => {
         if (isOpen) {
@@ -46,8 +46,8 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
     return (
         <div 
             ref={dropdownRef}
-            className="absolute right-0 top-full mt-2 w-[320px] md:w-[380px] bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] overflow-hidden flex flex-col max-h-[500px]"
-            style={{ borderRadius: '2px' }}
+            className="fixed md:absolute inset-x-4 md:inset-auto md:right-0 top-24 md:top-full md:mt-2 md:w-[380px] bg-[#0A0A0A] md:bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[201] overflow-hidden flex flex-col max-h-[70vh] md:max-h-[500px]"
+            style={{ borderRadius: '4px' }}
         >
             {/* Header */}
             <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
@@ -112,7 +112,15 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
                                             </h4>
                                             <span className="text-[8px] font-medium text-slate-600 flex items-center gap-1 shrink-0 mt-0.5">
                                                 <Clock size={8} />
-                                                {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                                                {n.createdAt ? (
+                                                    (() => {
+                                                        try {
+                                                            return formatDistanceToNow(new Date(n.createdAt), { addSuffix: true });
+                                                        } catch (e) {
+                                                            return 'Recently';
+                                                        }
+                                                    })()
+                                                ) : 'Recently'}
                                             </span>
                                         </div>
                                         <p className="text-[10px] text-slate-500 leading-relaxed mb-2 line-clamp-2">
