@@ -17,7 +17,10 @@ import {
     handleFinalBattleStart
 } from "./battleHandlers.js";
 import { handleTeamMessage } from "./teamChat.handler.js";
+import { handleGlobalMessage, syncGlobalHistory } from "./globalChat.handler.js";
 import { handleDisconnect, handleReconnect } from "./disconnectHandlers.js";
+import { handleLobbyEvents } from "./lobby.handler.js";
+import { handlePrivateMessages } from "./message.handler.js";
 
 class SocketServer {
     static io = null;
@@ -144,10 +147,42 @@ class SocketServer {
             socket.on("spectator_output_sync", (payload) => handleSpectatorOutputSync(this.io, socket, payload));
             socket.on("anti_cheat_flag", (payload) => handleAntiCheatFlag(this.io, socket, payload));
 
-            // 6. Reconnect & Disconnect
+            // 6. Global Chat Handlers
+            socket.on("send_global_message", (payload) => handleGlobalMessage(this.io, socket, payload));
+            syncGlobalHistory(socket);
+
+            // 7. Lobby & Invitation Handlers
+            handleLobbyEvents(this.io, socket);
+
+            // 8. Private Message Handlers
+            handlePrivateMessages(this.io, socket);
+
+            // 9. Presence Tracking (Online Status)
+            this.updatePresence(socket.userId, true);
+
+            // 9. Reconnect & Disconnect
             socket.on("rejoin_battle", (payload) => handleReconnect(this.io, socket, payload));
-            socket.on("disconnect", () => handleDisconnect(this.io, socket));
+            socket.on("disconnect", () => {
+                this.updatePresence(socket.userId, false);
+                handleDisconnect(this.io, socket);
+            });
         });
+    }
+
+    static async updatePresence(userId, isOnline) {
+        if (!userId) return;
+        try {
+            const presenceKey = "online_users";
+            if (isOnline) {
+                await RedisClient.client.sadd(presenceKey, userId);
+            } else {
+                await RedisClient.client.srem(presenceKey, userId);
+            }
+            // Broadcast presence change to everyone (or just friends - for now everyone is simpler)
+            this.io.emit("user_presence_update", { userId, isOnline });
+        } catch (err) {
+            logger.error(`Error updating presence for ${userId}: ${err.message}`);
+        }
     }
 }
 

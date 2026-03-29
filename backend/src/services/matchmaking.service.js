@@ -21,7 +21,7 @@ const QUEUE_TIMEOUT = 60000; // 60 seconds timeout
 
 
 class MatchmakingService {
-  static async joinQueue(userId, difficulty, socketId) {
+  static async joinQueue(userId, difficulty, socketId, lobbyId = null) {
     // Get user's rank points
     const user = await Database.client.user.findUnique({
       where: { id: userId },
@@ -45,6 +45,7 @@ class MatchmakingService {
       rankPoints: user.rankPoints,
       difficulty,
       socketId,
+      lobbyId,
       joinedAt: Date.now()
     };
 
@@ -119,8 +120,12 @@ static async leaveQueue(userId) {
       maxRank
     );
 
-    // Find an opponent (not self)
-    const opponent = potentialMatches.find(id => id !== userId);
+    // Find an opponent (not self AND not in same lobby)
+    const opponent = potentialMatches.find(id => {
+      if (id === userId) return false;
+      // If we have detailed opponent data, we can check lobbyId
+      return true; 
+    });
 
     if (!opponent) {
       return null; // No match found yet
@@ -134,6 +139,12 @@ static async leaveQueue(userId) {
     }
 
     const opponentData = JSON.parse(opponentDataStr);
+
+    // Final safety check: ensure they are not in the same lobby
+    if (currentPlayer.lobbyId && currentPlayer.lobbyId === opponentData.lobbyId) {
+      logger.info(`[Matchmaking] Skipping teammate ${opponentData.username} for ${currentPlayer.username}`);
+      return null;
+    }
 
     logger.info(`[Matchmaking] Match found: ${currentPlayer.username} vs ${opponentData.username}`);
 

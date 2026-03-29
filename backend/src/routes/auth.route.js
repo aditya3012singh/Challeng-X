@@ -17,6 +17,7 @@ class AuthRoutes {
 		router.post("/logout", AuthMiddleware.handle, AuthController.logout);
 		router.get("/profile", AuthMiddleware.handle, AuthController.getProfile);
 		router.put("/profile", AuthMiddleware.handle, AuthController.updateProfile);
+		router.post("/change-password", AuthMiddleware.handle, AuthController.changePassword);
 		router.post("/refresh", AuthController.refreshToken);
 
 		// 🖼️ Get presigned URL for profile picture upload

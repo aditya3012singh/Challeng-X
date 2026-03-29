@@ -42,6 +42,14 @@ model User {
   failedLoginCount Int       @default(0)
   lockUntil        DateTime?
 
+  // Social Relations
+  followers        Follow[]        @relation("followers")
+  following        Follow[]        @relation("following")
+  sentRequests     FriendRequest[] @relation("sentRequests")
+  receivedRequests FriendRequest[] @relation("receivedRequests")
+  sentMessages     PrivateMessage[] @relation("sentMessages")
+  receivedMessages PrivateMessage[] @relation("receivedMessages")
+
   // Profile Fields
   profilePic String?
 

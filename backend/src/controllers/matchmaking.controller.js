@@ -5,7 +5,7 @@ import MatchmakingService from "../services/matchmaking.service.js";
 class MatchmakingController {
     static async joinQueueController(req, res) {
     const userId = req.user.id;
-    const { difficulty, socketId } = req.body;
+    const { difficulty, socketId, lobbyId } = req.body;
 
     if (!difficulty || !['EASY', 'MEDIUM', 'HARD'].includes(difficulty)) {
         return res.status(400).json({ message: "Invalid difficulty level" });
@@ -16,10 +16,10 @@ class MatchmakingController {
         return res.status(400).json({ message: "Socket ID required" });
     }
 
-    console.log(`[Matchmaking] User ${userId} joining queue for ${difficulty} with socket ${socketId}`);
+    console.log(`[Matchmaking] User ${userId} joining queue for ${difficulty} with socket ${socketId}${lobbyId ? ` in lobby ${lobbyId}` : ""}`);
 
     try {
-        const result = await MatchmakingService.joinQueue(userId, difficulty, socketId);
+        const result = await MatchmakingService.joinQueue(userId, difficulty, socketId, lobbyId);
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -111,6 +111,7 @@ class AuthController {
                     id: true,
                     username: true,
                     email: true,
+                    password: true, // we will convert this to a boolean
                     role: true,
                     rankPoints: true,
                     losses: true,
@@ -132,7 +133,13 @@ class AuthController {
                 return res.status(404).json({ message: "User not found" });
             }
 
-            res.json({ user });
+            const { password, ...userWithoutPassword } = user;
+            res.json({ 
+                user: { 
+                    ...userWithoutPassword, 
+                    hasPassword: !!password 
+                } 
+            });
         } catch (error) {
             res.status(500).json({ message: "Failed to fetch profile" });
         }
@@ -314,9 +321,47 @@ class AuthController {
                 .cookie("accessToken", accessToken, CookieOptions.accessCookieOptions)
                 .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
                 .redirect(`${env.FRONTEND_URL}/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}&auth_success=true`);
+                // .redirect(`${env.FRONTEND_URL}/?auth_success=true`);
         } catch (error) {
             console.error("Social auth callback error:", error);
             res.redirect(`${env.FRONTEND_URL}/login?error=server_error`);
+        }
+    }
+
+    static async changePassword(req, res) {
+        const validationResult = AuthSchema.changePasswordSchema.safeParse(req.body);
+        if (!validationResult.success) {
+            return res.status(400).json({ message: validationResult.error.errors[0].message });
+        }
+
+        const { oldPassword, newPassword } = validationResult.data;
+        const userId = req.user.id;
+
+        try {
+            const user = await Database.client.user.findUnique({ where: { id: userId } });
+            if (!user) return res.status(404).json({ message: "User not found" });
+
+            // If user has no password (OAuth only), they can't "change" it normally
+            if (!user.password) {
+                return res.status(400).json({ message: "OAuth accounts must use their provider to log in or reset password via email to set one." });
+            }
+
+            const bcrypt = await import("bcrypt").then(b => b.default);
+            const isMatch = await bcrypt.compare(oldPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: "Invalid old password" });
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            await Database.client.user.update({
+                where: { id: userId },
+                data: { password: hashedPassword }
+            });
+
+            res.json({ message: "Password updated successfully" });
+        } catch (error) {
+            console.error("Change password error:", error);
+            res.status(500).json({ message: "Failed to update password" });
         }
     }
 }
