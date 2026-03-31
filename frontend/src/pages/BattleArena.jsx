@@ -794,9 +794,12 @@ const BattleArena = () => {
                                 scrollBeyondLastLine: false,
                                 automaticLayout: true,
                                 padding: { top: 20 },
-                                cursorStyle: "block",
+                                cursorStyle: "line",
+                                cursorWidth: 2,
+                                cursorBlinking: 'blink',
+                                selectionHighlight: false,
+                                renderLineHighlight: "none",
                                 lineNumbersMinChars: isMobile ? 2 : 3,
-                                renderLineHighlight: "all",
                                 scrollbar: {
                                     vertical: "auto",
                                     horizontal: "auto",
@@ -805,6 +808,8 @@ const BattleArena = () => {
                                 },
                                 quickSuggestions: !isMobile,
                                 hover: { enabled: !isMobile },
+                                occurrenceHighlight: false,
+                                matchBrackets: 'always',
                             }}
                         />
 

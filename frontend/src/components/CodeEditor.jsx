@@ -17,6 +17,19 @@ export default function CodeEditor({ value, onChange, language, readOnly = false
         minimap: { enabled: false },
         automaticLayout: true,
         readOnly: readOnly,
+        cursorStyle: 'line',
+        cursorWidth: 2,
+        cursorBlinking: 'blink',
+        selectionHighlight: false,
+        renderLineHighlight: 'none',
+        lineNumbers: 'on',
+        folding: true,
+        scrollBeyondLastLine: false,
+        wordWrap: 'on',
+        scrollbar: {
+          vertical: 'hidden',
+          horizontal: 'hidden'
+        }
       }}
     />
   );
