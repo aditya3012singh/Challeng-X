@@ -35,7 +35,7 @@ const envSchema = z.object({
   S3_PUBLIC_URL: z.string().url().optional(),
 
   // App Configs
-  CODEARENA_RUNNERS_PATH: z.string().optional(),
+  CHALLEGX_RUNNERS_PATH: z.string().optional(),
   JUDGE_POOL_SIZE: z.string().transform(Number).default("10"),
   MATCHMAKING_RANK_THRESHOLD: z.string().transform(Number).default("2000"),
   WORKER_CONCURRENCY: z.string().transform(Number).default("10"),
@@ -47,6 +47,9 @@ const envSchema = z.object({
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
   GITHUB_CALLBACK_URL: z.string().optional(),
+
+  // AI
+  GEMINI_API_KEY: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

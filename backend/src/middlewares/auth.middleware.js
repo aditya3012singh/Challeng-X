@@ -21,6 +21,15 @@ class AuthMiddleware {
       return res.status(401).json({ message: "Token expired or invalid" });
     }
   }
+
+  // Admin only check
+  static adminOnly(req, res, next) {
+    if (req.user && req.user.role === "ADMIN") {
+      next();
+    } else {
+      return res.status(403).json({ message: "Forbidden: Admin access only" });
+    }
+  }
 }
 
 export default AuthMiddleware;

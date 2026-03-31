@@ -34,6 +34,11 @@ class NotificationService {
         }
     }
 
+    // Alias for createNotification to prevent breaking changes in other services
+    static async sendNotification(userId, data) {
+        return this.createNotification(userId, data);
+    }
+
     static async getNotifications(userId, limit = 20, offset = 0) {
         return prisma.notification.findMany({
             where: { userId },

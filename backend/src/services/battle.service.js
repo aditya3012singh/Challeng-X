@@ -7,6 +7,9 @@ import SocketEmitter from "../config/socket.js";
 import BattleCode from "../utils/battleCode.js";
 import S3Service from "./s3.service.js";
 import RewardService from "./reward.service.js";
+import AISimulatorService from "./aiSimulator.service.js";
+import AIService from "./ai.service.js";
+import env from "../config/env.js";
 // • Start timer
 // • Assign problem
 // • End match
@@ -121,6 +124,22 @@ class BattleService {
             console.error("Timeout handler error:", e.message);
           }
         }, 1800000); // 30 mins
+
+        // 👻 Trigger AI Ghost Simulation if player2 is a Ghost
+        const ghost = await Database.client.user.findUnique({ 
+          where: { id: player2Id },
+          select: { username: true }
+        });
+        if (ghost?.username === "CHALLEGX_GHOST") {
+          const b = await Database.client.battle.findUnique({ 
+            where: { id: battle.id },
+            include: { problem: true }
+          });
+          AISimulatorService.startSimulation(battle.id, player2Id, b.problem.difficulty);
+        }
+
+        // 🎙️ Live AI Commentary for Spectators
+        BattleService.startCommentaryTimer(battle.id);
       } catch (e) {
         console.error("Countdown handler error:", e.message);
       }
@@ -344,6 +363,9 @@ class BattleService {
         });
       }
 
+      // 👻 Stop AI Simulation if it was active
+      AISimulatorService.stopSimulation(battleId);
+
       // Perform background tasks (ranking, cache flush)
       (async () => {
         try {
@@ -498,6 +520,45 @@ class BattleService {
       page,
       totalPages: Math.ceil(total / limit)
     };
+  }
+
+  static async startCommentaryTimer(battleId) {
+    const interval = setInterval(async () => {
+      try {
+        const battle = await Database.client.battle.findUnique({
+          where: { id: battleId },
+          include: { player1: true, player2: true, problem: true }
+        });
+
+        if (!battle || battle.status !== "ONGOING") {
+          clearInterval(interval);
+          return;
+        }
+
+        // Get current progress for both players
+        const p1Progress = await Database.client.submission.count({ 
+          where: { battleId, userId: battle.player1Id, status: "PASSED" } 
+        });
+        const p2Progress = await Database.client.submission.count({ 
+          where: { battleId, userId: battle.player2Id, status: "PASSED" } 
+        });
+
+        const commentary = await AIService.generateLiveComment(
+          { username: battle.player1.username, progress: p1Progress },
+          { username: battle.player2?.username || "Awaiting...", progress: p2Progress },
+          battle.problem
+        );
+
+        if (SocketEmitter.io) {
+          SocketEmitter.io.to(`spectator_${battleId}`).emit("battle_commentary", {
+            commentary,
+            timestamp: new Date()
+          });
+        }
+      } catch (err) {
+        console.error("AI Commentary Error:", err.message);
+      }
+    }, 45000); // Every 45 seconds
   }
 }
 

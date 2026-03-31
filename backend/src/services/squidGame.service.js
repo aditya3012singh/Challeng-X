@@ -6,6 +6,7 @@ import SocketEmitter from "../config/socket.js";
 import SquidGameSocket from "../config/squidGameSocket.js";
 import SubmissionService from "./submission.service.js";
 import S3Service from "./s3.service.js";
+import AIService from "./ai.service.js";
 
 class SquidGameService {
 
@@ -337,6 +338,14 @@ class SquidGameService {
     // Broadcast round start to all participants
     if (SocketEmitter.io) {
       SquidGameSocket.broadcastRoundStart(SocketEmitter.io, squidGameId, round);
+      
+      // 🎙️ AI Game Master Intro
+      this.broadcastGameMasterMessage(squidGameId, "ROUND_START", {
+        roundNumber: nextRoundNum,
+        totalRounds: squidGame.totalRounds,
+        activePlayers: squidGame.participants.length,
+        difficulty: problem.difficulty
+      });
     }
 
     return round;
@@ -578,6 +587,12 @@ class SquidGameService {
         }
       });
 
+      // 🎙️ AI Game Master Victory Speech
+      this.broadcastGameMasterMessage(squidGameId, "TOURNAMENT_WINNER", {
+        winner: winner.username,
+        finalScore: winner.score
+      });
+
       return {
         roundEnded: true,
         tournamentEnded: true,
@@ -594,6 +609,13 @@ class SquidGameService {
       data: {
         status: "ROUND_ENDED"
       }
+    });
+
+    // 🎙️ AI Game Master Elimination Comment
+    this.broadcastGameMasterMessage(squidGameId, "ELIMINATION_PHASE", {
+      eliminatedCount: toEliminate,
+      remainingCount: remaining,
+      roundNumber: squidGame.currentRound
     });
 
     return {
@@ -711,6 +733,24 @@ class SquidGameService {
     }
 
     return updatedParticipant;
+  }
+
+  /**
+   * Generate and broadcast an AI Game Master message
+   */
+  static async broadcastGameMasterMessage(squidGameId, type, context) {
+    try {
+      const message = await AIService.generateGameMasterComment(type, context);
+      if (SocketEmitter.io) {
+        SocketEmitter.io.to(`squidgame_${squidGameId}`).emit("game_master_broadcast", {
+          message,
+          type
+        });
+        console.log(`🎙️ [AI Game Master] Broadcasted: "${message}"`);
+      }
+    } catch (err) {
+      console.error("AI Game Master Broadcast Error:", err.message);
+    }
   }
 }
 

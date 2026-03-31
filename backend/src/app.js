@@ -23,6 +23,7 @@ import ContestRoutes from "./routes/contest.route.js";
 import SocialRoutes from "./routes/social.route.js";
 import NotificationRoutes from "./routes/notification.route.js";
 import AnalyticsRoutes from "./routes/analytics.route.js";
+import AIRoutes from "./routes/ai.route.js";
 
 class App {
     static createApp() {
@@ -71,6 +72,7 @@ class App {
     app.use("/api/social", SocialRoutes);
     app.use("/api/notifications", NotificationRoutes);
     app.use("/api/analytics", AnalyticsRoutes);
+    app.use("/api/ai", AIRoutes.createRouter());
 
     app.get("/", (req, res) => {
       res.status(200).json({ status: "your are live", timestamp: new Date().toISOString() });

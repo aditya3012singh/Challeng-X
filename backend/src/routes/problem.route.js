@@ -6,6 +6,7 @@
 
 import express from "express";
 import ProblemController from "../controllers/problem.controller.js";
+import AuthMiddleware from "../middlewares/auth.middleware.js";
 
 class ProblemRoutes {
 	static createRouter() {

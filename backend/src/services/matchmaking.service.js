@@ -212,20 +212,26 @@ static async leaveQueue(userId) {
       console.error(`[Pre-cache] Matchmaking failed for problem ${randomProblem.id}:`, err.message)
     );
     
-    // Notify both players via socket
-    SocketEmitter.io?.to(player1.socketId).emit("match_found", {
+    // Notify both players via user-specific rooms (more stable than socket IDs)
+    const user1Room = `user_${player1.userId}`;
+    logger.info(`[Matchmaking] Emitting match_found to room: ${user1Room}`);
+    SocketEmitter.io?.to(user1Room).emit("match_found", {
       battleId: battle.id,
       battleCode: battle.battleCode,
       opponent: player2.username,
       problem: battle.problem
     });
   
-    SocketEmitter.io?.to(player2.socketId).emit("match_found", {
-      battleId: battle.id,
-      battleCode: battle.battleCode,
-      opponent: player1.username,
-      problem: battle.problem
-    });
+    // For ghost matches, player2.socketId/userId might be system-level, but we follow the same pattern
+    if (player2.userId && player2.userId !== 'ghost') {
+        const user2Room = `user_${player2.userId}`;
+        SocketEmitter.io?.to(user2Room).emit("match_found", {
+          battleId: battle.id,
+          battleCode: battle.battleCode,
+          opponent: player1.username,
+          problem: battle.problem
+        });
+    }
 
     return battle;
   }
@@ -255,6 +261,49 @@ static async leaveQueue(userId) {
       waitTime,
       estimatedWait: Math.max(0, 30000 - waitTime) // Estimate 30s max wait
     };
+  }
+
+  /**
+   * Spawn a Ghost match for a user
+   * @param {string} userId 
+   * @param {string} difficulty 
+   */
+  static async spawnGhostMatch(userId, difficulty) {
+    logger.info(`[Matchmaking] Spawning Ghost match for user ${userId} (${difficulty})`);
+
+    // 1. Get User Data
+    const user = await Database.client.user.findUnique({
+      where: { id: userId },
+      select: { id: true, username: true, rankPoints: true }
+    });
+
+    if (!user) throw new Error("User not found");
+
+    // 2. Get Ghost User
+    const ghost = await Database.client.user.findUnique({
+      where: { username: "CHALLEGX_GHOST" }
+    });
+
+    if (!ghost) throw new Error("Ghost user not found. Run ensure_ghost.js first.");
+
+    // 3. Get socket info before removing from queue
+    const queueDataStr = await RedisClient.client.get(`matchmaking:user:${userId}`);
+    const socketId = queueDataStr ? JSON.parse(queueDataStr).socketId : null;
+
+    // 4. Remove user from queue
+    await MatchmakingService.leaveQueue(userId);
+
+    // 5. Create Battle
+    const player1 = { userId: user.id, username: user.username, socketId, rankPoints: user.rankPoints };
+    const player2 = { userId: ghost.id, username: ghost.username, socketId: null, rankPoints: ghost.rankPoints };
+
+    logger.info(`[Matchmaking] Player 1 Socket ID: ${socketId}`);
+
+    const battle = await MatchmakingService.createMatchedBattle(player1, player2, difficulty);
+    
+    logger.info(`[Matchmaking] Battle created: ${battle.id}. Emit was successful? ${!!SocketEmitter.io}`);
+    
+    return battle;
   }
 }
 
