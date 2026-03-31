@@ -5,7 +5,7 @@ import Editor from "@monaco-editor/react";
 import {
     Zap, Terminal, Clock, Shield, ChevronLeft,
     Activity, Play, Send, X, Trophy, AlertTriangle,
-    Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code,
+    Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code, Sparkles,
     ChevronUp, ChevronDown, ChevronRight, MousePointer2, Loader2, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,6 +17,8 @@ import { clearCurrentBattle } from "../../store/slices/battle.slice";
 import { playSound } from "../utils/audio";
 import { toast } from "react-hot-toast";
 import ShareModal from "../components/common/ShareModal";
+import CyberMentorModal from "../components/common/CyberMentorModal";
+import axios from "../../lib/axios";
 
 const LANGUAGES = {
     java: { monaco: "java", defaultCode: `public class Main {\n    public static void main(String[] args) {\n        // Your code here\n        System.out.println("Hello World!");\n    }\n}` },
@@ -74,6 +76,11 @@ const BattleArena = () => {
     const [runningAction, setRunningAction] = useState(null); // "RUN" or "SUBMIT"
     const [showForfeitModal, setShowForfeitModal] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isCyberMentorOpen, setIsCyberMentorOpen] = useState(false);
+    const [aiHint, setAiHint] = useState("");
+    const [isAILoading, setIsAILoading] = useState(false);
+    const [surgeonReport, setSurgeonReport] = useState("");
+    const [isSurgeonLoading, setIsSurgeonLoading] = useState(false);
 
     const socket = getSocket();
     const editorRef = useRef(null);
@@ -126,6 +133,45 @@ const BattleArena = () => {
         const mins = Math.floor(elapsed / 60);
         const secs = elapsed % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const fetchAIHint = async () => {
+        if (!problem?.id) return;
+        setIsAILoading(true);
+        setIsCyberMentorOpen(true);
+        try {
+            const response = await axios.post(`/ai/hint`, {
+                problemId: problem.id,
+                currentCode: code,
+                language: language
+            });
+            setAiHint(response.data.hint);
+        } catch (error) {
+            console.error("AI Hint Error:", error);
+            toast.error("AI Link Failed: Check connection");
+            setAiHint("The neural connection was lost. Please try again later.");
+        } finally {
+            setIsAILoading(false);
+        }
+    };
+
+    const fetchAISurgeonReport = async () => {
+        if (!problem?.id) return;
+        setIsSurgeonLoading(true);
+        try {
+            const response = await axios.post(`/ai/review`, {
+                problemId: problem.id,
+                finalCode: code,
+                language: language,
+                result: winner === user?.id ? "Victory" : "Defeat"
+            });
+            setSurgeonReport(response.data.report);
+        } catch (error) {
+            console.error("AI Surgeon Error:", error);
+            setSurgeonReport("Diagnostic scan failed. The neural link is unstable.");
+        } finally {
+            setIsSurgeonLoading(false);
+        }
     };
 
     // Resize logic
@@ -672,6 +718,14 @@ const BattleArena = () => {
                                             <div className="px-3 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-black uppercase tracking-widest">
                                                 {problem?.difficulty || "MISSION DATA"}
                                             </div>
+                                            <button 
+                                                onClick={fetchAIHint}
+                                                disabled={isAILoading}
+                                                className="flex items-center gap-2 px-3 py-1 bg-[var(--color-primary)]/5 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[9px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-black transition-all"
+                                                style={{ borderRadius: "2px" }}
+                                            >
+                                                <Sparkles size={10} /> {isAILoading ? "Connecting..." : "Cyber-Mentor"}
+                                            </button>
                                         </div>
                                         <h2 className="text-xl lg:text-2xl font-black text-[var(--color-text-main)] mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem?.title}</h2>
                                         <div className="prose prose-invert prose-sm max-w-none text-[var(--color-text-muted)] font-light leading-relaxed mb-8 lg:mb-12">
@@ -886,7 +940,16 @@ const BattleArena = () => {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center group">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">{opponent?.username || "Awaiting..."}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[10px] font-black uppercase tracking-wider ${opponent?.username === "CHALLEGX_GHOST" ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)]"}`}>
+                                                {opponent?.username || "Awaiting..."}
+                                            </span>
+                                            {opponent?.username === "CHALLEGX_GHOST" && (
+                                                <span className="px-1.5 py-0.5 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[7px] font-black text-[var(--color-primary)] uppercase tracking-widest rounded-sm">
+                                                    GHOST
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="flex items-center gap-1.5 mt-1">
                                             <div className={`w-1 h-1 rounded-full ${opponentStatus === 'submitting' ? 'bg-[var(--color-primary)] animate-ping' : 'bg-slate-600'}`} />
                                             <span className="text-[8px] uppercase font-bold text-slate-600">{opponentStatus === 'submitting' ? 'Transmitting Data...' : 'Idle'}</span>
@@ -903,7 +966,7 @@ const BattleArena = () => {
                                 ) || (
                                         <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
                                             <div
-                                                className="h-full bg-white/20 transition-all duration-500"
+                                                className={`h-full transition-all duration-500 ${opponent?.username === "CHALLEGX_GHOST" ? "bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]" : "bg-white/20"}`}
                                                 style={{ width: `${(opponentProgress.passed / (opponentProgress.total || 1)) * 100}%` }}
                                             />
                                         </div>
@@ -1015,6 +1078,41 @@ const BattleArena = () => {
                                 </div>
                             </div>
 
+                            {/* CODE SURGEON DIAGNOSTICS */}
+                            <div className="w-full mb-12 animate-in slide-in-from-bottom duration-1000 delay-500">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="h-[1px] flex-1 bg-white/5" />
+                                    <div className="flex items-center gap-3 px-4 py-1.5 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-sm">
+                                        <Activity size={12} className="text-[var(--color-primary)]" />
+                                        <span className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em]">Code Surgeon Diagnostic</span>
+                                    </div>
+                                    <div className="h-[1px] flex-1 bg-white/5" />
+                                </div>
+
+                                {isSurgeonLoading ? (
+                                    <div className="py-10 flex flex-col items-center gap-4">
+                                        <Loader2 size={24} className="animate-spin text-slate-700" />
+                                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">Scanning Codebase...</span>
+                                    </div>
+                                ) : surgeonReport ? (
+                                    <div className="p-8 bg-white/[0.02] border border-white/5 relative group overflow-hidden" style={{ borderRadius: "2px" }}>
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-[var(--color-primary)]/20" />
+                                        <p className="text-[13px] text-[var(--color-text-muted)] font-light leading-relaxed tracking-wide italic font-mono">
+                                            "{surgeonReport}"
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-6">
+                                        <button 
+                                            onClick={fetchAISurgeonReport}
+                                            className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto"
+                                        >
+                                            <Sparkles size={12} /> Generate Diagnostic Report
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="flex gap-6 w-full">
                                 <button
                                     onClick={() => navigate('/battles')}
@@ -1022,12 +1120,15 @@ const BattleArena = () => {
                                 >
                                     Return to Lobby
                                 </button>
-                                <button
-                                    onClick={() => setIsFinished(false)}
-                                    className="flex-2 px-12 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[11px] hover:brightness-125 transition-all shadow-[0_0_30px_var(--color-primary)] shadow-opacity-20"
-                                >
-                                    Analyze Match
-                                </button>
+                                {!surgeonReport && (
+                                    <button
+                                        onClick={fetchAISurgeonReport}
+                                        disabled={isSurgeonLoading}
+                                        className="flex-2 px-12 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[11px] hover:brightness-125 transition-all shadow-[0_0_30px_var(--color-primary)] shadow-opacity-20 flex items-center justify-center gap-2"
+                                    >
+                                        {isSurgeonLoading ? <Loader2 size={14} className="animate-spin" /> : <Activity size={14} />} Analyze Match
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -1089,6 +1190,14 @@ const BattleArena = () => {
                 link={`${window.location.origin}/spectate/${battleId}`}
                 title="SHARE BATTLE STREAM"
                 message={`Check out this live battle on ChallegX! Code: ${currentBattle?.battleCode}`}
+            />
+
+            {/* CYBER MENTOR MODAL */}
+            <CyberMentorModal 
+                isOpen={isCyberMentorOpen}
+                onClose={() => setIsCyberMentorOpen(false)}
+                hint={aiHint}
+                isLoading={isAILoading}
             />
         </div>
     );

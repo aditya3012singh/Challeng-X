@@ -5,6 +5,8 @@ import { getSocket, isSocketConnected } from "../../lib/socket";
 import { joinMatchmaking, leaveMatchmaking, getQueueStatus } from "../../store/api/matchmaking.thunk";
 import { setMatchFound, resetMatchmaking } from "../../store/slices/matchmaking.slice";
 import { toast } from "react-hot-toast";
+import { Sparkles } from "lucide-react";
+import axios from "../../lib/axios";
 
 export const FindMatch = () => {
     const [selectedDifficulty, setSelectedDifficulty] = useState("MEDIUM");
@@ -13,6 +15,7 @@ export const FindMatch = () => {
     const navigate = useNavigate();
 
     const { currentLobby } = useSelector((state) => state.lobby);
+    const { user } = useSelector((state) => state.auth);
     const { inQueue, loading, error, queueSize, waitTime, matchFound, battleId, opponent } = useSelector(
         (state) => state.matchmaking
     );
@@ -85,6 +88,26 @@ export const FindMatch = () => {
         }
     };
 
+    const handleSpawnGhost = async () => {
+        const userId = user?.id;
+        if (!userId) {
+            toast.error("User identification failed");
+            return;
+        }
+
+        try {
+            const response = await axios.post("/ai/spawn-ghost", {
+                userId,
+                difficulty: selectedDifficulty
+            });
+            // Match found will be emitted by socket, but we can also handle it here if needed
+            toast.success("AI Ghost Summoned: Entering Arena");
+        } catch (err) {
+            console.error("Spawn ghost error:", err);
+            toast.error("Failed to summon ghost");
+        }
+    };
+
     const formatTime = (ms) => {
         const seconds = Math.floor(ms / 1000);
         return `${seconds}s`;
@@ -145,10 +168,21 @@ export const FindMatch = () => {
 
                         <button
                             onClick={handleLeaveQueue}
-                            className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-600 hover:text-red-500 transition-colors"
+                            className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-600 hover:text-red-500 transition-colors mb-8 block mx-auto"
                         >
                             Cancel Search
                         </button>
+
+                        {(waitTime > 10000) && (
+                            <button
+                                onClick={handleSpawnGhost}
+                                className="group flex items-center justify-center gap-3 px-10 py-5 bg-white/5 border border-[var(--color-primary)]/20 hover:border-[var(--color-primary)]/50 transition-all mx-auto animate-in fade-in duration-700"
+                                style={{ borderRadius: "2px" }}
+                            >
+                                <Sparkles size={14} className="text-[var(--color-primary)] group-hover:animate-pulse" />
+                                <span className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-[0.3em]">Summon Ghost Opponent</span>
+                            </button>
+                        )}
                     </div>
                 ) : (
                     // Selection Screen - PREMIUM

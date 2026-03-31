@@ -28,6 +28,7 @@ export default function SpectatorArena() {
     const [p1Output, setP1Output] = useState({ output: "", status: "idle", testCaseResults: null, beatsPercentile: 0, loadingAction: null });
     const [p2Output, setP2Output] = useState({ output: "", status: "idle", testCaseResults: null, beatsPercentile: 0, loadingAction: null });
     const [cheatAlerts, setCheatAlerts] = useState([]);
+    const [aiCommentary, setAiCommentary] = useState(null);
     const initialStateRef = useRef(null);
 
     const applyInitialState = useCallback((codeState, outputState) => {
@@ -128,6 +129,10 @@ export default function SpectatorArena() {
         socket.on("spectator_output_update", onOutputUpdate);
         socket.on("anti_cheat_alert", onAntiCheatAlert);
         socket.on("battle_end", onBattleFinished);
+        socket.on("battle_commentary", (data) => {
+            console.log("🎙️ Live AI Commentary:", data.commentary);
+            setAiCommentary(data.commentary);
+        });
 
         return () => {
             socket.off("spectator_initial_state", onInitialState);
@@ -281,6 +286,21 @@ export default function SpectatorArena() {
                             <span className="ml-auto text-[8px] opacity-60">#{alert.flagCount}</span>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* AI Live Commentary Feed */}
+            {aiCommentary && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-xl w-full px-6 py-4 bg-black/90 border border-[var(--color-primary)]/20 backdrop-blur-xl shadow-[0_0_40px_rgba(255,170,0,0.1)] flex items-center gap-4 animate-in fade-in slide-in-from-bottom-5 duration-700" style={{ borderRadius: "2px" }}>
+                    <div className="shrink-0 w-8 h-8 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 flex items-center justify-center">
+                        <span className="text-[10px] animate-pulse">🎙️</span>
+                    </div>
+                    <div className="flex-1">
+                        <div className="text-[7px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-1">Live AI Analysis</div>
+                        <p className="text-[11px] font-bold text-white uppercase italic tracking-tight leading-snug">
+                            {aiCommentary}
+                        </p>
+                    </div>
                 </div>
             )}
 

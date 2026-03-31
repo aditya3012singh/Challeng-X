@@ -11,6 +11,7 @@ const Admin = () => {
   const [editingProblem, setEditingProblem] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [problemToDelete, setProblemToDelete] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -31,10 +32,41 @@ const Admin = () => {
 
   const fetchProblems = async () => {
     try {
-      const response = await axios.get('/api/problem/list');
+      const response = await axios.get('/problem/list');
       setProblems(response.data.problems);
     } catch (error) {
       console.error('Error fetching problems:', error);
+    }
+  };
+
+  const handleAIGenerate = async () => {
+    setIsGenerating(true);
+    const toastId = toast.loading('Consulting Digital Architect for new problem dataset...');
+    try {
+      const response = await axios.post('/ai/generate', {
+        difficulty: formData.difficulty,
+        tags: [] // Could add a tags input later
+      });
+      
+      const aiData = response.data.problem;
+      
+      setFormData({
+        ...formData,
+        title: aiData.title,
+        description: aiData.description,
+        testcases: aiData.testcases.map(tc => ({
+          input: tc.input,
+          output: tc.output,
+          isHidden: !tc.isSample
+        }))
+      });
+      
+      toast.success('Protocol Synced: AI-generated problem data received.', { id: toastId });
+    } catch (error) {
+      console.error('AI Generation error:', error);
+      toast.error('AI Uplink Failed: Could not generate problem.', { id: toastId });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -51,7 +83,7 @@ const Admin = () => {
       if (editingProblem) {
         toast.info('Update functionality not yet fully implemented in this node.');
       } else {
-        const problemResponse = await axios.post('/api/problem/create', {
+        const problemResponse = await axios.post('/problem/create', {
           title: formData.title,
           description: formData.description,
           difficulty: formData.difficulty,
@@ -61,7 +93,7 @@ const Admin = () => {
 
         const problemId = problemResponse.data.problem.id;
 
-        await axios.post('/api/testcase/add', {
+        await axios.post('/testcase/add', {
           problemId,
           testcases: formData.testcases
         });
@@ -105,7 +137,7 @@ const Admin = () => {
   const confirmDelete = async () => {
     if (!problemToDelete) return;
     try {
-      await axios.delete(`/api/problem/${problemToDelete}`);
+      await axios.delete(`/problem/${problemToDelete}`);
       fetchProblems();
       toast.success('Protocol Purged: Record removed successfully.');
     } catch (error) {
@@ -152,8 +184,20 @@ const Admin = () => {
           {/* PROBLEM FORM */}
           <div className="lg:col-span-5">
             <div className="premium-card p-10 sticky top-24" style={{ borderRadius: "2px" }}>
-              <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">
-                {editingProblem ? "Edit Record" : "New Entry Protocol"}
+              <div className="flex justify-between items-center mb-8">
+                <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase">
+                  {editingProblem ? "Edit Record" : "New Entry Protocol"}
+                </div>
+                {!editingProblem && (
+                  <button 
+                    type="button"
+                    onClick={handleAIGenerate}
+                    disabled={isGenerating}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[8px] font-black text-[var(--color-primary)] uppercase tracking-wider hover:bg-[var(--color-primary)]/20 transition-all disabled:opacity-50"
+                  >
+                    {isGenerating ? "GENERATING..." : "GENERATE WITH AI"}
+                  </button>
+                )}
               </div>
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div>

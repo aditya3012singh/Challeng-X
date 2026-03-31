@@ -15,6 +15,7 @@ import RoundScreen from "../components/SquidGame/RoundScreen";
 import OrganizerView from "../components/SquidGame/OrganizerView";
 import EliminationScreen from "../components/SquidGame/EliminationScreen";
 import CompletedScreen from "../components/SquidGame/CompletedScreen";
+import GameMasterBroadcast from "../components/SquidGame/GameMasterBroadcast";
 import { SOCKET_URL, ROUND_CONFIG } from "../components/SquidGame/SquidGameConfig";
 import api from "../../lib/axios";
 
@@ -53,6 +54,7 @@ export const SquidMode = () => {
     const [leaderboard, setLeaderboardState] = useState([]);
     const [eliminationData, setEliminationData] = useState(null);
     const [playerStreams, setPlayerStreams] = useState({}); // { userId: { code, language } }
+    const [currentBroadcast, setCurrentBroadcast] = useState(null); // { message, type }
 
     const socketRef = useRef(null);
     const timerRef = useRef(null);
@@ -111,6 +113,11 @@ export const SquidMode = () => {
         sgSocket.on("squid_game:tournament_completed", (data) => {
             if (data.finalLeaderboard) setLeaderboardState(data.finalLeaderboard);
             setPhase("COMPLETED");
+        });
+
+        sgSocket.on("game_master_broadcast", (data) => {
+            console.log("🎙️ Received Game Master Broadcast:", data);
+            setCurrentBroadcast(data);
         });
 
         sgSocket.on("squid_game:player_eliminated", (data) => {
@@ -266,9 +273,17 @@ export const SquidMode = () => {
     };
 
     // Render current phase
-    switch (phase) {
-        case "LOBBY":
-            return <LobbyScreen onCreateOrJoin={handleCreateOrJoin} />;
+    return (
+        <>
+            <GameMasterBroadcast 
+                message={currentBroadcast?.message} 
+                type={currentBroadcast?.type} 
+                onComplete={() => setCurrentBroadcast(null)} 
+            />
+            {(() => {
+                switch (phase) {
+                    case "LOBBY":
+                        return <LobbyScreen onCreateOrJoin={handleCreateOrJoin} />;
 
         case "WAITING":
             return <WaitingRoom tournament={tournament} onStart={handleStart} isHost={isHost} />;
@@ -324,4 +339,7 @@ export const SquidMode = () => {
         default:
             return <LobbyScreen onCreateOrJoin={handleCreateOrJoin} />;
     }
+            })()}
+        </>
+    );
 };
