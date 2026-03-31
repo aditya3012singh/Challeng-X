@@ -16,6 +16,7 @@ import { getBattle, submitBattleCode, forfeitBattle } from "../../store/api/batt
 import { clearCurrentBattle } from "../../store/slices/battle.slice";
 import { playSound } from "../utils/audio";
 import { toast } from "react-hot-toast";
+import ShareModal from "../components/common/ShareModal";
 
 const LANGUAGES = {
     java: { monaco: "java", defaultCode: `public class Main {\n    public static void main(String[] args) {\n        // Your code here\n        System.out.println("Hello World!");\n    }\n}` },
@@ -72,6 +73,7 @@ const BattleArena = () => {
     const [showMobileTools, setShowMobileTools] = useState(false);
     const [runningAction, setRunningAction] = useState(null); // "RUN" or "SUBMIT"
     const [showForfeitModal, setShowForfeitModal] = useState(false);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const socket = getSocket();
     const editorRef = useRef(null);
@@ -544,10 +546,10 @@ const BattleArena = () => {
                         <h1 className="text-sm font-black tracking-tighter uppercase text-[var(--color-text-main)] flex items-center gap-3">
                             Battle Code: <span className="text-[var(--color-primary)] font-mono">{currentBattle?.battleCode || "......"}</span>
                             <button 
-                                onClick={copySpectateLink}
+                                onClick={() => setIsShareModalOpen(true)}
                                 className="ml-2 px-2 py-1 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[9px] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] flex items-center gap-2"
                                 style={{ borderRadius: "2px" }}
-                                title="Copy Spectate Link"
+                                title="Share Battle"
                             >
                                 <Send size={10} /> Share
                             </button>
@@ -1080,6 +1082,14 @@ const BattleArena = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+            {/* SHARE MODAL */}
+            <ShareModal 
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                link={`${window.location.origin}/spectate/${battleId}`}
+                title="SHARE BATTLE STREAM"
+                message={`Check out this live battle on ChallegX! Code: ${currentBattle?.battleCode}`}
+            />
         </div>
     );
 };

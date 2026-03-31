@@ -5,6 +5,7 @@ import { getBattleById } from "../../store/api/teamBattle.thunk";
 import { TeamChat } from "../components/TeamChat";
 import { getSocket } from "../../lib/socket";
 import { toast } from "react-hot-toast";
+import ShareModal from "../components/common/ShareModal";
 
 export const BattleRoom = () => {
   const { battleId } = useParams();
@@ -16,6 +17,7 @@ export const BattleRoom = () => {
   const [countdown, setCountdown] = useState(null);
   const [isStarting, setIsStarting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Fetch initial battle data
   const fetchBattleData = async () => {
@@ -210,9 +212,18 @@ export const BattleRoom = () => {
                 <div className="inline-block px-12 py-6 border border-white/5 bg-white/[0.01] mb-8" style={{ borderRadius: "2px" }}>
                   <span className="text-4xl font-black tracking-[0.4em] text-[var(--color-text-main)] font-mono">{battleData.joinCode}</span>
                 </div>
-                <button onClick={copyJoinCode} className="block mx-auto text-[10px] font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] uppercase tracking-widest transition-colors mb-2">
-                   Copy Join Code 
-                </button>
+                <div className="flex flex-col items-center gap-4 mb-4">
+                    <button onClick={copyJoinCode} className="text-[10px] font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] uppercase tracking-widest transition-colors">
+                       Copy Join Code 
+                    </button>
+                    <button 
+                        onClick={() => setIsShareModalOpen(true)}
+                        className="px-6 py-2 bg-white/5 border border-white/10 text-[var(--color-text-main)] text-[10px] font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-black transition-all"
+                        style={{ borderRadius: "2px" }}
+                    >
+                        Invite Friends
+                    </button>
+                </div>
               </div>
             ) : (
               <div className="py-4 animate-in zoom-in duration-500">
@@ -295,6 +306,15 @@ export const BattleRoom = () => {
           </div>
         </div>
       </div>
+
+      {/* SHARE MODAL */}
+      <ShareModal 
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          link={`${window.location.origin}/join/${battleData.joinCode}`}
+          title="INVITE TO BATTLE"
+          message={`Hey! Join me for a coding battle on ChallegX. Use code: ${battleData.joinCode}`}
+      />
     </div>
   );
 };

@@ -1,9 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Timer, Shield, Zap, ChevronRight, Copy, Check, Info } from "lucide-react";
 import { useState } from "react";
+import ShareModal from "../common/ShareModal";
 
 const WaitingRoom = ({ tournament, onStart, isHost }) => {
     const [copied, setCopied] = useState(false);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const participants = tournament?.participants || [];
     const maxPlayers = tournament?.maxPlayers || 50;
     const isPastMinimum = participants.length >= 2;
@@ -51,19 +53,28 @@ const WaitingRoom = ({ tournament, onStart, isHost }) => {
                     </div>
 
                     {/* Join Code Card */}
-                    <div className="bg-[var(--glass-bg)] border border-[var(--glass-border)] p-6 rounded-sm min-w-[280px] shadow-2xl backdrop-blur-md">
-                        <div className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-3 opacity-40">Session Code</div>
-                        <div className="flex items-center justify-between gap-6">
-                            <span className="text-3xl font-black font-mono text-[var(--color-text-main)] tracking-[0.2em]">
-                                {tournament?.joinCode}
-                            </span>
-                            <button 
-                                onClick={handleCopy}
-                                className="p-2.5 rounded-sm bg-black/40 border border-white/10 hover:border-[var(--color-primary)]/40 transition-all text-white/30 hover:text-[var(--color-primary)]"
-                            >
-                                {copied ? <Check size={16} /> : <Copy size={16} />}
-                            </button>
+                    <div className="flex flex-col gap-4 min-w-[280px]">
+                        <div className="bg-[var(--glass-bg)] border border-[var(--glass-border)] p-6 rounded-sm shadow-2xl backdrop-blur-md">
+                            <div className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-3 opacity-40">Session Code</div>
+                            <div className="flex items-center justify-between gap-6">
+                                <span className="text-3xl font-black font-mono text-[var(--color-text-main)] tracking-[0.2em]">
+                                    {tournament?.joinCode}
+                                </span>
+                                <button 
+                                    onClick={handleCopy}
+                                    className="p-2.5 rounded-sm bg-black/40 border border-white/10 hover:border-[var(--color-primary)]/40 transition-all text-white/30 hover:text-[var(--color-primary)]"
+                                >
+                                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                                </button>
+                            </div>
                         </div>
+                        <button 
+                            onClick={() => setIsShareModalOpen(true)}
+                            className="w-full py-3 bg-white/5 border border-white/10 text-[var(--color-text-main)] text-[10px] font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-black transition-all"
+                            style={{ borderRadius: "2px" }}
+                        >
+                            Invite Survivors
+                        </button>
                     </div>
                 </div>
 
@@ -158,6 +169,13 @@ const WaitingRoom = ({ tournament, onStart, isHost }) => {
                     </div>
                 </div>
             </motion.div>
+            <ShareModal 
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                link={`${window.location.origin}/squid-game/join/${tournament?.joinCode}`}
+                title="RECRUIT SURVIVORS"
+                message={`The games are starting! Join my Squid Game tournament on ChallegX. Code: ${tournament?.joinCode}`}
+            />
         </div>
     );
 };

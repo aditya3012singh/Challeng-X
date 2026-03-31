@@ -2,6 +2,7 @@ import { useState } from "react";
 import CodeEditor from "../CodeEditor";
 import { LANGUAGES } from "./SquidGameConfig";
 import { motion, AnimatePresence } from "framer-motion";
+import ShareModal from "../common/ShareModal";
 import { 
     Activity, Shield, Users, Timer, 
     X, Eye, Zap, 
@@ -10,6 +11,7 @@ import {
 
 const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStreams, onEndRound, onDisqualify }) => {
     const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const formatTime = (s) => {
         const m = Math.floor(s / 60);
@@ -63,6 +65,12 @@ const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStr
                            {tournament?.participants?.filter(p => p.status === "ACTIVE").length} ACTIVE / {tournament?.participants?.length} TOTAL
                         </span>
                     </div>
+                    <button
+                        onClick={() => setIsShareModalOpen(true)}
+                        className="px-4 py-3 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded-sm flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+                    >
+                        Share
+                    </button>
                     <button
                         onClick={onEndRound}
                         className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2"
@@ -191,6 +199,14 @@ const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStr
                     ChallegX Host Control v1.0
                 </div>
             </footer>
+            {/* SHARE MODAL */}
+            <ShareModal 
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                link={`${window.location.origin}/squid-game/join/${tournament?.joinCode}`}
+                title="RECRUIT SURVIVORS"
+                message={`The games are starting! Help me host this Squid Game tournament on ChallegX. Code: ${tournament?.joinCode}`}
+            />
         </div>
     );
 };
