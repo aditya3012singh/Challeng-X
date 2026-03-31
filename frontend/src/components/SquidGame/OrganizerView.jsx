@@ -1,6 +1,12 @@
 import { useState } from "react";
 import CodeEditor from "../CodeEditor";
 import { LANGUAGES } from "./SquidGameConfig";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+    Activity, Shield, Users, Timer, 
+    X, Eye, Zap, 
+    Layout, BarChart3, Code2, Play
+} from "lucide-react";
 
 const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStreams, onEndRound, onDisqualify }) => {
     const [selectedPlayerId, setSelectedPlayerId] = useState(null);
@@ -19,109 +25,136 @@ const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStr
     const selectedStream = playerStreams[selectedPlayerId];
 
     return (
-        <div className="fixed inset-0 z-[100] bg-[#050505] flex flex-col">
-            {/* Header */}
-            <div className="relative z-20 p-8 flex justify-between items-center bg-white/[0.01] border-b border-white/[0.03]">
-                <div className="flex items-center gap-6">
-                    <div>
-                        <div className="text-[10px] font-bold tracking-[0.6em] text-red-500 uppercase mb-2">Organizer Dashboard // Live</div>
-                        <h1 className="text-3xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">
+        <div className="fixed inset-0 z-[100] bg-[var(--color-bg-dark)] flex flex-col overflow-hidden font-sans">
+            {/* Clean Header */}
+            <header className="h-20 bg-[var(--color-bg-card)] border-b border-[var(--glass-border)] px-8 flex items-center justify-between z-20">
+                <div className="flex items-center gap-10">
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2 mb-1 opacity-40">
+                            <Shield size={12} className="text-[var(--color-primary)]" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Host Dashboard</span>
+                        </div>
+                        <h1 className="text-xl font-black text-[var(--color-text-main)] truncate max-w-[300px] tracking-tight">
                             {tournament?.name}
                         </h1>
                     </div>
                 </div>
 
-                <div className="text-center px-8">
-                    <span className="text-slate-600 text-[9px] font-bold uppercase tracking-widest block mb-1">Round {roundNum} Time Remaining</span>
-                    <span className={`text-5xl font-black tabular-nums font-[family:var(--font-heading)] ${timeLeft < 60 ? "text-red-500 animate-pulse" : "text-white"}`}>
-                        {formatTime(timeLeft)}
-                    </span>
-                    {/* End Round Button for Host — Always Visible and Prominent */}
-                    <div className="mt-6 flex justify-center">
-                        <button
-                            onClick={onEndRound}
-                            className="bg-red-600 text-white text-[11px] font-black uppercase tracking-[0.3em] px-10 py-4 hover:bg-red-700 transition-all shadow-[0_4px_30px_rgba(220,38,38,0.5)] border-2 border-red-400 hover:scale-105 active:scale-95 flex items-center gap-3"
-                            style={{ borderRadius: "2px" }}
-                        >
-                            <span className="text-lg">⏹</span> FORCE END ROUND
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex gap-12">
-                    <div className="text-right">
-                        <span className="text-slate-600 text-[9px] font-bold uppercase tracking-widest block mb-1">Alive Subjects</span>
-                        <span className="text-2xl font-black text-white tabular-nums">
-                            {tournament?.participants?.filter(p => p.status === "ACTIVE").length || 0}
-                            <span className="text-slate-800 mx-2">/</span>
-                            {tournament?.participants?.length || 0}
+                <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+                    <div className={`flex items-center gap-3 px-6 py-2 rounded-sm border border-[var(--glass-border)] bg-black/20 ${timeLeft < 60 ? 'border-red-500/50 bg-red-500/5' : ''}`}>
+                        <Timer size={16} className={timeLeft < 60 ? "text-red-500 animate-pulse" : "text-white/20"} />
+                        <span className={`text-3xl font-mono font-black tabular-nums tracking-tighter ${timeLeft < 60 ? 'text-red-500' : 'text-[var(--color-text-main)]'}`}>
+                            {formatTime(timeLeft)}
                         </span>
                     </div>
+                    <div className="w-32 h-1 bg-[var(--glass-border)] rounded-full overflow-hidden">
+                        <motion.div 
+                            initial={{ width: "100%" }}
+                            animate={{ width: `${(timeLeft / 600) * 100}%` }}
+                            className={`h-full ${timeLeft < 60 ? 'bg-red-500' : 'bg-[var(--color-primary)]'}`}
+                        />
+                    </div>
                 </div>
-            </div>
 
-            <div className="flex flex-1 min-h-0">
-                {/* Left: Dashboard Grid */}
-                <div className="flex-1 overflow-y-auto p-12 border-r border-white/5">
-                    <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                <div className="flex items-center gap-6">
+                    <div className="flex flex-col items-end">
+                        <span className="text-[8px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-1">Participants</span>
+                        <span className="text-xs font-black text-[var(--color-text-main)]">
+                           {tournament?.participants?.filter(p => p.status === "ACTIVE").length} ACTIVE / {tournament?.participants?.length} TOTAL
+                        </span>
+                    </div>
+                    <button
+                        onClick={onEndRound}
+                        className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2"
+                    >
+                        <Zap size={14} fill="currentColor" /> Finish Round
+                    </button>
+                </div>
+            </header>
+
+            <div className="flex-1 flex min-h-0">
+                {/* Left: Participant Grid */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-10 bg-black/10">
+                    <div className="flex items-center justify-between mb-8 opacity-30">
+                        <div className="flex items-center gap-2">
+                            <Users size={14} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Player Status Monitor</span>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
                         {tournament?.participants?.map((p, i) => {
                             const lbEntry = Array.isArray(leaderboard) ? leaderboard.find(l => l.userId === p.userId) : null;
                             const isSelected = selectedPlayerId === p.userId;
+                            const isEliminated = p.status !== "ACTIVE";
+                            
                             return (
-                                <div
+                                <motion.div
                                     key={p.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
                                     onClick={() => setSelectedPlayerId(p.userId)}
-                                    className={`relative group p-4 border cursor-pointer transition-all duration-300 ${p.status === "ACTIVE"
-                                        ? isSelected ? 'border-red-500 bg-red-500/5' : 'border-white/5 bg-white/[0.01] hover:border-white/20'
-                                        : 'border-red-500/10 bg-red-500/[0.02] grayscale opacity-30 shadow-inner'}`}
-                                    style={{ borderRadius: "2px" }}
+                                    className={`relative p-4 border rounded-sm transition-all cursor-pointer ${
+                                        isEliminated 
+                                        ? 'border-red-900/10 bg-red-900/[0.02] opacity-40' 
+                                        : isSelected 
+                                          ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' 
+                                          : 'border-[var(--glass-border)] bg-[var(--glass-bg)] hover:border-white/20'
+                                    }`}
                                 >
-                                    {/* Disqualify Button */}
-                                    {p.status === "ACTIVE" && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onDisqualify(p.userId);
-                                            }}
-                                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full items-center justify-center text-[10px] hidden group-hover:flex z-50 border-2 border-[#050505]"
-                                            title="Disqualify Participant"
-                                        >
-                                            ✕
-                                        </button>
-                                    )}
-
-                                    <div className="flex justify-between items-center mb-4">
-                                        <span className={`text-[9px] font-bold font-mono ${p.status === "ACTIVE" ? isSelected ? 'text-red-500' : 'text-slate-600' : 'text-red-900'}`}>
-                                            #{i + 1 < 10 ? `0${i + 1}` : i + 1}
-                                        </span>
-                                        {p.status === "ELIMINATED" && <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>}
+                                    <div className="flex justify-between items-center mb-3">
+                                        <span className="text-[9px] font-bold text-white/10">#{String(i + 1).padStart(2, '0')}</span>
+                                        {!isEliminated && playerStreams[p.userId] && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse shadow-[0_0_8px_var(--color-primary)]" />
+                                        )}
                                     </div>
-                                    <div className="text-center">
-                                        <div className={`text-[10px] font-bold truncate mb-2 ${p.status === "ACTIVE" ? 'text-white' : 'text-slate-800'}`}>
+                                    
+                                    <div className="space-y-1">
+                                        <div className={`text-xs font-black uppercase truncate ${isEliminated ? 'text-red-900/50 line-through' : 'text-white/80'}`}>
                                             {p.user?.username}
                                         </div>
-                                        <div className={`text-[12px] font-black tabular-nums ${p.status === "ACTIVE" ? 'text-red-500' : 'text-slate-900'}`}>
-                                            {lbEntry?.score || 0}<span className="text-[8px] opacity-40 ml-1">pts</span>
+                                        <div className="text-[10px] font-mono text-white/20">
+                                            {lbEntry?.score || 0} PTS
                                         </div>
                                     </div>
-                                </div>
+
+                                    {!isEliminated && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onDisqualify(p.userId); }}
+                                            className="absolute top-1 right-1 p-1 text-red-500/20 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                                        >
+                                            <X size={10} />
+                                        </button>
+                                    )}
+                                </motion.div>
                             );
                         })}
                     </div>
                 </div>
 
-                {/* Right: Live Stream Preview */}
-                <div className="w-[40%] bg-[#080808] flex flex-col">
+                {/* Right: Code Monitor */}
+                <div className="w-[45%] border-l border-[var(--glass-border)] flex flex-col bg-[#0a0a0a]">
                     {selectedPlayer ? (
-                        <div className="flex flex-col h-full">
-                            <div className="p-4 border-b border-white/5 flex justify-between items-center shrink-0">
-                                <span className="text-[9px] text-white font-black uppercase tracking-widest">Live Stream // {selectedPlayer.user?.username}</span>
-                                <div className="flex gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                                    <span className="text-[8px] text-red-500 font-bold uppercase">Live</span>
+                        <div className="flex-1 flex flex-col">
+                            <div className="p-6 border-b border-[var(--glass-border)] flex justify-between items-center bg-black/20">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 text-sm font-black">
+                                        {selectedPlayer.user?.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Monitoring Subject</div>
+                                        <div className="text-sm font-black text-white/80 uppercase">{selectedPlayer.user?.username}</div>
+                                    </div>
                                 </div>
+                                {playerStreams[selectedPlayerId] && (
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+                                        <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+                                        <span className="text-[8px] font-black text-green-500 uppercase tracking-widest">Live Link</span>
+                                    </div>
+                                )}
                             </div>
-                            <div className="flex-1 overflow-hidden relative">
+                            
+                            <div className="flex-1 overflow-hidden">
                                 {selectedStream ? (
                                     <CodeEditor
                                         language={LANGUAGES[selectedStream.language]?.monaco || "java"}
@@ -129,32 +162,35 @@ const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStr
                                         readOnly={true}
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center text-slate-700 font-mono text-xs">
-                                        Waiting for stream feed...
+                                    <div className="h-full flex flex-col items-center justify-center gap-4 opacity-20">
+                                        <Code2 size={40} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">No Stream Data Available</span>
                                     </div>
                                 )}
                             </div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                            <div className="w-16 h-16 border border-white/5 rounded-full flex items-center justify-center mb-6">
-                                <span className="text-2xl opacity-20">👁️</span>
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 opacity-20 text-center space-y-4">
+                            <Eye size={48} />
+                            <div className="space-y-1">
+                                <p className="text-sm font-black uppercase tracking-widest">Select a Player</p>
+                                <p className="text-[10px] font-mono leading-relaxed max-w-[200px]">Choose a subject from the grid to observe their code stream in real-time.</p>
                             </div>
-                            <h3 className="text-white text-lg font-bold mb-2">Subject Monitoring</h3>
-                            <p className="text-slate-600 text-xs">Select a participant to view their live editor and monitor progress in real-time.</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Problem View Overlay Bar */}
-            <div className="p-4 bg-[#0a0a0a] border-t border-white/5 flex justify-between items-center shrink-0">
-                <div className="flex gap-4 items-center">
-                    <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Active Task:</span>
-                    <span className="text-xs font-bold text-white uppercase">{problem?.title}</span>
+            {/* Simple Footer */}
+            <footer className="h-10 bg-[var(--color-bg-card)] border-t border-[var(--glass-border)] px-8 flex items-center justify-between opacity-30">
+                <div className="flex items-center gap-3">
+                    <BarChart3 size={12} />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Tournament Monitor System</span>
                 </div>
-                <div className="text-[9px] text-slate-500 italic">Only the organizer can see all participants in real-time.</div>
-            </div>
+                <div className="text-[9px] font-mono">
+                    ChallegX Host Control v1.0
+                </div>
+            </footer>
         </div>
     );
 };

@@ -91,7 +91,7 @@ export const FindMatch = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] flex items-center justify-center px-4 relative overflow-hidden font-[family:var(--font-body)]">
+        <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] flex items-center justify-center px-4 relative overflow-hidden font-[family:var(--font-body)]">
             {/* MINIMALIST BACKGROUND DECOR */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.015] blur-[180px] rounded-full"></div>
@@ -104,16 +104,16 @@ export const FindMatch = () => {
                     <div className="premium-card p-20 text-center shadow-2xl animate-in zoom-in duration-500" style={{ borderRadius: "2px" }}>
                         <div className="text-[10px] font-bold tracking-[1em] text-[var(--color-success)] uppercase mb-8">Match Found</div>
 
-                        <h1 className="text-6xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Opponent Found</h1>
+                        <h1 className="text-6xl font-black text-[var(--color-text-main)] mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Opponent Found</h1>
 
                         <div className="mb-10 flex flex-col items-center">
                             <div className="w-1 h-12 bg-[var(--color-success)] mb-6 opacity-40"></div>
-                            <div className="px-10 py-4 border border-[var(--color-success)]/20 text-white font-black text-2xl tracking-widest uppercase bg-white/[0.02]">
+                            <div className="px-10 py-4 border border-[var(--color-success)]/20 text-[var(--color-text-main)] font-black text-2xl tracking-widest uppercase bg-white/[0.02]">
                                 {opponent}
                             </div>
                         </div>
 
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em] animate-pulse">Joining Match...</p>
+                        <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-[0.4em] animate-pulse">Joining Match...</p>
                     </div>
                 ) : inQueue ? (
                     // Searching Screen - SOPHISTICATED
@@ -127,15 +127,15 @@ export const FindMatch = () => {
                         </div>
 
                         <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Searching</div>
-                        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Finding Opponent</h1>
-                        <p className="text-slate-500 text-sm font-light mb-16 tracking-widest">
-                            Locating <span className="text-white font-bold">{selectedDifficulty}</span> players for a match.
+                        <h1 className="text-5xl font-black text-[var(--color-text-main)] mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Finding Opponent</h1>
+                        <p className="text-[var(--color-text-muted)] text-sm font-light mb-16 tracking-widest">
+                            Locating <span className="text-[var(--color-text-main)] font-bold">{selectedDifficulty}</span> players for a match.
                         </p>
 
                         <div className="grid grid-cols-2 gap-12 mb-16 max-w-md mx-auto">
                             <div className="text-left border-l border-white/10 pl-6">
                                 <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Players Waiting</p>
-                                <p className="text-3xl font-black text-white tabular-nums">{queueSize}</p>
+                                <p className="text-3xl font-black text-[var(--color-text-main)] tabular-nums">{queueSize}</p>
                             </div>
                             <div className="text-left border-l border-white/10 pl-6">
                                 <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Estimated Wait</p>
@@ -156,12 +156,12 @@ export const FindMatch = () => {
                         <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">
                             {currentLobby?.mode === 'TEAM' ? "Squad Mission" : "Find a Match"}
                         </div>
-                        <h1 className="text-6xl font-black text-white mb-12 tracking-tighter uppercase font-[family:var(--font-heading)]">
+                        <h1 className="text-6xl font-black text-[var(--color-text-main)] mb-12 tracking-tighter uppercase font-[family:var(--font-heading)]">
                             {currentLobby?.mode === 'TEAM' ? "Deploy Squad" : "Enter Arena"}
                         </h1>
 
                         <div className="mb-20">
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mb-10 text-center">
+                            <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.4em] mb-10 text-center">
                                 Choose Difficulty
                             </label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -170,8 +170,8 @@ export const FindMatch = () => {
                                         key={diff}
                                         onClick={() => setSelectedDifficulty(diff)}
                                         className={`p-8 border transition-all duration-300 relative group overflow-hidden ${selectedDifficulty === diff
-                                            ? "border-[var(--color-primary)] bg-white/[0.02] text-white"
-                                            : "border-white/5 bg-transparent text-slate-600 hover:border-white/20 hover:text-slate-400"
+                                            ? "border-[var(--color-primary)] bg-white/[0.02] text-[var(--color-text-main)]"
+                                            : "border-white/5 bg-transparent text-slate-600 hover:border-white/20 hover:text-[var(--color-text-muted)]"
                                             }`}
                                         style={{ borderRadius: "2px" }}
                                     >
@@ -199,7 +199,7 @@ export const FindMatch = () => {
                             disabled={loading || !connected}
                             className={`w-full py-6 font-black text-xs uppercase tracking-[0.4em] transition-all transform active:scale-95 shadow-2xl ${
                                 (loading || !connected) 
-                                ? "bg-slate-800 text-slate-500 cursor-not-allowed opacity-50" 
+                                ? "bg-slate-800 text-[var(--color-text-muted)] cursor-not-allowed opacity-50" 
                                 : "bg-[var(--color-primary)] text-black hover:bg-white"
                             }`}
                             style={{ borderRadius: "2px" }}

@@ -159,7 +159,7 @@ const SocialLobby = () => {
             <button 
                 ref={toggleBtnRef}
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed right-4 bottom-8 z-40 p-3 rounded-full bg-[#0a0a0a] border border-[#222] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all group ${isOpen ? '-translate-x-[calc(100vw-60px)] sm:-translate-x-[360px]' : ''}`}
+                className={`fixed right-4 bottom-8 z-40 p-3 rounded-full bg-[var(--color-bg-card)] border border-[#222] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all group ${isOpen ? '-translate-x-[calc(100vw-60px)] sm:-translate-x-[360px]' : ''}`}
                 title="Social Lobby"
             >
                 <div className="relative">
@@ -175,27 +175,27 @@ const SocialLobby = () => {
             {/* Sidebar */}
             <div 
                 ref={sidebarRef}
-                className={`fixed top-0 right-0 h-full w-full sm:w-[350px] bg-[#050505]/95 backdrop-blur-xl border-l border-[#1a1a1a] z-[60] transform transition-transform duration-300 ease-in-out shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`fixed top-0 right-0 h-full w-full sm:w-[350px] bg-[var(--color-bg-dark)]/95 backdrop-blur-xl border-l border-[#1a1a1a] z-[60] transform transition-transform duration-300 ease-in-out shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 
                 {/* Lobby Header */}
-                <div className="p-6 border-b border-[#222] bg-[#0d0d0d]/80">
+                <div className="p-6 border-b border-[var(--glass-border)] bg-[var(--color-bg-dark)]/80">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-2">
                             <Radio className="text-[var(--color-primary)] animate-pulse" size={18} />
-                            <h2 className="font-bold font-mono tracking-tighter text-sm uppercase">Arena Lobby</h2>
+                            <h2 className="font-bold font-mono tracking-tighter text-sm uppercase text-[var(--color-text-main)]">CHALLEGX LOBBY</h2>
                         </div>
-                        <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                        <button onClick={() => setIsOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors">
                             <ChevronRight size={20} />
                         </button>
                     </div>
 
                     {/* Active Party Display */}
-                    <div className="bg-[#111] rounded-xl border border-[#222] p-4 relative overflow-hidden">
+                    <div className="bg-[var(--color-bg-dark)] rounded-xl border border-[var(--glass-border)] p-4 relative overflow-hidden">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-mono text-gray-500 uppercase">Current Mode</span>
-                                <span className="text-xs font-bold text-white uppercase tracking-widest">
+                                <span className="text-xs font-bold text-[var(--color-text-main)] uppercase tracking-widest">
                                     {currentLobby?.mode || 'SOLO'} MISSION
                                 </span>
                             </div>
@@ -214,7 +214,7 @@ const SocialLobby = () => {
                             {/* Current Members */}
                             {(currentLobby?.members || [{ id: user.id, username: user.username, profilePic: user.profilePic }]).map((m) => (
                                 <div key={m.id} className="relative group/member">
-                                    <div className={`w-10 h-10 rounded-lg bg-[#0a0a0a] border-2 ${m.id === currentLobby?.leaderId ? 'border-[var(--color-primary)]' : 'border-[#333]'} overflow-hidden`}>
+                                    <div className={`w-10 h-10 rounded-lg bg-[var(--color-bg-card)] border-2 ${m.id === currentLobby?.leaderId ? 'border-[var(--color-primary)]' : 'border-[#333]'} overflow-hidden`}>
                                         {m.profilePic ? (
                                             <img src={m.profilePic} alt="" className="w-full h-full object-cover" />
                                         ) : (
@@ -251,7 +251,7 @@ const SocialLobby = () => {
                             {currentLobby && (
                                 <button 
                                     onClick={handleLeaveLobby}
-                                    className="p-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 rounded-lg transition-all"
+                                    className="p-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-[var(--color-text-main)] border border-red-500/20 rounded-lg transition-all"
                                     title="Leave Lobby"
                                 >
                                     <LogOut size={16} />
@@ -263,15 +263,15 @@ const SocialLobby = () => {
 
                 {/* Invitations Section */}
                 {invites.length > 0 && (
-                    <div className="p-4 border-b border-[#222] bg-[#0f0a0a]">
+                    <div className="p-4 border-b border-[var(--glass-border)] bg-red-500/5">
                         <h3 className="text-[10px] font-mono text-red-400 mb-3 flex items-center gap-2 uppercase tracking-widest">
                             <Zap size={10} /> Incoming transmissions
                         </h3>
                         <div className="space-y-2">
                             {invites.map((inv) => (
-                                <div key={inv.lobbyId} className="p-3 bg-black border border-red-500/20 rounded-lg flex items-center justify-between group animate-pulse">
+                                <div key={inv.lobbyId} className="p-3 bg-[var(--color-bg-dark)] border border-red-500/20 rounded-lg flex items-center justify-between group animate-pulse">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-md bg-[#111] border border-[#222] overflow-hidden">
+                                        <div className="w-6 h-6 rounded-md bg-[var(--color-bg-card)] border border-[var(--glass-border)] overflow-hidden">
                                             <img src={inv.from.profilePic} alt="" className="w-full h-full object-cover" />
                                         </div>
                                         <span className="text-[10px] font-mono text-gray-300 font-bold">{inv.from.username}</span>
@@ -314,17 +314,17 @@ const SocialLobby = () => {
                                 <div key={friend.id} className="flex items-center justify-between group/friend">
                                     <div className="flex items-center gap-3">
                                         <div className="relative">
-                                            <div className={`w-10 h-10 rounded-xl bg-[#0a0a0a] border ${friend.isOnline ? 'border-[var(--color-primary)]/50' : 'border-[#222]'} overflow-hidden transition-colors`}>
+                                            <div className={`w-10 h-10 rounded-xl bg-[var(--color-bg-card)] border ${friend.isOnline ? 'border-[var(--color-primary)]/50' : 'border-[var(--glass-border)]'} overflow-hidden transition-colors`}>
                                                 {friend.profilePic ? (
                                                     <img src={friend.profilePic} alt="" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-gray-600 bg-[#1a1a1a]">
+                                                    <div className="w-full h-full flex items-center justify-center text-[var(--color-text-muted)] bg-[var(--color-bg-dark)]">
                                                         {friend.username?.charAt(0)}
                                                     </div>
                                                 )}
                                             </div>
                                             {friend.isOnline && (
-                                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-[#050505] shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-[var(--color-bg-dark)] shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
                                             )}
                                         </div>
                                         <div className="flex flex-col">
@@ -341,14 +341,14 @@ const SocialLobby = () => {
                                         <div className="flex gap-1">
                                             <button 
                                                 onClick={() => openChat(friend.id)}
-                                                className="p-1.5 rounded-lg bg-[#111] border border-[#222] hover:border-[var(--color-primary)] text-gray-400 hover:text-[var(--color-primary)] transition-all"
+                                                className="p-1.5 rounded-lg bg-[var(--color-bg-dark)] border border-[var(--glass-border)] hover:border-[var(--color-primary)] text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-all"
                                                 title="Direct Message"
                                             >
                                                 <MessageSquare size={14} />
                                             </button>
                                             <button 
                                                 onClick={() => handleInvite(friend.id)}
-                                                className="px-3 py-1.5 rounded-lg bg-[#111] border border-[#222] hover:border-[var(--color-primary)] text-gray-500 hover:text-[var(--color-primary)] opacity-0 group-hover/friend:opacity-100 transition-all font-mono text-[9px] uppercase tracking-tighter"
+                                                className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-dark)] border border-[var(--glass-border)] hover:border-[var(--color-primary)] text-[var(--color-text-muted)] hover:text-[var(--color-primary)] opacity-0 group-hover/friend:opacity-100 transition-all font-mono text-[9px] uppercase tracking-tighter"
                                             >
                                                 Invite
                                             </button>
@@ -356,7 +356,7 @@ const SocialLobby = () => {
                                     ) : (
                                         <button 
                                             onClick={() => openChat(friend.id)}
-                                            className="p-1.5 rounded-lg bg-[#111] border border-[#222] hover:border-[var(--color-primary)] text-gray-600 hover:text-gray-400 transition-all"
+                                            className="p-1.5 rounded-lg bg-[var(--color-bg-dark)] border border-[var(--glass-border)] hover:border-[var(--color-primary)] text-[var(--color-text-muted)] hover:text-gray-400 transition-all"
                                             title="Message (Offline)"
                                         >
                                             <MessageSquare size={14} />
@@ -369,8 +369,8 @@ const SocialLobby = () => {
                 </div>
 
                 {/* Footer Info */}
-                <div className="p-4 border-t border-[#1a1a1a] bg-[#0d0d0d]/80 text-center">
-                    <p className="text-[8px] font-mono text-gray-600 uppercase tracking-widest italic flex items-center justify-center gap-2">
+                <div className="p-4 border-t border-[var(--glass-border)] bg-[var(--color-bg-dark)]/80 text-center">
+                    <p className="text-[8px] font-mono text-[var(--color-text-muted)] uppercase tracking-widest italic flex items-center justify-center gap-2">
                         <Target size={10} /> Dominance requires coordination
                     </p>
                 </div>
@@ -379,20 +379,20 @@ const SocialLobby = () => {
                 {activeChatId && activeFriend && (
                     <div 
                         ref={chatRef}
-                        className="absolute top-0 right-full mr-2 h-[450px] w-[300px] bg-[#050505] border border-[#222] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right-4 duration-300"
+                        className="absolute top-0 right-full mr-2 h-[450px] w-[300px] bg-[var(--color-bg-dark)] border border-[#222] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right-4 duration-300"
                     >
                         {/* Chat Header */}
-                        <div className="p-4 border-b border-[#222] bg-[#0a0a0a] flex items-center justify-between">
+                        <div className="p-4 border-b border-[#222] bg-[var(--color-bg-card)] flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg border border-[#333] overflow-hidden">
                                     <img src={activeFriend.profilePic} alt="" className="w-full h-full object-cover" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-white">{activeFriend.username}</span>
+                                    <span className="text-xs font-bold text-[var(--color-text-main)]">{activeFriend.username}</span>
                                     <span className="text-[8px] text-[var(--color-primary)] uppercase tracking-widest">Signal Active</span>
                                 </div>
                             </div>
-                            <button onClick={() => dispatch(clearActiveChat())} className="text-gray-500 hover:text-white">
+                            <button onClick={() => dispatch(clearActiveChat())} className="text-gray-500 hover:text-[var(--color-text-main)]">
                                 <X size={16} />
                             </button>
                         </div>
@@ -417,14 +417,14 @@ const SocialLobby = () => {
                         </div>
 
                         {/* Input Area */}
-                        <form onSubmit={handleSendMessage} className="p-3 border-t border-[#222] bg-[#0a0a0a]">
+                        <form onSubmit={handleSendMessage} className="p-3 border-t border-[var(--glass-border)] bg-[var(--color-bg-card)]">
                             <div className="flex gap-2">
                                 <input 
                                     type="text" 
                                     value={messageText}
                                     onChange={(e) => setMessageText(e.target.value)}
                                     placeholder="Type signal..."
-                                    className="flex-1 bg-[#111] border border-[#222] rounded-lg px-3 py-1.5 text-[10px] font-mono outline-none focus:border-[var(--color-primary)]/50 transition-colors"
+                                    className="flex-1 bg-[var(--color-bg-dark)] border border-[var(--glass-border)] rounded-lg px-3 py-1.5 text-[10px] font-mono text-[var(--color-text-main)] outline-none focus:border-[var(--color-primary)]/50 transition-colors"
                                     autoFocus
                                 />
                                 <button type="submit" disabled={!messageText.trim()} className="p-1.5 bg-[var(--color-primary)] text-black rounded-lg disabled:opacity-50">

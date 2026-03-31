@@ -142,7 +142,7 @@ export const BattleRoom = () => {
   const isBattleLeader = battleData.createdByUserId === user?.id;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] overflow-hidden relative font-[family:var(--font-body)] pt-20">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] overflow-hidden relative font-[family:var(--font-body)] pt-20">
       {/* Background Atmosphere */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-[var(--color-primary)] opacity-[0.012] blur-[200px] rounded-full"></div>
@@ -153,11 +153,11 @@ export const BattleRoom = () => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
             <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-2">Match Status</div>
-            <h1 className="text-3xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">
+            <h1 className="text-3xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)]">
               Battle Room
             </h1>
             <p className="text-[9px] text-slate-600 font-bold uppercase tracking-[0.3em] mt-3">
-              Match Code: <span className="text-white font-mono">{battleData.battleCode}</span>
+              Match Code: <span className="text-[var(--color-text-main)] font-mono">{battleData.battleCode}</span>
             </p>
           </div>
           <div className="flex gap-4">
@@ -178,19 +178,19 @@ export const BattleRoom = () => {
         <div className="lg:col-span-3 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
           <div className="premium-card p-6 flex flex-col border-t-2" style={{ borderRadius: "2px", borderTopColor: isTeam1 ? "var(--color-primary)" : "rgba(255,255,255,0.05)" }}>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Team A</h2>
+              <h2 className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Team A</h2>
               {isTeam1 && <span className="text-[9px] bg-white text-black px-2 py-0.5 font-bold tracking-widest">PLAYER</span>}
             </div>
-            <h3 className="text-2xl font-black text-white mb-8 tracking-tight">{battleData.team1.name}</h3>
+            <h3 className="text-2xl font-black text-[var(--color-text-main)] mb-8 tracking-tight">{battleData.team1.name}</h3>
 
             <div className="space-y-4">
               {battleData.team1.members.map((member, i) => (
                 <div key={member.id} className="flex items-center gap-4 p-4 bg-white/[0.01] border border-white/[0.03]" style={{ borderRadius: "1px" }}>
-                  <div className="w-8 h-8 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white">
+                  <div className="w-8 h-8 border border-white/10 flex items-center justify-center text-[10px] font-bold text-[var(--color-text-main)]">
                     {member.user.username[0].toUpperCase()}
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-sm font-bold text-white truncate tracking-tight">{member.user.username}</p>
+                    <p className="text-sm font-bold text-[var(--color-text-main)] truncate tracking-tight">{member.user.username}</p>
                     <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Status: Ready</p>
                   </div>
                 </div>
@@ -208,9 +208,9 @@ export const BattleRoom = () => {
               <div className="py-8 animate-in fade-in duration-500">
                 <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-8 pl-2">Waiting for Opponent</div>
                 <div className="inline-block px-12 py-6 border border-white/5 bg-white/[0.01] mb-8" style={{ borderRadius: "2px" }}>
-                  <span className="text-4xl font-black tracking-[0.4em] text-white font-mono">{battleData.joinCode}</span>
+                  <span className="text-4xl font-black tracking-[0.4em] text-[var(--color-text-main)] font-mono">{battleData.joinCode}</span>
                 </div>
-                <button onClick={copyJoinCode} className="block mx-auto text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors mb-2">
+                <button onClick={copyJoinCode} className="block mx-auto text-[10px] font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] uppercase tracking-widest transition-colors mb-2">
                    Copy Join Code 
                 </button>
               </div>
@@ -219,12 +219,12 @@ export const BattleRoom = () => {
                 {countdown !== null ? (
                   <div>
                     <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-8 pl-2">Synchronization...</div>
-                    <div className="text-9xl font-black text-white font-mono tracking-tighter opacity-80">{countdown}</div>
+                    <div className="text-9xl font-black text-[var(--color-text-main)] font-mono tracking-tighter opacity-80">{countdown}</div>
                   </div>
                 ) : (
                   <div>
                     <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-success)] uppercase mb-8 pl-2">Battle Ready</div>
-                    <p className="text-slate-500 text-sm font-light mb-12 max-w-sm mx-auto">Both teams have arrived. {isBattleLeader ? "You are the commander. Start when ready." : "Waiting for commander to initiate."}</p>
+                    <p className="text-[var(--color-text-muted)] text-sm font-light mb-12 max-w-sm mx-auto">Both teams have arrived. {isBattleLeader ? "You are the commander. Start when ready." : "Waiting for commander to initiate."}</p>
                     {isBattleLeader && !isStarting && (
                       <button
                         onClick={startCountdown}
@@ -263,20 +263,20 @@ export const BattleRoom = () => {
         <div className="lg:col-span-3 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
           <div className="premium-card p-6 flex flex-col border-t-2" style={{ borderRadius: "2px", borderTopColor: isTeam2 ? "var(--color-primary)" : "rgba(255,255,255,0.05)" }}>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Team B</h2>
+              <h2 className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Team B</h2>
               {isTeam2 && <span className="text-[9px] bg-white text-black px-2 py-0.5 font-bold tracking-widest">PLAYER</span>}
             </div>
-            <h3 className="text-2xl font-black text-white mb-8 tracking-tight">{battleData.team2 ? battleData.team2.name : "Unassigned"}</h3>
+            <h3 className="text-2xl font-black text-[var(--color-text-main)] mb-8 tracking-tight">{battleData.team2 ? battleData.team2.name : "Unassigned"}</h3>
 
             {battleData.team2 ? (
               <div className="space-y-4">
                 {battleData.team2.members.map((member, i) => (
                   <div key={member.id} className="flex flex-row-reverse items-center gap-4 p-4 bg-white/[0.01] border border-white/[0.03]" style={{ borderRadius: "1px" }}>
-                    <div className="w-8 h-8 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white">
+                    <div className="w-8 h-8 border border-white/10 flex items-center justify-center text-[10px] font-bold text-[var(--color-text-main)]">
                       {member.user.username[0].toUpperCase()}
                     </div>
                     <div className="text-right overflow-hidden">
-                      <p className="text-sm font-bold text-white truncate tracking-tight">{member.user.username}</p>
+                      <p className="text-sm font-bold text-[var(--color-text-main)] truncate tracking-tight">{member.user.username}</p>
                       <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Status: Ready</p>
                     </div>
                   </div>

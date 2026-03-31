@@ -26,22 +26,22 @@ export const MyTeamsTab = ({
           <div className="flex justify-between items-start mb-10">
             <div>
               <div className="text-[9px] font-bold text-[var(--color-primary)] tracking-[0.3em] mb-2 uppercase opacity-50">Team Alpha</div>
-              <h3 className="text-3xl font-bold text-white tracking-tight">{team.name}</h3>
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">
-                Leader: <span className="text-white">{team.creator?.username}</span>
+              <h3 className="text-3xl font-bold text-[var(--color-text-main)] tracking-tight">{team.name}</h3>
+              <p className="text-[var(--color-text-muted)] text-[10px] font-bold uppercase tracking-widest mt-2">
+                Leader: <span className="text-[var(--color-text-main)]">{team.creator?.username}</span>
               </p>
             </div>
           </div>
 
           <div className="mb-10 p-6 bg-white/[0.02] border border-white/5" style={{ borderRadius: "2px" }}>
-            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-3">Synchronization Code</p>
+            <p className="text-[9px] text-[var(--color-text-muted)] font-bold uppercase tracking-[0.2em] mb-3">Synchronization Code</p>
             <div className="flex items-center justify-between">
               <code className="text-2xl font-black text-[var(--color-primary)] tracking-[0.2em] font-mono">
                 {team.teamCode}
               </code>
               <button
                 onClick={() => copyToClipboard(team.teamCode)}
-                className="text-[9px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
+                className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors"
               >
                 [ Copy Code ]
               </button>
@@ -49,7 +49,7 @@ export const MyTeamsTab = ({
           </div>
 
           <div className="mb-12">
-            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-6 border-b border-white/5 pb-2">
+            <p className="text-[9px] text-[var(--color-text-muted)] font-bold uppercase tracking-[0.2em] mb-6 border-b border-white/5 pb-2">
               Sync Members ({team.members?.length || 0} / 5)
             </p>
             <div className="space-y-3">
@@ -70,7 +70,7 @@ export const MyTeamsTab = ({
               <button
                 onClick={() => onLeaveTeam(team.id)}
                 disabled={teamLoading}
-                className="flex-1 py-4 border border-white/10 text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white hover:border-white transition-all disabled:opacity-20"
+                className="flex-1 py-4 border border-white/10 text-[var(--color-text-main)]/50 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[var(--color-text-main)] hover:border-white transition-all disabled:opacity-20"
                 style={{ borderRadius: "2px" }}
               >
                 Leave Cluster
@@ -80,7 +80,7 @@ export const MyTeamsTab = ({
               <button
                 onClick={() => onDisbandTeam(team.id)}
                 disabled={teamLoading}
-                className="flex-1 py-4 border border-white/10 text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white hover:border-white transition-all disabled:opacity-20"
+                className="flex-1 py-4 border border-white/10 text-[var(--color-text-main)]/50 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[var(--color-text-main)] hover:border-white transition-all disabled:opacity-20"
                 style={{ borderRadius: "2px" }}
               >
                 Disband Node

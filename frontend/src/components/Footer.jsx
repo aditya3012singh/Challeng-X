@@ -3,7 +3,7 @@ import { Linkedin, Github, Heart } from 'lucide-react';
 
 const Footer = () => {
     return (
-        <footer className="w-full py-8 border-t border-[rgba(255,255,255,0.05)] bg-[rgba(5,5,5,0.8)] backdrop-blur-md mt-auto">
+        <footer className="w-full py-8 border-t border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md mt-auto">
             <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-2 group cursor-default">
                     <span className="text-[var(--color-text-muted)] text-sm font-medium">Made with</span>
@@ -37,7 +37,7 @@ const Footer = () => {
                 </div>
 
                 <div className="text-[var(--color-text-muted)] text-[10px] uppercase tracking-[0.3em] font-mono pointer-events-none">
-                    &copy; {new Date().getFullYear()} CodeArena System v2.0
+                    &copy; {new Date().getFullYear()} ChallegX System v2.0
                 </div>
             </div>
         </footer>

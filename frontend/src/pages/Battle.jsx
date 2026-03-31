@@ -65,7 +65,7 @@ export const Battle = () => {
 
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-20 px-4 sm:px-6 relative overflow-hidden font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] py-20 px-4 sm:px-6 relative overflow-hidden font-[family:var(--font-body)]">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.015] blur-[180px] rounded-full"></div>
@@ -74,7 +74,7 @@ export const Battle = () => {
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="text-center mb-16">
           <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Match Center</div>
-          <h1 className="text-4xl sm:text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
+          <h1 className="text-4xl sm:text-6xl font-black text-[var(--color-text-main)] mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
             Create a Match
           </h1>
         </div>
@@ -86,7 +86,7 @@ export const Battle = () => {
               onClick={() => setActiveTab("random")}
               className={`px-4 sm:px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "random"
                 ? "bg-[var(--color-primary)] text-black"
-                : "text-slate-500 hover:text-white"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]"
                 }`}
               style={{ borderRadius: "1px" }}
             >
@@ -96,7 +96,7 @@ export const Battle = () => {
               onClick={() => setActiveTab("selected")}
               className={`px-4 sm:px-10 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${activeTab === "selected"
                 ? "bg-[var(--color-primary)] text-black"
-                : "text-slate-500 hover:text-white"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]"
                 }`}
               style={{ borderRadius: "1px" }}
             >
@@ -120,8 +120,8 @@ export const Battle = () => {
             <div className="text-center max-w-lg mx-auto">
               <div className="mb-12">
                 <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Quick Start</div>
-                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Random Match</h2>
-                <p className="text-slate-500 text-sm font-light leading-relaxed">
+                <h2 className="text-4xl font-black text-[var(--color-text-main)] mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Random Match</h2>
+                <p className="text-[var(--color-text-muted)] text-sm font-light leading-relaxed">
                   Instant matchmaking with a random problem. Perfect for players who want to jump straight into the action.
                 </p>
               </div>
@@ -142,8 +142,8 @@ export const Battle = () => {
             <div className="w-full max-w-lg mx-auto">
               <div className="text-center mb-12">
                 <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Custom Choice</div>
-                <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Custom Match</h2>
-                <p className="text-slate-500 text-sm font-light leading-relaxed">
+                <h2 className="text-4xl font-black text-[var(--color-text-main)] mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Custom Match</h2>
+                <p className="text-[var(--color-text-muted)] text-sm font-light leading-relaxed">
                   Choose a specific problem to solve and challenge yourself or others.
                 </p>
               </div>
@@ -162,13 +162,13 @@ export const Battle = () => {
                     <select
                       value={selectedProblemId}
                       onChange={(e) => setSelectedProblemId(e.target.value)}
-                      className="w-full bg-[#050505] border border-white/10 px-6 py-5 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all appearance-none text-sm"
+                      className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-6 py-5 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all appearance-none text-sm"
                       style={{ borderRadius: "2px" }}
                       required
                     >
                       <option value="">-- Select Problem --</option>
                       {problems.map((problem) => (
-                        <option key={problem.id} value={problem.id} className="bg-[#050505]">
+                        <option key={problem.id} value={problem.id} className="bg-[var(--color-bg-dark)]">
                           [{problem.difficulty}] {problem.title}
                         </option>
                       ))}

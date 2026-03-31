@@ -32,7 +32,7 @@ const Achievements = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-slate-300 py-24 px-6 font-mono selection:bg-[var(--color-primary)] selection:text-black">
+        <div className="min-h-screen bg-[var(--color-bg-dark)] text-slate-300 py-24 px-6 font-mono selection:bg-[var(--color-primary)] selection:text-black">
             {/* Background Decor */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute top-1/4 left-1/3 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.02] blur-[150px] rounded-full"></div>
@@ -54,7 +54,7 @@ const Achievements = () => {
                             <motion.h1 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="text-6xl lg:text-8xl font-black text-white tracking-tighter uppercase leading-none"
+                                className="text-6xl lg:text-8xl font-black text-[var(--color-text-main)] tracking-tighter uppercase leading-none"
                             >
                                 Achievement <span className="text-transparent border-t border-b border-white/20 px-2">Center</span>
                             </motion.h1>
@@ -62,22 +62,22 @@ const Achievements = () => {
 
                         <div className="flex gap-6 lg:gap-12 p-8 bg-white/[0.02] border border-white/5 rounded-sm backdrop-blur-md">
                             <div className="flex flex-col">
-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Cyber-Cores</span>
+                                <span className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-1">Cyber-Cores</span>
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-[var(--color-primary)]/10 rounded-full border border-[var(--color-primary)]/20 shadow-[0_0_15px_rgba(204,255,0,0.1)]">
                                         <Cpu size={16} className="text-[var(--color-primary)]" />
                                     </div>
-                                    <span className="text-3xl font-black text-white font-mono">{cyberCores}</span>
+                                    <span className="text-3xl font-black text-[var(--color-text-main)] font-mono">{cyberCores}</span>
                                 </div>
                             </div>
                             <div className="w-[1px] bg-white/10" />
                             <div className="flex flex-col">
-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Active Streak</span>
+                                <span className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-1">Active Streak</span>
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-orange-500/10 rounded-full border border-orange-500/20 shadow-[0_0_15px_rgba(255,165,0,0.1)]">
                                         <Flame size={16} className="text-orange-500" />
                                     </div>
-                                    <span className="text-3xl font-black text-white font-mono">{streak}d</span>
+                                    <span className="text-3xl font-black text-[var(--color-text-main)] font-mono">{streak}d</span>
                                 </div>
                             </div>
                         </div>
@@ -107,8 +107,8 @@ const Achievements = () => {
                                 </div>
                                 <div className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Node {i + 1}</div>
                             </div>
-                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</div>
-                            <div className="text-2xl font-black text-white tracking-tighter">{stat.value}</div>
+                            <div className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-1">{stat.label}</div>
+                            <div className="text-2xl font-black text-[var(--color-text-main)] tracking-tighter">{stat.value}</div>
                         </motion.div>
                     ))}
                 </div>
@@ -120,7 +120,7 @@ const Achievements = () => {
                         <section>
                             <div className="flex items-center gap-4 mb-8">
                                 <Award size={20} className="text-[var(--color-primary)]" />
-                                <h2 className="text-xl font-black text-white uppercase tracking-[0.2em]">Digitally Hardened Badges</h2>
+                                <h2 className="text-xl font-black text-[var(--color-text-main)] uppercase tracking-[0.2em]">Digitally Hardened Badges</h2>
                                 <div className="flex-1 h-[1px] bg-white/5" />
                             </div>
 
@@ -146,15 +146,15 @@ const Achievements = () => {
                                             <div className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--color-primary)] rounded-full animate-pulse shadow-[0_0_8px_var(--color-primary)]" />
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-black text-white uppercase tracking-wider mb-1">{ach.badge.name}</h3>
-                                            <p className="text-[10px] text-slate-500 font-medium leading-relaxed">{ach.badge.description}</p>
+                                            <h3 className="text-sm font-black text-[var(--color-text-main)] uppercase tracking-wider mb-1">{ach.badge.name}</h3>
+                                            <p className="text-[10px] text-[var(--color-text-muted)] font-medium leading-relaxed">{ach.badge.description}</p>
                                             <div className="text-[8px] font-black text-[var(--color-primary)] uppercase tracking-widest mt-3">Unlocked {new Date(ach.unlockedAt).toLocaleDateString()}</div>
                                         </div>
                                     </motion.div>
                                 )) : (
                                     <div className="col-span-2 p-12 border-2 border-dashed border-white/5 flex flex-col items-center justify-center text-center opacity-40">
                                         <Lock size={32} className="text-slate-700 mb-4" />
-                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">No high-level clearances detected</p>
+                                        <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)]">No high-level clearances detected</p>
                                         <p className="text-[9px] mt-2 italic text-slate-600">Complete battles to unlock core achievements</p>
                                     </div>
                                 )}
@@ -165,7 +165,7 @@ const Achievements = () => {
                         <section>
                             <div className="flex items-center gap-4 mb-8">
                                 <Target size={20} className="text-blue-500" />
-                                <h2 className="text-xl font-black text-white uppercase tracking-[0.2em]">Priority Objectives</h2>
+                                <h2 className="text-xl font-black text-[var(--color-text-main)] uppercase tracking-[0.2em]">Priority Objectives</h2>
                                 <div className="flex-1 h-[1px] bg-white/5" />
                             </div>
 
@@ -178,10 +178,10 @@ const Achievements = () => {
                                     <div key={i} className="p-6 bg-white/[0.01] border border-white/5 hover:border-white/10 transition-all" style={{ borderRadius: "2px" }}>
                                         <div className="flex justify-between items-start mb-4">
                                             <div>
-                                                <h3 className="text-xs font-black text-white uppercase tracking-widest mb-1">{target.title}</h3>
-                                                <p className="text-[10px] text-slate-500 font-light">{target.desc}</p>
+                                                <h3 className="text-xs font-black text-[var(--color-text-main)] uppercase tracking-widest mb-1">{target.title}</h3>
+                                                <p className="text-[10px] text-[var(--color-text-muted)] font-light">{target.desc}</p>
                                             </div>
-                                            <span className="text-[10px] font-mono font-black text-slate-400">{target.progress}%</span>
+                                            <span className="text-[10px] font-mono font-black text-[var(--color-text-muted)]">{target.progress}%</span>
                                         </div>
                                         <div className="h-1 w-full bg-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
                                             <motion.div 
@@ -202,7 +202,7 @@ const Achievements = () => {
                             <div className="absolute top-0 right-0 p-4 opacity-5">
                                 <Shield size={80} />
                             </div>
-                            <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                            <h3 className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                                 <div className="w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full" /> System Rarity
                             </h3>
                             <div className="space-y-6">
@@ -216,7 +216,7 @@ const Achievements = () => {
                                         <div className="flex items-center gap-4">
                                             <div className={`w-1 h-4 ${tier.color}`} />
                                             <div>
-                                                <div className="text-[10px] font-black text-white uppercase mb-0.5">{tier.rank}</div>
+                                                <div className="text-[10px] font-black text-[var(--color-text-main)] uppercase mb-0.5">{tier.rank}</div>
                                                 <div className="text-[8px] text-slate-600 font-bold uppercase tracking-widest">{tier.rarity}</div>
                                             </div>
                                         </div>
@@ -227,7 +227,7 @@ const Achievements = () => {
                         </div>
 
                         <div className="p-8 border border-white/5 bg-white/[0.01]" style={{ borderRadius: "2px" }}>
-                            <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                            <h3 className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
                                 <Terminal size={14} className="text-slate-600" /> Recent Activity
                             </h3>
                             <div className="space-y-6">
@@ -247,7 +247,7 @@ const Achievements = () => {
                             </div>
                         </div>
 
-                        <button className="w-full py-5 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:bg-white hover:text-black hover:border-white transition-all flex items-center justify-center gap-3 active:scale-95">
+                        <button className="w-full py-5 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--color-text-muted)] hover:bg-white hover:text-black hover:border-white transition-all flex items-center justify-center gap-3 active:scale-95">
                             Show All Achievements <ChevronRight size={14} />
                         </button>
                     </div>

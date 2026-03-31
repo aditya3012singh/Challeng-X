@@ -1,123 +1,152 @@
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { createSquidGame, joinSquidGame } from "../../../store/api/squidGame.thunk";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Users, Shield, Trophy, Layout, ChevronRight, Timer, Play, Plus } from "lucide-react";
 import { ROUND_CONFIG } from "./SquidGameConfig";
 
-const LobbyScreen = ({ onCreateOrJoin }) => {
-    const dispatch = useDispatch();
-    const { loading, error } = useSelector(s => s.squidGame);
-    const [tab, setTab] = useState("join"); // "join" or "create"
-    const [name, setName] = useState("");
-    const [joinId, setJoinId] = useState("");
+const LobbyScreen = ({ onJoin, onCreate, isJoining, isCreating }) => {
+    const [joinCode, setJoinCode] = useState("");
+    const [tournamentName, setTournamentName] = useState("");
 
-    const handleCreate = async () => {
-        if (!name.trim()) return;
-        const result = await dispatch(createSquidGame({ name: name.trim() })).unwrap();
-        if (result?.tournament?.id) onCreateOrJoin(result.tournament.id, { isHost: true });
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
     };
 
-    const handleJoin = async () => {
-        if (!joinId.trim()) return;
-        const result = await dispatch(joinSquidGame({ joinCode: joinId.trim() })).unwrap();
-        if (result?.participant?.squidGameId) {
-            onCreateOrJoin(result.participant.squidGameId, { isHost: false });
-        }
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: { y: 0, opacity: 1 }
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] pt-28 px-8 pb-16">
-            <div className="max-w-2xl mx-auto text-center">
-                {/* Hero */}
-                <div className="mb-16">
-                    <div className="w-24 h-24 border border-white/5 rounded-full flex items-center justify-center mx-auto mb-8 relative">
-                        <div className="absolute inset-[-6px] border border-red-500/20 rounded-full animate-ping"></div>
-                        <div className="text-3xl">🦑</div>
-                    </div>
-                    <div className="text-[10px] font-bold tracking-[0.6em] text-red-500 uppercase mb-3">Survival Mode</div>
-                    <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)] mb-4">
-                        Squid Game
-                    </h1>
-                    <p className="text-slate-500 text-sm max-w-md mx-auto">
-                        50 players. 5 rounds. Each round eliminates the lowest scorers. Only the best coder survives.
-                    </p>
+        <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] font-sans relative overflow-hidden py-20 px-6">
+            {/* Elegant Background */}
+            <div className="absolute inset-0 z-0 opacity-[0.05]" style={{ 
+                backgroundImage: 'radial-gradient(var(--glass-border) 1px, transparent 1px)', 
+                backgroundSize: '40px 40px' 
+            }} />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--color-primary)]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+            <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="max-w-6xl mx-auto relative z-10"
+            >
+                {/* Header */}
+                <div className="text-center mb-20">
+                    <motion.div variants={itemVariants} className="flex justify-center mb-8">
+                        <div className="w-20 h-20 bg-[var(--color-primary)]/10 rounded-3xl flex items-center justify-center border border-[var(--color-primary)]/20 shadow-[0_0_50px_rgba(var(--color-primary-rgb),0.1)]">
+                           <Trophy className="text-[var(--color-primary)]" size={40} />
+                        </div>
+                    </motion.div>
+                    <motion.h1 
+                        variants={itemVariants}
+                        className="text-7xl font-black tracking-tight uppercase mb-6 font-[family:var(--font-heading)]"
+                    >
+                        Squid Game <span className="text-[var(--color-primary)]">Survival</span>
+                    </motion.h1>
+                    <motion.p variants={itemVariants} className="text-[var(--color-text-muted)] text-[11px] max-w-xl mx-auto uppercase tracking-[0.5em] font-bold opacity-40">
+                        Competing for the Title of Ultimate Survivor
+                    </motion.p>
                 </div>
 
-                {/* Round Preview */}
-                <div className="flex justify-center gap-2 mb-12">
-                    {ROUND_CONFIG.map(r => (
-                        <div key={r.round} className="px-3 py-2 border border-white/5 bg-white/[0.02] text-center" style={{ borderRadius: "2px" }}>
-                            <div className="text-[8px] text-slate-600 uppercase font-bold tracking-wider mb-1">Round {r.round}</div>
-                            <div className={`text-[9px] font-bold ${r.difficulty === "EASY" ? "text-green-400" : r.difficulty === "MEDIUM" ? "text-yellow-400" : "text-red-400"}`}>
-                                {r.difficulty}
+                <div className="grid lg:grid-cols-12 gap-8 items-start">
+                    {/* Rules/Info Section */}
+                    <div className="lg:col-span-7 space-y-6">
+                        <motion.div variants={itemVariants} className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-sm p-10 backdrop-blur-md">
+                            <div className="flex items-center gap-3 mb-10 border-b border-[var(--glass-border)] pb-6">
+                                <Layout size={18} className="text-[var(--color-primary)]" />
+                                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--color-text-main)]">Tournament Phases</h3>
                             </div>
-                            <div className="text-[8px] text-slate-700 mt-1">{r.time}</div>
-                        </div>
-                    ))}
+                            
+                            <div className="space-y-4">
+                                {ROUND_CONFIG.map((config, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-sm hover:border-[var(--color-primary)]/20 transition-all group">
+                                        <div className="flex items-center gap-5">
+                                            <span className="text-[10px] font-black w-10 h-10 rounded-full bg-black/40 flex items-center justify-center border border-white/5 group-hover:bg-[var(--color-primary)] group-hover:text-black transition-all">
+                                                {String(config.round).padStart(2, '0')}
+                                            </span>
+                                            <div>
+                                                <div className="text-[11px] font-black uppercase tracking-widest">{config.difficulty} MODE</div>
+                                                <div className="text-[9px] text-[var(--color-text-muted)] font-mono flex items-center gap-2 mt-1.5 opacity-60">
+                                                    <Timer size={10} /> {config.time} LIMIT
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-[8px] font-black text-red-500/60 uppercase tracking-widest mb-1">Eliminate</div>
+                                            <div className="text-sm font-bold text-[var(--color-text-main)]">{config.eliminate}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    </div>
+
+                    {/* Action Section */}
+                    <div className="lg:col-span-5 space-y-8">
+                        {/* Join Card */}
+                        <motion.div variants={itemVariants} className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-sm p-10 backdrop-blur-md shadow-2xl relative">
+                            <div className="flex items-center gap-3 mb-10">
+                                <Play size={18} className="text-[var(--color-primary)]" />
+                                <h3 className="text-xs font-black uppercase tracking-[0.3em]">Join Arena</h3>
+                            </div>
+                            
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-3 block px-1 opacity-50">Room Passcode</label>
+                                    <input 
+                                        type="text" 
+                                        value={joinCode}
+                                        onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                                        placeholder="CODE-####"
+                                        className="w-full bg-black/40 border border-[var(--glass-border)] px-5 py-5 text-sm font-mono tracking-[0.5em] focus:border-[var(--color-primary)] outline-none rounded-sm transition-all placeholder:opacity-10"
+                                    />
+                                </div>
+                                <button 
+                                    onClick={() => onJoin(joinCode)}
+                                    disabled={isJoining || joinCode.length < 4}
+                                    className="w-full py-5 bg-[var(--color-primary)] text-black text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:brightness-110 disabled:opacity-30 disabled:grayscale transition-all rounded-sm shadow-[0_15px_40px_rgba(var(--color-primary-rgb),0.15)]"
+                                >
+                                    {isJoining ? "Connecting..." : "Enter Session"} <ChevronRight size={18} />
+                                </button>
+                            </div>
+                        </motion.div>
+
+                        {/* Create Card */}
+                        <motion.div variants={itemVariants} className="bg-black/40 border border-[var(--glass-border)] rounded-sm p-10 backdrop-blur-sm">
+                            <div className="flex items-center gap-3 mb-8 opacity-40">
+                                <Plus size={18} className="text-white" />
+                                <h3 className="text-xs font-black uppercase tracking-[0.3em]">Host Match</h3>
+                            </div>
+                            
+                            <div className="space-y-6">
+                                <input 
+                                    type="text" 
+                                    value={tournamentName}
+                                    onChange={(e) => setTournamentName(e.target.value)}
+                                    placeholder="ARENA NAME"
+                                    className="w-full bg-transparent border-b border-[var(--glass-border)] px-2 py-4 text-xs font-black uppercase tracking-widest focus:border-[var(--color-primary)] outline-none transition-all placeholder:text-white/5"
+                                />
+                                <button 
+                                    onClick={() => onCreate(tournamentName)}
+                                    disabled={isCreating || !tournamentName}
+                                    className="w-full py-5 border border-white/10 text-white/40 hover:bg-white hover:text-black text-[9px] font-black uppercase tracking-[0.4em] transition-all rounded-sm"
+                                >
+                                    {isCreating ? "Establishing..." : "Create New Session"}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
                 </div>
+            </motion.div>
 
-                {/* Tabs */}
-                <div className="flex justify-center gap-0 mb-8">
-                    <button
-                        onClick={() => setTab("join")}
-                        className={`px-8 py-3 text-[10px] font-bold uppercase tracking-widest border transition-all ${tab === "join" ? "bg-white text-black border-white" : "bg-transparent text-slate-500 border-white/10 hover:border-white/30"
-                            }`}
-                        style={{ borderRadius: "2px 0 0 2px" }}
-                    >
-                        Join Tournament
-                    </button>
-                    <button
-                        onClick={() => setTab("create")}
-                        className={`px-8 py-3 text-[10px] font-bold uppercase tracking-widest border transition-all ${tab === "create" ? "bg-white text-black border-white" : "bg-transparent text-slate-500 border-white/10 hover:border-white/30"
-                            }`}
-                        style={{ borderRadius: "0 2px 2px 0" }}
-                    >
-                        Create New
-                    </button>
-                </div>
-
-                {/* Form */}
-                <div className="max-w-sm mx-auto">
-                    {tab === "join" ? (
-                        <div className="flex flex-col gap-4">
-                            <input
-                                value={joinId}
-                                onChange={e => setJoinId(e.target.value)}
-                                placeholder="Enter 6-digit Join Code..."
-                                className="bg-[#0a0a0a] border border-white/10 text-white text-xs font-mono px-4 py-3 w-full focus:outline-none focus:border-red-500/50 transition-colors placeholder:text-gray-600"
-                                style={{ borderRadius: "2px" }}
-                            />
-                            <button
-                                onClick={handleJoin}
-                                disabled={loading || !joinId.trim()}
-                                className="w-full py-3 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                                style={{ borderRadius: "2px" }}
-                            >
-                                {loading ? "Joining..." : "Enter Tournament →"}
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-4">
-                            <input
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                placeholder="Tournament Name..."
-                                className="bg-[#0a0a0a] border border-white/10 text-white text-xs font-mono px-4 py-3 w-full focus:outline-none focus:border-red-500/50 transition-colors placeholder:text-gray-600"
-                                style={{ borderRadius: "2px" }}
-                            />
-                            <button
-                                onClick={handleCreate}
-                                disabled={loading || !name.trim()}
-                                className="w-full py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                                style={{ borderRadius: "2px" }}
-                            >
-                                {loading ? "Creating..." : "Create Tournament →"}
-                            </button>
-                        </div>
-                    )}
-
-                    {error && (
-                        <div className="mt-4 text-red-500 text-[10px] font-mono uppercase tracking-wider">{typeof error === 'string' ? error : error.message || 'An error occurred'}</div>
-                    )}
+            {/* Footer Tag */}
+            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 opacity-20 pointer-events-none w-full max-w-lg">
+                <div className="flex items-center gap-5 justify-center">
+                    <div className="h-[1px] flex-1 bg-white/20" />
+                    <span className="text-[8px] font-black uppercase tracking-[1em] text-white whitespace-nowrap">ChallegX Survival Arena</span>
+                    <div className="h-[1px] flex-1 bg-white/20" />
                 </div>
             </div>
         </div>

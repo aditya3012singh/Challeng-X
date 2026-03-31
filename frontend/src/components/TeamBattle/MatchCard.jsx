@@ -12,7 +12,7 @@ export const MatchCard = ({ match, user, onSelectMatch, getMatchStatus, isUserIn
       <div className="flex justify-between items-start mb-8">
         <div>
           <div className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-2">Logic Duel</div>
-          <div className="text-sm font-bold text-white uppercase tracking-widest">
+          <div className="text-sm font-bold text-[var(--color-text-main)] uppercase tracking-widest">
             {match.player1?.username} <span className="text-slate-700 px-1 font-mono">VS</span> {match.player2?.username}
           </div>
         </div>
@@ -20,7 +20,7 @@ export const MatchCard = ({ match, user, onSelectMatch, getMatchStatus, isUserIn
             ? 'border-[var(--color-success)] text-[var(--color-success)]'
             : match.submissions?.length > 0
               ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
-              : 'border-white/20 text-slate-500'
+              : 'border-white/20 text-[var(--color-text-muted)]'
           }`}>
           {getMatchStatus(match)}
         </div>
@@ -28,7 +28,7 @@ export const MatchCard = ({ match, user, onSelectMatch, getMatchStatus, isUserIn
 
       <div className="mb-8 p-4 bg-white/[0.01] border border-white/[0.03]">
         <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mb-1">Target Module:</p>
-        <p className="text-sm font-bold text-white hover:text-[var(--color-primary)] transition-colors">
+        <p className="text-sm font-bold text-[var(--color-text-main)] hover:text-[var(--color-primary)] transition-colors">
           {match.problem?.title}
         </p>
       </div>

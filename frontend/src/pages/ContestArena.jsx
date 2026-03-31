@@ -131,7 +131,7 @@ export default function ContestArena() {
       return "idle";
   };
 
-  if (!problem || !contest) return <div className="h-screen flex items-center justify-center bg-[#050505] text-[var(--color-primary)] font-mono uppercase">Loading Arena...</div>;
+  if (!problem || !contest) return <div className="h-screen flex items-center justify-center bg-[var(--color-bg-dark)] text-[var(--color-primary)] font-mono uppercase">Loading Arena...</div>;
 
   const now = new Date();
   const startTime = new Date(contest.startTime);
@@ -140,17 +140,17 @@ export default function ContestArena() {
 
   if (isUpcoming && !isAdmin) {
       return (
-          <div className="h-screen flex flex-col items-center justify-center bg-[#050505] text-center p-6">
+          <div className="h-screen flex flex-col items-center justify-center bg-[var(--color-bg-dark)] text-center p-6">
               <Shield size={64} className="text-red-500/20 mb-8 animate-pulse" />
-              <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Mission Restricted</h1>
-              <p className="text-slate-500 font-mono text-sm max-w-md uppercase tracking-widest leading-relaxed">
+              <h1 className="text-4xl font-black text-[var(--color-text-main)] uppercase tracking-tighter mb-4">Mission Restricted</h1>
+              <p className="text-[var(--color-text-muted)] font-mono text-sm max-w-md uppercase tracking-widest leading-relaxed">
                   Neural uplink failed. The requested objective vectors are currently encrypted. 
                   Synchronization will commence at: <br/>
                   <span className="text-[var(--color-primary)] mt-4 block">{startTime.toLocaleString()}</span>
               </p>
               <button 
                   onClick={() => navigate(`/contests/${contestId}`)}
-                  className="mt-12 px-10 py-3 border border-white/10 text-white font-bold text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all"
+                  className="mt-12 px-10 py-3 border border-white/10 text-[var(--color-text-main)] font-bold text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all"
               >
                   Abort Connection
               </button>
@@ -159,38 +159,38 @@ export default function ContestArena() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#050505] overflow-hidden">
+    <div className="h-screen flex flex-col bg-[var(--color-bg-dark)] overflow-hidden">
       {/* Premium Header */}
       <div className="h-14 border-b border-white/[0.05] bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-50">
         <div className="flex items-center gap-6">
           <button 
             onClick={() => navigate(`/contests/${contestId}`)}
-            className="flex items-center gap-2 text-slate-500 hover:text-[var(--color-primary)] transition-all font-bold text-[9px] uppercase tracking-widest group"
+            className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-all font-bold text-[9px] uppercase tracking-widest group"
           >
             <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             Return to Protocols
           </button>
           <div className="h-6 w-[1px] bg-white/10" />
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em]">CONTEST ID:</span>
-            <span className="text-[10px] text-white font-mono font-bold uppercase">{contestId.slice(0, 8)}...</span>
+            <span className="text-[10px] text-[var(--color-text-muted)] font-black uppercase tracking-[0.4em]">CONTEST ID:</span>
+            <span className="text-[10px] text-[var(--color-text-main)] font-mono font-bold uppercase">{contestId.slice(0, 8)}...</span>
           </div>
         </div>
 
         <div className="flex items-center gap-10">
             {/* Countdown */}
             <div className="flex flex-col items-center">
-                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Time Remaining</span>
+                <span className="text-[8px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Time Remaining</span>
                 <div className="flex items-center gap-2">
                     <Clock size={12} className="text-red-500 animate-pulse" />
-                    <span className="text-sm font-black text-white font-mono">{timeLeft}</span>
+                    <span className="text-sm font-black text-[var(--color-text-main)] font-mono">{timeLeft}</span>
                 </div>
             </div>
             
             <div className="h-6 w-[1px] bg-white/10" />
             
             <div className="flex flex-col items-end">
-                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Status</span>
+                <span className="text-[8px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Status</span>
                 <span className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">Synchronized</span>
             </div>
         </div>
@@ -200,7 +200,7 @@ export default function ContestArena() {
         {/* LEFT SIDEBAR — Problem & Console (Desktop) / Main View (Mobile) */}
         {( !isMobile || mobileTab === 'problem' || mobileTab === 'console') && (
           <div 
-            className={`flex flex-col bg-[#0a0a0a] relative shrink-0 shadow-[20px_0_50px_rgba(0,0,0,0.5)] z-40 transition-all ${isMobile ? 'flex-1' : ''}`}
+            className={`flex flex-col bg-[var(--color-bg-card)] relative shrink-0 shadow-[20px_0_50px_rgba(0,0,0,0.5)] z-40 transition-all ${isMobile ? 'flex-1' : ''}`}
             style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
           >
             {/* Tabs UI */}
@@ -212,7 +212,7 @@ export default function ContestArena() {
                 <button
                   key={tab.id}
                   onClick={() => { setActiveTab(tab.id); if(isMobile) setMobileTab(tab.id === 'description' ? 'problem' : 'console'); }}
-                  className={`flex-1 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all ${activeTab === tab.id ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/5' : 'text-slate-500 hover:text-white'}`}
+                  className={`flex-1 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all ${activeTab === tab.id ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/5' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}
                 >
                   {tab.icon} {tab.label}
                 </button>
@@ -247,13 +247,13 @@ export default function ContestArena() {
 
         {/* CENTER — IDE (Desktop) / Code View (Mobile) */}
         {(!isMobile || mobileTab === 'editor') && (
-          <div className="flex-1 flex flex-col min-w-0 bg-[#080808] relative">
+          <div className="flex-1 flex flex-col min-w-0 bg-[var(--color-bg-card)] relative">
             <div className="h-10 border-b border-white/5 flex items-center justify-between px-6 bg-black/20 shrink-0">
               <div className="flex items-center gap-4">
                  <select 
                   value={language}
                   onChange={(e) => { setLanguage(e.target.value); setCode(LANGUAGES[e.target.value]?.defaultCode || ""); }}
-                  className="bg-transparent text-[10px] font-bold text-slate-400 uppercase tracking-widest border-none outline-none focus:text-[var(--color-primary)] cursor-pointer"
+                  className="bg-transparent text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest border-none outline-none focus:text-[var(--color-primary)] cursor-pointer"
                  >
                    {Object.keys(LANGUAGES).map(lang => (
                      <option key={lang} value={lang} className="bg-black text-[10px]">{lang.toUpperCase()}</option>
@@ -265,7 +265,7 @@ export default function ContestArena() {
                 <button 
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="group flex items-center gap-2 px-6 py-1.5 bg-emerald-600/10 border border-emerald-500/30 text-emerald-400 font-black text-[9px] uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
+                  className="group flex items-center gap-2 px-6 py-1.5 bg-emerald-600/10 border border-emerald-500/30 text-emerald-400 font-black text-[9px] uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-[var(--color-text-main)] transition-all disabled:opacity-50"
                 >
                   {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
                   Transmit Code
@@ -285,7 +285,7 @@ export default function ContestArena() {
 
         {/* Mobile View Toggle (Bottom) */}
         {isMobile && (
-          <div className="h-14 bg-[#0a0a0a] border-t border-white/10 flex shrink-0 relative z-[100]">
+          <div className="h-14 bg-[var(--color-bg-card)] border-t border-white/10 flex shrink-0 relative z-[100]">
             {[
               { id: 'problem', label: 'Mission', icon: <Target size={16} /> },
               { id: 'editor', label: 'Code', icon: <Terminal size={16} /> },
@@ -298,7 +298,7 @@ export default function ContestArena() {
                   if (tab.id === 'problem') setActiveTab('description');
                   if (tab.id === 'console') setActiveTab('console');
                 }}
-                className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all ${mobileTab === tab.id ? 'text-[var(--color-primary)] bg-white/5' : 'text-slate-500'}`}
+                className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all ${mobileTab === tab.id ? 'text-[var(--color-primary)] bg-white/5' : 'text-[var(--color-text-muted)]'}`}
               >
                 {tab.icon}
                 <span className="text-[8px] font-bold uppercase tracking-widest">{tab.label}</span>
@@ -310,7 +310,7 @@ export default function ContestArena() {
         {/* RIGHT SIDEBAR — Progress / Info */}
         {!isMobile && (
             <div 
-                className="flex flex-col bg-[#0a0a0a] border-l border-white/5 relative shrink-0 shadow-[-20px_0_50px_rgba(0,0,0,0.5)] z-40"
+                className="flex flex-col bg-[var(--color-bg-card)] border-l border-white/5 relative shrink-0 shadow-[-20px_0_50px_rgba(0,0,0,0.5)] z-40"
                 style={{ width: `${rightSidebarWidth}px` }}
             >
                 <div 
@@ -319,7 +319,7 @@ export default function ContestArena() {
                 />
 
                 <div className="h-10 border-b border-white/5 flex items-center px-6 bg-black/40">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitor Stats</span>
+                    <span className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.2em]">Competitor Stats</span>
                 </div>
 
                 <div className="p-8 space-y-10">
@@ -327,22 +327,22 @@ export default function ContestArena() {
                     <div className="p-6 bg-white/[0.02] border border-white/5 relative overflow-hidden group" style={{ borderRadius: "2px" }}>
                         <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/50 group-hover:h-full transition-all" />
                         <div className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-4">Current Score</div>
-                        <div className="text-4xl font-black text-white font-mono tracking-tighter">0000</div>
+                        <div className="text-4xl font-black text-[var(--color-text-main)] font-mono tracking-tighter">0000</div>
                         <div className="mt-2 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">+ POINTS AVAILABLE</div>
                     </div>
 
                     <div className="p-6 bg-white/[0.02] border border-white/5 relative overflow-hidden group" style={{ borderRadius: "2px" }}>
                         <div className="absolute top-0 left-0 w-1 h-full bg-red-500/50 group-hover:h-full transition-all" />
                         <div className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-4">Total Penalty</div>
-                        <div className="text-2xl font-black text-white font-mono tracking-tighter">+0m 00s</div>
+                        <div className="text-2xl font-black text-[var(--color-text-main)] font-mono tracking-tighter">+0m 00s</div>
                     </div>
 
                     <div className="pt-10 border-t border-white/5">
                         <div className="flex items-center gap-2 mb-6">
                             <Activity size={14} className="text-[var(--color-primary)]" />
-                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Protocol Instructions</span>
+                            <span className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-widest">Protocol Instructions</span>
                         </div>
-                        <p className="text-slate-500 text-[10px] font-mono leading-relaxed space-y-4">
+                        <p className="text-[var(--color-text-muted)] text-[10px] font-mono leading-relaxed space-y-4">
                             1. Ensure all test cases are processed.<br/><br/>
                             2. Multiple submissions are allowed, but beware of time penalties.<br/><br/>
                             3. Use the console feed to debug execution errors.
@@ -353,7 +353,7 @@ export default function ContestArena() {
                 <div className="mt-auto p-6 border-t border-white/5">
                     <button 
                         onClick={() => navigate(`/contests/${contestId}`)}
-                        className="w-full py-4 border border-red-500/30 text-red-500 font-black text-[9px] uppercase tracking-[0.3em] hover:bg-red-500 hover:text-white transition-all"
+                        className="w-full py-4 border border-red-500/30 text-red-500 font-black text-[9px] uppercase tracking-[0.3em] hover:bg-red-500 hover:text-[var(--color-text-main)] transition-all"
                     >
                         ABANDON MATCH
                     </button>

@@ -120,7 +120,7 @@ const Admin = () => {
   if (user?.role !== 'ADMIN') return null;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-20 px-6 font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] py-20 px-6 font-[family:var(--font-body)]">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 right-1/4 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.015] blur-[150px] rounded-full"></div>
@@ -132,14 +132,14 @@ const Admin = () => {
           <div>
             <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4 flex gap-6 items-center">
               <span>Command Center // Oversight</span>
-              <a href="/admin-contests" className="text-white hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/20">Manage Contests →</a>
+              <a href="/admin-contests" className="text-[var(--color-text-main)] hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/20">Manage Contests →</a>
             </div>
-            <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Dataset Management</h1>
+            <h1 className="text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)]">Dataset Management</h1>
           </div>
           <div className="flex gap-12 text-right">
             <div>
               <p className="text-slate-600 text-[9px] font-bold uppercase tracking-widest mb-1">Total Problems</p>
-              <p className="text-3xl font-black text-white tabular-nums">{problems.length}</p>
+              <p className="text-3xl font-black text-[var(--color-text-main)] tabular-nums">{problems.length}</p>
             </div>
             <div className="border-l border-white/10 pl-12">
               <p className="text-slate-600 text-[9px] font-bold uppercase tracking-widest mb-1">Active Protocols</p>
@@ -163,7 +163,7 @@ const Admin = () => {
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                    className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                     style={{ borderRadius: "2px" }}
                     required
                   />
@@ -175,7 +175,7 @@ const Admin = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm h-32"
+                    className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm h-32"
                     style={{ borderRadius: "2px" }}
                     required
                   />
@@ -188,7 +188,7 @@ const Admin = () => {
                       name="difficulty"
                       value={formData.difficulty}
                       onChange={handleChange}
-                      className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm appearance-none"
+                      className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm appearance-none"
                       style={{ borderRadius: "2px" }}
                     >
                       <option value="EASY">EASY</option>
@@ -203,7 +203,7 @@ const Admin = () => {
                       name="reward"
                       value={formData.reward}
                       onChange={handleChange}
-                      className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                      className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                       style={{ borderRadius: "2px" }}
                       required
                     />
@@ -216,7 +216,7 @@ const Admin = () => {
                     name="testCode"
                     value={formData.testCode}
                     onChange={handleChange}
-                    className="w-full bg-[#050505] border border-white/10 px-4 py-5 text-[var(--color-primary)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-xs h-64 leading-relaxed"
+                    className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-5 text-[var(--color-primary)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-xs h-64 leading-relaxed"
                     style={{ borderRadius: "2px" }}
                     placeholder="// Test cases execution logic"
                     required
@@ -245,7 +245,7 @@ const Admin = () => {
                           testcases: [{ input: '', output: '', isHidden: false }]
                         });
                       }}
-                      className="px-6 py-4 border border-white/10 text-slate-500 font-bold uppercase tracking-widest text-[9px] hover:text-white transition-colors"
+                      className="px-6 py-4 border border-white/10 text-[var(--color-text-muted)] font-bold uppercase tracking-widest text-[9px] hover:text-[var(--color-text-main)] transition-colors"
                       style={{ borderRadius: "2px" }}
                     >
                       Abort
@@ -271,7 +271,7 @@ const Admin = () => {
                   {problems.map((problem) => (
                     <tr key={problem.id} className="border-b border-white/[0.03] hover:bg-white/[0.01] transition-colors group">
                       <td className="py-6 px-8">
-                        <p className="text-white font-bold text-sm mb-1">{problem.title}</p>
+                        <p className="text-[var(--color-text-main)] font-bold text-sm mb-1">{problem.title}</p>
                         <p className="text-[9px] text-slate-600 font-mono">ID: {problem.id}</p>
                       </td>
                       <td className="py-6 px-8">
@@ -286,7 +286,7 @@ const Admin = () => {
                         <div className="flex justify-end gap-6">
                           <button
                             onClick={() => handleEdit(problem)}
-                            className="text-[9px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors"
+                            className="text-[9px] font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] uppercase tracking-widest transition-colors"
                           >
                             Modify
                           </button>
@@ -320,21 +320,21 @@ const Admin = () => {
           <div className="premium-card max-w-md w-full p-10 relative overflow-hidden" style={{ borderRadius: "2px" }}>
             <div className="absolute top-0 left-0 w-full h-1 bg-red-900/50" />
             <div className="text-[10px] font-bold tracking-[0.4em] text-red-500 uppercase mb-6">Security Override Required</div>
-            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">Authorize Purge?</h3>
-            <p className="text-slate-500 text-xs font-mono leading-relaxed mb-10">
+            <h3 className="text-2xl font-black text-[var(--color-text-main)] uppercase tracking-tight mb-4">Authorize Purge?</h3>
+            <p className="text-[var(--color-text-muted)] text-xs font-mono leading-relaxed mb-10">
               You are about to permanently delete this protocol record from the central database. This action is irreversible.
             </p>
             <div className="flex gap-4">
               <button 
                 onClick={() => { setShowDeleteModal(false); setProblemToDelete(null); }}
-                className="flex-1 py-4 border border-white/5 text-slate-500 font-bold uppercase tracking-widest text-[9px] hover:text-white transition-colors"
+                className="flex-1 py-4 border border-white/5 text-[var(--color-text-muted)] font-bold uppercase tracking-widest text-[9px] hover:text-[var(--color-text-main)] transition-colors"
                 style={{ borderRadius: "2px" }}
               >
                 Abort
               </button>
               <button 
                 onClick={confirmDelete}
-                className="flex-1 py-4 bg-red-900/80 text-white font-black uppercase tracking-widest text-[9px] hover:bg-red-500 transition-all shadow-xl"
+                className="flex-1 py-4 bg-red-900/80 text-[var(--color-text-main)] font-black uppercase tracking-widest text-[9px] hover:bg-red-500 transition-all shadow-xl"
                 style={{ borderRadius: "2px" }}
               >
                 Confirm Purge

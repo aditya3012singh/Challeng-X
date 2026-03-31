@@ -111,14 +111,14 @@ export default function ContestDetail() {
     };
 
     if (loading) return (
-        <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center gap-6">
+        <div className="min-h-screen bg-[var(--color-bg-dark)] flex flex-col items-center justify-center gap-6">
             <Loader2 className="animate-spin text-[var(--color-primary)]" size={40} />
             <div className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.6em] animate-pulse">Establishing Secure Uplink...</div>
         </div>
     );
 
     if (!contest) return (
-        <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-red-500 font-mono tracking-widest uppercase gap-4">
+        <div className="min-h-screen bg-[var(--color-bg-dark)] flex flex-col items-center justify-center text-red-500 font-mono tracking-widest uppercase gap-4">
             <AlertCircle size={48} />
             Sector Not Found
         </div>
@@ -127,7 +127,7 @@ export default function ContestDetail() {
     const isRegistered = leaderboard.some(p => p.userId === user?.id);
 
     return (
-        <div className="min-h-screen bg-[#050505] pt-32 px-6 md:px-12 pb-24 h-screen overflow-y-auto custom-scrollbar">
+        <div className="min-h-screen bg-[var(--color-bg-dark)] pt-32 px-6 md:px-12 pb-24 h-screen overflow-y-auto custom-scrollbar">
             <div className="max-w-7xl mx-auto">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16 pb-16 border-b border-white/5">
@@ -136,7 +136,7 @@ export default function ContestDetail() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             onClick={() => navigate("/contests")} 
-                            className="text-slate-500 text-[10px] hover:text-[var(--color-primary)] uppercase tracking-[0.3em] font-black mb-10 flex items-center gap-2 group transition-all"
+                            className="text-[var(--color-text-muted)] text-[10px] hover:text-[var(--color-primary)] uppercase tracking-[0.3em] font-black mb-10 flex items-center gap-2 group transition-all"
                         >
                             <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
                             Sector Archives
@@ -148,13 +148,13 @@ export default function ContestDetail() {
                             className="space-y-4"
                         >
                             <div className="flex items-center gap-4">
-                                <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] border ${contest.status === 'ACTIVE' ? 'bg-red-500/10 border-red-500/30 text-red-500 animate-pulse' : 'bg-white/5 border-white/10 text-slate-500'}`} style={{ borderRadius: "1px" }}>
+                                <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] border ${contest.status === 'ACTIVE' ? 'bg-red-500/10 border-red-500/30 text-red-500 animate-pulse' : 'bg-white/5 border-white/10 text-[var(--color-text-muted)]'}`} style={{ borderRadius: "1px" }}>
                                     {contest.status} Protocol
                                 </span>
                                 <div className="h-px w-12 bg-white/10" />
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">ID: {id.slice(0, 8)}</span>
+                                <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest font-mono">ID: {id.slice(0, 8)}</span>
                             </div>
-                            <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-[0.9]">
+                            <h1 className="text-5xl md:text-7xl font-black text-[var(--color-text-main)] uppercase tracking-tighter leading-[0.9]">
                                 {contest.title}
                             </h1>
                         </motion.div>
@@ -169,15 +169,15 @@ export default function ContestDetail() {
                         <div className="space-y-4 text-right">
                             <div className="space-y-1">
                                 <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">Sync Commencement</span>
-                                <div className="flex items-center justify-end gap-3 text-sm font-black text-white font-mono">
-                                    <Calendar size={14} className="text-slate-500" />
+                                <div className="flex items-center justify-end gap-3 text-sm font-black text-[var(--color-text-main)] font-mono">
+                                    <Calendar size={14} className="text-[var(--color-text-muted)]" />
                                     {new Date(contest.startTime).toLocaleDateString()} @ {new Date(contest.startTime).toLocaleTimeString()}
                                 </div>
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">Sync Termination</span>
-                                <div className="flex items-center justify-end gap-3 text-sm font-black text-white font-mono">
-                                    <Clock size={14} className="text-slate-500" />
+                                <div className="flex items-center justify-end gap-3 text-sm font-black text-[var(--color-text-main)] font-mono">
+                                    <Clock size={14} className="text-[var(--color-text-muted)]" />
                                     {new Date(contest.endTime).toLocaleDateString()} @ {new Date(contest.endTime).toLocaleTimeString()}
                                 </div>
                             </div>
@@ -206,8 +206,8 @@ export default function ContestDetail() {
                                 <Activity size={18} />
                                 Neural Sync Required
                             </div>
-                            <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Initialize Deployment</h3>
-                            <p className="text-slate-400 text-xs font-mono max-w-lg leading-relaxed uppercase">Secure your position in the challenge matrix. All protocols will be synchronized upon deployment commencement.</p>
+                            <h3 className="text-3xl font-black text-[var(--color-text-main)] uppercase tracking-tighter mb-2">Initialize Deployment</h3>
+                            <p className="text-[var(--color-text-muted)] text-xs font-mono max-w-lg leading-relaxed uppercase">Secure your position in the challenge matrix. All protocols will be synchronized upon deployment commencement.</p>
                         </div>
                         
                         <button 
@@ -244,7 +244,7 @@ export default function ContestDetail() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`pb-6 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative
-                                ${activeTab === tab.id ? 'text-[var(--color-primary)]' : 'text-slate-600 hover:text-white'}`}
+                                ${activeTab === tab.id ? 'text-[var(--color-primary)]' : 'text-slate-600 hover:text-[var(--color-text-main)]'}`}
                         >
                             {tab.icon}
                             {tab.label}
@@ -270,11 +270,11 @@ export default function ContestDetail() {
                                 <div className="grid md:grid-cols-3 gap-12">
                                     <div className="md:col-span-2 space-y-8">
                                         <div className="space-y-4">
-                                            <h2 className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+                                            <h2 className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-[0.3em] flex items-center gap-3">
                                                 <div className="w-1.5 h-1.5 bg-[var(--color-primary)]" />
                                                 Mission Parameter Details
                                             </h2>
-                                            <p className="text-slate-400 text-sm leading-[1.8] font-mono whitespace-pre-wrap bg-white/[0.01] border border-white/5 p-8">
+                                            <p className="text-[var(--color-text-muted)] text-sm leading-[1.8] font-mono whitespace-pre-wrap bg-white/[0.01] border border-white/5 p-8">
                                                 {contest.description || "No briefing assets available for this sector."}
                                             </p>
                                         </div>
@@ -282,7 +282,7 @@ export default function ContestDetail() {
                                     
                                     <div className="space-y-8">
                                         <div className="p-8 bg-white/[0.02] border border-white/5 space-y-6">
-                                            <h2 className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Engagement Rules</h2>
+                                            <h2 className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-[0.3em]">Engagement Rules</h2>
                                             <ul className="space-y-4">
                                                 {[
                                                     "Fixed temporal window for submission sync.",
@@ -290,7 +290,7 @@ export default function ContestDetail() {
                                                     "Penalty accumulation for invalid transmissions.",
                                                     "Global sector-wide leaderboard broadcast."
                                                 ].map((rule, i) => (
-                                                    <li key={i} className="flex gap-3 text-[10px] font-mono text-slate-500 leading-relaxed uppercase">
+                                                    <li key={i} className="flex gap-3 text-[10px] font-mono text-[var(--color-text-muted)] leading-relaxed uppercase">
                                                         <span className="text-[var(--color-primary)]">0{i+1}</span>
                                                         {rule}
                                                     </li>
@@ -321,13 +321,13 @@ export default function ContestDetail() {
                                             <motion.div 
                                                 whileHover={{ x: 10 }}
                                                 key={cp.id} 
-                                                className="group flex items-center justify-between p-8 bg-[#0a0a0a] border border-white/5 hover:border-[var(--color-primary)]/30 transition-all"
+                                                className="group flex items-center justify-between p-8 bg-[var(--color-bg-card)] border border-white/5 hover:border-[var(--color-primary)]/30 transition-all"
                                                 style={{ borderRadius: "2px" }}
                                             >
                                                 <div className="flex items-center gap-10">
-                                                    <div className="text-5xl font-black text-white/5 font-mono w-16 group-hover:text-[var(--color-primary)]/10 transition-colors">{String.fromCharCode(65 + idx)}</div>
+                                                    <div className="text-5xl font-black text-[var(--color-text-main)]/5 font-mono w-16 group-hover:text-[var(--color-primary)]/10 transition-colors">{String.fromCharCode(65 + idx)}</div>
                                                     <div>
-                                                        <h3 className="text-lg font-black text-white uppercase tracking-tighter group-hover:text-[var(--color-primary)] transition-colors mb-2">{cp.problem.title}</h3>
+                                                        <h3 className="text-lg font-black text-[var(--color-text-main)] uppercase tracking-tighter group-hover:text-[var(--color-primary)] transition-colors mb-2">{cp.problem.title}</h3>
                                                         <div className="flex gap-6 font-mono text-[9px] uppercase tracking-[0.2em]">
                                                             <span className={cp.problem.difficulty === "HARD" ? "text-red-500" : cp.problem.difficulty === "MEDIUM" ? "text-yellow-500" : "text-emerald-500"}>
                                                                 {cp.problem.difficulty} PRIORITY
@@ -358,16 +358,16 @@ export default function ContestDetail() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="bg-[#0a0a0a] border border-white/5"
+                                className="bg-[var(--color-bg-card)] border border-white/5"
                                 style={{ borderRadius: "2px" }}
                             >
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="border-b border-white/5 bg-white/[0.01]">
-                                            <th className="py-8 px-10 text-[9px] font-black uppercase tracking-[0.4em] text-slate-500">Rank</th>
-                                            <th className="py-8 px-10 text-[9px] font-black uppercase tracking-[0.4em] text-slate-500">Practitioner</th>
-                                            <th className="py-8 px-10 text-[9px] font-black uppercase tracking-[0.4em] text-slate-500 text-center">Efficiency</th>
-                                            <th className="py-8 px-10 text-[9px] font-black uppercase tracking-[0.4em] text-slate-500 text-right">Penalty</th>
+                                            <th className="py-8 px-10 text-[9px] font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)]">Rank</th>
+                                            <th className="py-8 px-10 text-[9px] font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)]">Practitioner</th>
+                                            <th className="py-8 px-10 text-[9px] font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] text-center">Efficiency</th>
+                                            <th className="py-8 px-10 text-[9px] font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] text-right">Penalty</th>
                                         </tr>
                                     </thead>
                                     <tbody className="font-mono">
@@ -377,17 +377,17 @@ export default function ContestDetail() {
                                             leaderboard.map((participant, index) => (
                                                 <tr key={participant.id} className={`border-b border-white/[0.02] hover:bg-white/[0.01] transition-colors ${participant.userId === user?.id ? 'bg-[var(--color-primary)]/5' : ''}`}>
                                                     <td className="py-8 px-10">
-                                                        <span className={`text-xl font-black ${index < 3 ? 'text-[var(--color-primary)]' : 'text-slate-500'}`}>
+                                                        <span className={`text-xl font-black ${index < 3 ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
                                                             {String(index + 1).padStart(2, '0')}
                                                         </span>
                                                     </td>
                                                     <td className="py-8 px-10">
                                                         <div className="flex items-center gap-6">
-                                                            <div className="w-10 h-10 bg-white/5 border border-white/10 flex items-center justify-center text-[11px] font-black text-white">
+                                                            <div className="w-10 h-10 bg-white/5 border border-white/10 flex items-center justify-center text-[11px] font-black text-[var(--color-text-main)]">
                                                                 {participant.user.username.charAt(0).toUpperCase()}
                                                             </div>
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-black text-white hover:text-[var(--color-primary)] transition-colors cursor-pointer">{participant.user.username}</span>
+                                                                <span className="text-sm font-black text-[var(--color-text-main)] hover:text-[var(--color-primary)] transition-colors cursor-pointer">{participant.user.username}</span>
                                                                 {participant.userId === user?.id && <span className="text-[var(--color-primary)] text-[8px] font-black uppercase tracking-widest mt-1">Identified (YOU)</span>}
                                                             </div>
                                                         </div>
@@ -424,23 +424,23 @@ export default function ContestDetail() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 p-10 shadow-[0_0_100px_rgba(0,0,0,1)]"
+                            className="relative w-full max-w-lg bg-[var(--color-bg-card)] border border-white/10 p-10 shadow-[0_0_100px_rgba(0,0,0,1)]"
                             style={{ borderRadius: "2px" }}
                         >
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent" />
                             
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-4 flex items-center gap-3">
+                            <h2 className="text-2xl font-black text-[var(--color-text-main)] uppercase tracking-tighter mb-4 flex items-center gap-3">
                                 <Shield className="text-[var(--color-primary)]" />
                                 Protocol Confirmation
                             </h2>
-                            <p className="text-slate-400 text-sm font-mono leading-relaxed mb-10 uppercase">
+                            <p className="text-[var(--color-text-muted)] text-sm font-mono leading-relaxed mb-10 uppercase">
                                 You are about to synchronize with the {contest.title} challenge matrix. This action will commit your unit to the sector leaderboard. Do you wish to proceed?
                             </p>
                             
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => setShowRegisterModal(false)}
-                                    className="flex-1 py-4 border border-white/10 text-slate-500 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/5 hover:text-white transition-all"
+                                    className="flex-1 py-4 border border-white/10 text-[var(--color-text-muted)] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/5 hover:text-[var(--color-text-main)] transition-all"
                                 >
                                     Abort
                                 </button>

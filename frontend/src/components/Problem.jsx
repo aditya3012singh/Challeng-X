@@ -50,12 +50,12 @@ export const Problem = () => {
             <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-4">Training Grounds</div>
-                    <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Problem Set</h1>
+                    <h1 className="text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)]">Problem Set</h1>
                 </div>
-                <div className="px-6 py-3 bg-[#0a0a0a] border border-white/5 rounded-xl flex items-center gap-6">
+                <div className="px-6 py-3 bg-[var(--color-bg-card)] border border-white/5 rounded-xl flex items-center gap-6">
                     <div className="text-center">
                         <div className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mb-1">Total Signals</div>
-                        <div className="text-xl font-bold font-mono text-white">{problems.length}</div>
+                        <div className="text-xl font-bold font-mono text-[var(--color-text-main)]">{problems.length}</div>
                     </div>
                 </div>
             </div>
@@ -63,7 +63,7 @@ export const Problem = () => {
             {/* Problems Grid / Table */}
             <div className="grid grid-cols-1 gap-4">
                 {problems.length === 0 ? (
-                    <div className="bg-[#0a0a0a] border border-dashed border-[#222] rounded-2xl p-20 text-center">
+                    <div className="bg-[var(--color-bg-card)] border border-dashed border-[#222] rounded-2xl p-20 text-center">
                         <Terminal size={40} className="mx-auto text-gray-800 mb-6" />
                         <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">No challenges detected in the grid.</p>
                     </div>
@@ -72,17 +72,17 @@ export const Problem = () => {
                         <div
                             key={problem.id}
                             onClick={() => handleProblemClick(problem)}
-                            className="premium-card bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl group cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-6"
+                            className="premium-card bg-[var(--color-bg-card)] border border-white/5 p-6 rounded-2xl group cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-6"
                         >
                             <div className="flex items-center gap-6 flex-1">
                                 <div className="w-12 h-12 bg-[#111] border border-white/5 flex items-center justify-center rounded-xl group-hover:border-[var(--color-primary)]/50 transition-colors">
                                     <Zap size={20} className="text-slate-600 group-hover:text-[var(--color-primary)] transition-colors" />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-white group-hover:text-[var(--color-primary)] transition-colors mb-1 uppercase tracking-tight">
+                                    <h3 className="text-lg font-bold text-[var(--color-text-main)] group-hover:text-[var(--color-primary)] transition-colors mb-1 uppercase tracking-tight">
                                         {problem.title}
                                     </h3>
-                                    <div className="flex items-center gap-4 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+                                    <div className="flex items-center gap-4 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">
                                         <span className="flex items-center gap-1.5">
                                             <Trophy size={11} /> 100 PTS
                                         </span>
@@ -97,7 +97,7 @@ export const Problem = () => {
                                 <span className={`px-4 py-1.5 rounded-full text-[9px] font-bold font-mono border ${getDifficultyStyles(problem.difficulty)}`}>
                                     {problem.difficulty}
                                 </span>
-                                <div className="p-2 bg-white/5 rounded-lg text-slate-500 group-hover:text-white group-hover:bg-[var(--color-primary)] group-hover:text-black transition-all">
+                                <div className="p-2 bg-white/5 rounded-lg text-[var(--color-text-muted)] group-hover:text-[var(--color-text-main)] group-hover:bg-[var(--color-primary)] group-hover:text-black transition-all">
                                     <ChevronRight size={18} />
                                 </div>
                             </div>
@@ -107,4 +107,4 @@ export const Problem = () => {
             </div>
         </div>
     );
-};
+};

@@ -69,14 +69,14 @@ export const ProblemDetail = () => {
             <div className="mb-10 flex items-center gap-4">
                 <button 
                     onClick={() => navigate('/problems')}
-                    className="p-2 bg-[#0a0a0a] border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-[var(--color-primary)] transition-all"
+                    className="p-2 bg-[var(--color-bg-card)] border border-white/10 rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:border-[var(--color-primary)] transition-all"
                 >
                     <ChevronLeft size={20} />
                 </button>
                 <div>
-                    <div className="text-[10px] font-bold tracking-[0.4em] text-slate-500 uppercase">Challenge Details</div>
+                    <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-text-muted)] uppercase">Challenge Details</div>
                     <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-black text-white uppercase tracking-tight">{currentProblem.title}</h1>
+                        <h1 className="text-3xl font-black text-[var(--color-text-main)] uppercase tracking-tight">{currentProblem.title}</h1>
                         <span className={`px-3 py-1 rounded-full text-[9px] font-bold font-mono border ${getDifficultyStyles(currentProblem.difficulty)}`}>
                             {currentProblem.difficulty}
                         </span>
@@ -88,7 +88,7 @@ export const ProblemDetail = () => {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Description Card */}
-                    <div className="premium-card bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 overflow-hidden relative">
+                    <div className="premium-card bg-[var(--color-bg-card)] border border-white/5 rounded-2xl p-8 overflow-hidden relative">
                         <div className="flex items-center gap-3 mb-6 text-[var(--color-primary)]">
                             <Terminal size={18} />
                             <h2 className="text-sm font-bold uppercase tracking-[0.2em]">Operational Objective</h2>
@@ -102,7 +102,7 @@ export const ProblemDetail = () => {
                         {/* Test Cases / Examples */}
                         {currentProblem.testcases && currentProblem.testcases.length > 0 && (
                             <div className="mt-10 space-y-4">
-                                <div className="flex items-center gap-2 mb-4 text-slate-500">
+                                <div className="flex items-center gap-2 mb-4 text-[var(--color-text-muted)]">
                                     <Code size={14} />
                                     <span className="text-[10px] uppercase font-mono tracking-widest">Protocol Evidence (Test Cases)</span>
                                 </div>
@@ -115,7 +115,7 @@ export const ProblemDetail = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <div className="text-[9px] font-bold text-slate-700 uppercase mb-2">Input</div>
-                                                <div className="bg-black/40 p-3 rounded font-mono text-xs text-slate-400 border border-white/5">{testcase.input}</div>
+                                                <div className="bg-black/40 p-3 rounded font-mono text-xs text-[var(--color-text-muted)] border border-white/5">{testcase.input}</div>
                                             </div>
                                             <div>
                                                 <div className="text-[9px] font-bold text-slate-700 uppercase mb-2">Output</div>
@@ -132,7 +132,7 @@ export const ProblemDetail = () => {
                 {/* Sidebar Stats/Actions */}
                 <div className="space-y-6">
                     {/* Battle Action */}
-                    <div className="premium-card bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 text-center">
+                    <div className="premium-card bg-[var(--color-bg-card)] border border-white/5 rounded-2xl p-6 text-center">
                         <div className="mb-6 p-4 bg-[var(--color-primary)]/5 rounded-2xl border border-[var(--color-primary)]/10">
                             <Zap size={32} className="mx-auto text-[var(--color-primary)] mb-2" />
                             <div className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest">Combat Ready</div>
@@ -152,24 +152,24 @@ export const ProblemDetail = () => {
                     </div>
 
                     {/* Stats Card */}
-                    <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 space-y-6">
+                    <div className="bg-[var(--color-bg-card)] border border-white/5 rounded-2xl p-6 space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <Clock size={16} className="text-slate-500" />
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time Limit</span>
+                                <Clock size={16} className="text-[var(--color-text-muted)]" />
+                                <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Time Limit</span>
                             </div>
-                            <span className="text-sm font-mono text-white">2.0s</span>
+                            <span className="text-sm font-mono text-[var(--color-text-main)]">2.0s</span>
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <Shield size={16} className="text-slate-500" />
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Complexity</span>
+                                <Shield size={16} className="text-[var(--color-text-muted)]" />
+                                <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Complexity</span>
                             </div>
-                            <span className="text-sm font-mono text-white">Medium</span>
+                            <span className="text-sm font-mono text-[var(--color-text-main)]">Medium</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     );
-};
+};

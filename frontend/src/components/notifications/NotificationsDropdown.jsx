@@ -46,14 +46,14 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
     return (
         <div 
             ref={dropdownRef}
-            className="fixed md:absolute inset-x-4 md:inset-auto md:right-0 top-24 md:top-full md:mt-2 md:w-[380px] bg-[#0A0A0A] md:bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[201] overflow-hidden flex flex-col max-h-[70vh] md:max-h-[500px]"
+            className="fixed md:absolute inset-x-4 md:inset-auto md:right-0 top-24 md:top-full md:mt-2 md:w-[380px] bg-[var(--color-bg-card)] md:bg-[var(--color-bg-card)]/95 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[201] overflow-hidden flex flex-col max-h-[70vh] md:max-h-[500px]"
             style={{ borderRadius: '4px' }}
         >
             {/* Header */}
             <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                 <div className="flex items-center gap-2">
                     <Bell size={14} className="text-[var(--color-primary)]" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">Notifications</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-main)]">Notifications</span>
                     {unreadCount > 0 && (
                         <span className="px-2 py-0.5 bg-[var(--color-primary)] text-black text-[9px] font-black rounded-sm">
                             {unreadCount} NEW
@@ -63,7 +63,7 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
                 {notifications.length > 0 && (
                     <button 
                         onClick={() => dispatch(markAllAsRead())}
-                        className="text-[9px] font-bold text-slate-500 hover:text-[var(--color-primary)] transition-colors uppercase tracking-widest"
+                        className="text-[9px] font-bold text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors uppercase tracking-widest"
                     >
                         Mark all as read
                     </button>
@@ -98,7 +98,7 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
                                     <div className={`w-8 h-8 rounded-sm flex items-center justify-center shrink-0 ${
                                         n.type === 'FRIEND_REQUEST' ? 'bg-blue-500/10 text-blue-400' :
                                         n.type === 'MATCH_INVITE' ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' :
-                                        'bg-slate-800/50 text-slate-400'
+                                        'bg-slate-800/50 text-[var(--color-text-muted)]'
                                     }`}>
                                         {n.type === 'FRIEND_REQUEST' ? <User size={14} /> : 
                                          n.type === 'MATCH_INVITE' ? <Award size={14} /> : 
@@ -107,7 +107,7 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
                                     
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1 gap-2">
-                                            <h4 className={`text-[11px] font-bold truncate ${!n.isRead ? 'text-white' : 'text-slate-400'}`}>
+                                            <h4 className={`text-[11px] font-bold truncate ${!n.isRead ? 'text-[var(--color-text-main)]' : 'text-[var(--color-text-muted)]'}`}>
                                                 {n.title}
                                             </h4>
                                             <span className="text-[8px] font-medium text-slate-600 flex items-center gap-1 shrink-0 mt-0.5">
@@ -123,7 +123,7 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
                                                 ) : 'Recently'}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-slate-500 leading-relaxed mb-2 line-clamp-2">
+                                        <p className="text-[10px] text-[var(--color-text-muted)] leading-relaxed mb-2 line-clamp-2">
                                             {n.message}
                                         </p>
                                         
@@ -156,7 +156,7 @@ const NotificationsDropdown = ({ isOpen, onClose }) => {
                 <div className="p-3 bg-white/[0.01] border-t border-white/5 text-center">
                      <button 
                         onClick={() => { navigate('/notifications'); onClose(); }}
-                        className="text-[9px] font-black text-slate-500 hover:text-white transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-2 mx-auto"
+                        className="text-[9px] font-black text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-2 mx-auto"
                      >
                         View All Transmissions <ExternalLink size={10} />
                      </button>

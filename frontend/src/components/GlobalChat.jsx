@@ -88,13 +88,13 @@ const GlobalChat = () => {
             <button 
                 ref={toggleBtnRef}
                 onClick={toggleChat}
-                className={`fixed left-4 bottom-8 z-50 p-3 rounded-full bg-[#0a0a0a] border border-[#222] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all group ${isOpen ? 'translate-x-[calc(100vw-60px)] sm:translate-x-[360px]' : ''}`}
+                className={`fixed left-4 bottom-8 z-50 p-3 rounded-full bg-[var(--color-bg-card)] border border-[#222] text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all group ${isOpen ? 'translate-x-[calc(100vw-60px)] sm:translate-x-[360px]' : ''}`}
                 title="Global Chat"
             >
                 <div className="relative">
                     <MessageSquare size={24} className="group-hover:scale-110 transition-transform" />
                     {unreadCount > 0 && !isOpen && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-[var(--color-text-main)] text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
                             {unreadCount}
                         </span>
                     )}
@@ -104,36 +104,36 @@ const GlobalChat = () => {
             {/* Sidebar */}
             <div 
                 ref={sidebarRef}
-                className={`fixed top-0 left-0 h-full w-full sm:w-[350px] bg-[#050505]/95 backdrop-blur-xl border-r border-[#1a1a1a] z-[60] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.5)] flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`fixed top-0 left-0 h-full w-full sm:w-[350px] bg-[var(--color-bg-dark)]/95 backdrop-blur-xl border-r border-[#1a1a1a] z-[60] transform transition-transform duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.5)] flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 
                 {/* Header */}
-                <div className="p-4 border-b border-[#222] bg-[#0d0d0d]/80 backdrop-blur-md">
+                <div className="p-4 border-b border-[var(--glass-border)] bg-[var(--color-bg-dark)]/80 backdrop-blur-md">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <MessageSquare className="text-[var(--color-primary)]" size={18} />
-                            <h2 className="font-bold font-mono tracking-tight text-sm">GLOBAL ARENA</h2>
+                            <h2 className="font-bold font-mono tracking-tight text-sm text-[var(--color-text-main)]">GLOBAL CHALLEGX</h2>
                         </div>
-                        <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                        <button onClick={() => setIsOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors">
                             <X size={18} />
                         </button>
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-1 p-1 bg-[#111] rounded-lg border border-[#222]">
+                    <div className="flex gap-1 p-1 bg-[var(--color-bg-dark)] rounded-lg border border-[var(--glass-border)]">
                         <button 
                             onClick={() => setActiveTab('chat')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-mono transition-all ${activeTab === 'chat' ? 'bg-[#1a1a1a] text-[var(--color-primary)]' : 'text-gray-500 hover:text-gray-300'}`}
+                            className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-mono transition-all ${activeTab === 'chat' ? 'bg-[var(--color-bg-card)] text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}
                         >
                             <MessageSquare size={12} /> CHAT
                         </button>
                         <button 
                             onClick={() => setActiveTab('requests')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-mono transition-all relative ${activeTab === 'requests' ? 'bg-[#1a1a1a] text-[var(--color-primary)]' : 'text-gray-500 hover:text-gray-300'}`}
+                            className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-mono transition-all relative ${activeTab === 'requests' ? 'bg-[var(--color-bg-card)] text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}
                         >
                             <Users size={12} /> REQUESTS
                             {incomingRequests.length > 0 && (
-                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse border border-[#111]" />
+                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse border border-[var(--color-bg-dark)]" />
                             )}
                         </button>
                     </div>
@@ -157,8 +157,8 @@ const GlobalChat = () => {
                                         key={msg.id} 
                                         className={`flex gap-3 ${msg.userId === user.id ? 'flex-row-reverse' : ''}`}
                                     >
-                                        <Link to={`/profile/${msg.sender}`} onClick={() => window.innerWidth < 1024 && setIsOpen(false)} className="flex-shrink-0">
-                                            <div className="w-8 h-8 rounded-lg bg-[#111] border border-[#222] overflow-hidden hover:border-[var(--color-primary)] transition-colors">
+                                         <Link to={`/profile/${msg.sender}`} onClick={() => window.innerWidth < 1024 && setIsOpen(false)} className="flex-shrink-0">
+                                            <div className="w-8 h-8 rounded-lg bg-[var(--color-bg-dark)] border border-[var(--glass-border)] overflow-hidden hover:border-[var(--color-primary)] transition-colors">
                                                 {msg.profilePic ? (
                                                     <img src={msg.profilePic} alt="" className="w-full h-full object-cover" />
                                                 ) : (
@@ -171,17 +171,17 @@ const GlobalChat = () => {
 
                                         <div className={`max-w-[80%] flex flex-col ${msg.userId === user.id ? 'items-end' : 'items-start'}`}>
                                             <div className="flex items-center gap-2 mb-1 px-1">
-                                                <Link to={`/profile/${msg.sender}`} onClick={() => window.innerWidth < 1024 && setIsOpen(false)} className="text-[10px] font-bold font-mono text-gray-400 hover:text-[var(--color-primary)] transition-colors">
+                                                <Link to={`/profile/${msg.sender}`} onClick={() => window.innerWidth < 1024 && setIsOpen(false)} className="text-[10px] font-bold font-mono text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors">
                                                     {msg.sender}
                                                 </Link>
-                                                <span className="text-[8px] font-mono text-gray-600">
+                                                <span className="text-[8px] font-mono text-[var(--color-text-muted)] opacity-50">
                                                     {msg.timestamp}
                                                 </span>
                                             </div>
                                             <div className={`px-3 py-2 rounded-2xl text-xs font-medium leading-relaxed ${
                                                 msg.userId === user.id 
                                                     ? 'bg-[var(--color-primary)] text-black rounded-tr-none shadow-[0_4px_15px_rgba(204,255,0,0.1)]' 
-                                                    : 'bg-[#111] text-gray-200 rounded-tl-none border border-[#222]'
+                                                    : 'bg-[var(--color-bg-card)] text-[var(--color-text-main)] rounded-tl-none border border-[var(--glass-border)]'
                                             }`}>
                                                 {msg.text}
                                             </div>
@@ -193,14 +193,14 @@ const GlobalChat = () => {
                         </div>
 
                         {/* Input Area */}
-                        <form onSubmit={handleSendMessage} className="p-4 bg-[#0d0d0d]/80 border-t border-[#222]">
+                        <form onSubmit={handleSendMessage} className="p-4 bg-[var(--color-bg-dark)]/80 border-t border-[var(--glass-border)]">
                             <div className="flex gap-2">
                                 <input 
                                     type="text" 
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
                                     placeholder="Type a transmission..."
-                                    className="flex-1 bg-[#111] border border-[#222] rounded-lg px-4 py-2 text-xs font-mono outline-none focus:border-[var(--color-primary)]/50 transition-colors"
+                                    className="flex-1 bg-[var(--color-bg-dark)] border border-[var(--glass-border)] rounded-lg px-4 py-2 text-xs font-mono text-[var(--color-text-main)] outline-none focus:border-[var(--color-primary)]/50 transition-colors"
                                 />
                                 <button 
                                     type="submit"
@@ -225,9 +225,9 @@ const GlobalChat = () => {
                                 </div>
                             ) : (
                                 incomingRequests.map(req => (
-                                    <div key={req.id} className="p-3 bg-[#111]/50 border border-[#222] rounded-xl flex items-center justify-between group">
+                                    <div key={req.id} className="p-3 bg-[var(--color-bg-dark)]/50 border border-[var(--glass-border)] rounded-xl flex items-center justify-between group">
                                         <div className="flex items-center gap-3">
-                                            <Link to={`/profile/${req.sender.username}`} onClick={() => setIsOpen(false)} className="w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#333] overflow-hidden flex-shrink-0">
+                                            <Link to={`/profile/${req.sender.username}`} onClick={() => setIsOpen(false)} className="w-10 h-10 rounded-lg bg-[var(--color-bg-card)] border border-[var(--glass-border)] overflow-hidden flex-shrink-0">
                                                 {req.sender.profilePic ? (
                                                     <img src={req.sender.profilePic} alt="" className="w-full h-full object-cover" />
                                                 ) : (
@@ -267,7 +267,7 @@ const GlobalChat = () => {
                             )}
                         </div>
                         
-                        <div className="p-4 bg-[#0d0d0d]/80 border-t border-[#222] text-center">
+                        <div className="p-4 bg-[var(--color-bg-dark)]/80 border-t border-[var(--glass-border)] text-center">
                             <p className="text-[8px] font-mono text-gray-600 uppercase tracking-widest italic">
                                 Connections expand your arena network
                             </p>

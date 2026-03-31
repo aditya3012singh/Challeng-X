@@ -36,7 +36,7 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] flex items-center justify-center p-6 relative overflow-hidden font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] flex items-center justify-center p-6 relative overflow-hidden font-[family:var(--font-body)]">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.012] blur-[180px] rounded-full"></div>
@@ -51,12 +51,12 @@ const ForgotPassword = () => {
                 CA
               </div>
               <div className="text-left">
-                <span className="text-lg font-bold tracking-tight text-white block leading-none">CODE</span>
+                <span className="text-lg font-bold tracking-tight text-[var(--color-text-main)] block leading-none">CODE</span>
                 <span className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] block leading-none mt-1">ARENA</span>
               </div>
             </Link>
             <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Account Recovery</div>
-            <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)] text-center">Reset Password</h2>
+            <h2 className="text-4xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)] text-center">Reset Password</h2>
           </div>
 
           <form className="space-y-10" onSubmit={handleSubmit}>
@@ -69,7 +69,7 @@ const ForgotPassword = () => {
             {message && (
               <div className="border border-[var(--color-success)]/20 bg-[var(--color-success)]/5 text-[var(--color-success)] p-6 text-[10px] font-bold uppercase tracking-widest text-center" style={{ borderRadius: "2px" }}>
                 ✓ {message}
-                <div className="text-[8px] text-slate-500 mt-2 lowercase tracking-normal">Local Environment detected: Auto-redirecting to token URL...</div>
+                <div className="text-[8px] text-[var(--color-text-muted)] mt-2 lowercase tracking-normal">Local Environment detected: Auto-redirecting to token URL...</div>
               </div>
             )}
 
@@ -83,7 +83,7 @@ const ForgotPassword = () => {
                   name="email"
                   type="email"
                   required
-                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                  className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-6 py-4 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
                   placeholder="your@email.com"
                   value={email}
@@ -106,7 +106,7 @@ const ForgotPassword = () => {
             <div className="text-center">
               <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
                 Return to {" "}
-                <Link to="/login" className="text-white hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/10">
+                <Link to="/login" className="text-[var(--color-text-main)] hover:text-[var(--color-primary)] transition-colors underline underline-offset-4 decoration-white/10">
                   Sign In
                 </Link>
               </p>

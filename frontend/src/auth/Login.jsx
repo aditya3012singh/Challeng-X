@@ -95,19 +95,20 @@ const Login = () => {
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
         :root {
-          --gold: #FFAA00;
+          --gold: var(--color-primary);
           --gold-dim: rgba(255,170,0,0.15);
           --gold-glow: rgba(255,170,0,0.08);
-          --surface: rgba(10,10,10,0.85);
-          --border: rgba(255,255,255,0.06);
+          --surface: var(--glass-bg);
+          --border: var(--glass-border);
           --border-focus: rgba(255,170,0,0.35);
-          --text-muted: #3a3a3a;
+          --text-main: var(--color-text-main);
+          --text-muted: var(--color-text-muted);
           --text-dim: #555;
         }
 
         .login-root {
           min-height: 100vh;
-          background: #030303;
+          background: var(--color-bg-dark);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -166,7 +167,7 @@ const Login = () => {
           z-index: 10;
           width: 100%;
           max-width: 440px;
-          background: rgba(8,8,8,0.92);
+          background: var(--color-bg-card);
           border: 1px solid rgba(255,255,255,0.05);
           backdrop-filter: blur(24px);
           -webkit-backdrop-filter: blur(24px);
@@ -219,7 +220,7 @@ const Login = () => {
         .logo-text-top {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 20px;
-          color: #fff;
+          color: var(--text-main);
           letter-spacing: 0.12em;
           line-height: 1;
         }
@@ -246,7 +247,7 @@ const Login = () => {
         .heading {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 42px;
-          color: #fff;
+          color: var(--text-main);
           letter-spacing: 0.06em;
           line-height: 1;
           margin-top: 6px;
@@ -488,13 +489,13 @@ const Login = () => {
             <div className="w-12 h-12 overflow-hidden flex items-center justify-center">
               <img 
                 src={logo} 
-                alt="CodeArena Logo" 
+                alt="ChallegX Logo" 
                 className="w-full h-full object-contain scale-[1.4]"
               />
             </div>
             <div>
-              <div className="logo-text-top">CODE</div>
-              <div className="logo-text-sub">ARENA</div>
+              <div className="logo-text-top">CHALLEG</div>
+              <div className="logo-text-sub">X</div>
             </div>
           </Link>
 

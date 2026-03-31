@@ -28,7 +28,7 @@ const MainLayout = ({ children }) => {
     const showFooter = showNav;
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#050505] selection:bg-[var(--color-primary)] selection:text-black">
+        <div className="min-h-screen flex flex-col bg-[var(--color-bg-dark)] selection:bg-[var(--color-primary)] selection:text-black">
             {showNav && (
                 <Suspense fallback={null}>
                     <Navbar />

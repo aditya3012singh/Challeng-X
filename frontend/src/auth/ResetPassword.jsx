@@ -41,7 +41,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] flex items-center justify-center p-6 relative overflow-hidden font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] flex items-center justify-center p-6 relative overflow-hidden font-[family:var(--font-body)]">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--color-primary)] opacity-[0.012] blur-[180px] rounded-full"></div>
@@ -56,12 +56,12 @@ const ResetPassword = () => {
                 CA
               </div>
               <div className="text-left">
-                <span className="text-lg font-bold tracking-tight text-white block leading-none">CODE</span>
+                <span className="text-lg font-bold tracking-tight text-[var(--color-text-main)] block leading-none">CODE</span>
                 <span className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] block leading-none mt-1">ARENA</span>
               </div>
             </Link>
             <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Secure Access</div>
-            <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)] text-center">New Password</h2>
+            <h2 className="text-4xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)] text-center">New Password</h2>
           </div>
 
           <form className="space-y-10" onSubmit={handleSubmit}>
@@ -74,7 +74,7 @@ const ResetPassword = () => {
             {message && (
               <div className="border border-[var(--color-success)]/20 bg-[var(--color-success)]/5 text-[var(--color-success)] p-6 text-[10px] font-bold uppercase tracking-widest text-center" style={{ borderRadius: "2px" }}>
                 ✓ {message}
-                <div className="text-[8px] text-slate-500 mt-2 lowercase tracking-normal">Redirecting to login via SSL...</div>
+                <div className="text-[8px] text-[var(--color-text-muted)] mt-2 lowercase tracking-normal">Redirecting to login via SSL...</div>
               </div>
             )}
 
@@ -89,7 +89,7 @@ const ResetPassword = () => {
                   type="password"
                   required
                   minLength={6}
-                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                  className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-6 py-4 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
                   placeholder="••••••••••••"
                   value={newPassword}
@@ -107,7 +107,7 @@ const ResetPassword = () => {
                   type="password"
                   required
                   minLength={6}
-                  className="w-full bg-[#050505] border border-white/10 px-6 py-4 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                  className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-6 py-4 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
                   placeholder="••••••••••••"
                   value={confirmPassword}

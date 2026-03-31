@@ -156,7 +156,7 @@ const AdminContests = () => {
   if (user?.role !== 'ADMIN') return null;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-20 px-6 font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] py-20 px-6 font-[family:var(--font-body)]">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 right-1/4 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.015] blur-[150px] rounded-full"></div>
@@ -172,20 +172,20 @@ const AdminContests = () => {
             <div className="text-[10px] font-black tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6 flex gap-6 items-center">
               <Activity size={12} />
               Command Center // Tournaments
-              <Link to="/admin" className="text-white/40 hover:text-[var(--color-primary)] transition-all flex items-center gap-2 group">
+              <Link to="/admin" className="text-[var(--color-text-main)]/40 hover:text-[var(--color-primary)] transition-all flex items-center gap-2 group">
                 <ArrowLeft size={10} className="group-hover:-translate-x-1 transition-transform" />
                 Return to Assets
               </Link>
             </div>
-            <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-[0.85]">
+            <h1 className="text-6xl md:text-8xl font-black text-[var(--color-text-main)] tracking-tighter uppercase leading-[0.85]">
               Contest<br/>Ops.
             </h1>
           </motion.div>
           
-          <div className="flex items-center gap-8 py-4 px-8 border border-white/5 bg-white/[0.02] font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">
+          <div className="flex items-center gap-8 py-4 px-8 border border-white/5 bg-white/[0.02] font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
              <div className="flex flex-col items-end gap-1">
                 <span>Database</span>
-                <span className="text-white font-black">{availableProblems.length} VECTORS</span>
+                <span className="text-[var(--color-text-main)] font-black">{availableProblems.length} VECTORS</span>
              </div>
              <div className="h-8 w-[1px] bg-white/10" />
              <div className="flex flex-col items-end gap-1">
@@ -214,7 +214,7 @@ const AdminContests = () => {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                 style={{ borderRadius: "2px" }}
                 placeholder="Weekly Global Cup #4"
                 required
@@ -227,7 +227,7 @@ const AdminContests = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm h-32"
+                className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm h-32"
                 style={{ borderRadius: "2px" }}
                 placeholder="Standard isolated contest parameters. Penalty enabled."
                 required
@@ -242,7 +242,7 @@ const AdminContests = () => {
                   name="startTime"
                   value={formData.startTime}
                   onChange={handleChange}
-                  className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-gray-300 font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                  className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-gray-300 font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
                   required
                 />
@@ -254,7 +254,7 @@ const AdminContests = () => {
                   name="endTime"
                   value={formData.endTime}
                   onChange={handleChange}
-                  className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-gray-300 font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                  className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-gray-300 font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
                   required
                 />
@@ -278,7 +278,7 @@ const AdminContests = () => {
                  </button>
               </div>
               
-              <div className="w-full bg-[#050505] border border-white/10 p-3 transition-all text-sm h-56 overflow-y-auto" style={{ borderRadius: "2px" }}>
+              <div className="w-full bg-[var(--color-bg-dark)] border border-white/10 p-3 transition-all text-sm h-56 overflow-y-auto" style={{ borderRadius: "2px" }}>
                 {availableProblems.map(p => (
                    <div 
                      key={p.id}
@@ -287,7 +287,7 @@ const AdminContests = () => {
                      style={{ borderRadius: "2px" }}
                    >
                      <div>
-                       <div className={`text-xs font-bold uppercase tracking-wider ${selectedProblems.includes(p.id) ? 'text-[var(--color-primary)]' : 'text-white'}`}>{p.title}</div>
+                       <div className={`text-xs font-bold uppercase tracking-wider ${selectedProblems.includes(p.id) ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-main)]'}`}>{p.title}</div>
                        <div className="text-[9px] text-gray-500 font-mono mt-1">{p.difficulty} • {p.reward} pts</div>
                      </div>
                      <div className={`flex items-center justify-center w-5 h-5 rounded-sm border transition-all ${selectedProblems.includes(p.id) ? 'bg-[var(--color-primary)] border-[var(--color-primary)]' : 'border-gray-600 bg-black/20'}`}>
@@ -296,7 +296,7 @@ const AdminContests = () => {
                    </div>
                 ))}
                 {availableProblems.length === 0 && (
-                   <div className="text-center py-12 text-[10px] text-slate-500 uppercase tracking-widest flex flex-col items-center gap-4">
+                   <div className="text-center py-12 text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest flex flex-col items-center gap-4">
                      <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
                      Parsing Database Vectors...
                    </div>
@@ -332,7 +332,7 @@ const AdminContests = () => {
               </div>
               <button 
                 onClick={() => setShowProblemModal(false)}
-                className="text-white hover:text-red-500 font-bold px-2 py-1 text-xs uppercase"
+                className="text-[var(--color-text-main)] hover:text-red-500 font-bold px-2 py-1 text-xs uppercase"
               >
                 [X] Abort
               </button>
@@ -345,7 +345,7 @@ const AdminContests = () => {
                   type="text"
                   value={problemForm.title}
                   onChange={(e) => setProblemForm({...problemForm, title: e.target.value})}
-                  className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                  className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   style={{ borderRadius: "2px" }}
                   required
                 />
@@ -356,7 +356,7 @@ const AdminContests = () => {
                 <textarea
                   value={problemForm.description}
                   onChange={(e) => setProblemForm({...problemForm, description: e.target.value})}
-                  className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white focus:border-[var(--color-primary)]/40 transition-all text-sm h-24"
+                  className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] focus:border-[var(--color-primary)]/40 transition-all text-sm h-24"
                   style={{ borderRadius: "2px" }}
                   required
                 />
@@ -368,7 +368,7 @@ const AdminContests = () => {
                   <select
                     value={problemForm.difficulty}
                     onChange={(e) => setProblemForm({...problemForm, difficulty: e.target.value})}
-                    className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                    className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] focus:border-[var(--color-primary)]/40 transition-all text-sm"
                   >
                     <option value="EASY">EASY</option>
                     <option value="MEDIUM">MEDIUM</option>
@@ -381,7 +381,7 @@ const AdminContests = () => {
                     type="number"
                     value={problemForm.reward}
                     onChange={(e) => setProblemForm({...problemForm, reward: e.target.value})}
-                    className="w-full bg-[#050505] border border-white/10 px-4 py-3 text-white focus:border-[var(--color-primary)]/40 transition-all text-sm"
+                    className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] focus:border-[var(--color-primary)]/40 transition-all text-sm"
                     required
                   />
                 </div>
@@ -392,7 +392,7 @@ const AdminContests = () => {
                 <textarea
                   value={problemForm.testCode}
                   onChange={(e) => setProblemForm({...problemForm, testCode: e.target.value})}
-                  className="w-full bg-[#050505] border border-white/10 px-4 py-5 text-[var(--color-primary)] font-mono focus:border-[var(--color-primary)]/40 transition-all text-xs h-32"
+                  className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-5 text-[var(--color-primary)] font-mono focus:border-[var(--color-primary)]/40 transition-all text-xs h-32"
                   placeholder="// Test cases execution logic"
                   required
                 />

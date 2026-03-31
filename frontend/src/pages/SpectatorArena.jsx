@@ -140,7 +140,7 @@ export default function SpectatorArena() {
 
     if (!currentBattle) {
         return (
-            <div className="h-screen flex items-center justify-center bg-[#050505]">
+            <div className="h-screen flex items-center justify-center bg-[var(--color-bg-dark)]">
                 <div className="text-[var(--color-primary)] animate-pulse tracking-widest font-mono text-xs uppercase">
                     Connecting to live match...
                 </div>
@@ -149,7 +149,7 @@ export default function SpectatorArena() {
     }
 
     return (
-        <div className="h-screen flex flex-col bg-[#050505] overflow-hidden">
+        <div className="h-screen flex flex-col bg-[var(--color-bg-dark)] overflow-hidden">
             {/* Top Banner */}
             <div className="h-12 border-b border-white/10 flex items-center justify-between px-6 shrink-0 bg-black z-50">
                 <div className="flex items-center gap-4">
@@ -157,11 +157,11 @@ export default function SpectatorArena() {
                     <span className="text-red-500 font-bold uppercase tracking-widest text-xs">Watching Live</span>
                 </div>
                 <div className="text-xs font-mono text-gray-500">
-                    Battle Code: <span className="text-white font-bold">{currentBattle.battleCode}</span>
+                    Battle Code: <span className="text-[var(--color-text-main)] font-bold">{currentBattle.battleCode}</span>
                 </div>
                 <button
                     onClick={() => navigate("/")}
-                    className="text-xs text-gray-400 hover:text-white uppercase tracking-widest transition-colors"
+                    className="text-xs text-gray-400 hover:text-[var(--color-text-main)] uppercase tracking-widest transition-colors"
                 >
                     Leave
                 </button>
@@ -172,7 +172,7 @@ export default function SpectatorArena() {
 
                 {/* PLAYER 1 */}
                 <div className="w-1/2 flex flex-col border-r border-[#1a1a1a]">
-                    <div className="h-10 bg-[#0a0a0a] border-b border-[#1a1a1a] flex items-center justify-between px-4 shrink-0">
+                    <div className="h-10 bg-[var(--color-bg-card)] border-b border-[#1a1a1a] flex items-center justify-between px-4 shrink-0">
                         <span className="text-[var(--color-primary)] font-bold text-xs uppercase tracking-wider">
                             P1: {currentBattle.player1?.username}
                         </span>
@@ -185,7 +185,7 @@ export default function SpectatorArena() {
                             </span>
                         </div>
                     </div>
-                    <div className="flex-1 min-h-0 bg-[#080808] flex flex-col">
+                    <div className="flex-1 min-h-0 bg-[var(--color-bg-card)] flex flex-col">
                         <div className="flex-1 min-h-0">
                             <CodeEditor
                                 language={LANGUAGES[p1State.language]?.monaco || "java"}
@@ -206,7 +206,7 @@ export default function SpectatorArena() {
 
                 {/* PLAYER 2 */}
                 <div className="w-1/2 flex flex-col">
-                    <div className="h-10 bg-[#0a0a0a] border-b border-[#1a1a1a] flex items-center justify-between px-4 shrink-0">
+                    <div className="h-10 bg-[var(--color-bg-card)] border-b border-[#1a1a1a] flex items-center justify-between px-4 shrink-0">
                         <span className="text-blue-500 font-bold text-xs uppercase tracking-wider">
                             P2: {currentBattle.player2?.username || "Awaiting..."}
                         </span>
@@ -219,7 +219,7 @@ export default function SpectatorArena() {
                             </span>
                         </div>
                     </div>
-                    <div className="flex-1 min-h-0 bg-[#080808] flex flex-col">
+                    <div className="flex-1 min-h-0 bg-[var(--color-bg-card)] flex flex-col">
                         {currentBattle.player2Id ? (
                             <>
                                 <div className="flex-1 min-h-0">
@@ -251,7 +251,7 @@ export default function SpectatorArena() {
             {/* Absolute center problem overlay (Optional: minimal view) */}
             <div className="absolute top-30 left-1/2 -translate-x-1/2 bg-black border border-[#222] px-6 py-2 shadow-2xl z-40 rounded flex flex-col items-center">
                 <span className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Problem</span>
-                <span className="text-sm font-bold text-white uppercase">{currentBattle.problem?.title}</span>
+                <span className="text-sm font-bold text-[var(--color-text-main)] uppercase">{currentBattle.problem?.title}</span>
                 {currentBattle.status === "FINISHED" && (
                     <div className="mt-2 text-xs font-black text-[var(--color-primary)] uppercase tracking-widest animate-pulse">
                         {currentBattle.winner ? `${currentBattle.winner.username} Wins` : "Draw"}
@@ -272,7 +272,7 @@ export default function SpectatorArena() {
                             style={{ borderRadius: "2px", animation: "fadeIn 0.3s ease-in" }}
                         >
                             <span>{alert.type === "PASTE" ? "📋" : "👁️"}</span>
-                            <span className="text-white font-black">{alert.username}</span>
+                            <span className="text-[var(--color-text-main)] font-black">{alert.username}</span>
                             <span>
                                 {alert.type === "PASTE"
                                     ? `pasted ${alert.charCount} chars`

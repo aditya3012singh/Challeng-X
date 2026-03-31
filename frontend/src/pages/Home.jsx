@@ -7,7 +7,7 @@ const Home = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] font-[family:var(--font-body)]">
+        <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] font-[family:var(--font-body)] transition-colors duration-300">
             {/* MINIMALIST BACKGROUND */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute inset-0 grid-bg opacity-[0.03]"></div>
@@ -30,18 +30,18 @@ const Home = () => {
                             <div className="w-24 h-24 mx-auto overflow-hidden flex items-center justify-center">
                                 <img 
                                     src={logo} 
-                                    alt="CodeArena Logo" 
+                                    alt="ChallegX Logo" 
                                     className="w-full h-full object-contain scale-[1.5] drop-shadow-[0_0_30px_rgba(255,170,0,0.3)]" 
                                 />
                             </div>
                         </div>
 
-                        <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.9] mb-8 font-[family:var(--font-heading)] uppercase text-white">
+                        <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.9] mb-8 font-[family:var(--font-heading)] uppercase text-[var(--color-text-main)]">
                             THE ULTIMATE<br />
-                            CODE<span className="text-[var(--color-primary)]">ARENA</span>
+                            CHALLEG<span className="text-[var(--color-primary)]">X</span>
                         </h1>
 
-                        <p className="max-w-2xl mx-auto text-slate-400 text-lg md:text-xl font-medium leading-relaxed mb-12 tracking-tight">
+                        <p className="max-w-2xl mx-auto text-[var(--color-text-muted)] text-lg md:text-xl font-medium leading-relaxed mb-12 tracking-tight">
                             {isAuthenticated
                                 ? "Welcome back. You're ready to play. Join a match and prove your skills in the arena."
                                 : "Master your algorithms, compete in intense real-time matches, and climb the global ranks. The next generation of competitive coding is here."}
@@ -57,7 +57,7 @@ const Home = () => {
                             </button>
                             <button
                                 onClick={() => navigate(isAuthenticated ? "/battles" : "/login")}
-                                className="px-10 py-5 border border-white/10 hover:border-white/40 text-white font-bold uppercase tracking-[0.1em] text-xs transition-all hover:bg-white/5 backdrop-blur-sm"
+                                className="px-10 py-5 border border-white/10 hover:border-white/40 text-[var(--color-text-main)] font-bold uppercase tracking-[0.1em] text-xs transition-all hover:bg-white/5 backdrop-blur-sm"
                                 style={{ borderRadius: "4px" }}
                             >
                                 {isAuthenticated ? "View Matches" : "Login"}
@@ -72,7 +72,7 @@ const Home = () => {
                         <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
                             <div>
                                 <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-4">Game Modes</div>
-                                <h2 className="text-5xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">Choose Game Mode</h2>
+                                <h2 className="text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)]">Choose Game Mode</h2>
                             </div>
                             <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em] mb-1">
                                 [ 04 Modes Available ]
@@ -113,7 +113,7 @@ const Home = () => {
                                 <div
                                     key={i}
                                     onClick={() => navigate(mode.path)}
-                                    className="group p-10 bg-[#0a0a0a] border border-white/5 hover:border-[var(--color-primary)]/50 transition-all relative overflow-hidden cursor-pointer"
+                                    className="group p-10 bg-[var(--color-bg-card)] border border-[var(--glass-border)] hover:border-[var(--color-primary)]/50 transition-all relative overflow-hidden cursor-pointer"
                                     style={{ borderRadius: "12px" }}
                                 >
                                     <div className="absolute top-0 right-0 p-6 text-[8px] font-bold text-slate-700 tracking-widest uppercase">
@@ -122,10 +122,10 @@ const Home = () => {
                                     <div className="text-[9px] font-bold text-[var(--color-primary)] tracking-[0.3em] mb-10 pl-1 uppercase">
                                         Mode 0{i + 1} // {mode.label}
                                     </div>
-                                    <h3 className="text-3xl font-black text-white mb-5 group-hover:text-[var(--color-primary)] transition-colors font-[family:var(--font-heading)] uppercase tracking-tight">
+                                    <h3 className="text-3xl font-black text-[var(--color-text-main)] mb-5 group-hover:text-[var(--color-primary)] transition-colors font-[family:var(--font-heading)] uppercase tracking-tight">
                                         {mode.title}
                                     </h3>
-                                    <p className="text-slate-400 text-sm leading-relaxed mb-10 font-medium tracking-tight h-20 overflow-hidden">
+                                    <p className="text-[var(--color-text-muted)] text-sm leading-relaxed mb-10 font-medium tracking-tight h-20 overflow-hidden">
                                         {mode.desc}
                                     </p>
                                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)] opacity-60 group-hover:opacity-100 transition-all pt-6 border-t border-white/5 inline-flex items-center gap-2">
@@ -145,30 +145,30 @@ const Home = () => {
                     <section className="py-40 bg-white/[0.005] border-y border-white/[0.03]">
                         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-32 items-center">
                             <div className="relative text-left">
-                                <div className="absolute -left-20 top-0 text-[120px] font-black text-white/[0.01] -z-10 tracking-tighter leading-none select-none">
+                                <div className="absolute -left-20 top-0 text-[120px] font-black text-[var(--color-text-main)]/[0.01] -z-10 tracking-tighter leading-none select-none">
                                     TOP 100
                                 </div>
-                                <h2 className="text-5xl md:text-7xl font-black text-white leading-[0.9] mb-8 tracking-tighter uppercase font-[family:var(--font-heading)]">
+                                <h2 className="text-5xl md:text-7xl font-black text-[var(--color-text-main)] leading-[0.9] mb-8 tracking-tighter uppercase font-[family:var(--font-heading)]">
                                     GLOBAL<br />
                                     <span className="text-[var(--color-primary)]">LEADERBOARD</span>
                                 </h2>
-                                <p className="text-slate-400 text-lg font-medium leading-relaxed mb-12 tracking-tight max-w-lg">
+                                <p className="text-[var(--color-text-muted)] text-lg font-medium leading-relaxed mb-12 tracking-tight max-w-lg">
                                     See where you stand against the world's most elite coders. Every battle won puts you closer to the top.
                                 </p>
                                 <div className="flex gap-16">
                                     <div>
-                                        <div className="text-5xl font-black text-white mb-1 tabular-nums">2.4M</div>
+                                        <div className="text-5xl font-black text-[var(--color-text-main)] mb-1 tabular-nums">2.4M</div>
                                         <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest pl-1">Problems Solved</div>
                                     </div>
                                     <div className="border-l border-white/10 pl-16">
-                                        <div className="text-5xl font-black text-white mb-1 tabular-nums">148K</div>
+                                        <div className="text-5xl font-black text-[var(--color-text-main)] mb-1 tabular-nums">148K</div>
                                         <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest pl-1">Active Coders</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="premium-card p-1" style={{ borderRadius: "2px" }}>
-                                <div className="bg-[#050505] p-10 md:p-14">
+                                <div className="bg-[var(--color-bg-dark)] p-10 md:p-14">
                                     <div className="space-y-8">
                                         {[
                                             { rank: "01", user: "codeNinja", elo: "1,842", status: "ONLINE" },
@@ -181,7 +181,7 @@ const Home = () => {
                                                 <div className="flex items-center gap-10">
                                                     <span className="text-[10px] font-bold text-slate-700 group-hover:text-[var(--color-primary)] tabular-nums">{p.rank}</span>
                                                     <div>
-                                                        <span className="text-sm font-black text-slate-300 group-hover:text-white uppercase tracking-wider transition-colors">{p.user}</span>
+                                                        <span className="text-sm font-black text-slate-300 group-hover:text-[var(--color-text-main)] uppercase tracking-wider transition-colors">{p.user}</span>
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <div className={`w-1 h-1 rounded-full ${p.status === 'ONLINE' ? 'bg-[var(--color-success)]' : 'bg-slate-800'}`}></div>
                                                             <span className="text-[8px] font-bold text-slate-600 tracking-tighter uppercase">{p.status}</span>

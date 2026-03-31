@@ -21,13 +21,13 @@ export const CodeSubmissionModal = ({
         <div className="border-b border-white/[0.03] px-10 py-8 flex justify-between items-center bg-white/[0.01]">
           <div>
             <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-2">Battle Room // Active</div>
-            <h3 className="text-2xl font-black text-white uppercase tracking-tighter">
+            <h3 className="text-2xl font-black text-[var(--color-text-main)] uppercase tracking-tighter">
               {selectedMatch.player1?.username} <span className="text-slate-600 px-2 font-mono">VS</span> {selectedMatch.player2?.username}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-white transition-colors text-2xl"
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors text-2xl"
           >
             ×
           </button>
@@ -36,10 +36,10 @@ export const CodeSubmissionModal = ({
         <div className="p-10 space-y-12">
           {/* Problem Display */}
           <div className="bg-white/[0.02] border-l-2 border-[var(--color-primary)] p-8 shadow-xl" style={{ borderRadius: "2px" }}>
-            <h4 className="text-xl font-black text-white mb-4 uppercase tracking-tight">
+            <h4 className="text-xl font-black text-[var(--color-text-main)] mb-4 uppercase tracking-tight">
               {selectedMatch.problem?.title}
             </h4>
-            <p className="text-slate-400 text-sm font-light leading-relaxed mb-8">
+            <p className="text-[var(--color-text-muted)] text-sm font-light leading-relaxed mb-8">
               {selectedMatch.problem?.description}
             </p>
             <div className="grid grid-cols-2 gap-8 pt-6 border-t border-white/5">
@@ -51,7 +51,7 @@ export const CodeSubmissionModal = ({
               </div>
               <div>
                 <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Constraints</p>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                   {selectedMatch.problem?.constraints}
                 </p>
               </div>
@@ -61,7 +61,7 @@ export const CodeSubmissionModal = ({
           {/* Code Editor */}
           <div className="space-y-6">
             <div className="flex justify-between items-end">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Code Transmission Layer</label>
+              <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.3em]">Code Transmission Layer</label>
               <div className="flex items-center gap-4">
                 <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Compiler:</span>
                 <select
@@ -69,8 +69,8 @@ export const CodeSubmissionModal = ({
                   onChange={(e) => setLanguage(e.target.value)}
                   className="bg-transparent text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest focus:outline-none cursor-pointer"
                 >
-                  <option value="java" className="bg-[#050505]">Java</option>
-                  <option value="cpp" className="bg-[#050505]">C++</option>
+                  <option value="java" className="bg-[var(--color-bg-dark)]">Java</option>
+                  <option value="cpp" className="bg-[var(--color-bg-dark)]">C++</option>
                 </select>
               </div>
             </div>
@@ -79,7 +79,7 @@ export const CodeSubmissionModal = ({
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="// Initiate logic sequence here..."
-              className="w-full h-96 bg-white/[0.01] border border-white/5 p-8 text-white font-mono text-sm focus:outline-none focus:border-[var(--color-primary)]/40 transition-all custom-scrollbar outline-none"
+              className="w-full h-96 bg-white/[0.01] border border-white/5 p-8 text-[var(--color-text-main)] font-mono text-sm focus:outline-none focus:border-[var(--color-primary)]/40 transition-all custom-scrollbar outline-none"
               style={{ borderRadius: "2px" }}
             />
           </div>
@@ -101,14 +101,14 @@ export const CodeSubmissionModal = ({
                 !selectedMatch.submissions?.length ||
                 selectedMatch.winnerId
               }
-              className="flex-1 py-5 border border-white/10 text-white/50 font-bold uppercase tracking-widest text-[10px] hover:text-white hover:border-white transition-all disabled:opacity-20"
+              className="flex-1 py-5 border border-white/10 text-[var(--color-text-main)]/50 font-bold uppercase tracking-widest text-[10px] hover:text-[var(--color-text-main)] hover:border-white transition-all disabled:opacity-20"
               style={{ borderRadius: "2px" }}
             >
               Resolve Victory
             </button>
             <button
               onClick={onClose}
-              className="px-8 py-5 text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:text-white transition-colors"
+              className="px-8 py-5 text-[var(--color-text-muted)] font-bold uppercase tracking-widest text-[10px] hover:text-[var(--color-text-main)] transition-colors"
             >
               Cancel
             </button>

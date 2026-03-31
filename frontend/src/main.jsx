@@ -8,17 +8,20 @@ import { store } from '../store/store.js'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { ErrorBoundary } from './components/ErrorBoundary.jsx'
 import { injectStore } from '../lib/axios.js'
+import { ThemeProvider } from './context/ThemeContext.jsx'
 
 injectStore(store);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      <ErrorBoundary>
-        <Router>
-          <App />
-        </Router>
-      </ErrorBoundary>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <Router>
+            <App />
+          </Router>
+        </ErrorBoundary>
+      </ThemeProvider>
     </Provider>
   </StrictMode>,
 )

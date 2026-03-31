@@ -14,6 +14,7 @@ import { getBattle, submitBattleCode, forfeitBattle } from "../../store/api/batt
 import { clearCurrentBattle } from "../../store/slices/battle.slice";
 import { BattleProblem } from "../components/BattleProblem";
 import { playSound } from "../utils/audio";
+import { useTheme } from "../context/ThemeContext";
 
 const LANGUAGES = {
   java: { monaco: "java", defaultCode: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World!");\n    }\n}` },
@@ -24,7 +25,7 @@ const WaitingForOpponent = ({ battleId, battleCode }) => {
   const inviteLink = `${window.location.origin}/battle/${battleId}/join`;
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-[#050505] relative overflow-hidden">
+    <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-[var(--color-bg-dark)] relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[var(--color-primary)] opacity-[0.03] blur-[100px] rounded-full"></div>
 
       <div className="relative z-10 max-w-md w-full">
@@ -36,13 +37,13 @@ const WaitingForOpponent = ({ battleId, battleCode }) => {
         </div>
 
         <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Signal Broadcast // Active</div>
-        <h2 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter font-[family:var(--font-heading)]">Scanning Node</h2>
+        <h2 className="text-4xl font-black text-[var(--color-text-main)] mb-6 uppercase tracking-tighter font-[family:var(--font-heading)]">Scanning Node</h2>
 
-        <p className="text-slate-500 text-sm font-light mb-12 leading-relaxed">
+        <p className="text-[var(--color-text-muted)] text-sm font-light mb-12 leading-relaxed">
           The arena is awaiting a second operator to authorize engagement. Distribute the access link to initialize the battle protocol.
         </p>
 
-        <div className="premium-card p-6 border border-white/10 bg-white/[0.02] text-xs font-mono text-slate-400 break-all mb-4" style={{ borderRadius: "2px" }}>
+        <div className="premium-card p-6 border border-white/10 bg-white/[0.02] text-xs font-mono text-[var(--color-text-muted)] break-all mb-4" style={{ borderRadius: "2px" }}>
           {inviteLink}
         </div>
 
@@ -60,7 +61,7 @@ const CountdownOverlay = ({ seconds }) => {
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
       <div className="text-center">
-        <h1 className="text-8xl font-black text-white mb-4 animate-pulse">{seconds}</h1>
+        <h1 className="text-8xl font-black text-[var(--color-text-main)] mb-4 animate-pulse">{seconds}</h1>
         <p className="text-[var(--color-primary)] uppercase tracking-widest text-sm font-bold">Battle begins in...</p>
       </div>
     </div>
@@ -69,7 +70,7 @@ const CountdownOverlay = ({ seconds }) => {
 
 const GameToast = ({ popup }) => {
   if (!popup) return null;
-  // Use CodeArena theme colors
+  // Use ChallegX theme colors
   const typeStyles = {
     success: "border-[var(--color-success)] text-[var(--color-success)]",
     error: "border-red-500 text-red-500",
@@ -90,7 +91,7 @@ const GameToast = ({ popup }) => {
 
   return (
     <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 pointer-events-none">
-      <div className={`backdrop-blur-md bg-[#050505] px-6 py-4 border ${style} flex items-center gap-3`} style={{ borderRadius: "2px" }}>
+      <div className={`backdrop-blur-md bg-[var(--color-bg-dark)] px-6 py-4 border ${style} flex items-center gap-3`} style={{ borderRadius: "2px" }}>
         <div className={`w-2 h-2 rounded-full ${dotColors[popup.type]} animate-ping absolute`}></div>
         <div className={`w-2 h-2 rounded-full ${dotColors[popup.type]}`}></div>
         <span className="font-bold tracking-[0.2em] uppercase text-xs">
@@ -105,14 +106,14 @@ const GameToast = ({ popup }) => {
 const LeaveConfirmModal = ({ onStay, onLeave }) => (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
     <div
-      className="relative bg-[#080808] border border-white/10 p-12 max-w-md w-full text-center shadow-2xl"
+      className="relative bg-[var(--color-bg-card)] border border-white/10 p-12 max-w-md w-full text-center shadow-2xl"
       style={{ borderRadius: "2px" }}
     >
       <div className="text-[10px] font-bold tracking-[0.4em] text-red-500 uppercase mb-8">System Alert // Security</div>
-      <h2 className="text-4xl font-black text-white mb-4 font-[family:var(--font-heading)] tracking-tighter uppercase">
+      <h2 className="text-4xl font-black text-[var(--color-text-main)] mb-4 font-[family:var(--font-heading)] tracking-tighter uppercase">
         Abandon Node?
       </h2>
-      <p className="text-slate-500 mb-10 text-sm font-light leading-relaxed">
+      <p className="text-[var(--color-text-muted)] mb-10 text-sm font-light leading-relaxed">
         Termination of an active battle protocol will result in an <span className="text-red-500 font-bold italic">Automatic Forfeit</span>. The opposing operator will secure the victory.
       </p>
       <div className="flex flex-col gap-4">
@@ -125,7 +126,7 @@ const LeaveConfirmModal = ({ onStay, onLeave }) => (
         </button>
         <button
           onClick={onLeave}
-          className="w-full py-4 border border-white/10 text-slate-600 hover:text-white hover:border-white transition-all text-[10px] font-bold uppercase tracking-widest"
+          className="w-full py-4 border border-white/10 text-slate-600 hover:text-[var(--color-text-main)] hover:border-white transition-all text-[10px] font-bold uppercase tracking-widest"
           style={{ borderRadius: "2px" }}
         >
           Disconnect Anyway
@@ -151,6 +152,7 @@ export default function Ide() {
   const { currentBattle, submissionResult } = useSelector(
     (state) => state.battle
   );
+  const { theme } = useTheme();
   // Keep a ref to the current user id so socket closures always see the latest value
   const { user } = useSelector((state) => state.auth);
   const userRef = useRef(user);
@@ -688,7 +690,7 @@ export default function Ide() {
         />
       )}
 
-      <div className="h-screen flex bg-[#050505] flex-col overflow-hidden">
+      <div className="h-screen flex bg-[var(--color-bg-dark)] flex-col overflow-hidden">
         {/* Draft saved toast */}
         <div
           className={`fixed bottom-4 right-4 z-50 px-4 py-2 bg-black border border-[var(--color-success)] text-[var(--color-success)] text-xs font-mono uppercase tracking-widest transition-all duration-500 ${draftSaved ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
@@ -706,7 +708,7 @@ export default function Ide() {
                 dispatch(clearCurrentBattle());
                 navigate("/");
               }}
-              className="px-6 py-2 border border-white/10 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-white hover:text-black transition-all"
+              className="px-6 py-2 border border-white/10 text-[var(--color-text-main)] font-bold uppercase tracking-widest text-[10px] hover:bg-white hover:text-black transition-all"
               style={{ borderRadius: "2px" }}
             >
               ← RETURN TO BASE
@@ -743,7 +745,7 @@ export default function Ide() {
           </div>
 
           {/* RIGHT — IDE */}
-          <div className="w-[65%] bg-[#080808] flex flex-col h-full">
+          <div className="w-[65%] bg-[var(--color-bg-card)] flex flex-col h-full">
             {isBattleLoading ? (
               <div className="p-6 space-y-4">
                 <Skeleton className="h-10 w-full" />
@@ -758,7 +760,7 @@ export default function Ide() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-black text-[var(--color-primary)] uppercase tracking-widest text-xs">Waiting for Opponent</p>
-                        <p className="text-[10px] text-gray-400 uppercase mt-1">Join Code: <span className="font-black text-white ml-2 text-sm">{currentBattle?.battleCode}</span></p>
+                        <p className="text-[10px] text-gray-400 uppercase mt-1">Join Code: <span className="font-black text-[var(--color-text-main)] ml-2 text-sm">{currentBattle?.battleCode}</span></p>
                       </div>
                       <div className="flex items-center gap-4 text-[10px] uppercase font-bold text-gray-500">
                         <span>Invite Link Copied</span>

@@ -71,16 +71,16 @@ export const TeamChat = ({ teamName, teamId, battleId, user }) => {
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex flex-col ${msg.type === 'system' ? 'items-center' : 'items-start'}`}>
                         {msg.type === 'system' ? (
-                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest italic my-2">{msg.text}</span>
+                            <span className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-widest italic my-2">{msg.text}</span>
                         ) : (
                             <div className={`max-w-[85%] ${msg.userId === user?.id ? 'ml-auto' : ''}`}>
-                                <div className={`text-[10px] font-bold mb-1 flex justify-between gap-4 ${msg.userId === user?.id ? 'text-[var(--color-primary)] flex-row-reverse' : 'text-slate-500'}`}>
+                                <div className={`text-[10px] font-bold mb-1 flex justify-between gap-4 ${msg.userId === user?.id ? 'text-[var(--color-primary)] flex-row-reverse' : 'text-[var(--color-text-muted)]'}`}>
                                     <span>{msg.userId === user?.id ? 'ME' : msg.sender}</span>
                                     <span className="opacity-40">{msg.timestamp}</span>
                                 </div>
                                 <div className={`p-3 border-l-2 text-sm ${
                                     msg.userId === user?.id 
-                                    ? 'bg-[var(--color-primary)]/10 border-[var(--color-primary)] text-white rounded-l-lg rounded-br-lg' 
+                                    ? 'bg-[var(--color-primary)]/10 border-[var(--color-primary)] text-[var(--color-text-main)] rounded-l-lg rounded-br-lg' 
                                     : 'bg-white/[0.03] border-slate-700 text-gray-200 rounded-r-lg rounded-bl-lg'
                                 }`}>
                                     {msg.text}
@@ -115,7 +115,7 @@ export const TeamChat = ({ teamName, teamId, battleId, user }) => {
                         onKeyDown={(e) => e.key === 'Enter' && sendMessage(inputText)}
                         maxLength={60}
                         placeholder="DEPLOY INTEL..."
-                        className="flex-1 bg-white/[0.02] border border-white/10 rounded-sm p-3 text-xs text-white focus:border-[var(--color-primary)] focus:outline-none transition-all placeholder:text-slate-700 placeholder:font-bold placeholder:tracking-widest"
+                        className="flex-1 bg-white/[0.02] border border-white/10 rounded-sm p-3 text-xs text-[var(--color-text-main)] focus:border-[var(--color-primary)] focus:outline-none transition-all placeholder:text-slate-700 placeholder:font-bold placeholder:tracking-widest"
                     />
                     <button
                         onClick={() => sendMessage(inputText)}

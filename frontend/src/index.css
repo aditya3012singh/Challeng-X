@@ -3,21 +3,35 @@
 
 @layer base {
     :root {
-        /* Classy Minimalist Palette */
+        /* Default Dark Mode */
         --color-bg-dark: #050505;
         --color-bg-card: #0a0a0a;
         --color-primary: #ffaa00;
-        /* Strategic Orange Accent */
         --color-secondary: #cc8800;
-        /* Muted Orange for secondary states */
         --color-accent: #ffaa00;
         --color-success: #10b981;
-        /* Clean Emerald for success */
         --color-text-main: #f8fafc;
         --color-text-muted: #64748b;
+        --glass-bg: rgba(5, 5, 5, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.05);
+        --card-hover-bg: rgba(255, 255, 255, 0.04);
 
         --font-heading: 'Outfit', sans-serif;
         --font-body: 'Inter', sans-serif;
+    }
+
+    [data-theme='light'] {
+        --color-bg-dark: #f8fafc;
+        --color-bg-card: #ffffff;
+        --color-primary: #ff8800;
+        --color-secondary: #cc6600;
+        --color-accent: #ff8800;
+        --color-success: #059669;
+        --color-text-main: #0f172a;
+        --color-text-muted: #475569;
+        --glass-bg: rgba(248, 250, 252, 0.8);
+        --glass-border: rgba(0, 0, 0, 0.05);
+        --card-hover-bg: rgba(0, 0, 0, 0.02);
     }
 
     body {
@@ -25,6 +39,7 @@
         color: var(--color-text-main);
         font-family: var(--font-body);
         overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     h1,
@@ -53,13 +68,13 @@
 
     /* Classy Card Styles */
     .premium-card {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: var(--color-bg-card);
+        border: 1px solid var(--glass-border);
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .premium-card:hover {
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--card-hover-bg);
         border-color: rgba(255, 170, 0, 0.2);
         transform: translateY(-4px);
     }

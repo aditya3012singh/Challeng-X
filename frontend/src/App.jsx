@@ -144,7 +144,7 @@ function App() {
 
   if (shouldBlockUI) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-dark)]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
           <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Connecting...</div>
@@ -159,9 +159,9 @@ function App() {
         position="top-right"
         toastOptions={{
           style: {
-            background: '#0a0a0a',
-            color: '#fff',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: 'var(--color-bg-card)',
+            color: 'var(--color-text-main)',
+            border: '1px solid var(--glass-border)',
             fontSize: '12px',
             fontFamily: 'var(--font-mono)',
             borderRadius: '2px',
@@ -169,7 +169,7 @@ function App() {
           success: {
             iconTheme: {
               primary: 'var(--color-primary)',
-              secondary: '#000',
+              secondary: 'var(--color-bg-dark)',
             },
           },
         }}

@@ -248,13 +248,13 @@ export const TeamBattle = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-16 font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] py-16 font-[family:var(--font-body)]">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header Section */}
         <div className="mb-20 text-center">
           <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Team Battles</div>
-          <h1 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Team Battle</h1>
-          <p className="text-slate-500 text-lg font-light max-w-2xl mx-auto">Work together with your team to solve problems and win matches.</p>
+          <h1 className="text-6xl font-black text-[var(--color-text-main)] mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Team Battle</h1>
+          <p className="text-[var(--color-text-muted)] text-lg font-light max-w-2xl mx-auto">Work together with your team to solve problems and win matches.</p>
         </div>
 
         {/* Quick Action Buttons */}
@@ -268,7 +268,7 @@ export const TeamBattle = () => {
           </button>
           <button
             onClick={() => setShowJoinBattleModal(true)}
-            className="px-10 py-4 border border-white/10 text-white font-bold uppercase tracking-widest text-xs hover:border-white transition-all transform hover:-translate-y-1"
+            className="px-10 py-4 border border-white/10 text-[var(--color-text-main)] font-bold uppercase tracking-widest text-xs hover:border-white transition-all transform hover:-translate-y-1"
             style={{ borderRadius: "2px" }}
           >
             Join Team Battle
@@ -352,22 +352,22 @@ export const TeamBattle = () => {
         {/* REUSABLE CONFIRMATION MODAL */}
         {showConfirmModal && (
           <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
-            <div className="max-w-md w-full bg-[#0a0a0a] border border-white/10 p-10 shadow-2xl relative overflow-hidden" style={{ borderRadius: "2px" }}>
+            <div className="max-w-md w-full bg-[var(--color-bg-card)] border border-white/10 p-10 shadow-2xl relative overflow-hidden" style={{ borderRadius: "2px" }}>
               <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50" />
               <div className="text-[10px] font-bold tracking-[0.4em] text-red-500 uppercase mb-6">Action Confirmation</div>
-              <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">{confirmConfig.title}</h3>
-              <p className="text-slate-500 text-xs font-mono leading-relaxed mb-10">{confirmConfig.message}</p>
+              <h3 className="text-2xl font-black text-[var(--color-text-main)] uppercase tracking-tight mb-4">{confirmConfig.title}</h3>
+              <p className="text-[var(--color-text-muted)] text-xs font-mono leading-relaxed mb-10">{confirmConfig.message}</p>
               <div className="flex gap-4">
                 <button 
                   onClick={() => setShowConfirmModal(false)}
-                  className="flex-1 py-4 border border-white/5 text-slate-500 font-bold uppercase tracking-widest text-[9px] hover:text-white transition-colors"
+                  className="flex-1 py-4 border border-white/5 text-[var(--color-text-muted)] font-bold uppercase tracking-widest text-[9px] hover:text-[var(--color-text-main)] transition-colors"
                   style={{ borderRadius: "2px" }}
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={() => { confirmConfig.action(); setShowConfirmModal(false); }}
-                  className="flex-1 py-4 bg-red-500 text-white font-black uppercase tracking-widest text-[9px] hover:bg-red-400 transition-all shadow-xl"
+                  className="flex-1 py-4 bg-red-500 text-[var(--color-text-main)] font-black uppercase tracking-widest text-[9px] hover:bg-red-400 transition-all shadow-xl"
                   style={{ borderRadius: "2px" }}
                 >
                   Confirm

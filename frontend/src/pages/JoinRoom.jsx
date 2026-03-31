@@ -32,7 +32,7 @@ const JoinRoom = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] flex items-center justify-center px-4">
       {/* MINIMALIST BACKGROUND DECOR */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.02] blur-[150px] rounded-full"></div>
@@ -41,10 +41,10 @@ const JoinRoom = () => {
       <div className="premium-card w-full max-w-md p-16 text-center shadow-2xl relative z-10" style={{ borderRadius: "2px" }}>
         <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">Battle Protocol</div>
 
-        <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
+        <h1 className="text-5xl font-black text-[var(--color-text-main)] mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
           Join Room
         </h1>
-        <p className="text-slate-500 text-sm font-light mb-12">
+        <p className="text-[var(--color-text-muted)] text-sm font-light mb-12">
           Enter the synchronization code to join the arena.
         </p>
 
@@ -55,7 +55,7 @@ const JoinRoom = () => {
               value={code}
               onChange={handleChange}
               placeholder="000 000"
-              className="w-full text-center tracking-[0.4em] text-4xl py-6 bg-white/[0.02] border border-white/5 text-white focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono"
+              className="w-full text-center tracking-[0.4em] text-4xl py-6 bg-white/[0.02] border border-white/5 text-[var(--color-text-main)] focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono"
               style={{ borderRadius: "2px" }}
             />
           </div>

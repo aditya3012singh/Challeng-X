@@ -72,7 +72,7 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
         style={{ borderRadius: "2px" }}
       >
         <button
-          className="absolute top-8 right-8 text-slate-500 hover:text-white transition-colors text-xl"
+          className="absolute top-8 right-8 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors text-xl"
           onClick={onClose}
         >
           ✕
@@ -80,14 +80,14 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
 
         <div className="mb-10">
           <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Battle Protocol // Join</div>
-          <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">
+          <h2 className="text-4xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)]">
             Sync Connection
           </h2>
         </div>
 
         <div className="flex gap-10 border-b border-white/[0.03] mb-10">
           <button
-            className={`pb-4 px-2 text-[10px] font-bold tracking-[0.2em] transition-all relative uppercase ${joinMethod === "code" ? "text-[var(--color-primary)]" : "text-slate-500 hover:text-white"
+            className={`pb-4 px-2 text-[10px] font-bold tracking-[0.2em] transition-all relative uppercase ${joinMethod === "code" ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]"
               }`}
             onClick={() => setJoinMethod("code")}
           >
@@ -95,7 +95,7 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
             {joinMethod === "code" && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--color-primary)]"></div>}
           </button>
           <button
-            className={`pb-4 px-2 text-[10px] font-bold tracking-[0.2em] transition-all relative uppercase ${joinMethod === "browse" ? "text-[var(--color-primary)]" : "text-slate-500 hover:text-white"
+            className={`pb-4 px-2 text-[10px] font-bold tracking-[0.2em] transition-all relative uppercase ${joinMethod === "browse" ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]"
               }`}
             onClick={() => setJoinMethod("browse")}
           >
@@ -106,17 +106,17 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
 
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
           <div className="mb-10">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">Identify Your Cluster</label>
+            <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-4">Identify Your Cluster</label>
             <select
-              className="w-full bg-white/[0.02] border border-white/5 py-5 px-6 text-white focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono appearance-none"
+              className="w-full bg-white/[0.02] border border-white/5 py-5 px-6 text-[var(--color-text-main)] focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono appearance-none"
               value={team2Id}
               onChange={(e) => setTeam2Id(e.target.value)}
               required
               style={{ borderRadius: "2px" }}
             >
-              <option value="" className="bg-[#050505]">-- Select Cluster Node --</option>
+              <option value="" className="bg-[var(--color-bg-dark)]">-- Select Cluster Node --</option>
               {teams?.map((team) => (
-                <option key={team.id} value={team.id} className="bg-[#050505]">
+                <option key={team.id} value={team.id} className="bg-[var(--color-bg-dark)]">
                   {team.name} ({team.members?.length || 0} Members)
                 </option>
               ))}
@@ -126,14 +126,14 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
           {joinMethod === "code" ? (
             <form onSubmit={handleJoinWithCode} className="space-y-10">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4 text-center">Enter Synchronization Hash</label>
+                <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-4 text-center">Enter Synchronization Hash</label>
                 <input
                   type="text"
                   placeholder="000 000"
                   value={joinCodeInput}
                   onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
                   maxLength="6"
-                  className="w-full bg-white/[0.02] border border-white/5 py-6 px-6 text-white text-center font-mono text-4xl tracking-widest focus:outline-none focus:border-[var(--color-primary)]/40 transition-all"
+                  className="w-full bg-white/[0.02] border border-white/5 py-6 px-6 text-[var(--color-text-main)] text-center font-mono text-4xl tracking-widest focus:outline-none focus:border-[var(--color-primary)]/40 transition-all"
                   style={{ borderRadius: "2px" }}
                 />
               </div>
@@ -160,15 +160,15 @@ export const JoinBattleModal = ({ isOpen, onClose, teams }) => {
                   <div key={battle.id} className="p-6 bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group" style={{ borderRadius: "2px" }}>
                     <div className="flex justify-between items-start mb-6">
                       <div>
-                        <h3 className="text-lg font-bold text-white mb-1">{battle.team1Name}</h3>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em]">Created by {battle.createdBy}</p>
+                        <h3 className="text-lg font-bold text-[var(--color-text-main)] mb-1">{battle.team1Name}</h3>
+                        <p className="text-[9px] text-[var(--color-text-muted)] font-bold uppercase tracking-[0.2em]">Created by {battle.createdBy}</p>
                       </div>
                       <div className="px-3 py-1 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-widest">
                         {battle.maxTeamSize}v{battle.maxTeamSize}
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-4">
-                      <div className="text-[10px] font-mono text-slate-500 tracking-widest uppercase">IDLE // {battle.joinCode}</div>
+                      <div className="text-[10px] font-mono text-[var(--color-text-muted)] tracking-widest uppercase">IDLE // {battle.joinCode}</div>
                       <button
                         className="px-6 py-2 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all"
                         onClick={() => handleJoinBattle(battle.id)}

@@ -18,13 +18,13 @@ export class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-center p-6 text-white">
+                <div className="min-h-screen bg-[var(--color-bg-dark)] flex flex-col items-center justify-center text-center p-6 text-[var(--color-text-main)]">
                     <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
                         <span className="text-red-500 text-3xl">⚠️</span>
                     </div>
                     <div className="text-[10px] font-bold tracking-[0.4em] text-red-500 uppercase mb-4">System Fault</div>
                     <h1 className="text-3xl font-black mb-4 uppercase tracking-tighter">Critical Node Failure</h1>
-                    <p className="text-slate-400 max-w-md mb-8 text-sm">
+                    <p className="text-[var(--color-text-muted)] max-w-md mb-8 text-sm">
                         The interface encountered an unexpected runtime anomaly. Diagnostics have been logged.
                     </p>
                     <button

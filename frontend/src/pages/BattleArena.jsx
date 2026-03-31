@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useTheme } from "../context/ThemeContext";
 import { getSocket } from "../../lib/socket";
 import { getBattle, submitBattleCode, forfeitBattle } from "../../store/api/battle.thunk";
 import { clearCurrentBattle } from "../../store/slices/battle.slice";
@@ -31,11 +32,11 @@ const BattleArena = () => {
     const { currentBattle, loading } = useSelector((state) => state.battle);
     const { problem, player1, player2 } = currentBattle || {};
     const opponent = player1?.id === user?.id ? player2 : player1;
+    const { theme } = useTheme();
 
     // Editor State
     const [code, setCode] = useState("");
     const [language, setLanguage] = useState("java");
-    const [theme, setTheme] = useState("vs-dark");
 
     // Match State
     const [status, setStatus] = useState("idle"); // idle, running, result, finished
@@ -471,16 +472,16 @@ const BattleArena = () => {
                                         </div>
                                         <div className="space-y-2 opacity-80">
                                             <div className="flex gap-2">
-                                                <span className="text-slate-500 w-20">Input:</span>
-                                                <span className="text-white break-all">{res.input}</span>
+                                                <span className="text-[var(--color-text-muted)] w-20">Input:</span>
+                                                <span className="text-[var(--color-text-main)] break-all">{res.input}</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                <span className="text-slate-500 w-20">Expected:</span>
+                                                <span className="text-[var(--color-text-muted)] w-20">Expected:</span>
                                                 <span className="text-green-400 break-all">{res.expected}</span>
                                             </div>
                                             {!res.passed && (
                                                 <div className="flex gap-2">
-                                                    <span className="text-slate-500 w-20">Actual:</span>
+                                                    <span className="text-[var(--color-text-muted)] w-20">Actual:</span>
                                                     <span className="text-red-400 break-all">{res.actual || (res.error ? "Error" : "N/A")}</span>
                                                 </div>
                                             )}
@@ -515,7 +516,7 @@ const BattleArena = () => {
 
     if ((loading && !currentBattle) || !currentBattle || !problem) {
         return (
-            <div className="h-screen flex items-center justify-center bg-[#050505]">
+            <div className="h-screen flex items-center justify-center bg-[var(--color-bg-dark)]">
                 <div className="flex flex-col items-center gap-6">
                     <div className="relative">
                         <div className="w-16 h-16 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
@@ -530,21 +531,21 @@ const BattleArena = () => {
     }
 
     return (
-        <div className="h-screen bg-[#050505] text-slate-300 flex flex-col overflow-hidden font-mono selection:bg-[var(--color-primary)] selection:text-black">
+        <div className="h-screen bg-[var(--color-bg-dark)] text-slate-300 flex flex-col overflow-hidden font-mono selection:bg-[var(--color-primary)] selection:text-black">
 
             {/* MATCH HEADER */}
-            <header className="h-14 border-b border-white/5 bg-[#0a0a0a] flex items-center justify-between px-6 shrink-0 relative z-40">
+            <header className="h-14 border-b border-white/5 bg-[var(--color-bg-card)] flex items-center justify-between px-6 shrink-0 relative z-40">
                 <div className="flex items-center gap-6">
                     <button onClick={() => navigate('/')} className="hover:text-[var(--color-primary)] transition-colors">
                         <ChevronLeft size={20} />
                     </button>
                     <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-ping" />
-                        <h1 className="text-sm font-black tracking-tighter uppercase text-white flex items-center gap-3">
+                        <h1 className="text-sm font-black tracking-tighter uppercase text-[var(--color-text-main)] flex items-center gap-3">
                             Battle Code: <span className="text-[var(--color-primary)] font-mono">{currentBattle?.battleCode || "......"}</span>
                             <button 
                                 onClick={copySpectateLink}
-                                className="ml-2 px-2 py-1 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[9px] text-slate-400 hover:text-white flex items-center gap-2"
+                                className="ml-2 px-2 py-1 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[9px] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] flex items-center gap-2"
                                 style={{ borderRadius: "2px" }}
                                 title="Copy Spectate Link"
                             >
@@ -575,7 +576,7 @@ const BattleArena = () => {
             <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
 
                 {/* MOBILE TABS - PREMIUM SEGMENTED CONTROL */}
-                <div className="flex lg:hidden bg-[#0a0a0a] border-b border-white/10 shrink-0 h-12 px-2 items-center">
+                <div className="flex lg:hidden bg-[var(--color-bg-card)] border-b border-white/10 shrink-0 h-12 px-2 items-center">
                     <div className="flex w-full bg-white/5 rounded-lg p-1 relative h-9">
                         {[
                             { id: 'problem', label: 'Problem', icon: Target },
@@ -586,7 +587,7 @@ const BattleArena = () => {
                             <button
                                 key={tab.id}
                                 onClick={() => setMobileTab(tab.id)}
-                                className={`flex-1 flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-colors relative z-10 ${mobileTab === tab.id ? "text-white" : "text-slate-500 hover:text-slate-300"}`}
+                                className={`flex-1 flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-colors relative z-10 ${mobileTab === tab.id ? "text-[var(--color-text-main)]" : "text-[var(--color-text-muted)] hover:text-slate-300"}`}
                             >
                                 <tab.icon size={11} />
                                 <span className={isMobile ? "hidden xs:inline" : "inline"}>{tab.label}</span>
@@ -608,7 +609,7 @@ const BattleArena = () => {
 
                 {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
                 <div
-                    className={`min-h-0 border-r border-white/5 bg-[#080808] relative group/sidebar shrink-0
+                    className={`min-h-0 border-r border-white/5 bg-[var(--color-bg-card)] relative group/sidebar shrink-0
                         ${mobileTab === "problem" || mobileTab === "console" ? "flex flex-col" : "hidden lg:flex lg:flex-col"}`}
                     style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
                 >
@@ -650,8 +651,8 @@ const BattleArena = () => {
                                         </div>
                                     </div>
                                     <div className="space-y-4 max-w-xs">
-                                        <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-white">Signal Blocked</h3>
-                                        <p className="text-[10px] text-slate-500 font-mono italic leading-relaxed">
+                                        <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--color-text-main)]">Signal Blocked</h3>
+                                        <p className="text-[10px] text-[var(--color-text-muted)] font-mono italic leading-relaxed">
                                             Mission objectives are encrypted. The data stream will initialize once an opponent synchronizes with this sector.
                                         </p>
                                         <div className="pt-4">
@@ -670,8 +671,8 @@ const BattleArena = () => {
                                                 {problem?.difficulty || "MISSION DATA"}
                                             </div>
                                         </div>
-                                        <h2 className="text-xl lg:text-2xl font-black text-white mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem?.title}</h2>
-                                        <div className="prose prose-invert prose-sm max-w-none text-slate-400 font-light leading-relaxed mb-8 lg:mb-12">
+                                        <h2 className="text-xl lg:text-2xl font-black text-[var(--color-text-main)] mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem?.title}</h2>
+                                        <div className="prose prose-invert prose-sm max-w-none text-[var(--color-text-muted)] font-light leading-relaxed mb-8 lg:mb-12">
                                             {problem?.description}
                                         </div>
                                     </section>
@@ -684,11 +685,11 @@ const BattleArena = () => {
                                             <div className="space-y-4">
                                                 {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
                                                     <div key={i} className="bg-white/5 border border-white/5 p-4 rounded-sm">
-                                                        <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">Example {i + 1}</div>
+                                                        <div className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-3">Example {i + 1}</div>
                                                         <div className="grid grid-cols-1 gap-4">
                                                             <div>
                                                                 <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Input</div>
-                                                                <pre className="p-3 bg-black/40 text-[11px] text-white font-mono overflow-x-auto border border-white/5">{tc.input}</pre>
+                                                                <pre className="p-3 bg-black/40 text-[11px] text-[var(--color-text-main)] font-mono overflow-x-auto border border-white/5">{tc.input}</pre>
                                                             </div>
                                                             <div>
                                                                 <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Expected Output</div>
@@ -708,7 +709,7 @@ const BattleArena = () => {
                                             </h3>
                                             <ul className="space-y-3">
                                                 {(typeof problem.constraints === 'string' ? problem.constraints.split('\n') : problem.constraints).map((c, i) => (
-                                                    <li key={i} className="flex items-start gap-3 text-[11px] lg:text-xs text-slate-500 italic">
+                                                    <li key={i} className="flex items-start gap-3 text-[11px] lg:text-xs text-[var(--color-text-muted)] italic">
                                                         <div className="mt-1.5 w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_5px_var(--color-primary)]" />
                                                         {c}
                                                     </li>
@@ -725,11 +726,11 @@ const BattleArena = () => {
 
                     {/* ACTIONS POD - Desktop Only here, mobile shows it inside editor tab */}
                     {!isMobile && (
-                        <div className="p-6 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0">
+                        <div className="p-6 bg-[var(--color-bg-card)] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0">
                             <button
                                 onClick={() => handleRun("RUN")}
                                 disabled={status === "running"}
-                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-white hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2"
+                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] hover:border-white hover:text-[var(--color-text-main)] transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
                                 {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run Test
                             </button>
@@ -745,20 +746,20 @@ const BattleArena = () => {
                 </div>
 
                 {/* CENTER - CODE EDITOR */}
-                <div className={`flex-1 min-h-0 flex flex-col bg-[#050505] min-w-0 lg:min-w-[400px] 
+                <div className={`flex-1 min-h-0 flex flex-col bg-[var(--color-bg-dark)] min-w-0 lg:min-w-[400px] 
                     ${mobileTab === "editor" ? "flex" : "hidden lg:flex"}`}>
                     {/* EDITOR TOOLBAR */}
-                    <div className="h-10 lg:h-12 border-b border-white/5 bg-[#080808] flex items-center justify-between px-4 lg:px-6 shrink-0">
+                    <div className="h-10 lg:h-12 border-b border-white/5 bg-[var(--color-bg-card)] flex items-center justify-between px-4 lg:px-6 shrink-0">
                         <div className="flex items-center gap-4 lg:gap-6">
                             <div className="flex items-center gap-2 border-r border-white/10 pr-4 lg:pr-6">
-                                <Globe size={14} className="text-slate-500" />
+                                <Globe size={14} className="text-[var(--color-text-muted)]" />
                                 <select
                                     value={language}
                                     onChange={handleLanguageChange}
-                                    className="bg-transparent text-[9px] lg:text-[10px] font-black text-white outline-none uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"
+                                    className="bg-transparent text-[9px] lg:text-[10px] font-black text-[var(--color-text-main)] outline-none uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"
                                 >
                                     {Object.keys(LANGUAGES).map(lang => (
-                                        <option key={lang} value={lang} className="bg-[#0a0a0a]">{lang}</option>
+                                        <option key={lang} value={lang} className="bg-[var(--color-bg-card)]">{lang}</option>
                                     ))}
                                 </select>
                             </div>
@@ -766,7 +767,7 @@ const BattleArena = () => {
                             {isMobile && (
                                 <button
                                     onClick={() => setShowMobileTools(!showMobileTools)}
-                                    className={`p-2 rounded-sm border transition-all ${showMobileTools ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/40 text-[var(--color-primary)]' : 'bg-white/5 border-white/10 text-slate-500'}`}
+                                    className={`p-2 rounded-sm border transition-all ${showMobileTools ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/40 text-[var(--color-primary)]' : 'bg-white/5 border-white/10 text-[var(--color-text-muted)]'}`}
                                 >
                                     <MousePointer2 size={14} />
                                 </button>
@@ -778,7 +779,7 @@ const BattleArena = () => {
                     <div className="flex-1 relative">
                         <Editor
                             height="100%"
-                            theme="vs-dark"
+                            theme={theme === 'dark' ? 'vs-dark' : 'light'}
                             language={LANGUAGES[language].monaco}
                             value={code}
                             onChange={(val) => setCode(val)}
@@ -809,7 +810,7 @@ const BattleArena = () => {
 
                         {/* MOBILE D-PAD */}
                         {isMobile && showMobileTools && (
-                            <div className="absolute bottom-6 right-6 z-50 flex flex-col items-center gap-2 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-90 sm:scale-100">
+                            <div className="absolute bottom-6 right-6 z-50 flex flex-col items-center gap-2 bg-[var(--color-bg-card)]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-90 sm:scale-100">
                                 <button onClick={() => moveCursor('up')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronUp size={20} /></button>
                                 <div className="flex gap-2">
                                     <button onClick={() => moveCursor('left')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronLeft size={20} /></button>
@@ -822,11 +823,11 @@ const BattleArena = () => {
 
                     {/* MOBILE ACTIONS POD - STICKY FOR BETTER ACCESSIBILITY */}
                     {isMobile && (
-                        <div className="sticky bottom-0 left-0 right-0 p-4 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+                        <div className="sticky bottom-0 left-0 right-0 p-4 bg-[var(--color-bg-card)] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
                             <button
                                 onClick={() => handleRun("RUN")}
                                 disabled={status === "running"}
-                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] flex items-center justify-center gap-2 active:scale-95 transition-all"
                             >
                                 {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run
                             </button>
@@ -843,7 +844,7 @@ const BattleArena = () => {
 
                 {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Resizable, Mobile: Tabbed) */}
                 <aside 
-                    className={`min-h-0 border-l border-white/5 bg-[#080808] shrink-0 relative group/match
+                    className={`min-h-0 border-l border-white/5 bg-[var(--color-bg-card)] shrink-0 relative group/match
                         ${mobileTab === "status" ? "flex flex-col w-full" : "hidden lg:flex lg:flex-col"}`}
                     style={{ width: isMobile ? '100%' : `${rightSidebarWidth}px` }}
                 >
@@ -854,14 +855,14 @@ const BattleArena = () => {
                             className={`absolute -left-1 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizingRight ? 'bg-[var(--color-primary)]' : 'hover:bg-[var(--color-primary)]/30'}`}
                         />
                     )}
-                    <div className="p-6 border-b border-white/5 bg-[#0a0a0a]">
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Match Status</div>
+                    <div className="p-6 border-b border-white/5 bg-[var(--color-bg-card)]">
+                        <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-8">Match Status</div>
 
                         <div className="space-y-8">
                             {/* LOCAL PROGRESS */}
                             <div className="space-y-3">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-[10px] font-black text-white uppercase tracking-wider">{user?.username}</span>
+                                    <span className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-wider">{user?.username}</span>
                                     <span className="text-[var(--color-primary)] font-mono text-xs font-black">{myProgress.passed}/{myProgress.total || 0}</span>
                                 </div>
                                 <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
@@ -878,13 +879,13 @@ const BattleArena = () => {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center group">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{opponent?.username || "Awaiting..."}</span>
+                                        <span className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">{opponent?.username || "Awaiting..."}</span>
                                         <div className="flex items-center gap-1.5 mt-1">
                                             <div className={`w-1 h-1 rounded-full ${opponentStatus === 'submitting' ? 'bg-[var(--color-primary)] animate-ping' : 'bg-slate-600'}`} />
                                             <span className="text-[8px] uppercase font-bold text-slate-600">{opponentStatus === 'submitting' ? 'Transmitting Data...' : 'Idle'}</span>
                                         </div>
                                     </div>
-                                    <span className="text-slate-500 font-mono text-xs">{opponentProgress.passed}/{opponentProgress.total || 0}</span>
+                                    <span className="text-[var(--color-text-muted)] font-mono text-xs">{opponentProgress.passed}/{opponentProgress.total || 0}</span>
                                 </div>
 
                                 {opponentAlert && (
@@ -905,7 +906,7 @@ const BattleArena = () => {
                     </div>
 
                     <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Anti-Cheat Stream</div>
+                        <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-4">Anti-Cheat Stream</div>
                         <div className="space-y-4">
                             {opponentAlert ? (
                                 <div className="p-4 bg-red-900/10 border-l-2 border-red-500">
@@ -962,7 +963,7 @@ const BattleArena = () => {
                         />
                     ))}
 
-                    <div className="max-w-2xl w-full bg-[#0a0a0a]/80 border border-white/10 p-12 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "4px" }}>
+                    <div className="max-w-2xl w-full bg-[var(--color-bg-card)]/80 border border-white/10 p-12 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "4px" }}>
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent opacity-50" />
 
                         <div className="flex flex-col items-center">
@@ -981,11 +982,11 @@ const BattleArena = () => {
                                 {winner === user?.id ? "Superiority Established" : "Signal Terminated"}
                             </div>
 
-                            <h1 className="text-8xl font-black text-white tracking-tighter uppercase mb-2 leading-none">
+                            <h1 className="text-8xl font-black text-[var(--color-text-main)] tracking-tighter uppercase mb-2 leading-none">
                                 {winner === user?.id ? "You Won" : "Match Over"}
                             </h1>
 
-                            <p className="text-slate-500 text-sm font-medium mb-12 uppercase tracking-[0.2em]">
+                            <p className="text-[var(--color-text-muted)] text-sm font-medium mb-12 uppercase tracking-[0.2em]">
                                 {winner === user?.id
                                     ? "Competitive objectives completed with high efficiency."
                                     : "Operational failure. Opponent achieved target first."}
@@ -995,7 +996,7 @@ const BattleArena = () => {
                             <div className="grid grid-cols-3 gap-8 w-full mb-12 p-8 bg-white/5 border border-white/5" style={{ borderRadius: "2px" }}>
                                 <div className="flex flex-col items-center">
                                     <span className="text-[9px] text-slate-600 font-black uppercase mb-2 tracking-widest">Time Taken</span>
-                                    <span className="text-xl text-white font-mono">{formatElapsed(currentBattle?.startedAt)}</span>
+                                    <span className="text-xl text-[var(--color-text-main)] font-mono">{formatElapsed(currentBattle?.startedAt)}</span>
                                 </div>
                                 <div className="flex flex-col items-center">
                                     <span className="text-[9px] text-slate-600 font-black uppercase mb-2 tracking-widest">Accuracy</span>
@@ -1003,14 +1004,14 @@ const BattleArena = () => {
                                 </div>
                                 <div className="flex flex-col items-center">
                                     <span className="text-[9px] text-slate-600 font-black uppercase mb-2 tracking-widest">Test Cases</span>
-                                    <span className="text-xl text-white font-mono">{myProgress.passed}/{myProgress.total || problem.testcases?.length || 10}</span>
+                                    <span className="text-xl text-[var(--color-text-main)] font-mono">{myProgress.passed}/{myProgress.total || problem.testcases?.length || 10}</span>
                                 </div>
                             </div>
 
                             <div className="flex gap-6 w-full">
                                 <button
                                     onClick={() => navigate('/battles')}
-                                    className="flex-1 py-5 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-[11px] hover:bg-white hover:text-black transition-all"
+                                    className="flex-1 py-5 bg-white/5 border border-white/10 text-[var(--color-text-main)] font-black uppercase tracking-widest text-[11px] hover:bg-white hover:text-black transition-all"
                                 >
                                     Return to Lobby
                                 </button>
@@ -1039,7 +1040,7 @@ const BattleArena = () => {
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="w-full max-w-md bg-[#0a0a0a] border border-white/10 p-10 shadow-2xl relative overflow-hidden"
+                            className="w-full max-w-md bg-[var(--color-bg-card)] border border-white/10 p-10 shadow-2xl relative overflow-hidden"
                             style={{ borderRadius: "2px" }}
                         >
                             <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50" />
@@ -1049,22 +1050,22 @@ const BattleArena = () => {
                                 <div className="text-[10px] font-black uppercase tracking-[0.4em]">Signal Termination</div>
                             </div>
                             
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4 leading-tight">Abort Match?</h3>
-                            <p className="text-slate-500 text-xs font-mono leading-relaxed mb-10">
+                            <h3 className="text-2xl font-black text-[var(--color-text-main)] uppercase tracking-tight mb-4 leading-tight">Abort Match?</h3>
+                            <p className="text-[var(--color-text-muted)] text-xs font-mono leading-relaxed mb-10">
                                 This action will result in an immediate forfeit. Your performance metrics will be recorded as a failure for this sector.
                             </p>
                             
                             <div className="flex gap-4">
                                 <button 
                                     onClick={() => setShowForfeitModal(false)}
-                                    className="flex-1 py-4 border border-white/5 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:text-white hover:bg-white/5 transition-all"
+                                    className="flex-1 py-4 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[10px] hover:text-[var(--color-text-main)] hover:bg-white/5 transition-all"
                                     style={{ borderRadius: "2px" }}
                                 >
                                     Cancel
                                 </button>
                                 <button 
                                     onClick={confirmForfeit}
-                                    className="flex-1 py-4 bg-red-500 text-white font-black uppercase tracking-widest text-[10px] hover:bg-red-400 transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                                    className="flex-1 py-4 bg-red-500 text-[var(--color-text-main)] font-black uppercase tracking-widest text-[10px] hover:bg-red-400 transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
                                     style={{ borderRadius: "2px" }}
                                 >
                                     Confirm Abandon

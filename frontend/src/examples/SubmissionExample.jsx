@@ -65,7 +65,7 @@ export const CodeEditorExample = () => {
                 <textarea
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    className="w-full h-64 p-4 font-mono bg-gray-900 text-white rounded border border-gray-700"
+                    className="w-full h-64 p-4 font-mono bg-gray-900 text-[var(--color-text-main)] rounded border border-gray-700"
                     placeholder="Write your code here..."
                 />
             </div>
@@ -75,14 +75,14 @@ export const CodeEditorExample = () => {
                 <button
                     onClick={handleSubmitCode}
                     disabled={loading || !code}
-                    className="px-6 py-3 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed"
+                    className="px-6 py-3 bg-blue-600 text-[var(--color-text-main)] rounded font-bold hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed"
                 >
                     {loading ? "Submitting..." : "Submit Code"}
                 </button>
 
                 <button
                     onClick={handleReset}
-                    className="px-6 py-3 bg-gray-600 text-white rounded font-bold hover:bg-gray-700"
+                    className="px-6 py-3 bg-gray-600 text-[var(--color-text-main)] rounded font-bold hover:bg-gray-700"
                 >
                     Reset
                 </button>
@@ -135,9 +135,9 @@ export const BattleIdeExample = ({ battleId, problemId }) => {
                 <textarea
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    className="w-full h-96 p-4 font-mono bg-gray-900 text-white"
+                    className="w-full h-96 p-4 font-mono bg-gray-900 text-[var(--color-text-main)]"
                 />
-                <button onClick={handleRunCode} className="mt-4 px-6 py-2 bg-green-600 text-white rounded">
+                <button onClick={handleRunCode} className="mt-4 px-6 py-2 bg-green-600 text-[var(--color-text-main)] rounded">
                     Run Code
                 </button>
             </div>
@@ -148,7 +148,7 @@ export const BattleIdeExample = ({ battleId, problemId }) => {
                 <SubmissionStatus status={status} />
 
                 {canProceed && (
-                    <button className="mt-4 w-full px-6 py-3 bg-blue-600 text-white rounded font-bold">
+                    <button className="mt-4 w-full px-6 py-3 bg-blue-600 text-[var(--color-text-main)] rounded font-bold">
                         Proceed to Next Round
                     </button>
                 )}

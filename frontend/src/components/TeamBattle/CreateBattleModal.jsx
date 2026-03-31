@@ -46,7 +46,7 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
         style={{ borderRadius: "2px" }}
       >
         <button
-          className="absolute top-8 right-8 text-slate-500 hover:text-white transition-colors text-xl"
+          className="absolute top-8 right-8 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors text-xl"
           onClick={onClose}
         >
           ✕
@@ -54,7 +54,7 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
 
         <div className="mb-12">
           <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Battle Protocol // New</div>
-          <h2 className="text-4xl font-black text-white tracking-tighter uppercase font-[family:var(--font-heading)]">
+          <h2 className="text-4xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)]">
             {showJoinCode ? "Shared Stream" : "Host Battle"}
           </h2>
         </div>
@@ -62,14 +62,14 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
         <div className="modal-body">
           {showJoinCode ? (
             <div className="text-center">
-              <p className="text-slate-400 text-sm font-light mb-10">Battle link has been established. Distribute to cluster nodes.</p>
+              <p className="text-[var(--color-text-muted)] text-sm font-light mb-10">Battle link has been established. Distribute to cluster nodes.</p>
 
               <div className="p-8 bg-white/[0.02] border border-white/5 mb-10" style={{ borderRadius: "2px" }}>
-                <div className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-4">Synchronization Hash</div>
+                <div className="text-[9px] text-[var(--color-text-muted)] font-bold uppercase tracking-[0.2em] mb-4">Synchronization Hash</div>
                 <div className="flex items-center justify-center gap-8">
                   <span className="text-5xl font-black text-[var(--color-primary)] tracking-[0.2em] font-mono">{joinCode}</span>
                   <button
-                    className="w-12 h-12 flex items-center justify-center border border-white/10 hover:border-white/30 text-white transition-all"
+                    className="w-12 h-12 flex items-center justify-center border border-white/10 hover:border-white/30 text-[var(--color-text-main)] transition-all"
                     onClick={handleCopyCode}
                     style={{ borderRadius: "2px" }}
                   >
@@ -83,7 +83,7 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
               </p>
 
               <button
-                className="w-full py-5 border border-white/10 text-white font-bold uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all"
+                className="w-full py-5 border border-white/10 text-[var(--color-text-main)] font-bold uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all"
                 onClick={() => {
                   setShowJoinCode(false);
                   onClose();
@@ -96,17 +96,17 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-10">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">Select Target Team</label>
+                <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-4">Select Target Team</label>
                 <select
-                  className="w-full bg-white/[0.02] border border-white/5 py-5 px-6 text-white focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono appearance-none"
+                  className="w-full bg-white/[0.02] border border-white/5 py-5 px-6 text-[var(--color-text-main)] focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono appearance-none"
                   value={team1Id}
                   onChange={(e) => setTeam1Id(e.target.value)}
                   required
                   style={{ borderRadius: "2px" }}
                 >
-                  <option value="" className="bg-[#050505]">-- Choose a team --</option>
+                  <option value="" className="bg-[var(--color-bg-dark)]">-- Choose a team --</option>
                   {teams?.map((team) => (
-                    <option key={team.id} value={team.id} className="bg-[#050505]">
+                    <option key={team.id} value={team.id} className="bg-[var(--color-bg-dark)]">
                       {team.name} ({team.members?.length || 0} Members)
                     </option>
                   ))}
@@ -114,18 +114,18 @@ export const CreateBattleModal = ({ isOpen, onClose, teams }) => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-4">Cluster Capacity</label>
+                <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-4">Cluster Capacity</label>
                 <select
-                  className="w-full bg-white/[0.02] border border-white/5 py-5 px-6 text-white focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono appearance-none"
+                  className="w-full bg-white/[0.02] border border-white/5 py-5 px-6 text-[var(--color-text-main)] focus:outline-none focus:border-[var(--color-primary)]/40 transition-all font-mono appearance-none"
                   value={maxTeamSize}
                   onChange={(e) => setMaxTeamSize(Number(e.target.value))}
                   style={{ borderRadius: "2px" }}
                 >
-                  <option value={1} className="bg-[#050505]">1v1 Stream</option>
-                  <option value={2} className="bg-[#050505]">2v2 Stream</option>
-                  <option value={3} className="bg-[#050505]">3v3 Stream</option>
-                  <option value={4} className="bg-[#050505]">4v4 Stream</option>
-                  <option value={5} className="bg-[#050505]">5v5 Stream</option>
+                  <option value={1} className="bg-[var(--color-bg-dark)]">1v1 Stream</option>
+                  <option value={2} className="bg-[var(--color-bg-dark)]">2v2 Stream</option>
+                  <option value={3} className="bg-[var(--color-bg-dark)]">3v3 Stream</option>
+                  <option value={4} className="bg-[var(--color-bg-dark)]">4v4 Stream</option>
+                  <option value={5} className="bg-[var(--color-bg-dark)]">5v5 Stream</option>
                 </select>
               </div>
 

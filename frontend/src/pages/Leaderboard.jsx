@@ -73,7 +73,7 @@ export const Leaderboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--color-text-main)] py-20 px-6 font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] py-20 px-6 font-[family:var(--font-body)]">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/3 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.01] blur-[150px] rounded-full"></div>
@@ -82,8 +82,8 @@ export const Leaderboard = () => {
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-20 text-center">
         <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-4">Global Rankings</div>
-        <h1 className="text-6xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Global Leaderboard</h1>
-        <p className="text-slate-500 text-lg font-light max-w-2xl mx-auto">
+        <h1 className="text-6xl font-black text-[var(--color-text-main)] mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Global Leaderboard</h1>
+        <p className="text-[var(--color-text-muted)] text-lg font-light max-w-2xl mx-auto">
           Top players from around the world.
         </p>
 
@@ -101,7 +101,7 @@ export const Leaderboard = () => {
                         className={`flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
                             activeFilter === filter.id 
                                 ? 'bg-[var(--color-primary)] text-black' 
-                                : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white/5'
                         }`}
                         style={{ borderRadius: '2px' }}
                     >
@@ -119,11 +119,11 @@ export const Leaderboard = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/5 bg-white/[0.01]">
-                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">Rank</th>
-                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">Player</th>
-                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 text-center">Wins</th>
-                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 text-center">Defeats</th>
-                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 text-right">ELO Rating</th>
+                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--color-text-muted)]">Rank</th>
+                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--color-text-muted)]">Player</th>
+                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--color-text-muted)] text-center">Wins</th>
+                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--color-text-muted)] text-center">Defeats</th>
+                <th className="py-8 px-10 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--color-text-muted)] text-right">ELO Rating</th>
               </tr>
             </thead>
 
@@ -143,10 +143,10 @@ export const Leaderboard = () => {
 
                     <td className="py-8 px-10">
                       <div className="flex items-center gap-6">
-                        <div className="w-10 h-10 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white group-hover:border-[var(--color-primary)]/40 transition-colors" style={{ borderRadius: "2px" }}>
+                        <div className="w-10 h-10 border border-white/10 flex items-center justify-center text-[10px] font-bold text-[var(--color-text-main)] group-hover:border-[var(--color-primary)]/40 transition-colors" style={{ borderRadius: "2px" }}>
                           {player.username.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-white font-bold tracking-tight text-lg">
+                        <span className="text-[var(--color-text-main)] font-bold tracking-tight text-lg">
                           {player.username}
                         </span>
                       </div>
@@ -161,7 +161,7 @@ export const Leaderboard = () => {
                     </td>
 
                     <td className="py-8 px-10 text-right">
-                      <span className="text-2xl font-black text-white tracking-tighter tabular-nums font-[family:var(--font-heading)]">
+                      <span className="text-2xl font-black text-[var(--color-text-main)] tracking-tighter tabular-nums font-[family:var(--font-heading)]">
                         {player.rankPoints}
                       </span>
                     </td>
@@ -177,7 +177,7 @@ export const Leaderboard = () => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white disabled:opacity-20 transition-colors"
+                className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] disabled:opacity-20 transition-colors"
               >
                 ← Previous Page
               </button>
@@ -191,7 +191,7 @@ export const Leaderboard = () => {
                       onClick={() => handlePageChange(page)}
                       className={`text-[10px] font-bold uppercase tracking-widest transition-all ${currentPage === page
                         ? "text-[var(--color-primary)]"
-                        : "text-slate-700 hover:text-white"
+                        : "text-slate-700 hover:text-[var(--color-text-main)]"
                         }`}
                     >
                       {page}
@@ -203,7 +203,7 @@ export const Leaderboard = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white disabled:opacity-20 transition-colors"
+                className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] disabled:opacity-20 transition-colors"
               >
                 Next Page →
               </button>
@@ -215,21 +215,21 @@ export const Leaderboard = () => {
       {/* Footer Stats Summary */}
       <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
         <div className="premium-card p-10 border-l border-[var(--color-primary)]/20" style={{ borderRadius: "2px" }}>
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Total Players</p>
-          <p className="text-4xl font-black text-white tabular-nums">
+          <p className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Total Players</p>
+          <p className="text-4xl font-black text-[var(--color-text-main)] tabular-nums">
             {rankings[0]?.total || 0}
           </p>
         </div>
 
         <div className="premium-card p-10" style={{ borderRadius: "2px" }}>
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Current Page</p>
-          <p className="text-4xl font-black text-white tabular-nums">
+          <p className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Current Page</p>
+          <p className="text-4xl font-black text-[var(--color-text-main)] tabular-nums">
             {currentPage}<span className="text-slate-800 mx-2">/</span>{totalPages}
           </p>
         </div>
 
         <div className="premium-card p-10" style={{ borderRadius: "2px" }}>
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Players on Page</p>
+          <p className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Players on Page</p>
           <p className="text-4xl font-black text-[var(--color-primary)] tabular-nums">
             {rankings.length}
           </p>

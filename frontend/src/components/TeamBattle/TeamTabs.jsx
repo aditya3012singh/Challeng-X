@@ -13,7 +13,7 @@ export const TeamTabs = ({ activeTab, setActiveTab }) => {
           onClick={() => setActiveTab(tab.id)}
           className={`pb-4 px-2 text-[10px] font-bold tracking-[0.2em] transition-all relative uppercase ${activeTab === tab.id
               ? "text-[var(--color-primary)]"
-              : "text-slate-500 hover:text-white"
+              : "text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]"
             }`}
         >
           {tab.label}

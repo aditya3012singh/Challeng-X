@@ -41,7 +41,7 @@ const SpectateCodeInput = ({ navigate }) => {
                     onChange={(e) => { setCode(e.target.value); setError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleSpectate()}
                     placeholder="Enter Battle Code..."
-                    className="bg-[#0a0a0a] border border-white/10 text-white text-xs font-mono px-4 py-2.5 w-56 focus:outline-none focus:border-[var(--color-primary)] transition-colors placeholder:text-gray-600 uppercase tracking-wider"
+                    className="bg-[var(--color-bg-card)] border border-white/10 text-[var(--color-text-main)] text-xs font-mono px-4 py-2.5 w-56 focus:outline-none focus:border-[var(--color-primary)] transition-colors placeholder:text-gray-600 uppercase tracking-wider"
                     style={{ borderRadius: "2px" }}
                 />
                 {error && (
@@ -64,7 +64,7 @@ const BattleCard = ({ battle, onWatch }) => {
     const diffColor = DIFFICULTY_COLORS[difficulty] || DIFFICULTY_COLORS.MEDIUM;
 
     return (
-        <div className="group bg-[#0a0a0a] border border-white/5 hover:border-[var(--color-primary)]/30 transition-all duration-300 p-6 relative overflow-hidden" style={{ borderRadius: "2px" }}>
+        <div className="group bg-[var(--color-bg-card)] border border-white/5 hover:border-[var(--color-primary)]/30 transition-all duration-300 p-6 relative overflow-hidden" style={{ borderRadius: "2px" }}>
             {/* Live indicator */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
@@ -76,7 +76,7 @@ const BattleCard = ({ battle, onWatch }) => {
                 <div className={`text-[9px] font-bold uppercase tracking-widest mb-2 ${diffColor.split(" ")[0]}`}>
                     {difficulty}
                 </div>
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">
+                <h3 className="text-[var(--color-text-main)] font-bold text-sm uppercase tracking-wide">
                     {battle.problem?.title || "Unknown Problem"}
                 </h3>
             </div>
@@ -87,13 +87,13 @@ const BattleCard = ({ battle, onWatch }) => {
                     <div className="w-8 h-8 bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30 flex items-center justify-center text-[var(--color-primary)] text-xs font-black" style={{ borderRadius: "2px" }}>
                         {battle.player1?.username?.charAt(0).toUpperCase() || "?"}
                     </div>
-                    <span className="text-white text-xs font-bold">{battle.player1?.username || "Player 1"}</span>
+                    <span className="text-[var(--color-text-main)] text-xs font-bold">{battle.player1?.username || "Player 1"}</span>
                 </div>
 
                 <span className="text-gray-600 text-[10px] font-black tracking-widest">VS</span>
 
                 <div className="flex items-center gap-3">
-                    <span className="text-white text-xs font-bold">{battle.player2?.username || "Waiting..."}</span>
+                    <span className="text-[var(--color-text-main)] text-xs font-bold">{battle.player2?.username || "Waiting..."}</span>
                     <div className="w-8 h-8 bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xs font-black" style={{ borderRadius: "2px" }}>
                         {battle.player2?.username?.charAt(0).toUpperCase() || "?"}
                     </div>
@@ -107,7 +107,7 @@ const BattleCard = ({ battle, onWatch }) => {
                 </span>
                 <button
                     onClick={() => onWatch(battle.id)}
-                    className="px-5 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-[9px] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all group-hover:border-red-500"
+                    className="px-5 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-[9px] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-[var(--color-text-main)] transition-all group-hover:border-red-500"
                     style={{ borderRadius: "2px" }}
                 >
                     🔴 Watch Live
@@ -136,7 +136,7 @@ export default function LiveArenas() {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] pt-28 px-8 pb-16">
+        <div className="min-h-screen bg-[var(--color-bg-dark)] pt-28 px-8 pb-16">
             {/* Header */}
             <div className="max-w-6xl mx-auto mb-12">
                 <div className="flex items-center justify-between flex-wrap gap-6">
@@ -144,10 +144,10 @@ export default function LiveArenas() {
                         <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-2">
                             Live Matches
                         </div>
-                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter font-[family:var(--font-heading)]">
+                        <h1 className="text-4xl font-black text-[var(--color-text-main)] uppercase tracking-tighter font-[family:var(--font-heading)]">
                             Live Arenas
                         </h1>
-                        <p className="text-slate-500 text-sm mt-2">Watch ongoing battles in real-time</p>
+                        <p className="text-[var(--color-text-muted)] text-sm mt-2">Watch ongoing battles in real-time</p>
                     </div>
 
                     <SpectateCodeInput navigate={navigate} />

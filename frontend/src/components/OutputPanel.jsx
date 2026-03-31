@@ -29,14 +29,14 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
   };
 
   return (
-    <div className="h-72 bg-[#0a0a0a] border border-slate-800 rounded-b-2xl text-sm flex flex-col shadow-2xl overflow-hidden">
+    <div className="h-72 bg-[var(--color-bg-card)] border border-slate-800 rounded-b-2xl text-sm flex flex-col shadow-2xl overflow-hidden">
       {/* Tabs Header */}
-      <div className="flex bg-[#111111] border-b border-slate-800 px-2 pt-2 gap-1 overflow-x-auto scrollbar-hide shrink-0">
+      <div className="flex bg-[var(--color-bg-card)] border-b border-[var(--glass-border)] px-2 pt-2 gap-1 overflow-x-auto scrollbar-hide shrink-0">
         <button
           onClick={() => setActiveTab(-1)}
           className={`px-4 py-2 rounded-t-lg transition-all text-[10px] font-bold uppercase tracking-widest shrink-0 ${activeTab === -1
-            ? "bg-[#1e1e1e] text-[var(--color-primary)] border-x border-t border-slate-700"
-            : "text-slate-500 hover:text-slate-300"
+            ? "bg-[var(--color-bg-dark)] text-[var(--color-primary)] border-x border-t border-[var(--glass-border)]"
+            : "text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]"
             }`}
         >
           StdOut
@@ -49,8 +49,8 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
               key={i}
               onClick={() => handleTabClick(i)}
               className={`px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider shrink-0 ${activeTab === i
-                ? "bg-[#1e1e1e] text-white border-x border-t border-slate-700 shadow-[0_-2px_10px_rgba(0,0,0,0.5)]"
-                : "text-slate-500 hover:text-slate-300"
+                ? "bg-[var(--color-bg-dark)] text-[var(--color-text-main)] border-x border-t border-[var(--glass-border)] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]"
                 }`}
             >
               {hasResult ? (
@@ -82,8 +82,8 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
                     </div>
                     <div className="h-8 w-px bg-slate-800"></div>
                     <div>
-                      <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Pass Count</div>
-                      <div className="text-xl font-mono text-white">
+                      <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest font-bold mb-1">Pass Count</div>
+                      <div className="text-xl font-mono text-[var(--color-text-main)]">
                         {testCaseResults.filter(r => r?.passed).length} / {testCaseResults.length}
                       </div>
                     </div>
@@ -105,14 +105,14 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
               <div className="flex gap-4 border-b border-slate-800/50 mb-4 pb-0.5 shrink-0">
                 <button
                   onClick={() => setViewMode("testcase")}
-                  className={`text-[9px] uppercase font-black tracking-widest pb-2 border-b-2 transition-all ${viewMode === "testcase" ? "text-white border-[var(--color-primary)]" : "text-slate-600 border-transparent hover:text-slate-400"}`}
+                  className={`text-[9px] uppercase font-black tracking-widest pb-2 border-b-2 transition-all ${viewMode === "testcase" ? "text-[var(--color-text-main)] border-[var(--color-primary)]" : "text-slate-600 border-transparent hover:text-[var(--color-text-muted)]"}`}
                 >
                   Testcase
                 </button>
                 <button
                   onClick={() => setViewMode("result")}
                   disabled={!testCaseResults?.[activeTab]}
-                  className={`text-[9px] uppercase font-black tracking-widest pb-2 border-b-2 transition-all ${!testCaseResults?.[activeTab] ? "opacity-30 cursor-not-allowed" : viewMode === "result" ? "text-white border-[var(--color-primary)]" : "text-slate-600 border-transparent hover:text-slate-400"}`}
+                  className={`text-[9px] uppercase font-black tracking-widest pb-2 border-b-2 transition-all ${!testCaseResults?.[activeTab] ? "opacity-30 cursor-not-allowed" : viewMode === "result" ? "text-[var(--color-text-main)] border-[var(--color-primary)]" : "text-slate-600 border-transparent hover:text-[var(--color-text-muted)]"}`}
                 >
                   Result
                 </button>
@@ -121,15 +121,15 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
               {viewMode === "testcase" ? (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-1 duration-300">
                   <div className="space-y-1">
-                    <div className="text-[9px] uppercase text-slate-500 mb-1 font-bold">Input</div>
-                    <div className="bg-[#151515] p-3 rounded border border-slate-800 text-slate-200 whitespace-pre-wrap">
-                      {sampleCases[activeTab]?.input || <span className="text-slate-600 italic">No input</span>}
+                    <div className="text-[9px] uppercase text-[var(--color-text-muted)] mb-1 font-bold">Input</div>
+                    <div className="bg-[var(--color-bg-dark)] p-3 rounded border border-[var(--glass-border)] text-[var(--color-text-main)] whitespace-pre-wrap">
+                      {sampleCases[activeTab]?.input || <span className="text-[var(--color-text-muted)] italic">No input</span>}
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-[9px] uppercase text-slate-500 mb-1 font-bold">Expected Output</div>
-                    <div className="bg-[#151515] p-3 rounded border border-slate-800 text-slate-200 whitespace-pre-wrap">
-                      {sampleCases[activeTab]?.output || sampleCases[activeTab]?.expected || <span className="text-slate-600 italic">No expected output</span>}
+                    <div className="text-[9px] uppercase text-[var(--color-text-muted)] mb-1 font-bold">Expected Output</div>
+                    <div className="bg-[var(--color-bg-dark)] p-3 rounded border border-[var(--glass-border)] text-[var(--color-text-main)] whitespace-pre-wrap">
+                      {sampleCases[activeTab]?.output || sampleCases[activeTab]?.expected || <span className="text-[var(--color-text-muted)] italic">No expected output</span>}
                     </div>
                   </div>
                 </div>
@@ -143,15 +143,15 @@ export default function OutputPanel({ output, error, status, testCaseResults, pr
                       {status === "PASSED" && (
                         <div className="bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded px-2 py-0.5 flex items-center gap-2 animate-in zoom-in duration-500">
                           <span className="text-[var(--color-primary)] text-[9px] font-black uppercase tracking-widest">Performance</span>
-                          <span className="text-white text-[10px] font-bold">Beats {problem?.beatsPercentile || 100}%</span>
+                          <span className="text-[var(--color-text-main)] text-[10px] font-bold">Beats {problem?.beatsPercentile || 100}%</span>
                         </div>
                       )}
-                      <div className="text-[10px] text-slate-500 uppercase tracking-widest">Case {activeTab + 1}</div>
+                      <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest">Case {activeTab + 1}</div>
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <div className="text-[9px] uppercase text-slate-500 mb-1 font-bold">Your Output</div>
+                    <div className="text-[9px] uppercase text-[var(--color-text-muted)] mb-1 font-bold">Your Output</div>
                     <div className={`p-3 rounded border whitespace-pre-wrap ${testCaseResults?.[activeTab]?.passed
                       ? "bg-green-500/5 border-[var(--color-success)]/30 text-[var(--color-success)]"
                       : "bg-red-500/5 border-red-500/30 text-red-400"
