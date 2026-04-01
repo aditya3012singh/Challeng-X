@@ -146,9 +146,9 @@ const Achievements = () => {
                                             <div className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--color-primary)] rounded-full animate-pulse shadow-[0_0_8px_var(--color-primary)]" />
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-black text-[var(--color-text-main)] uppercase tracking-wider mb-1">{ach.badge.name}</h3>
-                                            <p className="text-[10px] text-[var(--color-text-muted)] font-medium leading-relaxed">{ach.badge.description}</p>
-                                            <div className="text-[8px] font-black text-[var(--color-primary)] uppercase tracking-widest mt-3">Unlocked {new Date(ach.unlockedAt).toLocaleDateString()}</div>
+                                            <h3 className="text-sm font-black text-[var(--color-text-main)] uppercase tracking-wider mb-1">{ach.badge?.name || "REDACTED BADGE"}</h3>
+                                            <p className="text-[10px] text-[var(--color-text-muted)] font-medium leading-relaxed">{ach.badge?.description || "Badge data encrypted or unavailable."}</p>
+                                            <div className="text-[8px] font-black text-[var(--color-primary)] uppercase tracking-widest mt-3">Unlocked {ach.unlockedAt ? new Date(ach.unlockedAt).toLocaleDateString() : "DATE UNKNOWN"}</div>
                                         </div>
                                     </motion.div>
                                 )) : (

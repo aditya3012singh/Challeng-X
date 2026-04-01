@@ -332,23 +332,13 @@ const BattleArena = () => {
             }
 
             if (event === "opponent_cheat_flag") {
-                if (data.status === "START") {
-                    const newViolation = {
-                        id: `${data.userId}-${data.timestamp}`,
-                        username: data.username,
-                        type: data.type,
-                        message: data.type === "TAB_SWITCH" ? "Tab Switch" : "Code Paste",
-                        timestamp: new Date().toLocaleTimeString(),
-                        duration: null
-                    };
-                    setOpponentViolations(prev => [...prev, newViolation]);
-
-                    setOpponentAlert({
-                        type: data.type,
-                        message: `${data.username} switched tabs`
-                    });
-                    setTimeout(() => setOpponentAlert(null), 8000);
-                } else if (data.status === "END" && data.type === "TAB_SWITCH") {
+                console.log("🛡️ [ANTI-CHEAT] SIGNAL RECEIVED:", data);
+                
+                const violationId = data.violationId || `${data.userId}-${Date.now()}`;
+                
+                // If it's a TAB_SWITCH END, update duration
+                if (data.type === "TAB_SWITCH" && data.status === "END") {
+                    console.log("🛡️ [ANTI-CHEAT] UPDATING DURATION:", data.duration);
                     setOpponentViolations(prev => {
                         const lastIdx = [...prev].reverse().findIndex(v => v.username === data.username && v.type === "TAB_SWITCH");
                         if (lastIdx !== -1) {
@@ -359,6 +349,25 @@ const BattleArena = () => {
                         }
                         return prev;
                     });
+                } else {
+                    // It's a START or a regular flag (like CODE_PASTE)
+                    const newViolation = {
+                        id: violationId,
+                        username: data.username || "Unknown",
+                        type: data.type,
+                        message: data.type === "TAB_SWITCH" ? "Tab Switch" : "Code Paste",
+                        timestamp: new Date(data.timestamp || Date.now()).toLocaleTimeString(),
+                        duration: data.duration || null
+                    };
+                    
+                    console.log("🛡️ [ANTI-CHEAT] ADDING NEW VIOLATION:", newViolation);
+                    setOpponentViolations(prev => [...prev, newViolation]);
+
+                    setOpponentAlert({
+                        type: data.type,
+                        message: `${data.username || 'Opponent'} engaged in ${data.type}`
+                    });
+                    setTimeout(() => setOpponentAlert(null), 8000);
                 }
             }
 
@@ -375,6 +384,32 @@ const BattleArena = () => {
                 setIsFinished(true);
                 setWinner(data.winnerId);
                 setStatus("finished");
+
+                // Victory Sound Synthesis
+                if (data.winnerId === user?.id) {
+                    try {
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const playNote = (freq, startTime, duration) => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = "triangle";
+                            osc.frequency.setValueAtTime(freq, startTime);
+                            gain.gain.setValueAtTime(0.1, startTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(startTime);
+                            osc.stop(startTime + duration);
+                        };
+                        const now = audioCtx.currentTime;
+                        playNote(261.63, now, 0.4); // C4
+                        playNote(329.63, now + 0.1, 0.4); // E4
+                        playNote(392.00, now + 0.2, 0.4); // G4
+                        playNote(523.25, now + 0.3, 0.6); // C5
+                    } catch (e) {
+                        console.error("Audio Synthesis Error:", e);
+                    }
+                }
             }
         };
 
@@ -431,6 +466,7 @@ const BattleArena = () => {
                     userId: user.id,
                     username: user.username,
                     type: "CODE_PASTE",
+                    status: "START",
                     charCount: pastedText.length,
                     timestamp: new Date().toISOString()
                 });
@@ -1144,100 +1180,100 @@ const BattleArena = () => {
                         />
                     ))}
 
-                    <div className="max-w-2xl w-full bg-[var(--color-bg-card)]/80 border border-white/10 p-12 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "4px" }}>
+                    <div className="max-w-lg w-full bg-[var(--color-bg-card)] border border-white/10 p-8 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "2px" }}>
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent opacity-50" />
 
                         <div className="flex flex-col items-center">
-                            <div className={`mb-12 relative ${winner === user?.id ? 'winner-trophy' : ''}`}>
-                                <div className="w-32 h-32 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative z-10">
+                            <div className={`mb-6 relative ${winner === user?.id ? 'winner-trophy' : ''}`}>
+                                <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative z-10">
                                     {winner === user?.id ? (
-                                        <Trophy size={64} className="text-[var(--color-primary)]" />
+                                        <Trophy size={40} className="text-[var(--color-primary)]" />
                                     ) : (
-                                        <AlertTriangle size={64} className="text-red-500" />
+                                        <AlertTriangle size={40} className="text-red-500" />
                                     )}
                                 </div>
-                                <div className={`absolute inset-0 blur-[80px] opacity-20 rounded-full ${winner === user?.id ? 'bg-[var(--color-primary)]' : 'bg-red-500'}`} />
+                                <div className={`absolute inset-0 blur-[60px] opacity-20 rounded-full ${winner === user?.id ? 'bg-[var(--color-primary)]' : 'bg-red-500'}`} />
                             </div>
 
-                            <div className="text-[12px] font-black text-[var(--color-primary)] tracking-[1em] uppercase mb-4 opacity-70">
+                            <div className="text-[10px] font-black text-[var(--color-primary)] tracking-[0.6em] uppercase mb-2 opacity-70 text-center">
                                 {winner === user?.id ? "Superiority Established" : "Signal Terminated"}
                             </div>
 
-                            <h1 className="text-8xl font-black text-[var(--color-text-main)] tracking-tighter uppercase mb-2 leading-none">
+                            <h1 className="text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase mb-2 leading-none text-center">
                                 {winner === user?.id ? "You Won" : "Match Over"}
                             </h1>
 
-                            <p className="text-[var(--color-text-muted)] text-sm font-medium mb-12 uppercase tracking-[0.2em]">
+                            <p className="text-[var(--color-text-muted)] text-[10px] font-medium mb-8 uppercase tracking-[0.2em] text-center">
                                 {winner === user?.id
                                     ? "Competitive objectives completed with high efficiency."
                                     : "Operational failure. Opponent achieved target first."}
                             </p>
 
                             {/* MATCH STATS */}
-                            <div className="grid grid-cols-3 gap-8 w-full mb-12 p-8 bg-white/5 border border-white/5" style={{ borderRadius: "2px" }}>
+                            <div className="grid grid-cols-3 gap-4 w-full mb-8 p-6 bg-white/[0.02] border border-white/5" style={{ borderRadius: "2px" }}>
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[9px] text-slate-600 font-black uppercase mb-2 tracking-widest">Time Taken</span>
-                                    <span className="text-xl text-[var(--color-text-main)] font-mono">{formatElapsed(currentBattle?.startedAt)}</span>
+                                    <span className="text-[8px] text-slate-600 font-black uppercase mb-1 tracking-widest">Time</span>
+                                    <span className="text-lg text-[var(--color-text-main)] font-mono">{formatElapsed(currentBattle?.startedAt)}</span>
+                                </div>
+                                <div className="flex flex-col items-center border-x border-white/5 px-4">
+                                    <span className="text-[8px] text-slate-600 font-black uppercase mb-1 tracking-widest">Accuracy</span>
+                                    <span className="text-lg text-[var(--color-primary)] font-mono">100%</span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[9px] text-slate-600 font-black uppercase mb-2 tracking-widest">Accuracy</span>
-                                    <span className="text-xl text-[var(--color-primary)] font-mono">100%</span>
-                                </div>
-                                <div className="flex flex-col items-center">
-                                    <span className="text-[9px] text-slate-600 font-black uppercase mb-2 tracking-widest">Test Cases</span>
-                                    <span className="text-xl text-[var(--color-text-main)] font-mono">{myProgress.passed}/{myProgress.total || problem.testcases?.length || 10}</span>
+                                    <span className="text-[8px] text-slate-600 font-black uppercase mb-1 tracking-widest">Logic</span>
+                                    <span className="text-lg text-[var(--color-text-main)] font-mono">{myProgress.passed}/{myProgress.total || problem.testcases?.length || 10}</span>
                                 </div>
                             </div>
 
                             {/* CODE SURGEON DIAGNOSTICS */}
-                            <div className="w-full mb-12 animate-in slide-in-from-bottom duration-1000 delay-500">
-                                <div className="flex items-center gap-4 mb-6">
+                            <div className="w-full mb-8">
+                                <div className="flex items-center gap-3 mb-4">
                                     <div className="h-[1px] flex-1 bg-white/5" />
-                                    <div className="flex items-center gap-3 px-4 py-1.5 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-sm">
-                                        <Activity size={12} className="text-[var(--color-primary)]" />
-                                        <span className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em]">Code Surgeon Diagnostic</span>
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-sm">
+                                        <Activity size={10} className="text-slate-500" />
+                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Diagnostic Stream</span>
                                     </div>
                                     <div className="h-[1px] flex-1 bg-white/5" />
                                 </div>
 
                                 {isSurgeonLoading ? (
-                                    <div className="py-10 flex flex-col items-center gap-4">
-                                        <Loader2 size={24} className="animate-spin text-slate-700" />
-                                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">Scanning Codebase...</span>
+                                    <div className="py-6 flex flex-col items-center gap-3">
+                                        <Loader2 size={16} className="animate-spin text-slate-700" />
+                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">Analyzing Logic...</span>
                                     </div>
                                 ) : surgeonReport ? (
-                                    <div className="p-8 bg-white/[0.02] border border-white/5 relative group overflow-hidden" style={{ borderRadius: "2px" }}>
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-[var(--color-primary)]/20" />
-                                        <p className="text-[13px] text-[var(--color-text-muted)] font-light leading-relaxed tracking-wide italic font-mono">
+                                    <div className="p-5 bg-white/[0.01] border border-white/5 relative group overflow-hidden" style={{ borderRadius: "2px" }}>
+                                        <div className="absolute top-0 left-0 w-0.5 h-full bg-[var(--color-primary)]/20" />
+                                        <p className="text-[11px] text-[var(--color-text-muted)] font-light leading-relaxed tracking-wide italic font-mono">
                                             "{surgeonReport}"
                                         </p>
                                     </div>
                                 ) : (
-                                    <div className="text-center py-6">
+                                    <div className="text-center py-2">
                                         <button 
                                             onClick={fetchAISurgeonReport}
-                                            className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto"
+                                            className="text-[9px] font-black text-[var(--color-primary)] uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto decoration-[var(--color-primary)]/30 underline-offset-4 hover:underline"
                                         >
-                                            <Sparkles size={12} /> Generate Diagnostic Report
+                                            <Sparkles size={10} /> Reveal Diagnostic Report
                                         </button>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="flex gap-6 w-full">
+                            <div className="flex gap-4 w-full">
                                 <button
                                     onClick={() => navigate('/battles')}
-                                    className="flex-1 py-5 bg-white/5 border border-white/10 text-[var(--color-text-main)] font-black uppercase tracking-widest text-[11px] hover:bg-white hover:text-black transition-all"
+                                    className="flex-1 py-4 bg-white/5 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-black transition-all"
                                 >
-                                    Return to Lobby
+                                    Exit Arena
                                 </button>
                                 {!surgeonReport && (
                                     <button
                                         onClick={fetchAISurgeonReport}
                                         disabled={isSurgeonLoading}
-                                        className="flex-2 px-12 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[11px] hover:brightness-125 transition-all shadow-[0_0_30px_var(--color-primary)] shadow-opacity-20 flex items-center justify-center gap-2"
+                                        className="flex-2 px-8 py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[9px] hover:brightness-125 transition-all shadow-[0_0_20px_var(--color-primary)] shadow-opacity-10 flex items-center justify-center gap-2"
                                     >
-                                        {isSurgeonLoading ? <Loader2 size={14} className="animate-spin" /> : <Activity size={14} />} Analyze Match
+                                        {isSurgeonLoading ? <Loader2 size={12} className="animate-spin" /> : <Activity size={12} />} Process Diagnostic
                                     </button>
                                 )}
                             </div>
