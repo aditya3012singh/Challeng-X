@@ -60,12 +60,12 @@ export const FindMatch = () => {
     // Navigate to battle when match is found
     useEffect(() => {
         if (matchFound && battleId) {
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 navigate(`/battle/${battleId}/ide`);
-                dispatch(resetMatchmaking());
             }, 2000);
+            return () => clearTimeout(timer);
         }
-    }, [matchFound, battleId, navigate, dispatch]);
+    }, [matchFound, battleId, navigate]);
 
     const handleJoinQueue = async () => {
         const socket = getSocket();

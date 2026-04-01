@@ -14,6 +14,7 @@ import { useTheme } from "../context/ThemeContext";
 import { getSocket } from "../../lib/socket";
 import { getBattle, submitBattleCode, forfeitBattle } from "../../store/api/battle.thunk";
 import { clearCurrentBattle } from "../../store/slices/battle.slice";
+import { resetMatchmaking } from "../../store/slices/matchmaking.slice";
 import { playSound } from "../utils/audio";
 import { toast } from "react-hot-toast";
 import ShareModal from "../components/common/ShareModal";
@@ -53,6 +54,7 @@ const BattleArena = () => {
     const [opponentProgress, setOpponentProgress] = useState({ passed: 0, total: 0 });
     const [opponentStatus, setOpponentStatus] = useState("idle"); // idle, submitting
     const [opponentAlert, setOpponentAlert] = useState(null); // { type, message }
+    const [opponentViolations, setOpponentViolations] = useState([]);
 
     const [testResults, setTestResults] = useState([]); // Array of { input, expected, actual, passed, error }
     const [pendingSubmissionId, setPendingSubmissionId] = useState(null);
@@ -81,15 +83,22 @@ const BattleArena = () => {
     const [isAILoading, setIsAILoading] = useState(false);
     const [surgeonReport, setSurgeonReport] = useState("");
     const [isSurgeonLoading, setIsSurgeonLoading] = useState(false);
+    
+    // Anti-Cheat Phase 2
+    const [isTabSwitched, setIsTabSwitched] = useState(false);
+    const [tabSwitchTimer, setTabSwitchTimer] = useState(5);
+    const tabSwitchIntervalRef = useRef(null);
 
     const socket = getSocket();
     const editorRef = useRef(null);
     const terminalEndRef = useRef(null);
+    const hiddenStartTimeRef = useRef(null);
 
     // Initial Fetch
     useEffect(() => {
         if (battleId) {
             dispatch(getBattle({ battleId }));
+            dispatch(resetMatchmaking());
             socket.emit("join_battle", { battleId });
         }
         return () => {
@@ -323,11 +332,34 @@ const BattleArena = () => {
             }
 
             if (event === "opponent_cheat_flag") {
-                setOpponentAlert({
-                    type: data.type,
-                    message: data.type === "TAB_SWITCH" ? "Opponent switched tabs" : "Opponent pasted code"
-                });
-                setTimeout(() => setOpponentAlert(null), 8000);
+                if (data.status === "START") {
+                    const newViolation = {
+                        id: `${data.userId}-${data.timestamp}`,
+                        username: data.username,
+                        type: data.type,
+                        message: data.type === "TAB_SWITCH" ? "Tab Switch" : "Code Paste",
+                        timestamp: new Date().toLocaleTimeString(),
+                        duration: null
+                    };
+                    setOpponentViolations(prev => [...prev, newViolation]);
+
+                    setOpponentAlert({
+                        type: data.type,
+                        message: `${data.username} switched tabs`
+                    });
+                    setTimeout(() => setOpponentAlert(null), 8000);
+                } else if (data.status === "END" && data.type === "TAB_SWITCH") {
+                    setOpponentViolations(prev => {
+                        const lastIdx = [...prev].reverse().findIndex(v => v.username === data.username && v.type === "TAB_SWITCH");
+                        if (lastIdx !== -1) {
+                            const idx = prev.length - 1 - lastIdx;
+                            const updated = [...prev];
+                            updated[idx] = { ...updated[idx], duration: data.duration };
+                            return updated;
+                        }
+                        return prev;
+                    });
+                }
             }
 
             if (event === "battle_joined" || event === "battle_countdown" || event === "battle_start") {
@@ -356,13 +388,38 @@ const BattleArena = () => {
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden') {
+                hiddenStartTimeRef.current = Date.now();
+                setIsTabSwitched(true);
+                setTabSwitchTimer(5);
+                
                 socket.emit("anti_cheat_flag", {
                     battleId,
                     userId: user.id,
                     username: user.username,
                     type: "TAB_SWITCH",
+                    status: "START",
                     timestamp: new Date().toISOString()
                 });
+            } else {
+                setIsTabSwitched(false);
+                if (tabSwitchIntervalRef.current) {
+                    clearInterval(tabSwitchIntervalRef.current);
+                }
+
+                if (hiddenStartTimeRef.current) {
+                    const durationInMs = Date.now() - hiddenStartTimeRef.current;
+                    const duration = Math.floor(durationInMs / 1000);
+                    socket.emit("anti_cheat_flag", {
+                        battleId,
+                        userId: user.id,
+                        username: user.username,
+                        type: "TAB_SWITCH",
+                        status: "END",
+                        duration: duration,
+                        timestamp: new Date().toISOString()
+                    });
+                    hiddenStartTimeRef.current = null;
+                }
             }
         };
 
@@ -397,6 +454,44 @@ const BattleArena = () => {
             setStatus("finished");
         }
     }, [currentBattle]);
+
+    // Anti-Cheat Timer & Navigation Guard
+    useEffect(() => {
+        let interval;
+        if (isTabSwitched && !isFinished) {
+            interval = setInterval(() => {
+                setTabSwitchTimer(prev => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        // confirmForfeit(); // DISABLED FOR TESTING PHASE
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+            tabSwitchIntervalRef.current = interval;
+        }
+
+        const handlePopState = (e) => {
+            if (!isFinished) {
+                const stay = window.confirm("You are in an active match. Leaving will result in a loss. Stay on page?");
+                if (!stay) {
+                    confirmForfeit();
+                } else {
+                    window.history.pushState(null, null, window.location.pathname);
+                }
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+        // Push state to enable popstate detection
+        window.history.pushState(null, null, window.location.pathname);
+
+        return () => {
+            if (interval) clearInterval(interval);
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, [isTabSwitched, isFinished]);
 
     // Set Initial Language/Code with Persistence
     const [hasInitializedCode, setHasInitializedCode] = useState(false);
@@ -976,16 +1071,32 @@ const BattleArena = () => {
                     </div>
 
                     <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                        <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-4">Anti-Cheat Stream</div>
-                        <div className="space-y-4">
-                            {opponentAlert ? (
-                                <div className="p-4 bg-red-900/10 border-l-2 border-red-500">
-                                    <div className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Violation Detected</div>
-                                    <div className="text-[9px] text-red-400 italic">Opponent engaged in prohibited activity: {opponentAlert.type}</div>
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em]">Anti-Cheat Stream</div>
+                            {opponentViolations.length > 0 && (
+                                <div className="px-2 py-0.5 bg-red-500/20 border border-red-500/30 text-[8px] font-black text-red-500 uppercase tracking-widest rounded-sm">
+                                    {opponentViolations.length} {opponentViolations.length === 1 ? 'Violation' : 'Violations'}
                                 </div>
+                            )}
+                        </div>
+                        <div className="space-y-3">
+                            {opponentViolations.length > 0 ? (
+                                opponentViolations.map((v, index) => (
+                                    <div key={index} className="p-3 bg-red-900/10 border-l-2 border-red-500 animate-in slide-in-from-right duration-300">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <div className="text-[10px] font-black text-red-500 uppercase tracking-widest">
+                                                {v.username}: {v.message}
+                                            </div>
+                                            <div className="text-[8px] text-red-400/50 font-mono">{v.timestamp}</div>
+                                        </div>
+                                        <div className="text-[8px] text-red-400 italic">
+                                            {v.duration !== null ? `Away for ${v.duration} seconds.` : "Currently out of focus..."}
+                                        </div>
+                                    </div>
+                                ))
                             ) : (
                                 <div className="h-24 border-2 border-dashed border-white/5 flex items-center justify-center p-4 text-center">
-                                    <span className="text-[8px] uppercase font-bold text-slate-700 tracking-widest">No violations detected in current stream</span>
+                                    <span className="text-[8px] uppercase font-bold text-slate-700 tracking-widest leading-relaxed">No violations detected in current stream</span>
                                 </div>
                             )}
                         </div>
@@ -1183,6 +1294,48 @@ const BattleArena = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+            {/* ANTI-CHEAT VIOLATION OVERLAY */}
+            <AnimatePresence>
+                {isTabSwitched && !isFinished && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-8"
+                    >
+                        <div className="absolute inset-0 bg-red-500/5 animate-pulse pointer-events-none" />
+                        <div className="max-w-md w-full bg-[var(--color-bg-card)] border border-red-500/30 p-12 text-center relative overflow-hidden" style={{ borderRadius: "2px" }}>
+                            <div className="absolute top-0 left-0 w-full h-1 bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]" />
+                            
+                            <div className="flex flex-col items-center gap-6 mb-8">
+                                <div className="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center animate-bounce">
+                                    <ShieldAlert size={40} className="text-red-500" />
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="text-[10px] font-black text-red-500 uppercase tracking-[0.6em]">Violation Detected</div>
+                                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Stay in Arena</h2>
+                                </div>
+                            </div>
+                            
+                            <p className="text-[var(--color-text-muted)] text-xs font-mono mb-10 leading-relaxed uppercase tracking-widest">
+                                External signal interference detected. Re-synchronize with the arena immediately to prevent data termination.
+                            </p>
+                            
+                            <div className="relative">
+                                <div className="text-7xl font-black text-red-500 font-mono mb-4 tabular-nums shadow-red-500/20 drop-shadow-2xl">
+                                    VIOLATION
+                                </div>
+                                <div className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em]">Testing Phase: Forfeit Disabled</div>
+                            </div>
+
+                            <div className="mt-8 pt-8 border-t border-white/5 italic text-[10px] text-[var(--color-primary)] uppercase font-black tracking-widest">
+                                AUTOMATIC PENALTY INACTIVE
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* SHARE MODAL */}
             <ShareModal 
                 isOpen={isShareModalOpen}

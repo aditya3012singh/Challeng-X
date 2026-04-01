@@ -60,4 +60,5 @@ if (!_env.success) {
 }
 
 export const env = _env.data;
+console.log(`[ENV] GEMINI_API_KEY Loaded: ${env.GEMINI_API_KEY ? env.GEMINI_API_KEY.substring(0, 8) + '...' : 'MISSING'}`);
 export default env;

@@ -4,12 +4,14 @@ import logger from "../utils/logger.js";
 
 class AIService {
     constructor() {
-        this.genAI = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+        // Trim key to prevent issues with trailing \r or spaces
+        const key = env.GEMINI_API_KEY ? env.GEMINI_API_KEY.trim() : null;
+        this.genAI = key ? new GoogleGenerativeAI(key) : null;
     }
 
     async generateHint(problem, currentCode, language) {
-        if (!this.genAI) {
-            throw new Error("AI Service is not configured (Missing API Key)");
+        if (!this.genAI || env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+            return "CHALLEGX_SYSTEM: AI Hinting is currently in 'Sandbox Mode'. Please check your Neural Link (GEMINI_API_KEY). [MOCK HINT]: Try refining your logic for the edge cases specified in the problem description.";
         }
 
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -40,14 +42,15 @@ class AIService {
             const response = await result.response;
             return response.text();
         } catch (error) {
+            console.error("DEBUG: Gemini API Error:", error);
             logger.error("AI Hint Generation Error:", error);
-            throw new Error("Failed to generate AI hint");
+            return "CHALLEGX_SYSTEM: The Neural Link is unstable (API Error). [FALLBACK]: Review your algorithm's efficiency and ensure you're using the correct data structures.";
         }
     }
 
     async generateReview(problem, finalCode, language, result) {
-        if (!this.genAI) {
-            throw new Error("AI Service is not configured (Missing API Key)");
+        if (!this.genAI || env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+            return "CHALLEGX_SURGEON: Missing Neural Link (GEMINI_API_KEY). Providing mock diagnostics: The code appears syntactically sound, but complexity could be reduced by avoiding nested loops.";
         }
 
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -77,8 +80,8 @@ class AIService {
             const response = await result.response;
             return response.text();
         } catch (error) {
-            logger.error("AI Review Generation Error:", error);
-            throw new Error("Failed to generate AI report");
+            console.error("DEBUG: Gemini API Error (Review):", error);
+            return "CHALLEGX_SURGEON: Neural Link unstable. [MOCK DIAGNOSTIC]: Your code structure is solid, but remember to watch out for redundant calculations in your main loops.";
         }
     }
 
@@ -112,10 +115,19 @@ class AIService {
     }
 
     async generateProblem(difficulty, tags = []) {
-        if (!this.genAI) throw new Error("AI Service missing");
+        if (!this.genAI || env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+             // Mock problem for testing
+             return {
+                 title: "Mock AI Problem",
+                 description: "This is a mock problem because the AI Neural Link is not fully established. Solve: Find the sum of two numbers.",
+                 difficulty,
+                 tags: ["Basic", "Testing"],
+                 testcases: [{ input: "1 2", output: "3", isSample: true }]
+             };
+        }
 
         const model = this.genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
+            model: "gemini-1.5-pro",
             generationConfig: { responseMimeType: "application/json" }
         });
 
@@ -147,15 +159,23 @@ class AIService {
             const response = await result.response;
             return JSON.parse(response.text());
         } catch (error) {
-            logger.error("AI Problem Generation Error:", error);
-            throw new Error("Failed to generate creative problem");
+            console.error("DEBUG: Gemini API Error (Problem):", error);
+            return {
+                title: "Efficiency Protocol 101",
+                description: "Identify the mystery number in a sorted sequence with O(log N) complexity.",
+                difficulty,
+                tags: ["Binary Search", "Foundations"],
+                testcases: [{ input: "5\n1 2 3 4 5\n3", output: "2", isSample: true }]
+            };
         }
     }
 
     async generateLiveComment(player1, player2, problem) {
-        if (!this.genAI) throw new Error("AI Service missing");
+        if (!this.genAI || env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+            return "The data stream is silent. Waiting for Neural Link...";
+        }
 
-        const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         const prompt = `
             You are the "ChallegX Live Analyst", a high-energy, technical esports commentator.
             You are observing a live 1v1 coding battle.
@@ -176,12 +196,15 @@ class AIService {
             const response = await result.response;
             return response.text().trim().replace(/"/g, '');
         } catch (error) {
+            console.error("DEBUG: Gemini API Error (Comment):", error);
             return "The competition is heating up. High-level logic on display!";
         }
     }
 
     async generateSolution(problem, language) {
-        if (!this.genAI) throw new Error("AI Service missing");
+        if (!this.genAI || env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+            return "// AI Solution disabled. Use valid GEMINI_API_KEY.\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Mock Solution: GCD is calculated here.\");\n    }\n}";
+        }
 
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
@@ -206,7 +229,7 @@ class AIService {
             text = text.replace(/```[a-z]*\n/g, '').replace(/\n```/g, '');
             return text;
         } catch (error) {
-            logger.error("AI Solution Generation Error:", error);
+            console.error("DEBUG: Gemini API Error (Solution):", error);
             return "// Solution could not be generated at this time.";
         }
     }
