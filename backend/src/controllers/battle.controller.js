@@ -63,9 +63,15 @@ class BattleController {
     }
 
     static async submitBattleCodeController(req, res, next) {
-        const userId = req.user.id;
+        const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000";
+        const userId = req.user?.id || GUEST_USER_ID;
         const { battleId } = req.params;
         const { code, language, type } = req.body; // type: "RUN" or "SUBMIT"
+
+        // Auth guard for submission
+        if (!req.user && type === "SUBMIT") {
+            return res.status(401).json({ message: "Authentication required for final submission" });
+        }
 
         try {
             const battle = await BattleService.getBattle(battleId);

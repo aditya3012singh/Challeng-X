@@ -101,19 +101,24 @@ class SocketServer {
             const token = socket.handshake.auth?.token;
 
             if (!token) {
-                logger.warn(`🛑 [SocketAuth] No token provided (${socket.id})`);
-                return next(new Error("Authentication error: Token required"));
+                logger.info(`ℹ️ [SocketAuth] Guest connection allowed (${socket.id})`);
+                socket.userId = null;
+                socket.isGuest = true;
+                return next();
             }
 
             try {
                 const decoded = jwt.verify(token.trim(), env.JWT_ACCESS_SECRET);
                 socket.user = decoded;
                 socket.userId = decoded.id;
+                socket.isGuest = false;
                 logger.info(`🔐 [SocketAuth] SUCCESS: ${decoded.id} (${socket.id})`);
                 next();
             } catch (err) {
-                logger.warn(`🛑 [SocketAuth] FAILED: ${err.message} (${socket.id})`);
-                next(new Error(`Authentication error: ${err.message}`));
+                logger.warn(`🛑 [SocketAuth] INVALID TOKEN (Proceeding as Guest): ${err.message} (${socket.id})`);
+                socket.userId = null;
+                socket.isGuest = true;
+                next(); // Still allow connection, but as a guest
             }
         });
     }

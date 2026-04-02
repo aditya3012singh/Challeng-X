@@ -1,8 +1,11 @@
 import logger from "../utils/logger.js";
 import TeamBattleNewService from "../services/teamBattleNew.service.js";
 import RedisClient from "../cache/redis.client.js";
+import Database from "../config/db.js";
 
-export const joinBattleRoom = (io, socket, payload) => {
+const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000";
+
+export const joinBattleRoom = async (io, socket, payload) => {
     const { battleId } = payload;
     if (!battleId) return;
 
@@ -10,29 +13,44 @@ export const joinBattleRoom = (io, socket, payload) => {
     socket.join(roomName);
     logger.info(`User ${socket.id} joined battle room ${roomName}`);
 
-    // Acknowledge join
+    try {
+        // Check if battle needs an opponent and the joiner is a guest
+        // We look up the battle to see if player2Id is null
+        const battle = await Database.client.battle.findUnique({
+            where: { id: battleId },
+            include: { player1: true, player2: true }
+        });
+
+        if (battle && !battle.player2Id && socket.isGuest && battle.player1Id !== GUEST_USER_ID) {
+            logger.info(`👥 Guest ${socket.id} claiming opponent slot for battle ${battleId}`);
+            await Database.client.battle.update({
+                where: { id: battleId },
+                data: { 
+                    player2Id: GUEST_USER_ID,
+                    status: "ONGOING", // Instantly start for guest friend matches
+                    startedAt: new Date()
+                }
+            });
+            // Broadcast to everyone in the room that the battle is ready/started
+            io.to(roomName).emit("battle_joined", { battleId, status: "success", guestMatched: true });
+            io.to(roomName).emit("battle_start", { startedAt: new Date() });
+        } else {
+            // Acknowledge join to the sender
+            socket.emit("battle_joined", { battleId, status: "success" });
+            
+            // If someone else joined (auth user), we might still want to notify the room
+            if (battle && battle.player2Id) {
+                socket.to(roomName).emit("opponent_reconnected", { userId: socket.userId });
+            }
+        }
+    } catch (err) {
+        logger.error(`Error in joinBattleRoom: ${err.message}`);
+        socket.emit("battle_joined", { battleId, status: "error", message: err.message });
+    }
+
     const sockets = io.sockets.adapter.rooms.get(roomName);
     const count = sockets ? (sockets.size || sockets.length) : 0;
     logger.info(`🏰 Room ${roomName} now has ${count} member(s)`);
-    socket.emit("battle_joined", { battleId, status: "success" });
-
-    // Simulate a countdown and start if this was the last player
-    // In a real scenario, you'd check Redis to see if both players joined
-    // Here we just provide the structure for the events
-
-    /*
-    io.to(roomName).emit("battle_countdown", { seconds: 5 });
-    setTimeout(() => {
-      io.to(roomName).emit("battle_start", {
-        battleId,
-        problem: {
-          id: "two_sum",
-          title: "Two Sum",
-          timeLimit: 15
-        }
-      });
-    }, 5000);
-    */
 };
 
 export const handleSubmission = (io, socket, payload) => {
@@ -121,7 +139,7 @@ export const handleAntiCheatFlag = async (io, socket, payload) => {
     const { battleId, userId, username, type, charCount, flagCount, timestamp } = payload;
     if (!battleId || !userId) return;
 
-    logger.info(`🚨 ANTI-CHEAT FLAG: ${type} by ${username} (${userId}) in battle ${battleId} — Flag #${flagCount}${charCount ? ` (${charCount} chars)` : ""}`);
+    logger.info(`🚨 ANTI-CHEAT FLAG: ${type} by ${username || 'Unknown'} (${userId || 'NoID'}) in battle ${battleId} — Flag #${flagCount || '1'}${charCount ? ` (${charCount} chars)` : ""}`);
 
     try {
         // Cache cumulative flag counts in Redis

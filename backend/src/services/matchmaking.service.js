@@ -32,10 +32,10 @@ class MatchmakingService {
       throw new Error("User not found");
     }
 
-    // Check if user already in queue
+    // Check if user already in queue - if so, remove them and re-join (allows refreshing session)
     const existingQueue = await RedisClient.client.get(`matchmaking:user:${userId}`);
     if (existingQueue) {
-      throw new Error("Already in matchmaking queue");
+      await MatchmakingService.leaveQueue(userId);
     }
 
     // Store user in queue with metadata
@@ -249,6 +249,9 @@ static async leaveQueue(userId) {
 
     const queueData = JSON.parse(queueDataStr);
     const queueKey = `${MATCHMAKING_QUEUE}:${queueData.difficulty}`;
+
+    // Refresh expiry to keep user in queue while they are actively polling
+    await RedisClient.client.expire(`matchmaking:user:${userId}`, 120);
 
     // Get queue size
     const queueSize = await RedisClient.client.zcard(queueKey);

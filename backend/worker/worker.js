@@ -39,7 +39,7 @@ const worker = new Worker(
     "submissionQueue",
     async (job) => {
         const { submissionId, battleId, squidGameId, contestId, userId, type } = job.data;
-        console.log(`📦 Job ${job.id} picked up — subId=${submissionId} type=${type || "SUBMIT"} squidGameId=${squidGameId || "N/A"} contestId=${contestId || "N/A"}`);
+        logger.info(`📦 Job ${job.id} picked up — subId=${submissionId} type=${type || "SUBMIT"}`);
 
         try {
             console.time(`Job-${job.id}-init`);
@@ -73,7 +73,7 @@ const worker = new Worker(
 
             await SubmissionService.updateSubmissionStatus(submissionId, { status: "RUNNING" });
 
-            console.log(`⏱  [${submission.language}] Starting ${type} — ${total} test case(s)`);
+            logger.info(`⏱ [${submission.language}] Starting ${type} — ${total} test case(s)`);
 
             // RUN type disable early_exit to get full feedback on all sample cases
             const { results, stopped_at } = await JudgeService.runTestCases(
@@ -140,7 +140,7 @@ const worker = new Worker(
                     executionTimeMs
                 });
 
-                console.log(`📡 [Worker] Publishing RUN result for subId=${submissionId} (userId=${userId || submission.user.id}, battleId=${battleId || submission.battleId || null})`);
+                logger.info(`📡 [Worker] Publishing RUN result for subId=${submissionId} (userId=${userId || submission.user.id}, battleId=${battleId || submission.battleId || null})`);
                 publisher.publish("worker_events", JSON.stringify({
                     event: "submission_result",
                     data: {
@@ -155,8 +155,8 @@ const worker = new Worker(
                         executionTimeMs,
                         language: submission.language
                     }
-                })).then(() => console.log(`✅ [Worker] Published RUN result successfully`))
-                  .catch(err => console.error("Redis publish error RUN:", err));
+                })).then(() => logger.info(`✅ [Worker] Published RUN result successfully`))
+                  .catch(err => logger.error("Redis publish error RUN:", err));
                 return;
             }
 

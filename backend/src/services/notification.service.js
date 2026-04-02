@@ -5,7 +5,8 @@ const prisma = Database.client;
 
 class NotificationService {
     static async createNotification(userId, { type, title, message, link }) {
-        if (!userId) return null;
+        const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000";
+        if (!userId || userId === GUEST_USER_ID || userId === 'guest') return null;
         try {
             const notification = await prisma.notification.create({
                 data: {

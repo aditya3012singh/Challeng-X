@@ -378,10 +378,25 @@ class AuthController {
                 data: { refreshTokenHash: await import("bcrypt").then(b => b.default.hash(refreshToken, 10)) }
             });
 
+            const { state } = req.query;
+            let redirectTo = "/";
+            if (state) {
+                try {
+                    const decoded = JSON.parse(Buffer.from(state, 'base64').toString());
+                    if (decoded.redirectTo) redirectTo = decoded.redirectTo;
+                } catch (e) {
+                    console.error("Failed to parse social auth state:", e);
+                }
+            }
+
+            const baseUrl = env.FRONTEND_URL.endsWith('/') ? env.FRONTEND_URL.slice(0, -1) : env.FRONTEND_URL;
+            const targetPath = redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`;
+            const finalUrl = `${baseUrl}${targetPath}${targetPath.includes('?') ? '&' : '?'}accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}&auth_success=true`;
+
             res
                 .cookie("accessToken", accessToken, CookieOptions.accessCookieOptions)
                 .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
-                .redirect(`${env.FRONTEND_URL}/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}&auth_success=true`);
+                .redirect(finalUrl);
 
             // Phase 4: Process Daily Reward
             RewardService.processDailyLogin(user.id);

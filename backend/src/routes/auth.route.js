@@ -31,10 +31,18 @@ class AuthRoutes {
 		router.post("/reset-password/:token", AuthController.resetPassword);
 
 		// 🌐 Social Login Routes
-		router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+		router.get("/google", (req, res, next) => {
+			const { redirectTo } = req.query;
+			const state = redirectTo ? Buffer.from(JSON.stringify({ redirectTo })).toString('base64') : undefined;
+			passport.authenticate("google", { scope: ["profile", "email"], state })(req, res, next);
+		});
 		router.get("/google/callback", passport.authenticate("google", { session: false }), AuthController.socialAuthCallback);
 
-		router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
+		router.get("/github", (req, res, next) => {
+			const { redirectTo } = req.query;
+			const state = redirectTo ? Buffer.from(JSON.stringify({ redirectTo })).toString('base64') : undefined;
+			passport.authenticate("github", { scope: ["user:email"], state })(req, res, next);
+		});
 		router.get("/github/callback", passport.authenticate("github", { session: false }), AuthController.socialAuthCallback);
 
 		return router;
