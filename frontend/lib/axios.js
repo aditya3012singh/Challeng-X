@@ -99,9 +99,17 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         isRefreshing = false;
-        // Redirect if not already handled
+
+        // 🛡️ GUEST ACCESS GUARD: Do NOT redirect if on a guest-allowed public route
         if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-          window.location.href = '/login';
+          const PUBLIC_ROUTES = ['/', '/login', '/leaderboard', '/live', '/contests'];
+          const isPublicRoute = PUBLIC_ROUTES.includes(window.location.pathname) || 
+                               window.location.pathname.startsWith('/battle/') || 
+                               window.location.pathname.startsWith('/spectate/');
+
+          if (!isPublicRoute) {
+            window.location.href = '/login';
+          }
         }
         return Promise.reject(refreshError);
       }

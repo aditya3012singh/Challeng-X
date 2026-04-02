@@ -28,14 +28,17 @@ const LANGUAGES = {
     javascript: { monaco: "javascript", defaultCode: `// Your code here\nconsole.log("Hello World!");` }
 };
 
+const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000";
+
 const BattleArena = () => {
     const { battleId } = useParams();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isAuthenticated, user } = useSelector((state) => state.auth);
-    const { currentBattle, loading } = useSelector((state) => state.battle);
+    const { currentBattle, loading, error } = useSelector((state) => state.battle);
     const { problem, player1, player2 } = currentBattle || {};
-    const opponent = player1?.id === user?.id ? player2 : player1;
+    const isCreator = user && player1?.id === user?.id;
+    const opponent = isCreator ? player2 : player1;
     const { theme } = useTheme();
 
     // Editor State
@@ -95,16 +98,30 @@ const BattleArena = () => {
     const hiddenStartTimeRef = useRef(null);
 
     // Initial Fetch
+    const hasFetchedRef = useRef(false);
     useEffect(() => {
-        if (battleId) {
-            dispatch(getBattle({ battleId }));
-            dispatch(resetMatchmaking());
+        if (!battleId || hasFetchedRef.current === battleId) return;
+
+        const joinRoom = () => {
+            console.log("🔌 [Socket] Emitting join_battle for", battleId);
             socket.emit("join_battle", { battleId });
-        }
+        };
+
+        hasFetchedRef.current = battleId;
+        dispatch(getBattle({ battleId }));
+        dispatch(resetMatchmaking());
+        
+        // Initial join
+        joinRoom();
+
+        // Re-join on reconnection
+        socket.on("connect", joinRoom);
+
         return () => {
+            socket.off("connect", joinRoom);
             dispatch(clearCurrentBattle());
-        }
-    }, [battleId, dispatch]);    // Timer logic
+        };
+    }, [battleId, dispatch]); // socket removed from deps to prevent re-runs
     useEffect(() => {
         if (currentBattle?.startedAt && currentBattle?.status === "ONGOING") {
             const start = new Date(currentBattle.startedAt).getTime();
@@ -268,8 +285,12 @@ const BattleArena = () => {
         if (!socket) return;
 
         const handleEvent = (event, data) => {
+            console.log(`📥 [SocketEvent] ${event}:`, data);
+            
             if (event === "submission_progress") {
-                if (data.userId === user?.id) {
+                const myEffectiveId = user?.id || GUEST_USER_ID;
+                const isMe = data.userId === myEffectiveId;
+                if (isMe) {
                     setMyProgress({ passed: data.passed, total: data.total });
                 } else if (data.userId === opponent?.id) {
                     setOpponentProgress({ passed: data.passed, total: data.total });
@@ -277,7 +298,9 @@ const BattleArena = () => {
             }
 
             if (event === "submission_result") {
-                if (data.userId === user?.id) {
+                const myEffectiveId = user?.id || GUEST_USER_ID;
+                const isMe = data.userId === myEffectiveId;
+                if (isMe) {
                     setStatus("result");
                     setActiveTab("console");
 
@@ -311,7 +334,7 @@ const BattleArena = () => {
                     // SYNC TO SPECTATORS: Push output results to anyone watching
                     socket.emit("spectator_output_sync", {
                         battleId,
-                        userId: user.id,
+                        userId: user?.id || GUEST_USER_ID,
                         output: data.output || (data.status === "PASSED" ? "All tests passed." : data.errorMessage),
                         status: data.status,
                         testCaseResults: data.testCaseResults,
@@ -321,17 +344,42 @@ const BattleArena = () => {
                 } else if (data.userId === opponent?.id) {
                     setOpponentStatus("idle");
                     setOpponentProgress({ passed: data.passedTests || 0, total: data.totalTests || 100 });
+                    
+                    if (isMobile && data.status === "PASSED") {
+                        toast.success(`${opponent?.username || 'Opponent'} passed all test cases!`, {
+                            icon: '🚀',
+                            position: 'top-right',
+                            style: { borderRadius: '2px', background: '#1a1a1a', color: '#ccff00', border: '1px solid rgba(204,255,0,0.2)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }
+                        });
+                    }
+                }
+            }
+
+            if (event === "attempts_updated") {
+                const myEffectiveId = user?.id || GUEST_USER_ID;
+                if (data.userId !== myEffectiveId && data.userId === opponent?.id) {
+                    setOpponentStatus("submitting");
+                    setTimeout(() => setOpponentStatus("idle"), 5000);
                 }
             }
 
             if (event === "opponent_submitted") {
                 if (data.userId === opponent?.id) {
                     setOpponentStatus("submitting");
+                    if (isMobile) {
+                        toast(`${opponent?.username || 'Opponent'} is transmitting data...`, {
+                            icon: '📡',
+                            position: 'top-right',
+                            style: { borderRadius: '2px', background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }
+                        });
+                    }
                     setTimeout(() => setOpponentStatus("idle"), 5000); // Fallback
                 }
             }
 
             if (event === "opponent_cheat_flag") {
+                const isMe = (user && data.userId === user.id) || (!user && data.userId === GUEST_USER_ID);
+                if (isMe) return; // Only notify about opponent actions
                 console.log("🛡️ [ANTI-CHEAT] SIGNAL RECEIVED:", data);
                 
                 const violationId = data.violationId || `${data.userId}-${Date.now()}`;
@@ -365,8 +413,22 @@ const BattleArena = () => {
 
                     setOpponentAlert({
                         type: data.type,
-                        message: `${data.username || 'Opponent'} engaged in ${data.type}`
+                        message: data.type === "CODE_PASTE" 
+                            ? `${data.username || 'Opponent'} pasted ${data.charCount || 'significant'} characters!`
+                            : `${data.username || 'Opponent'} engaged in ${data.type}`
                     });
+
+                    if (isMobile) {
+                        const alertMsg = data.type === "TAB_SWITCH" 
+                            ? `Security Alert: ${data.username || 'Opponent'} switched tab!`
+                            : `Security Alert: ${data.username || 'Opponent'} pasted ${data.charCount || 'some'} characters!`;
+                            
+                        toast.error(alertMsg, {
+                            icon: '🛡️',
+                            position: 'top-right',
+                            style: { borderRadius: '2px', background: '#1a1a1a', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }
+                        });
+                    }
                     setTimeout(() => setOpponentAlert(null), 8000);
                 }
             }
@@ -419,7 +481,7 @@ const BattleArena = () => {
 
     // Client-side Anti-Cheat Detection
     useEffect(() => {
-        if (!socket || !battleId || !user) return;
+        if (!socket || !battleId) return;
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden') {
@@ -429,8 +491,8 @@ const BattleArena = () => {
                 
                 socket.emit("anti_cheat_flag", {
                     battleId,
-                    userId: user.id,
-                    username: user.username,
+                    userId: user?.id || 'guest',
+                    username: user?.username || 'Guest',
                     type: "TAB_SWITCH",
                     status: "START",
                     timestamp: new Date().toISOString()
@@ -446,8 +508,8 @@ const BattleArena = () => {
                     const duration = Math.floor(durationInMs / 1000);
                     socket.emit("anti_cheat_flag", {
                         battleId,
-                        userId: user.id,
-                        username: user.username,
+                        userId: user?.id || GUEST_USER_ID,
+                        username: user?.username || 'Guest',
                         type: "TAB_SWITCH",
                         status: "END",
                         duration: duration,
@@ -460,11 +522,13 @@ const BattleArena = () => {
 
         const handleGlobalPaste = (e) => {
             const pastedText = e.clipboardData?.getData('text') || "";
-            if (pastedText.length > 50) { // Only flag significant pastes
+            console.log("📋 [ANTI-CHEAT] Paste event detected. Length:", pastedText.length);
+            if (pastedText.length > 5) { // Lowered threshold for more reliable detection
+                console.log("🚨 [ANTI-CHEAT] Significant paste flagged!");
                 socket.emit("anti_cheat_flag", {
                     battleId,
-                    userId: user.id,
-                    username: user.username,
+                    userId: user?.id || GUEST_USER_ID,
+                    username: user?.username || 'Guest',
                     type: "CODE_PASTE",
                     status: "START",
                     charCount: pastedText.length,
@@ -474,11 +538,12 @@ const BattleArena = () => {
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('paste', handleGlobalPaste);
+        window.addEventListener('paste', handleGlobalPaste, true); // Use capture phase to bypass editor stopPropagation
+        console.log("🔒 [ANTI-CHEAT] Paste listener attached to window");
 
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('paste', handleGlobalPaste);
+            window.removeEventListener('paste', handleGlobalPaste, true);
         };
     }, [socket, battleId, user]);
 
@@ -564,11 +629,13 @@ const BattleArena = () => {
 
     // SYNC TO SPECTATORS: Initial emission when code is loaded
     useEffect(() => {
-        if (!socket || !battleId || !user || !hasInitializedCode) return;
-
+        if (!socket || !battleId || !hasInitializedCode) return;
+        // Guests only emit if they are actually in the battle (handled by backend room participation)
+        // userId: user?.id || 'guest'
+        
         socket.emit("spectator_code_sync", {
             battleId,
-            userId: user.id,
+            userId: user?.id || GUEST_USER_ID,
             code,
             language
         });
@@ -576,12 +643,12 @@ const BattleArena = () => {
 
     // SYNC TO SPECTATORS: Debounced real-time code streaming during typing
     useEffect(() => {
-        if (!socket || !battleId || !user || !hasInitializedCode) return;
+        if (!socket || !battleId || !hasInitializedCode) return;
 
         const timer = setTimeout(() => {
             socket.emit("spectator_code_sync", {
                 battleId,
-                userId: user.id,
+                userId: user?.id || 'guest',
                 code,
                 language
             });
@@ -592,6 +659,20 @@ const BattleArena = () => {
 
     const handleRun = async (type = "RUN") => {
         if (status === "running") return;
+
+        // AUTH GUARD FOR SUBMISSION
+        if (type === "SUBMIT" && !isAuthenticated) {
+            toast.error("Authentication required for submission. Redirecting to login...", {
+                icon: '🔒',
+                style: { borderRadius: '2px', background: '#1a1a1a', color: '#fff' }
+            });
+            // Save code already happens on change, but let's be sure
+            localStorage.setItem(`battle_code_${battleId}`, code);
+            localStorage.setItem(`battle_lang_${battleId}`, language);
+            
+            navigate(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`);
+            return;
+        }
 
         setStatus("running");
         setRunningAction(type);
@@ -713,22 +794,23 @@ const BattleArena = () => {
         <div className="h-screen bg-[var(--color-bg-dark)] text-slate-300 flex flex-col overflow-hidden font-mono selection:bg-[var(--color-primary)] selection:text-black">
 
             {/* MATCH HEADER */}
-            <header className="h-14 border-b border-white/5 bg-[var(--color-bg-card)] flex items-center justify-between px-6 shrink-0 relative z-40">
-                <div className="flex items-center gap-6">
-                    <button onClick={() => navigate('/')} className="hover:text-[var(--color-primary)] transition-colors">
+            <header className="h-14 border-b border-white/5 bg-[var(--color-bg-card)] flex items-center justify-between px-3 sm:px-6 shrink-0 relative z-40">
+                <div className="flex items-center gap-3 sm:gap-6">
+                    <button onClick={() => navigate('/')} className="hover:text-[var(--color-primary)] transition-colors p-1">
                         <ChevronLeft size={20} />
                     </button>
-                    <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-ping" />
-                        <h1 className="text-sm font-black tracking-tighter uppercase text-[var(--color-text-main)] flex items-center gap-3">
-                            Battle Code: <span className="text-[var(--color-primary)] font-mono">{currentBattle?.battleCode || "......"}</span>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-ping hidden xs:block" />
+                        <h1 className="text-xs sm:text-sm font-black tracking-tighter uppercase text-[var(--color-text-main)] flex items-center gap-2 sm:gap-3">
+                            <span className="hidden sm:inline">Battle Code:</span> 
+                            <span className="text-[var(--color-primary)] font-mono">{currentBattle?.battleCode || "......"}</span>
                             <button 
                                 onClick={() => setIsShareModalOpen(true)}
-                                className="ml-2 px-2 py-1 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[9px] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] flex items-center gap-2"
+                                className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-1 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[9px] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] flex items-center gap-2"
                                 style={{ borderRadius: "2px" }}
                                 title="Share Battle"
                             >
-                                <Send size={10} /> Share
+                                <Send size={10} /> <span className="hidden sm:inline">Share</span>
                             </button>
                         </h1>
                     </div>
@@ -743,11 +825,12 @@ const BattleArena = () => {
 
                 <button
                     onClick={handleForfeit}
-                    className="flex items-center gap-2 px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 transition-all group"
+                    className="flex items-center gap-2 px-2.5 sm:px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 transition-all group"
                     style={{ borderRadius: "2px" }}
+                    title="Terminate Match"
                 >
                     <Power size={14} className="group-hover:rotate-90 transition-transform" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Abandon</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Abandon</span>
                 </button>
             </header>
 
@@ -819,7 +902,7 @@ const BattleArena = () => {
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8">
                         {((isMobile && mobileTab === "problem") || (!isMobile && activeTab === "description")) ? (
-                            (!opponent && currentBattle?.status !== "FINISHED") ? (
+                            (!opponent && currentBattle?.status === "WAITING") ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-8 animate-in fade-in zoom-in duration-700">
                                     <div className="relative">
                                         <div className="w-20 h-20 border-2 border-dashed border-[var(--color-primary)]/20 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
@@ -1054,7 +1137,7 @@ const BattleArena = () => {
                             {/* LOCAL PROGRESS */}
                             <div className="space-y-3">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-wider">{user?.username}</span>
+                                    <span className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-wider">{user?.username || "Guest Player"}</span>
                                     <span className="text-[var(--color-primary)] font-mono text-xs font-black">{myProgress.passed}/{myProgress.total || 0}</span>
                                 </div>
                                 <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
@@ -1180,7 +1263,7 @@ const BattleArena = () => {
                         />
                     ))}
 
-                    <div className="max-w-lg w-full bg-[var(--color-bg-card)] border border-white/10 p-8 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "2px" }}>
+                    <div className="max-w-lg w-full bg-[var(--color-bg-card)] border border-white/10 p-6 sm:p-10 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "2px" }}>
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent opacity-50" />
 
                         <div className="flex flex-col items-center">
@@ -1199,7 +1282,7 @@ const BattleArena = () => {
                                 {winner === user?.id ? "Superiority Established" : "Signal Terminated"}
                             </div>
 
-                            <h1 className="text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase mb-2 leading-none text-center">
+                            <h1 className="text-4xl sm:text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase mb-2 leading-none text-center">
                                 {winner === user?.id ? "You Won" : "Match Over"}
                             </h1>
 
@@ -1210,7 +1293,7 @@ const BattleArena = () => {
                             </p>
 
                             {/* MATCH STATS */}
-                            <div className="grid grid-cols-3 gap-4 w-full mb-8 p-6 bg-white/[0.02] border border-white/5" style={{ borderRadius: "2px" }}>
+                            <div className="grid grid-cols-3 gap-4 w-full mb-8 p-4 sm:p-6 bg-white/[0.02] border border-white/5" style={{ borderRadius: "2px" }}>
                                 <div className="flex flex-col items-center">
                                     <span className="text-[8px] text-slate-600 font-black uppercase mb-1 tracking-widest">Time</span>
                                     <span className="text-lg text-[var(--color-text-main)] font-mono">{formatElapsed(currentBattle?.startedAt)}</span>
@@ -1260,10 +1343,10 @@ const BattleArena = () => {
                                 )}
                             </div>
 
-                            <div className="flex gap-4 w-full">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
                                 <button
                                     onClick={() => navigate('/battles')}
-                                    className="flex-1 py-4 bg-white/5 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-black transition-all"
+                                    className="w-full sm:flex-1 py-4 bg-white/5 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-black transition-all"
                                 >
                                     Exit Arena
                                 </button>
@@ -1271,7 +1354,7 @@ const BattleArena = () => {
                                     <button
                                         onClick={fetchAISurgeonReport}
                                         disabled={isSurgeonLoading}
-                                        className="flex-2 px-8 py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[9px] hover:brightness-125 transition-all shadow-[0_0_20px_var(--color-primary)] shadow-opacity-10 flex items-center justify-center gap-2"
+                                        className="w-full sm:flex-2 px-8 py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[9px] hover:brightness-125 transition-all shadow-[0_0_20px_var(--color-primary)] shadow-opacity-10 flex items-center justify-center gap-2"
                                     >
                                         {isSurgeonLoading ? <Loader2 size={12} className="animate-spin" /> : <Activity size={12} />} Process Diagnostic
                                     </button>
@@ -1376,9 +1459,13 @@ const BattleArena = () => {
             <ShareModal 
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
-                link={`${window.location.origin}/spectate/${battleId}`}
-                title="SHARE BATTLE STREAM"
-                message={`Check out this live battle on ChallegX! Code: ${currentBattle?.battleCode}`}
+                link={(!opponent && currentBattle?.status !== "FINISHED") 
+                    ? `${window.location.origin}/battle/${battleId}/ide`
+                    : `${window.location.origin}/spectate/${battleId}`}
+                title={(!opponent && currentBattle?.status !== "FINISHED") ? "INVITE CHALLENGER" : "SHARE BATTLE STREAM"}
+                message={(!opponent && currentBattle?.status !== "FINISHED") 
+                    ? `Join me in a code battle on ChallegX! Code: ${currentBattle?.battleCode}`
+                    : `Check out this live battle on ChallegX! Code: ${currentBattle?.battleCode}`}
             />
 
             {/* CYBER MENTOR MODAL */}

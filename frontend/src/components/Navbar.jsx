@@ -84,17 +84,17 @@ const Navbar = () => {
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="w-12 h-10 overflow-hidden" style={{ borderRadius: "2px" }}>
-            <img 
-              src={logo} 
-              alt="ChallegX Logo" 
-              className="w-full h-full object-contain scale-[1.5] transition-transform group-hover:scale-[1.6]" 
+            <img
+              src={logo}
+              alt="ChallegX Logo"
+              className="w-full h-full object-contain scale-[1.5] transition-transform group-hover:scale-[1.6]"
             />
           </div>
           <div className="flex flex-col justify-center">
             <span className="text-xl font-black tracking-tighter text-[var(--color-text-main)] uppercase leading-none">
               CHALLEG<span className="text-[var(--color-primary)]">X</span>
             </span>
-            <span className="text-[8px] font-bold tracking-[0.3em] text-[var(--color-text-muted)] uppercase opacity-30 mt-1">Arena Platform</span>
+            <span className="hidden md:block text-[8px] font-bold tracking-[0.3em] text-[var(--color-text-muted)] uppercase opacity-30 mt-1">Arena Platform</span>
           </div>
         </Link>
 
@@ -102,8 +102,8 @@ const Navbar = () => {
         <div className="hidden xl:flex items-center gap-10">
           {navItems.map((item) => (
             item.type === "link" ? (
-              <Link 
-                key={item.path} 
+              <Link
+                key={item.path}
                 to={item.path}
                 className={`text-[10px] font-bold tracking-[0.3em] transition-all hover:text-[var(--color-primary)] ${isActive(item.path) ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}
               >
@@ -280,10 +280,10 @@ const Navbar = () => {
               <div className="p-6 flex justify-between items-center border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 overflow-hidden" style={{ borderRadius: "2px" }}>
-                    <img 
-                      src={logo} 
-                      alt="ChallegX Logo" 
-                      className="w-full h-full object-contain scale-[1.3]" 
+                    <img
+                      src={logo}
+                      alt="ChallegX Logo"
+                      className="w-full h-full object-contain scale-[1.3]"
                     />
                   </div>
                   <span className="text-xs font-bold tracking-widest text-[var(--color-text-main)] uppercase">Menu</span>
@@ -362,13 +362,13 @@ const Navbar = () => {
               </div>
 
               <div className="p-6 border-t border-white/5 space-y-2">
-                <button 
+                <button
                   onClick={() => { navigate(`/profile/${user?.username}`); setIsMenuOpen(false); }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-[var(--color-text-muted)] font-bold text-[9px] uppercase tracking-widest hover:bg-white/5 transition-all rounded-md"
                 >
                   <User size={14} /> My Profile
                 </button>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-4 py-3 text-red-500/80 font-bold text-[9px] uppercase tracking-widest hover:bg-red-500/10 transition-all rounded-md"
                 >
@@ -384,4 +384,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
-  
+

@@ -26,6 +26,9 @@ const authSlice = createSlice({
             state.publicProfile = null;
             state.publicProfileError = null;
         },
+        stopProfileLoading: (state) => {
+            state.profileLoading = false;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -157,6 +160,6 @@ const authSlice = createSlice({
     },
 })
 
-export const { clearError, setAuthenticated, clearPublicProfile } = authSlice.actions;
+export const { clearError, setAuthenticated, clearPublicProfile, stopProfileLoading } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -61,9 +61,9 @@ const LobbyScreen = ({ onJoin, onCreate, isJoining, isCreating }) => {
                             
                             <div className="space-y-4">
                                 {ROUND_CONFIG.map((config, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-sm hover:border-[var(--color-primary)]/20 transition-all group">
+                                    <div key={idx} className="flex items-center justify-between p-5 bg-[var(--color-bg-card)]/40 border border-[var(--glass-border)] rounded-sm hover:border-[var(--color-primary)]/20 transition-all group">
                                         <div className="flex items-center gap-5">
-                                            <span className="text-[10px] font-black w-10 h-10 rounded-full bg-black/40 flex items-center justify-center border border-white/5 group-hover:bg-[var(--color-primary)] group-hover:text-black transition-all">
+                                            <span className="text-[10px] font-black w-10 h-10 rounded-full bg-[var(--color-bg-dark)]/10 flex items-center justify-center border border-[var(--glass-border)] group-hover:bg-[var(--color-primary)] group-hover:text-black transition-all">
                                                 {String(config.round).padStart(2, '0')}
                                             </span>
                                             <div>
@@ -86,7 +86,9 @@ const LobbyScreen = ({ onJoin, onCreate, isJoining, isCreating }) => {
                     {/* Action Section */}
                     <div className="lg:col-span-5 space-y-8">
                         {/* Join Card */}
-                        <motion.div variants={itemVariants} className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-sm p-10 backdrop-blur-md shadow-2xl relative">
+                        <motion.div variants={itemVariants} className="premium-card p-10 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary)]/5 blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[var(--color-primary)]/10 transition-all"></div>
+                            
                             <div className="flex items-center gap-3 mb-10">
                                 <Play size={18} className="text-[var(--color-primary)]" />
                                 <h3 className="text-xs font-black uppercase tracking-[0.3em]">Join Arena</h3>
@@ -94,19 +96,19 @@ const LobbyScreen = ({ onJoin, onCreate, isJoining, isCreating }) => {
                             
                             <div className="space-y-6">
                                 <div>
-                                    <label className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-3 block px-1 opacity-50">Room Passcode</label>
+                                    <label className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-3 block px-1 opacity-60">Room Passcode</label>
                                     <input 
                                         type="text" 
                                         value={joinCode}
                                         onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                                         placeholder="CODE-####"
-                                        className="w-full bg-black/40 border border-[var(--glass-border)] px-5 py-5 text-sm font-mono tracking-[0.5em] focus:border-[var(--color-primary)] outline-none rounded-sm transition-all placeholder:opacity-10"
+                                        className="w-full bg-[var(--color-bg-dark)] border border-[var(--glass-border)] px-5 py-5 text-sm font-mono tracking-[0.5em] focus:border-[var(--color-primary)]/50 focus:bg-white/[0.02] outline-none rounded-sm transition-all placeholder:opacity-10 text-[var(--color-text-main)]"
                                     />
                                 </div>
                                 <button 
                                     onClick={() => onJoin(joinCode)}
                                     disabled={isJoining || joinCode.length < 4}
-                                    className="w-full py-5 bg-[var(--color-primary)] text-black text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:brightness-110 disabled:opacity-30 disabled:grayscale transition-all rounded-sm shadow-[0_15px_40px_rgba(var(--color-primary-rgb),0.15)]"
+                                    className="w-full py-5 bg-[var(--color-primary)] text-black text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-white disabled:opacity-60 disabled:grayscale-0 transition-all rounded-sm shadow-[0_15px_40px_rgba(var(--color-primary-rgb),0.1)] active:scale-[0.98]"
                                 >
                                     {isJoining ? "Connecting..." : "Enter Session"} <ChevronRight size={18} />
                                 </button>
@@ -114,10 +116,11 @@ const LobbyScreen = ({ onJoin, onCreate, isJoining, isCreating }) => {
                         </motion.div>
 
                         {/* Create Card */}
-                        <motion.div variants={itemVariants} className="bg-black/40 border border-[var(--glass-border)] rounded-sm p-10 backdrop-blur-sm">
-                            <div className="flex items-center gap-3 mb-8 opacity-40">
-                                <Plus size={18} className="text-white" />
-                                <h3 className="text-xs font-black uppercase tracking-[0.3em]">Host Match</h3>
+                        <motion.div variants={itemVariants} className="premium-card p-10 relative overflow-hidden group">
+                           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 blur-2xl translate-y-1/2 -translate-x-1/2"></div>
+                            <div className="flex items-center gap-3 mb-8">
+                                <Plus size={18} className="text-[var(--color-text-main)] opacity-60" />
+                                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--color-text-main)]">Host Match</h3>
                             </div>
                             
                             <div className="space-y-6">
@@ -126,12 +129,12 @@ const LobbyScreen = ({ onJoin, onCreate, isJoining, isCreating }) => {
                                     value={tournamentName}
                                     onChange={(e) => setTournamentName(e.target.value)}
                                     placeholder="ARENA NAME"
-                                    className="w-full bg-transparent border-b border-[var(--glass-border)] px-2 py-4 text-xs font-black uppercase tracking-widest focus:border-[var(--color-primary)] outline-none transition-all placeholder:text-white/5"
+                                    className="w-full bg-transparent border-b border-[var(--glass-border)] px-2 py-4 text-xs font-black uppercase tracking-[0.4em] focus:border-[var(--color-primary)] outline-none transition-all placeholder:text-[var(--color-text-muted)] placeholder:opacity-30 text-[var(--color-text-main)]"
                                 />
                                 <button 
                                     onClick={() => onCreate(tournamentName)}
                                     disabled={isCreating || !tournamentName}
-                                    className="w-full py-5 border border-white/10 text-white/40 hover:bg-white hover:text-black text-[9px] font-black uppercase tracking-[0.4em] transition-all rounded-sm"
+                                    className="w-full py-5 border border-white/10 text-[var(--color-text-main)] opacity-60 hover:bg-white hover:text-black hover:opacity-100 disabled:opacity-20 text-[9px] font-black uppercase tracking-[0.4em] transition-all rounded-sm active:scale-[0.98]"
                                 >
                                     {isCreating ? "Establishing..." : "Create New Session"}
                                 </button>

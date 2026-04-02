@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { stopProfileLoading } from '../store/slices/auth.slice'
 import { useSelector, useDispatch } from 'react-redux'
 import { lazy, Suspense, useEffect } from 'react'
 import { fetchUserProfile } from '../store/api/auth.thunk'
@@ -117,10 +118,29 @@ function App() {
       // Trigger profile fetch immediately since we now have a token
       dispatch(fetchUserProfile()).catch(() => { });
     } else if (!isAuthenticated) {
-      // Normal refresh/fetch if no token in URL
-      dispatch(fetchUserProfile()).catch(() => { });
+      const isAuthRoute = ["/login", "/register", "/forgot-password", "/reset-password"].some(path => 
+        location.pathname.startsWith(path)
+      );
+      
+      const PUBLIC_ROUTES = ['/', '/leaderboard', '/live', '/contests'];
+      const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname) || 
+                           location.pathname.startsWith('/battle/') || 
+                           location.pathname.startsWith('/spectate/');
+
+      const hasLocalToken = localStorage.getItem("accessToken");
+      
+      // Only fetch profile if we have a reason to (has token OR on protected route)
+      // If we are on a public route and HAVE NO token, we are a guest - skip fetch.
+      if (hasLocalToken || !isPublicRoute) {
+        if (!isAuthRoute) {
+          dispatch(fetchUserProfile()).catch(() => { });
+        }
+      } else {
+        // Explicitly stop loading for guest users on public routes
+        dispatch(stopProfileLoading());
+      }
     }
-  }, [dispatch, isAuthenticated, location.search]);
+  }, [dispatch, isAuthenticated, location.search, location.pathname]);
 
   // Global Redirect for Active Battles
   useEffect(() => {
@@ -200,9 +220,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path='/battle/:battleId/ide' element={
-            <ProtectedRoute>
               <BattleArena />
-            </ProtectedRoute>
           } />
           <Route path='/leaderboard' element={<Leaderboard />} />
 

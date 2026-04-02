@@ -7,6 +7,7 @@ import { setMatchFound, resetMatchmaking } from "../../store/slices/matchmaking.
 import { toast } from "react-hot-toast";
 import { Sparkles } from "lucide-react";
 import axios from "../../lib/axios";
+import MatchmakingRadar from "../components/common/MatchmakingRadar";
 
 export const FindMatch = () => {
     const [selectedDifficulty, setSelectedDifficulty] = useState("MEDIUM");
@@ -16,9 +17,21 @@ export const FindMatch = () => {
 
     const { currentLobby } = useSelector((state) => state.lobby);
     const { user } = useSelector((state) => state.auth);
-    const { inQueue, loading, error, queueSize, waitTime, matchFound, battleId, opponent } = useSelector(
+    const { inQueue, loading, error, queueSize, waitTime, matchFound, battleId, opponent, difficulty: restoredDifficulty } = useSelector(
         (state) => state.matchmaking
     );
+
+    // Initial status check on mount to handle reloads
+    useEffect(() => {
+        dispatch(getQueueStatus());
+    }, [dispatch]);
+
+    // Sync restored difficulty from store to local state
+    useEffect(() => {
+        if (restoredDifficulty) {
+            setSelectedDifficulty(restoredDifficulty);
+        }
+    }, [restoredDifficulty]);
 
     useEffect(() => {
         const socket = getSocket();
@@ -122,17 +135,19 @@ export const FindMatch = () => {
 
             <div className="relative max-w-4xl w-full z-10">
 
-                {matchFound ? (
-                    // Match Found Screen - REFINED
-                    <div className="premium-card p-20 text-center shadow-2xl animate-in zoom-in duration-500" style={{ borderRadius: "2px" }}>
+                {matchFound || (battleId && opponent) ? (
+                    // Match Found Screen - REFINED & RESPONSIVE
+                    <div className="premium-card p-8 sm:p-20 text-center shadow-2xl animate-in zoom-in duration-500 overflow-hidden" style={{ borderRadius: "2px" }}>
                         <div className="text-[10px] font-bold tracking-[1em] text-[var(--color-success)] uppercase mb-8">Match Found</div>
 
-                        <h1 className="text-6xl font-black text-[var(--color-text-main)] mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Opponent Found</h1>
+                        <h1 className="text-4xl sm:text-6xl font-black text-[var(--color-text-main)] mb-10 tracking-tighter uppercase font-[family:var(--font-heading)] leading-tight">
+                            Opponent <br className="sm:hidden" /> Found
+                        </h1>
 
-                        <div className="mb-10 flex flex-col items-center">
+                        <div className="mb-10 flex flex-col items-center w-full">
                             <div className="w-1 h-12 bg-[var(--color-success)] mb-6 opacity-40"></div>
-                            <div className="px-10 py-4 border border-[var(--color-success)]/20 text-[var(--color-text-main)] font-black text-2xl tracking-widest uppercase bg-white/[0.02]">
-                                {opponent}
+                            <div className="w-full max-w-xs px-6 py-4 border border-[var(--color-success)]/20 text-[var(--color-text-main)] font-black text-xl sm:text-2xl tracking-widest uppercase bg-white/[0.02] truncate">
+                                {opponent || "Opponent"}
                             </div>
                         </div>
 
@@ -141,13 +156,7 @@ export const FindMatch = () => {
                 ) : inQueue ? (
                     // Searching Screen - SOPHISTICATED
                     <div className="premium-card p-20 text-center relative overflow-hidden" style={{ borderRadius: "2px" }}>
-                        <div className="mb-12 relative flex justify-center">
-                            <div className="w-24 h-24 border border-white/5 rounded-full flex items-center justify-center relative">
-                                <div className="absolute inset-[-4px] border border-[var(--color-primary)]/20 rounded-full animate-ping"></div>
-                                <div className="absolute inset-[-12px] border border-[var(--color-primary)]/5 rounded-full"></div>
-                                <div className="w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_10px_var(--color-primary)]"></div>
-                            </div>
-                        </div>
+                        <MatchmakingRadar />
 
                         <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Searching</div>
                         <h1 className="text-5xl font-black text-[var(--color-text-main)] mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">Finding Opponent</h1>
@@ -231,11 +240,10 @@ export const FindMatch = () => {
                         <button
                             onClick={handleJoinQueue}
                             disabled={loading || !connected}
-                            className={`w-full py-6 font-black text-xs uppercase tracking-[0.4em] transition-all transform active:scale-95 shadow-2xl ${
-                                (loading || !connected) 
-                                ? "bg-slate-800 text-[var(--color-text-muted)] cursor-not-allowed opacity-50" 
-                                : "bg-[var(--color-primary)] text-black hover:bg-white"
-                            }`}
+                            className={`w-full py-6 font-black text-xs uppercase tracking-[0.4em] transition-all transform active:scale-95 shadow-2xl ${(loading || !connected)
+                                    ? "bg-slate-800 text-[var(--color-text-muted)] cursor-not-allowed opacity-50"
+                                    : "bg-[var(--color-primary)] text-black hover:bg-white"
+                                }`}
                             style={{ borderRadius: "2px" }}
                         >
                             {!connected ? "Connecting..." : loading ? "Searching..." : "Find Match →"}

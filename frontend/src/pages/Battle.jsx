@@ -122,7 +122,7 @@ export const Battle = () => {
                 <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Quick Start</div>
                 <h2 className="text-4xl font-black text-[var(--color-text-main)] mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Random Match</h2>
                 <p className="text-[var(--color-text-muted)] text-sm font-light leading-relaxed">
-                  Instant matchmaking with a random problem. Perfect for players who want to jump straight into the action.
+                  To play with your friend and know who is best. Instant matchmaking with a random problem.
                 </p>
               </div>
 
@@ -144,7 +144,7 @@ export const Battle = () => {
                 <div className="text-[10px] font-bold tracking-[0.8em] text-[var(--color-primary)] uppercase mb-6 pl-2">Custom Choice</div>
                 <h2 className="text-4xl font-black text-[var(--color-text-main)] mb-6 tracking-tighter uppercase font-[family:var(--font-heading)]">Custom Match</h2>
                 <p className="text-[var(--color-text-muted)] text-sm font-light leading-relaxed">
-                  Choose a specific problem to solve and challenge yourself or others.
+                  Hey bro lets check who will do this question fast. Choose a specific problem to challenge others.
                 </p>
               </div>
 

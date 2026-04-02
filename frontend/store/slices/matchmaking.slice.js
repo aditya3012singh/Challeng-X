@@ -74,9 +74,13 @@ const matchmakingSlice = createSlice({
             // Get Queue Status
             .addCase(getQueueStatus.fulfilled, (state, action) => {
                 if (action.payload.inQueue) {
+                    state.inQueue = true;
+                    state.difficulty = action.payload.difficulty;
                     state.queueSize = action.payload.queueSize;
                     state.waitTime = action.payload.waitTime;
                     state.estimatedWait = action.payload.estimatedWait;
+                } else {
+                    state.inQueue = false;
                 }
             })
             // Reset state on auth changes
