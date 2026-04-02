@@ -545,11 +545,13 @@ const Profile = () => {
                                                 <div className="w-12 h-12 bg-[var(--color-primary)]/5 rounded-full flex items-center justify-center text-[var(--color-primary)] group-hover:bg-[var(--color-primary)]/10 transition-all">
                                                     <Trophy size={20} strokeWidth={2.5} />
                                                 </div>
-                                                <span className="text-[9px] font-black text-[var(--color-text-main)] uppercase tracking-tighter truncate w-full opacity-60 group-hover:opacity-100">{ach.badge.name}</span>
+                                                <span className="text-[9px] font-black text-[var(--color-text-main)] uppercase tracking-tighter truncate w-full opacity-60 group-hover:opacity-100">
+                                                    {ach.achievement?.name || ach.badge?.name || "Earned Trophy"}
+                                                </span>
                                             </div>
                                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 p-4 bg-black border border-white/10 rounded-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all text-center z-10 pointer-events-none shadow-2xl">
-                                                <div className="text-[10px] font-black text-[var(--color-primary)] uppercase mb-2">{ach.badge.name}</div>
-                                                <div className="text-[9px] text-white/40 font-medium leading-relaxed">{ach.badge.description}</div>
+                                                <div className="text-[10px] font-black text-[var(--color-primary)] uppercase mb-2">{ach.achievement?.name || ach.badge?.name}</div>
+                                                <div className="text-[9px] text-white/40 font-medium leading-relaxed">{ach.achievement?.description || ach.badge?.description}</div>
                                                 <div className="text-[8px] text-white/10 font-black uppercase mt-3 tracking-widest border-t border-white/5 pt-2">Captured {new Date(ach.unlockedAt).toLocaleDateString()}</div>
                                             </div>
                                         </div>
