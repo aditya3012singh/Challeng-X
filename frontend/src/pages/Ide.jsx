@@ -70,7 +70,7 @@ const CountdownOverlay = ({ seconds }) => {
 
 const GameToast = ({ popup }) => {
   if (!popup) return null;
-  // Use ChallegX theme colors
+  // Use ChallengX theme colors
   const typeStyles = {
     success: "border-[var(--color-success)] text-[var(--color-success)]",
     error: "border-red-500 text-red-500",

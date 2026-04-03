@@ -37,7 +37,7 @@ const Footer = () => {
                 </div>
 
                 <div className="text-[var(--color-text-muted)] text-[10px] uppercase tracking-[0.3em] font-mono pointer-events-none">
-                    &copy; {new Date().getFullYear()} ChallegX System v2.0
+                    &copy; {new Date().getFullYear()} ChallengX System v2.0
                 </div>
             </div>
         </footer>

@@ -130,7 +130,7 @@ class BattleService {
           where: { id: player2Id },
           select: { username: true }
         });
-        if (ghost?.username === "CHALLEGX_GHOST") {
+        if (ghost?.username === "CHALLENGX_GHOST") {
           const b = await Database.client.battle.findUnique({ 
             where: { id: battle.id },
             include: { problem: true }

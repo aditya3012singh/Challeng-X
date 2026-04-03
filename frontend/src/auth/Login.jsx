@@ -491,7 +491,7 @@ const Login = () => {
             <div className="w-12 h-12 overflow-hidden flex items-center justify-center">
               <img 
                 src={logo} 
-                alt="ChallegX Logo" 
+                alt="ChallengX Logo" 
                 className="w-full h-full object-contain scale-[1.4]"
               />
             </div>

@@ -313,7 +313,7 @@ export const BattleRoom = () => {
           onClose={() => setIsShareModalOpen(false)}
           link={`${window.location.origin}/join/${battleData.joinCode}`}
           title="INVITE TO BATTLE"
-          message={`Hey! Join me for a coding battle on ChallegX. Use code: ${battleData.joinCode}`}
+          message={`Hey! Join me for a coding battle on ChallengX. Use code: ${battleData.joinCode}`}
       />
     </div>
   );

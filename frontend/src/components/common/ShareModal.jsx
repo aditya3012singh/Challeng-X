@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Copy, Check, MessageCircle, Linkedin, Instagram, Share2, Globe } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-const ShareModal = ({ isOpen, onClose, link, title = "INVITE CHALLENGERS", message = "Join me in a challenge on ChallegX!" }) => {
+const ShareModal = ({ isOpen, onClose, link, title = "INVITE CHALLENGERS", message = "Join me in a challenge on ChallengX!" }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {

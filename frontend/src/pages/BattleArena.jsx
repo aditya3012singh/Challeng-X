@@ -1244,10 +1244,10 @@ const BattleArena = () => {
                                 <div className="flex justify-between items-center group">
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-[10px] font-black uppercase tracking-wider ${opponent?.username === "CHALLEGX_GHOST" ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)]"}`}>
-                                                {opponent?.username || "Awaiting..."}
+                                            <span className={`text-[10px] font-black uppercase tracking-wider ${opponent?.username === "CHALLENGX_GHOST" ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)]"}`}>
+                                                {opponent?.username || "GUEST_USER"}
                                             </span>
-                                            {opponent?.username === "CHALLEGX_GHOST" && (
+                                            {opponent?.username === "CHALLENGX_GHOST" && (
                                                 <span className="px-1.5 py-0.5 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[7px] font-black text-[var(--color-primary)] uppercase tracking-widest rounded-sm">
                                                     GHOST
                                                 </span>
@@ -1269,7 +1269,7 @@ const BattleArena = () => {
                                 ) || (
                                         <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
                                             <div
-                                                className={`h-full transition-all duration-500 ${opponent?.username === "CHALLEGX_GHOST" ? "bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]" : "bg-white/20"}`}
+                                                className={`h-full transition-all duration-500 ${opponent?.username === "CHALLENGX_GHOST" ? "bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]" : "bg-white/20"}`}
                                                 style={{ width: `${(opponentProgress.passed / (opponentProgress.total || 1)) * 100}%` }}
                                             />
                                         </div>
@@ -1555,8 +1555,8 @@ const BattleArena = () => {
                     : `${window.location.origin}/spectate/${battleId}`}
                 title={(!opponent && currentBattle?.status !== "FINISHED") ? "INVITE CHALLENGER" : "SHARE BATTLE STREAM"}
                 message={(!opponent && currentBattle?.status !== "FINISHED") 
-                    ? `Join me in a code battle on ChallegX! Code: ${currentBattle?.battleCode}`
-                    : `Check out this live battle on ChallegX! Code: ${currentBattle?.battleCode}`}
+                    ? `Join me in a code battle on ChallengX! Code: ${currentBattle?.battleCode}`
+                    : `Check out this live battle on ChallengX! Code: ${currentBattle?.battleCode}`}
             />
 
             {/* CYBER MENTOR MODAL */}

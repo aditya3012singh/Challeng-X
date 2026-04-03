@@ -183,7 +183,7 @@ const SocialLobby = () => {
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-2">
                             <Radio className="text-[var(--color-primary)] animate-pulse" size={18} />
-                            <h2 className="font-bold font-mono tracking-tighter text-sm uppercase text-[var(--color-text-main)]">CHALLEGX LOBBY</h2>
+                            <h2 className="font-bold font-mono tracking-tighter text-sm uppercase text-[var(--color-text-main)]">CHALLENGX LOBBY</h2>
                         </div>
                         <button onClick={() => setIsOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors">
                             <ChevronRight size={20} />

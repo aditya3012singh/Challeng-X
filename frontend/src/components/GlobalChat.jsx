@@ -112,7 +112,7 @@ const GlobalChat = () => {
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <MessageSquare className="text-[var(--color-primary)]" size={18} />
-                            <h2 className="font-bold font-mono tracking-tight text-sm text-[var(--color-text-main)]">GLOBAL CHALLEGX</h2>
+                            <h2 className="font-bold font-mono tracking-tight text-sm text-[var(--color-text-main)]">GLOBAL CHALLENGX</h2>
                         </div>
                         <button onClick={() => setIsOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors">
                             <X size={18} />

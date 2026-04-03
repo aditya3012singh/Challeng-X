@@ -86,13 +86,13 @@ const Navbar = () => {
           <div className="w-12 h-10 overflow-hidden" style={{ borderRadius: "2px" }}>
             <img
               src={logo}
-              alt="ChallegX Logo"
+              alt="ChallengX Logo"
               className="w-full h-full object-contain scale-[1.5] transition-transform group-hover:scale-[1.6]"
             />
           </div>
           <div className="flex flex-col justify-center">
             <span className="text-xl font-black tracking-tighter text-[var(--color-text-main)] uppercase leading-none">
-              CHALLEG<span className="text-[var(--color-primary)]">X</span>
+              CHALLENG<span className="text-[var(--color-primary)]">X</span>
             </span>
             <span className="hidden md:block text-[8px] font-bold tracking-[0.3em] text-[var(--color-text-muted)] uppercase opacity-30 mt-1">Arena Platform</span>
           </div>
@@ -282,7 +282,7 @@ const Navbar = () => {
                   <div className="w-8 h-8 overflow-hidden" style={{ borderRadius: "2px" }}>
                     <img
                       src={logo}
-                      alt="ChallegX Logo"
+                      alt="ChallengX Logo"
                       className="w-full h-full object-contain scale-[1.3]"
                     />
                   </div>

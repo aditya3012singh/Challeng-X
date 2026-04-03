@@ -11,13 +11,13 @@ class AIService {
 
     async generateHint(problem, currentCode, language) {
         if (!this.genAI || env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
-            return "CHALLEGX_SYSTEM: AI Hinting is currently in 'Sandbox Mode'. Please check your Neural Link (GEMINI_API_KEY). [MOCK HINT]: Try refining your logic for the edge cases specified in the problem description.";
+            return "CHALLENGX_SYSTEM: AI Hinting is currently in 'Sandbox Mode'. Please check your Neural Link (GEMINI_API_KEY). [MOCK HINT]: Try refining your logic for the edge cases specified in the problem description.";
         }
 
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
-            You are "Cyber-Mentor", a professional coding assistant for the ChallegX platform.
+            You are "Cyber-Mentor", a professional coding assistant for the ChallengX platform.
             Your goal is to provide a helpful, concise hint to a user who is stuck on a programming problem.
             
             PROBLEM TITLE: ${problem.title}
@@ -44,19 +44,19 @@ class AIService {
         } catch (error) {
             console.error("DEBUG: Gemini API Error:", error);
             logger.error("AI Hint Generation Error:", error);
-            return "CHALLEGX_SYSTEM: The Neural Link is unstable (API Error). [FALLBACK]: Review your algorithm's efficiency and ensure you're using the correct data structures.";
+            return "CHALLENGX_SYSTEM: The Neural Link is unstable (API Error). [FALLBACK]: Review your algorithm's efficiency and ensure you're using the correct data structures.";
         }
     }
 
     async generateCodeSurgeonReport(problem, finalCode, language, result) {
         if (!this.genAI || env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
-            return "CHALLEGX_SURGEON: Missing Neural Link (GEMINI_API_KEY). Providing mock diagnostics: The code appears syntactically sound, but complexity could be reduced by avoiding nested loops.";
+            return "CHALLENGX_SURGEON: Missing Neural Link (GEMINI_API_KEY). Providing mock diagnostics: The code appears syntactically sound, but complexity could be reduced by avoiding nested loops.";
         }
 
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
-            You are "Code Surgeon", an elite code optimization scanner for ChallegX.
+            You are "Code Surgeon", an elite code optimization scanner for ChallengX.
             The user has just completed a challenge. Provide a brief "Medical Report" on their code.
             
             PROBLEM: ${problem.title}
@@ -82,7 +82,7 @@ class AIService {
             return response.text();
         } catch (error) {
             console.error("DEBUG: Gemini API Error (Surgeon):", error);
-            return "CHALLEGX_SURGEON: Neural Link unstable. [MOCK DIAGNOSTIC]: Your code structure is solid, but remember to watch out for redundant calculations in your main loops.";
+            return "CHALLENGX_SURGEON: Neural Link unstable. [MOCK DIAGNOSTIC]: Your code structure is solid, but remember to watch out for redundant calculations in your main loops.";
         }
     }
 
@@ -91,7 +91,7 @@ class AIService {
         
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
-            You are the "Game Master" for a high-stakes "Squid Game" style coding tournament on the "ChallegX" platform.
+            You are the "Game Master" for a high-stakes "Squid Game" style coding tournament on the "ChallengX" platform.
             Your tone is authoritative, slightly sinister, and mysterious (like The Frontman).
             
             Event Type: ${type}
@@ -178,7 +178,7 @@ class AIService {
 
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         const prompt = `
-            You are the "ChallegX Live Analyst", a high-energy, technical esports commentator.
+            You are the "ChallengX Live Analyst", a high-energy, technical esports commentator.
             You are observing a live 1v1 coding battle.
             
             Player 1: ${player1.username} (${player1.progress} tasks passed)
@@ -209,7 +209,7 @@ class AIService {
 
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
-            You are a competitive programmer solving a challenge on ChallegX.
+            You are a competitive programmer solving a challenge on ChallengX.
             PROBLEM: ${problem.title}
             DESCRIPTION: ${problem.description}
             LANGUAGE: ${language}

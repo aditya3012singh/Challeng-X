@@ -293,7 +293,7 @@ const RoundScreen = ({ tournament, roundInfo, timeLeft, onSubmit, leaderboard, s
                             <Code2 size={12} /> Environment: {language.toUpperCase()} / {LANGUAGES[language]?.monaco}
                          </div>
                          <div className="text-[9px] font-mono text-white/10 uppercase tracking-widest">
-                             ChallegX Integrated Arena System
+                             ChallengX Integrated Arena System
                          </div>
                     </div>
                 </div>

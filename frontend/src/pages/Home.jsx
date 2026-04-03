@@ -30,7 +30,7 @@ const Home = () => {
                                 <div className="w-24 h-24 mx-auto overflow-hidden flex items-center justify-center">
                                     <img
                                         src={logo}
-                                        alt="ChallegX Logo"
+                                        alt="ChallengX Logo"
                                         className="w-full h-full object-contain scale-[1.5] drop-shadow-[0_0_30px_rgba(255,170,0,0.3)]"
                                     />
                                 </div>

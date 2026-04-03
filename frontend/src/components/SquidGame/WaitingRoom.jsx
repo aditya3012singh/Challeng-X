@@ -174,7 +174,7 @@ const WaitingRoom = ({ tournament, onStart, isHost }) => {
                 onClose={() => setIsShareModalOpen(false)}
                 link={`${window.location.origin}/squid-game/join/${tournament?.joinCode}`}
                 title="RECRUIT SURVIVORS"
-                message={`The games are starting! Join my Squid Game tournament on ChallegX. Code: ${tournament?.joinCode}`}
+                message={`The games are starting! Join my Squid Game tournament on ChallengX. Code: ${tournament?.joinCode}`}
             />
         </div>
     );

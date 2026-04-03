@@ -35,7 +35,7 @@ const envSchema = z.object({
   S3_PUBLIC_URL: z.string().url().optional(),
 
   // App Configs
-  CHALLEGX_RUNNERS_PATH: z.string().optional(),
+  CHALLENGX_RUNNERS_PATH: z.string().optional(),
   JUDGE_POOL_SIZE: z.string().transform(Number).default("10"),
   MATCHMAKING_RANK_THRESHOLD: z.string().transform(Number).default("2000"),
   WORKER_CONCURRENCY: z.string().transform(Number).default("10"),

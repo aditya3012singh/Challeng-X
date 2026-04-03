@@ -196,7 +196,7 @@ const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStr
                     <span className="text-[9px] font-black uppercase tracking-widest">Tournament Monitor System</span>
                 </div>
                 <div className="text-[9px] font-mono">
-                    ChallegX Host Control v1.0
+                    ChallengX Host Control v1.0
                 </div>
             </footer>
             {/* SHARE MODAL */}
@@ -205,7 +205,7 @@ const OrganizerView = ({ tournament, roundInfo, timeLeft, leaderboard, playerStr
                 onClose={() => setIsShareModalOpen(false)}
                 link={`${window.location.origin}/squid-game/join/${tournament?.joinCode}`}
                 title="RECRUIT SURVIVORS"
-                message={`The games are starting! Help me host this Squid Game tournament on ChallegX. Code: ${tournament?.joinCode}`}
+                message={`The games are starting! Help me host this Squid Game tournament on ChallengX. Code: ${tournament?.joinCode}`}
             />
         </div>
     );

@@ -148,7 +148,7 @@ const LobbyScreen = ({ onJoin, onCreate, isJoining, isCreating }) => {
             <div className="fixed bottom-10 left-1/2 -translate-x-1/2 opacity-20 pointer-events-none w-full max-w-lg">
                 <div className="flex items-center gap-5 justify-center">
                     <div className="h-[1px] flex-1 bg-white/20" />
-                    <span className="text-[8px] font-black uppercase tracking-[1em] text-white whitespace-nowrap">ChallegX Survival Arena</span>
+                    <span className="text-[8px] font-black uppercase tracking-[1em] text-white whitespace-nowrap">ChallengX Survival Arena</span>
                     <div className="h-[1px] flex-1 bg-white/20" />
                 </div>
             </div>

@@ -5,7 +5,7 @@ export const BattleProblem = ({ problem }) => {
   if (!problem) {
     return (
       <div className="px-6 py-6 space-y-6 bg-[var(--color-bg-card)] border-r border-[var(--color-bg-dark)] min-h-screen pt-12 shadow-md">
-        <h2 className="text-[var(--color-primary)] font-black tracking-widest uppercase text-sm mb-8">ChallegX</h2>
+        <h2 className="text-[var(--color-primary)] font-black tracking-widest uppercase text-sm mb-8">ChallengX</h2>
         <Skeleton className="h-8 w-2/3 !bg-white/5" />
         <Skeleton className="h-6 w-24 !bg-white/5" />
         <div className="space-y-3">
@@ -24,7 +24,7 @@ export const BattleProblem = ({ problem }) => {
 
   return (
     <div className="px-6 py-6 h-full overflow-y-auto bg-[var(--color-bg-card)] border-r border-[var(--color-bg-dark)] min-h-screen pt-12 shadow-md pb-24">
-      <h2 className="text-[var(--color-primary)] font-black tracking-widest uppercase text-sm mb-8">ChallegX</h2>
+      <h2 className="text-[var(--color-primary)] font-black tracking-widest uppercase text-sm mb-8">ChallengX</h2>
 
       <h1 className="text-3xl font-black mb-3 text-[var(--color-text-main)] tracking-tight">{problem.title}</h1>
       <span className="inline-block mt-2 mb-4 px-3 py-1 rounded-[2px] text-[10px] font-bold tracking-widest uppercase bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">

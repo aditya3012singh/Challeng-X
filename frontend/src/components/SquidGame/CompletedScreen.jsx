@@ -54,7 +54,7 @@ const CompletedScreen = ({ tournament, leaderboard }) => {
                             <Star size={14} />
                             <span className="text-[10px] font-black uppercase tracking-widest">Final Standings</span>
                         </div>
-                        <span className="text-[9px] font-mono">ChallegX Arena</span>
+                        <span className="text-[9px] font-mono">ChallengX Arena</span>
                     </div>
 
                     <div className="space-y-3">

@@ -284,7 +284,7 @@ static async leaveQueue(userId) {
 
     // 2. Get Ghost User
     const ghost = await Database.client.user.findUnique({
-      where: { username: "CHALLEGX_GHOST" }
+      where: { username: "CHALLENGX_GHOST" }
     });
 
     if (!ghost) throw new Error("Ghost user not found. Run ensure_ghost.js first.");

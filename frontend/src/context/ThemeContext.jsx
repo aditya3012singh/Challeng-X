@@ -4,12 +4,12 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('challegx-theme') || 'dark';
+    return localStorage.getItem('challengx-theme') || 'dark';
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('challegx-theme', theme);
+    localStorage.setItem('challengx-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
