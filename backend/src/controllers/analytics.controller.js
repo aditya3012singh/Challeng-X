@@ -28,6 +28,16 @@ class AnalyticsController {
             res.status(500).json({ message: "Failed to fetch analytics" });
         }
     }
+
+    static async getGlobalStats(req, res) {
+        try {
+            const stats = await AnalyticsService.getGlobalStats();
+            res.json(stats);
+        } catch (error) {
+            console.error("Get global stats error:", error);
+            res.status(500).json({ message: "Failed to fetch global stats" });
+        }
+    }
 }
 
 export default AnalyticsController;

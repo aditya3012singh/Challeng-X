@@ -92,8 +92,24 @@ class SocketServer {
 
         this.setupMiddleware();
         this.setupEventHandlers();
+        this.startGlobalStatsBroadcast();
 
         return this.io;
+    }
+
+    static startGlobalStatsBroadcast() {
+        const BROADCAST_INTERVAL = 30000; // 30 seconds
+        
+        setInterval(async () => {
+            try {
+                const { default: AnalyticsService } = await import("../services/analytics.service.js");
+                const stats = await AnalyticsService.getGlobalStats();
+                this.io.emit("global_stats_update", stats);
+                // logger.debug("📡 [Socket] Global stats broadcasted");
+            } catch (err) {
+                logger.error(`❌ [Socket] Global stats broadcast failed: ${err.message}`);
+            }
+        }, BROADCAST_INTERVAL);
     }
 
     static setupMiddleware() {

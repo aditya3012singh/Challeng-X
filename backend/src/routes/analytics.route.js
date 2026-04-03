@@ -26,4 +26,15 @@ router.get("/", AuthMiddleware.handle, handleGetProfileAnalytics);
 // 2. Get specific user's analytics by username
 router.get("/:username", AuthMiddleware.handle, handleGetProfileAnalytics);
 
+// 3. Global Stats (Public)
+router.get("/global/stats", async (req, res) => {
+    try {
+        const { default: AnalyticsController } = await import("../controllers/analytics.controller.js");
+        return AnalyticsController.getGlobalStats(req, res);
+    } catch (error) {
+        console.error("Global Stats Route Error:", error);
+        res.status(500).json({ message: "Failed to load global stats" });
+    }
+});
+
 export default router;

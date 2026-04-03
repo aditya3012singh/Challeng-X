@@ -106,6 +106,50 @@ class AnalyticsService {
             take: Number(limit)
         });
     }
+
+    static async getGlobalStats() {
+        try {
+            const { default: RedisClient } = await import("../cache/redis.client.js");
+
+            // 1. Online Users (from Redis set)
+            const onlineUsersCount = await RedisClient.client.scard("online_users") || 0;
+
+            // 2. Users in Queue (Sum of all difficulties)
+            const queueCounts = await Promise.all([
+                RedisClient.client.zcard("matchmaking:queue:EASY"),
+                RedisClient.client.zcard("matchmaking:queue:MEDIUM"),
+                RedisClient.client.zcard("matchmaking:queue:HARD")
+            ]);
+            const totalInQueue = queueCounts.reduce((a, b) => a + b, 0);
+
+            // 3. Total Problems Solved (from Database)
+            const totalSolved = await prisma.submission.count({
+                where: { status: 'PASSED' }
+            });
+
+            // 4. Total Active Battles (from Database)
+            const activeBattles = await prisma.battle.count({
+                where: { status: 'ONGOING' }
+            });
+
+            return {
+                onlineUsersCount,
+                totalInQueue,
+                totalSolved,
+                activeBattles,
+                timestamp: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error("Error in getGlobalStats:", error);
+            return {
+                onlineUsersCount: 0,
+                totalInQueue: 0,
+                totalSolved: 0,
+                activeBattles: 0,
+                timestamp: new Date().toISOString()
+            };
+        }
+    }
 }
 
 export default AnalyticsService;

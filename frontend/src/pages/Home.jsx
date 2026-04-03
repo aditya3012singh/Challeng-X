@@ -1,10 +1,44 @@
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
+import axios from "../../lib/axios";
+import { getSocket } from "../../lib/socket";
+import { Users, Swords, CheckCircle, Globe } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Home = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
     const navigate = useNavigate();
+    const [stats, setStats] = useState({
+        onlineUsersCount: 0,
+        totalInQueue: 0,
+        totalSolved: 0,
+        activeBattles: 0
+    });
+
+    useEffect(() => {
+        // 1. Initial Fetch
+        const fetchStats = async () => {
+            try {
+                const res = await axios.get("/analytics/global/stats");
+                setStats(res.data);
+            } catch (err) {
+                console.error("Failed to fetch global stats:", err);
+            }
+        };
+        fetchStats();
+
+        // 2. Socket Listen
+        const socket = getSocket();
+        socket.on("global_stats_update", (newStats) => {
+            setStats(newStats);
+        });
+
+        return () => {
+            socket.off("global_stats_update");
+        };
+    }, []);
 
     return (
         <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] font-[family:var(--font-body)] transition-colors duration-300">
@@ -15,13 +49,40 @@ const Home = () => {
             </div>
 
             <div className="relative z-10">
-                <div className="relative z-10">
-                    {/* HERO SECTION */}
+                {/* HERO SECTION */}
                     <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
                         {/* Background Visual */}
 
 
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
+                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10 w-full max-w-4xl mx-auto">
+                            {/* LIVE ARENA STATS BANNER */}
+                            <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12">
+                                {[
+                                    { label: "ARENA ACTIVE", value: stats.onlineUsersCount, icon: Globe, color: "var(--color-primary)" },
+                                    { label: "QUEUING", value: stats.totalInQueue, icon: Users, color: "var(--color-primary)" },
+                                    { label: "IN BATTLE", value: stats.activeBattles, icon: Swords, color: "#ef4444" },
+                                    { label: "TOTAL SOLVED", value: stats.totalSolved, icon: CheckCircle, color: "var(--color-success)" }
+                                ].map((stat, i) => (
+                                    <motion.div 
+                                        key={i}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className="flex items-center gap-3 px-5 py-2.5 rounded-sm border border-white/5 bg-white/[0.02] backdrop-blur-md"
+                                    >
+                                        <stat.icon size={12} style={{ color: stat.color }} className="opacity-80" />
+                                        <div className="flex flex-col items-start translate-y-[1px]">
+                                            <span className="text-[14px] font-black tabular-nums leading-none mb-1">
+                                                {stat.value.toLocaleString()}
+                                            </span>
+                                            <span className="text-[8px] font-bold tracking-[0.2em] text-slate-500 uppercase leading-none">
+                                                {stat.label}
+                                            </span>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+
                             <div className="inline-block px-4 py-1 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">
                                 Evolution of Competitive Coding
                             </div>
@@ -207,9 +268,6 @@ const Home = () => {
                             </div>
                         </section>
                     )}
-                </div>
-
-
             </div>
         </div>
     );

@@ -208,7 +208,8 @@ class AuthService {
     console.log(`\n======================================================`);
     console.log(`[EMAIL MOCK] Forgot Password Request for ${email}`);
     console.log(`Click this link to reset password:`);
-    console.log(`http://localhost:5173/reset-password/${resetToken}`);
+    const baseUrl = env.FRONTEND_URL.endsWith('/') ? env.FRONTEND_URL.slice(0, -1) : env.FRONTEND_URL;
+    console.log(`${baseUrl}/reset-password/${resetToken}`);
     console.log(`======================================================\n`);
 
     // In a real production app, you would integrate Nodemailer or AWS SES here
