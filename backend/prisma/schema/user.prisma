@@ -77,6 +77,7 @@ model User {
   
   achievements     UserAchievement[]
   badges           UserBadge[]
+  userHints        UserHint[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())

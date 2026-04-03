@@ -48,7 +48,7 @@ class AIService {
         }
     }
 
-    async generateReview(problem, finalCode, language, result) {
+    async generateCodeSurgeonReport(problem, finalCode, language, result) {
         if (!this.genAI || env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
             return "CHALLEGX_SURGEON: Missing Neural Link (GEMINI_API_KEY). Providing mock diagnostics: The code appears syntactically sound, but complexity could be reduced by avoiding nested loops.";
         }
@@ -60,19 +60,20 @@ class AIService {
             The user has just completed a challenge. Provide a brief "Medical Report" on their code.
             
             PROBLEM: ${problem.title}
-            RESULT: ${result} (e.g., Success/Failure)
+            RESULT: ${result} (Success)
             CODE (${language}):
             \`\`\`${language}
             ${finalCode}
             \`\`\`
 
             INSTRUCTIONS:
-            1. Be very concise (max 150 words).
-            2. Mention one specific optimization (Time or Space complexity).
-            3. Use a "Surgeon" / "Diagnostic" persona.
-            4. If the code was perfect, compliment them on its efficiency.
+            1. Be very concise (max 120 words).
+            2. Predict the Time complexity (e.g. O(N)) and Space complexity.
+            3. Detect the algorithmic pattern (e.g., "Two Pointers", "DFS", "Dynamic Programming").
+            4. Suggest ONE specific optimization for speed or memory.
+            5. Use a "Surgeon" / "Diagnostic" persona with medical terminology (e.g., "Logic flow is healthy", "Symptoms of high complexity").
             
-            Return ONLY the report text.
+            Return ONLY the report text in clean Markdown.
         `;
 
         try {
@@ -80,7 +81,7 @@ class AIService {
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.error("DEBUG: Gemini API Error (Review):", error);
+            console.error("DEBUG: Gemini API Error (Surgeon):", error);
             return "CHALLEGX_SURGEON: Neural Link unstable. [MOCK DIAGNOSTIC]: Your code structure is solid, but remember to watch out for redundant calculations in your main loops.";
         }
     }

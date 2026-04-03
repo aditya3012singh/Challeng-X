@@ -178,13 +178,20 @@ class BattleService {
   //     return battle;
   // }
 
-  static async getBattle(battleId) {
+  static async getBattle(battleId, userId = null) {
     let battle = await Database.client.battle.findUnique({
       where: { id: battleId },
       include: {
         problem: {
           select: {
-            id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: {
+            id: true, title: true, difficulty: true, description: true, timeLimitMs: true,
+            hints: true,
+            tags: { select: { name: true } },
+            userHints: userId ? { where: { 
+              userId,
+              battleId: battleId
+            }, select: { hintIndex: true } } : undefined,
+            testcases: {
               where: {
                 OR: [
                   { isHidden: false },
@@ -208,7 +215,17 @@ class BattleService {
         include: {
           problem: {
             select: {
-              id: true, title: true, difficulty: true, description: true, timeLimitMs: true, testcases: {
+              id: true, title: true, difficulty: true, description: true, timeLimitMs: true,
+              hints: true,
+              tags: { select: { name: true } },
+              userHints: userId ? { where: { 
+                userId,
+                OR: [
+                  { battleId: undefined },
+                  { teamBattleMatchId: battle.teamBattleId ? battle.id : undefined }
+                ]
+              }, select: { hintIndex: true } } : undefined,
+              testcases: {
                 where: {
                   OR: [
                     { isHidden: false },
@@ -237,6 +254,12 @@ class BattleService {
 
     if (!battle) {
       throw new Error("Battle not found");
+    }
+
+    // Redact hints
+    if (battle.problem) {
+      const unlockedIndices = battle.problem.userHints?.map(uh => uh.hintIndex) || [];
+      battle.problem.hints = battle.problem.hints.map((h, i) => unlockedIndices.includes(i) ? h : null);
     }
 
     // Add winner details if available

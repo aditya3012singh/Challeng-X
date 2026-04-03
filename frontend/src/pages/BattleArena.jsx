@@ -19,6 +19,7 @@ import { playSound } from "../utils/audio";
 import { toast } from "react-hot-toast";
 import ShareModal from "../components/common/ShareModal";
 import CyberMentorModal from "../components/common/CyberMentorModal";
+import CodeSurgeonModal from "../components/common/CodeSurgeonModal";
 import axios from "../../lib/axios";
 
 const LANGUAGES = {
@@ -86,6 +87,10 @@ const BattleArena = () => {
     const [isAILoading, setIsAILoading] = useState(false);
     const [surgeonReport, setSurgeonReport] = useState("");
     const [isSurgeonLoading, setIsSurgeonLoading] = useState(false);
+    const [unlockedHints, setUnlockedHints] = useState([]);
+    const [isUnlockingHint, setIsUnlockingHint] = useState(false);
+    const [isSurgeonOpen, setIsSurgeonOpen] = useState(false);
+    const [isAborting, setIsAborting] = useState(false);
     
     // Anti-Cheat Phase 2
     const [isTabSwitched, setIsTabSwitched] = useState(false);
@@ -104,7 +109,10 @@ const BattleArena = () => {
 
         const joinRoom = () => {
             console.log("🔌 [Socket] Emitting join_battle for", battleId);
-            socket.emit("join_battle", { battleId });
+            socket.emit("join_battle", { 
+                battleId, 
+                isCreator: user && player1?.id === user?.id 
+            });
         };
 
         hasFetchedRef.current = battleId;
@@ -200,6 +208,26 @@ const BattleArena = () => {
         }
     };
 
+    const handleUnlockHint = async (index) => {
+        if (unlockedHints.includes(index)) return;
+        setIsUnlockingHint(true);
+        try {
+            const response = await axios.post(`/problem/${problem.id}/hints/unlock`, { 
+                hintIndex: index,
+                battleId: battleId
+            });
+            setUnlockedHints(prev => [...prev, index]);
+            // Refresh problem to get the actual hint text
+            dispatch(getBattle({ battleId }));
+            toast.success("Neural Link Synchronized. Hint Decrypted.", { icon: '💡' });
+        } catch (error) {
+            console.error("Hint Unlock Error:", error);
+            toast.error(error.response?.data?.message || "Connection Failed: Check Cores");
+        } finally {
+            setIsUnlockingHint(false);
+        }
+    };
+
     // Resize logic
     const startResizing = useCallback((e) => {
         setIsResizing(true);
@@ -252,13 +280,22 @@ const BattleArena = () => {
     };
 
     const confirmForfeit = async () => {
+        setIsAborting(true);
         try {
             await dispatch(forfeitBattle({ battleId })).unwrap();
+            toast.success("Match exited successfully", { 
+                position: 'top-right',
+                icon: '🛡️',
+                style: { borderRadius: '2px', background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }
+            });
             setShowForfeitModal(false);
             navigate('/battles');
         } catch (err) {
             console.error(err);
+            toast.error("Signal Termination Failed");
             setShowForfeitModal(false);
+        } finally {
+            setIsAborting(false);
         }
     };
 
@@ -326,6 +363,10 @@ const BattleArena = () => {
                     if (data.status === "PASSED") {
                         setMessage("Submission Successful!");
                         setMyProgress({ passed: data.totalTests || 1, total: data.totalTests || 1 });
+                        if (data.aiFeedback) {
+                            setSurgeonReport(data.aiFeedback);
+                            setIsSurgeonOpen(true);
+                        }
                     } else {
                         setMessage(`Submission Failed: ${data.errorMessage || "Error encountered"}`);
                     }
@@ -481,7 +522,7 @@ const BattleArena = () => {
 
     // Client-side Anti-Cheat Detection
     useEffect(() => {
-        if (!socket || !battleId) return;
+        if (!socket || !battleId || currentBattle?.status !== "ONGOING") return;
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden') {
@@ -545,7 +586,7 @@ const BattleArena = () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('paste', handleGlobalPaste, true);
         };
-    }, [socket, battleId, user]);
+    }, [socket, battleId, user, currentBattle?.status]);
 
     // Sync Finished Status from Initial Load
     useEffect(() => {
@@ -716,7 +757,7 @@ const BattleArena = () => {
                 {testResults.length > 0 ? (
                     <div className="space-y-4">
                         {testResults.map((res, i) => (
-                            <div key={i} className={`p-4 border ${res.passed ? 'border-green-500/20 bg-green-500/5' : 'border-red-500/20 bg-red-500/5'}`} style={{ borderRadius: "2px" }}>
+                            <div key={i} className={`p-4 border ${res.passed ? 'border-green-500/20 bg-green-500/5' : 'border-red-600/20 bg-red-600/5'}`} style={{ borderRadius: "2px" }}>
                                 {res.summary ? (
                                     <div className="flex items-center gap-3">
                                         <Check size={16} className="text-green-500" />
@@ -733,11 +774,11 @@ const BattleArena = () => {
                                         <div className="space-y-2 opacity-80">
                                             <div className="flex gap-2">
                                                 <span className="text-[var(--color-text-muted)] w-20">Input:</span>
-                                                <span className="text-[var(--color-text-main)] break-all">{res.input}</span>
+                                                <span className="text-[var(--color-text-main)] font-mono">{res.input}</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 <span className="text-[var(--color-text-muted)] w-20">Expected:</span>
-                                                <span className="text-green-400 break-all">{res.expected}</span>
+                                                <span className="text-green-400 font-mono">{res.expected}</span>
                                             </div>
                                             {!res.passed && (
                                                 <div className="flex gap-2">
@@ -746,7 +787,7 @@ const BattleArena = () => {
                                                 </div>
                                             )}
                                             {res.error && (
-                                                <div className="mt-2 pt-2 border-t border-red-500/10 text-red-400 text-[10px] italic">
+                                                <div className="mt-2 pt-2 border-t border-red-500/10 text-red-500 text-[10px] italic">
                                                     {res.error}
                                                 </div>
                                             )}
@@ -816,20 +857,20 @@ const BattleArena = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10" style={{ borderRadius: "2px" }}>
-                    <div className="w-1.5 h-1.5 bg-red-500 animate-pulse rounded-full" />
-                    <span className="text-[10px] uppercase font-black tracking-widest text-slate-100">{formatTime(timeLeft)}</span>
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-red-600 border border-white/10" style={{ borderRadius: "2px" }}>
+                    <div className="w-1.5 h-1.5 bg-white animate-pulse rounded-full" />
+                    <span className="text-[10px] uppercase font-black tracking-widest text-white">{formatTime(timeLeft)}</span>
                 </div>
 
                 <div className="h-4 w-[1px] bg-white/10 mx-2" />
 
                 <button
                     onClick={handleForfeit}
-                    className="flex items-center gap-2 px-2.5 sm:px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 transition-all group"
+                    className="flex items-center gap-2 px-2.5 sm:px-4 py-1.5 bg-red-600 hover:bg-red-500 border border-white/20 text-white transition-all group shadow-[0_0_10px_rgba(255,0,0,0.3)]"
                     style={{ borderRadius: "2px" }}
                     title="Terminate Match"
                 >
-                    <Power size={14} className="group-hover:rotate-90 transition-transform" />
+                    <Power size={14} className="group-hover:rotate-90 transition-transform text-white" />
                     <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Abandon</span>
                 </button>
             </header>
@@ -902,7 +943,7 @@ const BattleArena = () => {
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8">
                         {((isMobile && mobileTab === "problem") || (!isMobile && activeTab === "description")) ? (
-                            (!opponent && currentBattle?.status === "WAITING") ? (
+                            (!opponent || currentBattle?.status === "WAITING" || currentBattle?.status === "COUNTDOWN") ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-8 animate-in fade-in zoom-in duration-700">
                                     <div className="relative">
                                         <div className="w-20 h-20 border-2 border-dashed border-[var(--color-primary)]/20 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
@@ -929,21 +970,63 @@ const BattleArena = () => {
                                 <div className="space-y-8 lg:space-y-12">
                                     <section>
                                         <div className="flex items-center justify-between mb-4 lg:mb-8">
-                                            <div className="px-3 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-black uppercase tracking-widest">
-                                                {problem?.difficulty || "MISSION DATA"}
+                                            <div className="flex flex-col gap-2">
+                                                <div className="px-3 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-black uppercase tracking-widest self-start">
+                                                    {problem?.difficulty || "MISSION DATA"}
+                                                </div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {problem?.tags?.map((tag, idx) => (
+                                                        <span key={idx} className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">
+                                                            #{tag.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             </div>
                                             <button 
                                                 onClick={fetchAIHint}
                                                 disabled={isAILoading}
-                                                className="flex items-center gap-2 px-3 py-1 bg-[var(--color-primary)]/5 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[9px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-black transition-all"
+                                                className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 text-[var(--color-text-main)] text-[9px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-black transition-all"
                                                 style={{ borderRadius: "2px" }}
                                             >
-                                                <Sparkles size={10} /> {isAILoading ? "Connecting..." : "Cyber-Mentor"}
+                                                <Sparkles size={10} /> {isAILoading ? "Connecting..." : "Personalized Hint (-15)"}
                                             </button>
                                         </div>
                                         <h2 className="text-xl lg:text-2xl font-black text-[var(--color-text-main)] mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem?.title}</h2>
                                         <div className="prose prose-invert prose-sm max-w-none text-[var(--color-text-muted)] font-light leading-relaxed mb-8 lg:mb-12">
                                             {problem?.description}
+                                        </div>
+                                    </section>
+
+                                    {/* HINTS SECTION */}
+                                    <section>
+                                        <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
+                                            <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Mission Intel (Hints)
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {[0, 1, 2].map((idx) => {
+                                                const isUnlocked = problem?.hints?.[idx] !== null && problem?.hints?.[idx] !== undefined;
+                                                return (
+                                                    <div key={idx} className={`p-4 border transition-all ${isUnlocked ? 'bg-white/5 border-white/10' : 'bg-black/40 border-white/5 opacity-60'}`}>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Protocol Hint {idx + 1}</div>
+                                                            {!isUnlocked && (
+                                                                <button 
+                                                                    onClick={() => handleUnlockHint(idx)}
+                                                                    disabled={isUnlockingHint}
+                                                                    className="px-2 py-1 bg-[var(--color-primary)] text-black text-[8px] font-black uppercase tracking-tighter hover:bg-white transition-all"
+                                                                >
+                                                                    Unlock (-5)
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {isUnlocked ? (
+                                                            <p className="text-[11px] text-slate-300 font-light italic">"{problem.hints[idx]}"</p>
+                                                        ) : (
+                                                            <div className="h-4 bg-white/5 animate-pulse w-full rounded-sm" />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </section>
 
@@ -1006,7 +1089,7 @@ const BattleArena = () => {
                             </button>
                             <button
                                 onClick={() => handleRun("SUBMIT")}
-                                disabled={status === "running"}
+                                disabled={status === "running" || (isCreator && currentBattle?.status !== "ONGOING")}
                                 className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all active:scale-95 shadow-[0_0_20px_rgba(204,255,0,0.1)] flex items-center justify-center gap-2"
                             >
                                 {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} fill="currentColor" />} Submit Data
@@ -1014,106 +1097,112 @@ const BattleArena = () => {
                         </div>
                     )}
                 </div>
-
-                {/* CENTER - CODE EDITOR */}
-                <div className={`flex-1 min-h-0 flex flex-col bg-[var(--color-bg-dark)] min-w-0 lg:min-w-[400px] 
-                    ${mobileTab === "editor" ? "flex" : "hidden lg:flex"}`}>
-                    {/* EDITOR TOOLBAR */}
-                    <div className="h-10 lg:h-12 border-b border-white/5 bg-[var(--color-bg-card)] flex items-center justify-between px-4 lg:px-6 shrink-0">
-                        <div className="flex items-center gap-4 lg:gap-6">
-                            <div className="flex items-center gap-2 border-r border-white/10 pr-4 lg:pr-6">
-                                <Globe size={14} className="text-[var(--color-text-muted)]" />
-                                <select
-                                    value={language}
-                                    onChange={handleLanguageChange}
-                                    className="bg-transparent text-[9px] lg:text-[10px] font-black text-[var(--color-text-main)] outline-none uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"
-                                >
-                                    {Object.keys(LANGUAGES).map(lang => (
-                                        <option key={lang} value={lang} className="bg-[var(--color-bg-card)]">{lang}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {isMobile && (
-                                <button
-                                    onClick={() => setShowMobileTools(!showMobileTools)}
-                                    className={`p-2 rounded-sm border transition-all ${showMobileTools ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/40 text-[var(--color-primary)]' : 'bg-white/5 border-white/10 text-[var(--color-text-muted)]'}`}
-                                >
-                                    <MousePointer2 size={14} />
-                                </button>
-                            )}
+                {/* CENTER AREA - Editor */}
+                <div className={`flex-1 min-h-0 flex flex-col bg-[var(--color-bg-dark)] min-w-0 lg:min-w-[400px] ${mobileTab === "editor" ? "flex" : "hidden lg:flex"}`}>
+                    {(!opponent || currentBattle?.status === "WAITING" || currentBattle?.status === "COUNTDOWN") ? (
+                        <div className="flex-1 flex items-center justify-center bg-[var(--color-bg-dark)] text-[var(--color-text-muted)] uppercase text-[10px] tracking-widest animate-pulse">
+                            <Rocket size={16} className="mr-3" /> Waiting for transmission start...
                         </div>
-                    </div>
-
-                    {/* MONACO EDITOR CONTAINER */}
-                    <div className="flex-1 relative">
-                        <Editor
-                            height="100%"
-                            theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                            language={LANGUAGES[language].monaco}
-                            value={code}
-                            onChange={(val) => setCode(val)}
-                            onMount={(editor) => {
-                                editorRef.current = editor;
-                            }}
-                            options={{
-                                minimap: { enabled: false },
-                                fontSize: isMobile ? 12 : 13,
-                                fontFamily: "var(--font-mono)",
-                                fontLigatures: true,
-                                scrollBeyondLastLine: false,
-                                automaticLayout: true,
-                                padding: { top: 20 },
-                                cursorStyle: "line",
-                                cursorWidth: 2,
-                                cursorBlinking: 'blink',
-                                selectionHighlight: false,
-                                renderLineHighlight: "none",
-                                lineNumbersMinChars: isMobile ? 2 : 3,
-                                scrollbar: {
-                                    vertical: "auto",
-                                    horizontal: "auto",
-                                    verticalScrollbarSize: 8,
-                                    horizontalScrollbarSize: 8,
-                                },
-                                quickSuggestions: !isMobile,
-                                hover: { enabled: !isMobile },
-                                occurrenceHighlight: false,
-                                matchBrackets: 'always',
-                            }}
-                        />
-
-                        {/* MOBILE D-PAD */}
-                        {isMobile && showMobileTools && (
-                            <div className="absolute bottom-6 right-6 z-50 flex flex-col items-center gap-2 bg-[var(--color-bg-card)]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-90 sm:scale-100">
-                                <button onClick={() => moveCursor('up')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronUp size={20} /></button>
-                                <div className="flex gap-2">
-                                    <button onClick={() => moveCursor('left')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronLeft size={20} /></button>
-                                    <button onClick={() => moveCursor('down')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronDown size={20} /></button>
-                                    <button onClick={() => moveCursor('right')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronRight size={20} /></button>
+                    ) : (
+                        <>
+                            {/* EDITOR TOOLBAR */}
+                            <div className="h-10 lg:h-12 border-b border-white/5 bg-[var(--color-bg-card)] flex items-center justify-between px-4 lg:px-6 shrink-0">
+                                <div className="flex items-center gap-4 lg:gap-6">
+                                    <div className="flex items-center gap-2 border-r border-white/10 pr-4 lg:pr-6">
+                                        <Globe size={14} className="text-[var(--color-text-muted)]" />
+                                        <select
+                                            value={language}
+                                            onChange={handleLanguageChange}
+                                            className="bg-transparent text-[9px] lg:text-[10px] font-black text-[var(--color-text-main)] outline-none uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"
+                                        >
+                                            {Object.keys(LANGUAGES).map(lang => (
+                                                <option key={lang} value={lang} className="bg-[var(--color-bg-card)]">{lang}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
 
-                    {/* MOBILE ACTIONS POD - STICKY FOR BETTER ACCESSIBILITY */}
-                    {isMobile && (
-                        <div className="sticky bottom-0 left-0 right-0 p-4 bg-[var(--color-bg-card)] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
-                            <button
-                                onClick={() => handleRun("RUN")}
-                                disabled={status === "running"}
-                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] flex items-center justify-center gap-2 active:scale-95 transition-all"
-                            >
-                                {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run
-                            </button>
-                            <button
-                                onClick={() => handleRun("SUBMIT")}
-                                disabled={status === "running"}
-                                className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,170,0,0.2)]"
-                            >
-                                {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} fill="currentColor" />} Submit
-                            </button>
-                        </div>
+                                {isMobile && (
+                                    <button
+                                        onClick={() => setShowMobileTools(!showMobileTools)}
+                                        className={`p-2 rounded-sm border transition-all ${showMobileTools ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/40 text-[var(--color-primary)]' : 'bg-white/5 border-white/10 text-[var(--color-text-muted)]'}`}
+                                    >
+                                        <MousePointer2 size={14} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* MONACO EDITOR CONTAINER */}
+                            <div className="flex-1 relative">
+                                <Editor
+                                    height="100%"
+                                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                                    language={LANGUAGES[language].monaco}
+                                    value={code}
+                                    onChange={(val) => setCode(val)}
+                                    onMount={(editor) => {
+                                        editorRef.current = editor;
+                                    }}
+                                    options={{
+                                        minimap: { enabled: false },
+                                        fontSize: isMobile ? 12 : 13,
+                                        fontFamily: "var(--font-mono)",
+                                        fontLigatures: true,
+                                        scrollBeyondLastLine: false,
+                                        automaticLayout: true,
+                                        padding: { top: 20 },
+                                        cursorStyle: "line",
+                                        cursorWidth: 2,
+                                        cursorBlinking: 'blink',
+                                        selectionHighlight: false,
+                                        renderLineHighlight: "none",
+                                        lineNumbersMinChars: isMobile ? 2 : 3,
+                                        scrollbar: {
+                                            vertical: "auto",
+                                            horizontal: "auto",
+                                            verticalScrollbarSize: 8,
+                                            horizontalScrollbarSize: 8,
+                                        },
+                                        quickSuggestions: !isMobile,
+                                        hover: { enabled: !isMobile },
+                                        occurrenceHighlight: false,
+                                        matchBrackets: 'always',
+                                    }}
+                                />
+
+                                {/* MOBILE D-PAD */}
+                                {isMobile && showMobileTools && (
+                                    <div className="absolute bottom-6 right-6 z-50 flex flex-col items-center gap-2 bg-[var(--color-bg-card)]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-90 sm:scale-100">
+                                        <button onClick={() => moveCursor('up')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronUp size={20} /></button>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => moveCursor('left')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronLeft size={20} /></button>
+                                            <button onClick={() => moveCursor('down')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronDown size={20} /></button>
+                                            <button onClick={() => moveCursor('right')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronRight size={20} /></button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* MOBILE ACTIONS POD - STICKY FOR BETTER ACCESSIBILITY */}
+                            {isMobile && (
+                                <div className="sticky bottom-0 left-0 right-0 p-4 bg-[var(--color-bg-card)] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+                                    <button
+                                        onClick={() => handleRun("RUN")}
+                                        disabled={status === "running"}
+                                        className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                    >
+                                        {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run
+                                    </button>
+                                    <button
+                                        onClick={() => handleRun("SUBMIT")}
+                                        disabled={status === "running" || (isCreator && currentBattle?.status !== "ONGOING")}
+                                        className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,170,0,0.2)]"
+                                    >
+                                        {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} fill="currentColor" />} Submit
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -1173,7 +1262,7 @@ const BattleArena = () => {
                                 </div>
 
                                 {opponentAlert && (
-                                    <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest animate-pulse flex items-center gap-2">
+                                    <div className="p-3 bg-red-600 border border-white/10 text-white text-[8px] font-black uppercase tracking-widest animate-pulse flex items-center gap-2 shadow-[0_0_15px_rgba(255,0,0,0.3)]">
                                         <ShieldAlert size={12} />
                                         {opponentAlert.message}
                                     </div>
@@ -1193,7 +1282,7 @@ const BattleArena = () => {
                         <div className="flex justify-between items-center mb-4">
                             <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em]">Anti-Cheat Stream</div>
                             {opponentViolations.length > 0 && (
-                                <div className="px-2 py-0.5 bg-red-500/20 border border-red-500/30 text-[8px] font-black text-red-500 uppercase tracking-widest rounded-sm">
+                                <div className="px-2 py-0.5 bg-red-600 border border-white/10 text-[8px] font-black text-white uppercase tracking-widest rounded-sm shadow-[0_0_10px_rgba(255,0,0,0.2)]">
                                     {opponentViolations.length} {opponentViolations.length === 1 ? 'Violation' : 'Violations'}
                                 </div>
                             )}
@@ -1201,7 +1290,7 @@ const BattleArena = () => {
                         <div className="space-y-3">
                             {opponentViolations.length > 0 ? (
                                 opponentViolations.map((v, index) => (
-                                    <div key={index} className="p-3 bg-red-900/10 border-l-2 border-red-500 animate-in slide-in-from-right duration-300">
+                                    <div key={index} className="p-3 bg-red-900/10 border-l-2 border-red-600 animate-in slide-in-from-right duration-300">
                                         <div className="flex justify-between items-center mb-1">
                                             <div className="text-[10px] font-black text-red-500 uppercase tracking-widest">
                                                 {v.username}: {v.message}
@@ -1275,7 +1364,7 @@ const BattleArena = () => {
                                         <AlertTriangle size={40} className="text-red-500" />
                                     )}
                                 </div>
-                                <div className={`absolute inset-0 blur-[60px] opacity-20 rounded-full ${winner === user?.id ? 'bg-[var(--color-primary)]' : 'bg-red-500'}`} />
+                                <div className={`absolute inset-0 blur-[60px] opacity-20 rounded-full ${winner === user?.id ? 'bg-[var(--color-primary)]' : 'bg-red-600'}`} />
                             </div>
 
                             <div className="text-[10px] font-black text-[var(--color-primary)] tracking-[0.6em] uppercase mb-2 opacity-70 text-center">
@@ -1334,7 +1423,7 @@ const BattleArena = () => {
                                 ) : (
                                     <div className="text-center py-2">
                                         <button 
-                                            onClick={fetchAISurgeonReport}
+                                            onClick={() => setIsSurgeonOpen(true)}
                                             className="text-[9px] font-black text-[var(--color-primary)] uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto decoration-[var(--color-primary)]/30 underline-offset-4 hover:underline"
                                         >
                                             <Sparkles size={10} /> Reveal Diagnostic Report
@@ -1381,7 +1470,7 @@ const BattleArena = () => {
                             className="w-full max-w-md bg-[var(--color-bg-card)] border border-white/10 p-10 shadow-2xl relative overflow-hidden"
                             style={{ borderRadius: "2px" }}
                         >
-                            <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50" />
+                            <div className="absolute top-0 left-0 w-full h-1 bg-red-600" />
                             
                             <div className="flex items-center gap-4 text-red-500 mb-6">
                                 <AlertTriangle size={24} />
@@ -1403,10 +1492,12 @@ const BattleArena = () => {
                                 </button>
                                 <button 
                                     onClick={confirmForfeit}
-                                    className="flex-1 py-4 bg-red-500 text-[var(--color-text-main)] font-black uppercase tracking-widest text-[10px] hover:bg-red-400 transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                                    disabled={isAborting}
+                                    className="flex-1 py-4 bg-red-600 text-white font-black uppercase tracking-widest text-[10px] hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(255,0,0,0.3)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{ borderRadius: "2px" }}
                                 >
-                                    Confirm Abandon
+                                    {isAborting ? <Loader2 size={14} className="animate-spin" /> : null}
+                                    {isAborting ? "Aborting..." : "Confirm Abandon"}
                                 </button>
                             </div>
                         </motion.div>
@@ -1422,12 +1513,12 @@ const BattleArena = () => {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-8"
                     >
-                        <div className="absolute inset-0 bg-red-500/5 animate-pulse pointer-events-none" />
-                        <div className="max-w-md w-full bg-[var(--color-bg-card)] border border-red-500/30 p-12 text-center relative overflow-hidden" style={{ borderRadius: "2px" }}>
-                            <div className="absolute top-0 left-0 w-full h-1 bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]" />
+                        <div className="absolute inset-0 bg-red-600/5 animate-pulse pointer-events-none" />
+                        <div className="max-w-md w-full bg-[var(--color-bg-card)] border border-red-600/20 p-12 text-center relative overflow-hidden" style={{ borderRadius: "2px" }}>
+                            <div className="absolute top-0 left-0 w-full h-1 bg-red-600 shadow-[0_0_20px_rgba(255,0,0,0.5)]" />
                             
                             <div className="flex flex-col items-center gap-6 mb-8">
-                                <div className="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center animate-bounce">
+                                <div className="w-20 h-20 bg-red-600/10 border border-red-600/20 rounded-full flex items-center justify-center animate-bounce">
                                     <ShieldAlert size={40} className="text-red-500" />
                                 </div>
                                 <div className="space-y-2">
@@ -1441,7 +1532,7 @@ const BattleArena = () => {
                             </p>
                             
                             <div className="relative">
-                                <div className="text-7xl font-black text-red-500 font-mono mb-4 tabular-nums shadow-red-500/20 drop-shadow-2xl">
+                                <div className="text-7xl font-black text-red-600 font-mono mb-4 tabular-nums shadow-red-600/20 drop-shadow-2xl">
                                     VIOLATION
                                 </div>
                                 <div className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em]">Testing Phase: Forfeit Disabled</div>
@@ -1474,6 +1565,14 @@ const BattleArena = () => {
                 onClose={() => setIsCyberMentorOpen(false)}
                 hint={aiHint}
                 isLoading={isAILoading}
+            />
+
+            {/* CODE SURGEON MODAL */}
+            <CodeSurgeonModal 
+                isOpen={isSurgeonOpen}
+                onClose={() => setIsSurgeonOpen(false)}
+                report={surgeonReport}
+                isLoading={isSurgeonLoading}
             />
         </div>
     );

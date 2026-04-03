@@ -1,5 +1,6 @@
 import env from "../src/config/env.js";
 import { Worker } from "bullmq";
+import AIService from "../src/services/ai.service.js";
 import IORedis from "ioredis";
 
 import JudgeService from "../src/services/judge.service.js";
@@ -198,11 +199,20 @@ const worker = new Worker(
             }
 
             // All test cases passed for SUBMIT
+            console.log(`🧠 [Worker] Requesting Code Surgeon diagnostics for subId=${submissionId}...`);
+            const aiFeedback = await AIService.generateCodeSurgeonReport(
+                submission.problem, 
+                submission.code, 
+                submission.language, 
+                "Success"
+            );
+
             await SubmissionService.updateSubmissionStatus(submissionId, {
                 status: "PASSED",
                 passedTests: total,
                 totalTests: total,
-                executionTimeMs
+                executionTimeMs,
+                aiFeedback
             });
 
             const beatsPercentile = await SubmissionService.calculateBeatsPercentile(
@@ -229,6 +239,10 @@ const worker = new Worker(
                     console.error(`❌ Worker finishBattleService error: ${err.message}`);
                 }
                 console.timeEnd(`Job-${job.id}-battle-finish`);
+            } else if (!squidGameId && !contestId && status === "PASSED") {
+                // Solo Problem Reward
+                const RewardService = (await import("../src/services/reward.service.js")).default;
+                await RewardService.grantProblemRewards(userId || submission.user.id, submission.problemId);
             }
 
             console.log(`📡 [Worker] Publishing PASSED submit result for subId=${submissionId} (userId=${userId || submission.user.id})`);
@@ -246,6 +260,7 @@ const worker = new Worker(
                     totalTests: total,
                     executionTimeMs,
                     beatsPercentile,
+                    aiFeedback,
                     language: submission.language
                 }
             })).then(() => console.log(`✅ [Worker] Published PASSED result successfully`))

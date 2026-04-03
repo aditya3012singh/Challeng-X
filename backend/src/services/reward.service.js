@@ -67,6 +67,71 @@ class RewardService {
   }
 
   /**
+   * Calculate and grant Cyber-Cores for solo problem solving
+   */
+  static async grantProblemRewards(userId, problemId) {
+    try {
+      // 1. Check if already rewarded to prevent double-claiming
+      const existingSubmission = await prisma.submission.findFirst({
+        where: { userId, problemId, status: "PASSED" },
+        orderBy: { createdAt: "asc" }
+      });
+
+      // If this isn't the FIRST time they passed this problem, don't grant rewards again
+      const passCount = await prisma.submission.count({
+        where: { userId, problemId, status: "PASSED" }
+      });
+      if (passCount > 1) return;
+
+      const problem = await prisma.problem.findUnique({
+        where: { id: problemId },
+        select: { difficulty: true }
+      });
+
+      const difficultyMultipliers = {
+        EASY: 30,
+        MEDIUM: 60,
+        HARD: 120
+      };
+
+      let reward = difficultyMultipliers[problem.difficulty] || 30;
+      const initialReward = reward;
+
+      // 2. Check for hints usage
+      const hintsUsed = await prisma.userHint.count({
+        where: { userId, problemId }
+      });
+
+      // Deduction: 5 cores per hint (total cost of hint was 5)
+      // This effectively makes hints "refundable" if you solve it? 
+      // No, let's make it a penalty. 
+      const hintPenalty = hintsUsed * 8; // Penalty is more than the cost to encourage no-hint solves
+      
+      reward = Math.max(5, reward - hintPenalty);
+
+      // 3. Update user
+      await prisma.user.update({
+        where: { id: userId },
+        data: { cyberCores: { increment: reward } }
+      });
+
+      // 4. Notify
+      await NotificationService.sendNotification(userId, {
+        type: "REWARD",
+        title: "Mission Accomplished!",
+        message: hintsUsed === 0 
+          ? `Perfect solve! You earned ${reward} Cyber-Cores.`
+          : `Problem solved! You earned ${reward} Cyber-Cores (${hintsUsed} hints used).`,
+        metadata: { problemId, amount: reward, perfect: hintsUsed === 0 }
+      });
+
+      logger.info(`Solo rewards granted for user ${userId} on problem ${problemId}`);
+    } catch (error) {
+      logger.error("Error granting problem rewards:", error);
+    }
+  }
+
+  /**
    * Process daily login rewards and streaks
    */
   static async processDailyLogin(userId) {

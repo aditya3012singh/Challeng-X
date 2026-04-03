@@ -80,6 +80,13 @@ export const ProblemDetail = () => {
                         <span className={`px-3 py-1 rounded-full text-[9px] font-bold font-mono border ${getDifficultyStyles(currentProblem.difficulty)}`}>
                             {currentProblem.difficulty}
                         </span>
+                        <div className="flex flex-wrap gap-2">
+                            {currentProblem.tags?.map((tag, idx) => (
+                                <span key={idx} className="px-2 py-1 bg-white/5 border border-white/10 text-[8px] font-black text-[var(--color-text-muted)] uppercase tracking-widest rounded-sm">
+                                    {tag.name}
+                                </span>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

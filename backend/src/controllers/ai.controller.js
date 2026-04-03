@@ -37,7 +37,7 @@ class AIController {
                 return res.status(404).json({ message: "Problem not found" });
             }
 
-            const report = await AIService.generateReview(problem, finalCode, language, result);
+            const report = await AIService.generateCodeSurgeonReport(problem, finalCode, language, result);
             
             res.status(200).json({ report });
         } catch (error) {

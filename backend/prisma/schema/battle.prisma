@@ -26,6 +26,7 @@ model Battle {
   endedAt   DateTime?
 
   submissions Submission[]
+  userHints   UserHint[]
 
   attemptsPlayer1 Int @default(0)
   attemptsPlayer2 Int @default(0)

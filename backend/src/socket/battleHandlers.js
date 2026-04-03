@@ -21,7 +21,8 @@ export const joinBattleRoom = async (io, socket, payload) => {
             include: { player1: true, player2: true }
         });
 
-        if (battle && !battle.player2Id && socket.isGuest && battle.player1Id !== GUEST_USER_ID) {
+        if (battle && !battle.player2Id && socket.isGuest && !payload.isCreator && 
+            battle.player1Id !== GUEST_USER_ID && battle.status === "WAITING") {
             logger.info(`👥 Guest ${socket.id} claiming opponent slot for battle ${battleId}`);
             await Database.client.battle.update({
                 where: { id: battleId },

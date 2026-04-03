@@ -39,6 +39,8 @@ model Problem {
 
   submissions Submission[]
   tags        Tag[]
+  hints       String[]
+  userHints   UserHint[]
 }
 
 model Tag {
@@ -89,5 +91,26 @@ model Submission {
 
   type SubmissionType @default(SUBMIT)
 
+  aiFeedback String?
+
   createdAt DateTime @default(now())
+}
+
+model UserHint {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  problem   Problem  @relation(fields: [problemId], references: [id])
+  problemId String
+  hintIndex Int      // 0, 1, or 2
+  
+  battle    Battle?  @relation(fields: [battleId], references: [id])
+  battleId  String?
+  
+  teamBattleMatch   TeamBattleMatch? @relation(fields: [teamBattleMatchId], references: [id])
+  teamBattleMatchId String?
+
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, problemId, hintIndex, battleId, teamBattleMatchId])
 }

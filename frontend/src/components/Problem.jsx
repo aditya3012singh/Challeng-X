@@ -82,6 +82,13 @@ export const Problem = () => {
                                     <h3 className="text-lg font-bold text-[var(--color-text-main)] group-hover:text-[var(--color-primary)] transition-colors mb-1 uppercase tracking-tight">
                                         {problem.title}
                                     </h3>
+                                    <div className="flex flex-wrap gap-2 mt-3 mb-3">
+                                        {problem.tags?.map((tag, idx) => (
+                                            <span key={idx} className="px-2 py-0.5 bg-white/5 border border-white/10 text-[8px] font-black text-[var(--color-text-muted)] uppercase tracking-widest rounded-sm">
+                                                {tag.name}
+                                            </span>
+                                        ))}
+                                    </div>
                                     <div className="flex items-center gap-4 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">
                                         <span className="flex items-center gap-1.5">
                                             <Trophy size={11} /> 100 PTS

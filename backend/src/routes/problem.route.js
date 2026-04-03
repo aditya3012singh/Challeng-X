@@ -12,9 +12,13 @@ class ProblemRoutes {
 	static createRouter() {
 		const router = express.Router();
 
-		router.post("/create", ProblemController.createProblem);
+		router.post("/create", AuthMiddleware.handle, ProblemController.createProblem);
 		router.get("/list", ProblemController.getAllProblems);
-		router.get("/:id", ProblemController.getProblemById);
+		router.get("/:id", AuthMiddleware.handle, ProblemController.getProblemById);
+		
+		// New Gamified Features
+		router.post("/:id/hints/unlock", AuthMiddleware.handle, ProblemController.unlockHint);
+		router.post("/:id/mentor", AuthMiddleware.handle, ProblemController.getPersonalizedAIHint);
 
 		return router;
 	}

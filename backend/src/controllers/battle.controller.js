@@ -43,11 +43,11 @@ class BattleController {
 
     static async getBattleController(req, res, next) {
         const { battleId } = req.params;
+        const userId = req.user?.id;
         try {
-            const battle = await BattleService.getBattle(battleId);
+            const battle = await BattleService.getBattle(battleId, userId);
             // Attach myUserId for frontend convenience
-            const myUserId = req.user?.id;
-            res.status(200).json({ ...battle, myUserId });
+            res.status(200).json({ ...battle, myUserId: userId });
         } catch (error) {
             next(error);
         }
@@ -74,7 +74,7 @@ class BattleController {
         }
 
         try {
-            const battle = await BattleService.getBattle(battleId);
+            const battle = await BattleService.getBattle(battleId, userId);
 
             if (!battle) {
                 return res.status(404).json({ message: "Battle not found" });
