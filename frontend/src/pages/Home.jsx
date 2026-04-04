@@ -99,7 +99,7 @@ const Home = () => {
 
                             <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.9] mb-8 font-[family:var(--font-heading)] uppercase text-[var(--color-text-main)]">
                                 THE ULTIMATE<br />
-                                CHALLEG<span className="text-[var(--color-primary)]">X</span>
+                                CHALLENG<span className="text-[var(--color-primary)]">X</span>
                             </h1>
 
                             <p className="max-w-2xl mx-auto text-[var(--color-text-muted)] text-lg md:text-xl font-medium leading-relaxed mb-12 tracking-tight">

@@ -20,20 +20,33 @@ async function main() {
   console.log("Generating Admin User...");
   const hashedAdminPassword = await bcrypt.hash("admin123", 10);
   await prisma.user.upsert({
-    where: { email: "admin@codearena.com" },
+    where: { email: "admin@challengx.com" },
     update: {
       role: "ADMIN",
       password: hashedAdminPassword
     },
     create: {
-      email: "admin@codearena.com",
-      username: "CodeArenaAdmin",
+      email: "admin@challengx.com",
+      username: "ChallengXAdmin",
       password: hashedAdminPassword,
       role: "ADMIN",
       rankPoints: 5000
     }
   });
-  console.log("✅ Admin user seeded (admin@codearena.com / admin123)\n");
+  console.log("✅ Admin user seeded (admin@challengx.com / admin123)\n");
+
+  console.log("Generating Guest User...");
+  await prisma.user.upsert({
+    where: { email: "guest@challengx.com" },
+    update: {},
+    create: {
+      id: "00000000-0000-0000-0000-000000000000",
+      email: "guest@challengx.com",
+      username: "Guest",
+      role: "USER"
+    }
+  });
+  console.log("✅ Guest user seeded (00000000-0000-0000-0000-000000000000)\n");
 
   const problemMap = new Map();
   // ─── 1. Sum of Two Numbers ───────────────────────────────────────────────
@@ -53,6 +66,17 @@ async function main() {
       constraints: "-10^9 ≤ a, b ≤ 10^9",
       difficulty: "EASY",
       timeLimitMs: 2000,
+      hints: [
+        "Read both numbers from the input.",
+        "Add them using the + operator.",
+        "Use BigInt if you're in a language that might overflow, though 10^9 fits in a standard integer."
+      ],
+      tags: {
+        connectOrCreate: [
+          { where: { name: "Basic" }, create: { name: "Basic" } },
+          { where: { name: "Math" }, create: { name: "Math" } }
+        ]
+      },
       testcases: {
         create: [
           { input: "3 5\n", output: "8\n", isHidden: false, isSample: true },
@@ -79,6 +103,17 @@ olleh
       constraints: "1 ≤ |s| ≤ 10^5",
       difficulty: "EASY",
       timeLimitMs: 2000,
+      hints: [
+        "Think about iterating from the end to the beginning.",
+        "You can use built-in functions like reverse() or a simple loop.",
+        "Remember to handle strings with spaces if any."
+      ],
+      tags: {
+        connectOrCreate: [
+          { where: { name: "Strings" }, create: { name: "Strings" } },
+          { where: { name: "Basic" }, create: { name: "Basic" } }
+        ]
+      },
       testcases: {
         create: [
           { input: "hello\n", output: "olleh\n", isHidden: false, isSample: true },
@@ -105,6 +140,17 @@ Even
       constraints: "-10^9 ≤ n ≤ 10^9",
       difficulty: "EASY",
       timeLimitMs: 2000,
+      hints: [
+        "Use the modulo operator (%) to check divisibility.",
+        "A number is even if n % 2 is zero.",
+        "Be careful with negative numbers, but the parity remains the same."
+      ],
+      tags: {
+        connectOrCreate: [
+          { where: { name: "Basic" }, create: { name: "Basic" } },
+          { where: { name: "Logic" }, create: { name: "Logic" } }
+        ]
+      },
       testcases: {
         create: [
           { input: "4\n", output: "Even\n", isHidden: false, isSample: true },
@@ -141,6 +187,18 @@ Buzz
       constraints: "1 ≤ n ≤ 10^4",
       difficulty: "EASY",
       timeLimitMs: 2000,
+      hints: [
+        "Use a loop from 1 to N.",
+        "Check divisibility by 15 first (both 3 and 5).",
+        "Use if-else statements to handle the four cases."
+      ],
+      tags: {
+        connectOrCreate: [
+          { where: { name: "Basic" }, create: { name: "Basic" } },
+          { where: { name: "Logic" }, create: { name: "Logic" } },
+          { where: { name: "Math" }, create: { name: "Math" } }
+        ]
+      },
       testcases: {
         create: [
           { input: "5\n", output: "1\n2\nFizz\n4\nBuzz\n", isHidden: false, isSample: true },
@@ -172,6 +230,18 @@ Line 2: the target integer
       constraints: "2 ≤ n ≤ 10^4\n-10^9 ≤ nums[i], target ≤ 10^9\nExactly one valid answer exists.",
       difficulty: "MEDIUM",
       timeLimitMs: 2000,
+      hints: [
+        "The brute force O(N^2) solution uses nested loops.",
+        "Can you use a Hash Map to find the complement in O(N)?",
+        "Store each number's index as you iterate through the array."
+      ],
+      tags: {
+        connectOrCreate: [
+          { where: { name: "Hash Table" }, create: { name: "Hash Table" } },
+          { where: { name: "Array" }, create: { name: "Array" } },
+          { where: { name: "Two Pointers" }, create: { name: "Two Pointers" } }
+        ]
+      },
       testcases: {
         create: [
           { input: "2 7 11 15\n9\n", output: "0 1\n", isHidden: false, isSample: true },
@@ -203,6 +273,18 @@ Line 2: the target
       constraints: "1 ≤ n ≤ 10^4\nAll integers unique, sorted ascending.",
       difficulty: "MEDIUM",
       timeLimitMs: 1500,
+      hints: [
+        "Initialize two pointers: low = 0 and high = len(nums)-1.",
+        "Calculate mid = (low + high) / 2 and compare nums[mid] with target.",
+        "Adjust low or high and repeat until found or pointers cross."
+      ],
+      tags: {
+        connectOrCreate: [
+          { where: { name: "Binary Search" }, create: { name: "Binary Search" } },
+          { where: { name: "Array" }, create: { name: "Array" } },
+          { where: { name: "Searching" }, create: { name: "Searching" } }
+        ]
+      },
       testcases: {
         create: [
           { input: "-1 0 3 5 9 12\n9\n", output: "4\n", isHidden: false, isSample: true },
@@ -609,7 +691,7 @@ Two strings are anagrams if they contain the same characters with the same frequ
       testcases: {
         create: [
           { input: "hello world\n", output: "Hello World\n", isHidden: false, isSample: true },
-          { input: "code arena is great\n", output: "Code Arena Is Great\n", isHidden: false, isSample: true },
+          { input: "code arena is great\n", output: "Challengx Is Great\n", isHidden: false, isSample: true },
         ],
       },
     },

@@ -496,7 +496,7 @@ const Login = () => {
               />
             </div>
             <div>
-              <div className="logo-text-top">CHALLEG</div>
+              <div className="logo-text-top">CHALLENG</div>
               <div className="logo-text-sub">X</div>
             </div>
           </Link>
