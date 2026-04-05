@@ -33,6 +33,7 @@ model User {
 
   createdContests      Contest[]
   participatedContests ContestParticipant[]
+  tabSwitches          ContestTabSwitch[]
   rankPoints           Int                  @default(1000)
   wins                 Int                  @default(0)
   losses               Int                  @default(0)

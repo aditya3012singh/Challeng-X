@@ -37,6 +37,12 @@ const AdminContests = () => {
     testcases: [{ input: '', output: '', isHidden: false }]
   });
 
+  // Contest monitoring state
+  const [activeContests, setActiveContests] = useState([]);
+  const [selectedContest, setSelectedContest] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [monitoringLoading, setMonitoringLoading] = useState(false);
+
   const handleCreateProblem = async (e) => {
     e.preventDefault();
     setHandlingProblem(true);
@@ -74,7 +80,7 @@ const AdminContests = () => {
       });
     } catch (err) {
       console.error(err);
-      toast.error('Security Exception: Failed to generate custom problem payload.');
+      toast.error('Failed to create problem.');
     } finally {
       setHandlingProblem(false);
     }
@@ -136,7 +142,7 @@ const AdminContests = () => {
         problemIds: formattedProblemIds
       });
 
-      setMessage("Protocol Authorized: Contest Scheduled.");
+      setMessage("Contest created successfully.");
       setFormData({
         title: '',
         description: '',
@@ -147,11 +153,51 @@ const AdminContests = () => {
       setTimeout(() => navigate('/contests'), 2000);
     } catch (error) {
       console.error('Error creating contest:', error);
-      toast.error('Security Exception: Failed to create contest. Check if problem IDs are valid UUIDs.');
+      toast.error('Failed to create contest. Please check the problem IDs.');
     } finally {
       setLoading(false);
     }
   };
+
+  const loadActiveContests = async () => {
+    try {
+      const res = await axiosInstance.get('/contest/list');
+      const active = res.data.contests.filter(c => c.status === 'ACTIVE');
+      setActiveContests(active);
+    } catch (err) {
+      console.error("Failed to load active contests", err);
+    }
+  };
+
+  const loadContestParticipants = async (contestId) => {
+    setMonitoringLoading(true);
+    try {
+      const res = await axiosInstance.get(`/contest/${contestId}/participants`);
+      setParticipants(res.data.participants);
+      setSelectedContest(contestId);
+    } catch (err) {
+      console.error("Failed to load participants", err);
+      toast.error("Failed to load participants");
+    } finally {
+      setMonitoringLoading(false);
+    }
+  };
+
+  const disqualifyParticipant = async (contestId, userId) => {
+    try {
+      await axiosInstance.post(`/contest/${contestId}/disqualify/${userId}`);
+      toast.success("Participant disqualified");
+      // Reload participants
+      loadContestParticipants(contestId);
+    } catch (err) {
+      console.error("Failed to disqualify participant", err);
+      toast.error("Failed to disqualify participant");
+    }
+  };
+
+  useEffect(() => {
+    loadActiveContests();
+  }, []);
 
   if (user?.role !== 'ADMIN') return null;
 
@@ -171,33 +217,33 @@ const AdminContests = () => {
           >
             <div className="text-[10px] font-black tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6 flex gap-6 items-center">
               <Activity size={12} />
-              Command Center // Tournaments
+              Command Center // Contests
               <Link to="/admin" className="text-[var(--color-text-main)]/40 hover:text-[var(--color-primary)] transition-all flex items-center gap-2 group">
                 <ArrowLeft size={10} className="group-hover:-translate-x-1 transition-transform" />
-                Return to Assets
+                Back to Admin
               </Link>
             </div>
             <h1 className="text-6xl md:text-8xl font-black text-[var(--color-text-main)] tracking-tighter uppercase leading-[0.85]">
-              Contest<br/>Ops.
+              Contest<br/>Management
             </h1>
           </motion.div>
           
           <div className="flex items-center gap-8 py-4 px-8 border border-white/5 bg-white/[0.02] font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
              <div className="flex flex-col items-end gap-1">
-                <span>Database</span>
-                <span className="text-[var(--color-text-main)] font-black">{availableProblems.length} VECTORS</span>
+                <span>Available Problems</span>
+                <span className="text-[var(--color-text-main)] font-black">{availableProblems.length}</span>
              </div>
              <div className="h-8 w-[1px] bg-white/10" />
              <div className="flex flex-col items-end gap-1">
-                <span>Auth Status</span>
-                <span className="text-emerald-500 font-black">ENCRYPTED</span>
+                <span>Status</span>
+                <span className="text-emerald-500 font-black">ADMIN</span>
              </div>
           </div>
         </div>
 
         <div className="premium-card p-10" style={{ borderRadius: "2px" }}>
           <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">
-            Deploy New Contest Event
+            Create New Contest
           </div>
 
           {message && (
@@ -274,7 +320,7 @@ const AdminContests = () => {
                    style={{ borderRadius: "2px" }}
                  >
                    <Plus size={12} className="group-hover:rotate-90 transition-transform" />
-                   Inject Custom Protocol
+                   Create Custom Problem
                  </button>
               </div>
               
@@ -313,12 +359,114 @@ const AdminContests = () => {
               >
                 <div className="relative z-10 flex items-center justify-center gap-4">
                   {loading ? <Loader2 className="animate-spin" size={16} /> : <Target size={16} />}
-                  {loading ? "TRANSMITTING ENCRYPTED PAYLOAD..." : "AUTHORIZE CONTEST DEPLOYMENT"}
+                  {loading ? "Creating Contest..." : "Create Contest"}
                 </div>
                 <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
               </button>
             </div>
           </form>
+        </div>
+      </div>
+
+      {/* CONTEST MONITORING SECTION */}
+      <div className="max-w-7xl mx-auto mt-20">
+        <div className="premium-card p-10" style={{ borderRadius: "2px" }}>
+          <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">
+            Contest Monitoring & Enforcement
+          </div>
+
+          {/* Active Contests Selector */}
+          <div className="mb-8">
+            <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">Select Active Contest</label>
+            <select
+              value={selectedContest || ''}
+              onChange={(e) => {
+                const contestId = e.target.value;
+                if (contestId) {
+                  loadContestParticipants(contestId);
+                } else {
+                  setSelectedContest(null);
+                  setParticipants([]);
+                }
+              }}
+              className="w-full bg-[var(--color-bg-dark)] border border-white/10 px-4 py-3 text-[var(--color-text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]/40 transition-all"
+              style={{ borderRadius: "2px" }}
+            >
+              <option value="">Choose a contest to monitor...</option>
+              {activeContests.map(contest => (
+                <option key={contest.id} value={contest.id}>
+                  {contest.title} ({contest._count?.participants || 0} participants)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Participants Table */}
+          {selectedContest && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-[var(--color-text-main)] uppercase tracking-wider">
+                Participants & Tab Switch Monitoring
+              </h3>
+              
+              {monitoringLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin text-[var(--color-primary)]" size={24} />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {participants.map(participant => (
+                    <div 
+                      key={participant.id}
+                      className={`p-4 border transition-all ${
+                        participant.disqualified 
+                          ? 'border-red-500/50 bg-red-500/5' 
+                          : (participant.tabSwitchCount || 0) > 5
+                          ? 'border-yellow-500/50 bg-yellow-500/5'
+                          : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.04]'
+                      }`}
+                      style={{ borderRadius: "2px" }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 bg-[var(--color-primary)]/20 rounded-full flex items-center justify-center text-xs font-bold text-[var(--color-primary)]">
+                            {participant.user.username.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-[var(--color-text-main)]">
+                              {participant.user.username}
+                              {participant.disqualified && (
+                                <span className="ml-2 text-xs text-red-500 font-bold uppercase tracking-wider">
+                                  DISQUALIFIED
+                                </span>
+                              )}
+                              {(participant.tabSwitchCount || 0) > 5 && !participant.disqualified && (
+                                <span className="ml-2 text-xs text-yellow-500 font-bold uppercase tracking-wider">
+                                  HIGH TAB SWITCHES
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-[var(--color-text-muted)] font-mono">
+                              Score: {participant.score} | Penalties: {Math.floor(participant.penaltyMs / 60000)}min | Tab Switches: {participant.tabSwitchCount || 0}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {!participant.disqualified && (
+                          <button
+                            onClick={() => disqualifyParticipant(selectedContest, participant.userId)}
+                            className="px-4 py-2 bg-red-500/20 border border-red-500/50 text-red-400 text-xs font-bold uppercase tracking-wider hover:bg-red-500/30 transition-all"
+                            style={{ borderRadius: "2px" }}
+                          >
+                            Disqualify
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -328,7 +476,7 @@ const AdminContests = () => {
           <div className="relative max-w-4xl w-full premium-card p-10 shadow-2xl my-auto" style={{ borderRadius: "2px" }}>
             <div className="flex justify-between items-start mb-8">
               <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase">
-                Inject Custom Protocol
+                Create Custom Problem
               </div>
               <button 
                 onClick={() => setShowProblemModal(false)}

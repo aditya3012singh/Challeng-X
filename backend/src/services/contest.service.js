@@ -98,7 +98,10 @@ class ContestService {
 
   static async getContestLeaderboard(id) {
     return await Database.client.contestParticipant.findMany({
-      where: { contestId: id },
+      where: { 
+        contestId: id,
+        disqualified: false
+      },
       orderBy: [{ score: 'desc' }, { penaltyMs: 'asc' }],
       include: { user: { select: { username: true, profilePic: true } } },
       take: 100
@@ -169,6 +172,70 @@ class ContestService {
     } catch (err) {
       logger.error(`❌ Contest result error: ${err.message}`);
     }
+  }
+
+  static async recordTabSwitch(contestId, userId, isVisible) {
+    // Only record when tab becomes hidden (switching away)
+    if (isVisible) return;
+
+    return await Database.client.contestTabSwitch.create({
+      data: {
+        contestId,
+        userId,
+        isVisible: false
+      }
+    });
+  }
+
+  static async getContestParticipants(contestId) {
+    const participants = await Database.client.contestParticipant.findMany({
+      where: { contestId },
+      include: {
+        user: { select: { id: true, username: true, profilePic: true } },
+        contest: { select: { title: true } }
+      },
+      orderBy: { score: 'desc' }
+    });
+
+    // Add tab switch counts for each participant
+    const participantsWithTabSwitches = await Promise.all(
+      participants.map(async (participant) => {
+        const tabSwitchCount = await Database.client.contestTabSwitch.count({
+          where: {
+            contestId,
+            userId: participant.userId,
+            isVisible: false
+          }
+        });
+
+        return {
+          ...participant,
+          tabSwitchCount
+        };
+      })
+    );
+
+    return participantsWithTabSwitches;
+  }
+
+  static async disqualifyParticipant(contestId, userId) {
+    const participant = await Database.client.contestParticipant.findUnique({
+      where: {
+        contestId_userId: {
+          contestId,
+          userId
+        }
+      }
+    });
+
+    if (!participant) {
+      throw new Error("Participant not found");
+    }
+
+    return await Database.client.contestParticipant.update({
+      where: { id: participant.id },
+      data: { disqualified: true }
+    });
   }
 }
 

@@ -105,7 +105,7 @@ export default function Contests() {
                             Contests
                         </h1>
                         <p className="text-[var(--color-text-muted)] text-sm max-w-lg">
-                            Participate in scheduled coding challenges, compete with the best, and climb the global rankings.
+                            Join scheduled coding challenges, compete with others, and improve your ranking.
                         </p>
                     </div>
 
@@ -126,7 +126,7 @@ export default function Contests() {
                 {loading ? (
                     <div className="h-64 flex flex-col items-center justify-center gap-4">
                         <Loader2 className="animate-spin text-[var(--color-primary)]" size={32} />
-                        <span className="text-xs text-[var(--color-text-muted)] uppercase tracking-widest">Initialising...</span>
+                        <span className="text-xs text-[var(--color-text-muted)] uppercase tracking-widest">Loading...</span>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -138,7 +138,7 @@ export default function Contests() {
                             ) : (
                                 <div className="col-span-full py-32 text-center border border-white/5 bg-white/[0.01] rounded-xl text-[var(--color-text-muted)]">
                                     <Shield size={48} className="mx-auto mb-6 opacity-20" />
-                                    <p className="text-sm uppercase tracking-[0.2em]">No contests found in this sector</p>
+                                    <p className="text-sm uppercase tracking-[0.2em]">No contests found</p>
                                 </div>
                             )}
                         </AnimatePresence>

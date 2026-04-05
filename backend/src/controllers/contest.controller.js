@@ -57,6 +57,38 @@ class ContestController {
       res.status(500).json({ success: false, message: "Error fetching leaderboard" });
     }
   }
+
+  static async recordTabSwitch(req, res) {
+    try {
+      const { isVisible } = req.body;
+      await ContestService.recordTabSwitch(req.params.id, req.user.id, isVisible);
+      res.status(200).json({ success: true });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Error recording tab switch" });
+    }
+  }
+
+  static async getContestParticipants(req, res) {
+    try {
+      if (req.user.role !== "ADMIN") return res.status(403).json({ success: false, message: "Forbidden: Admins only" });
+      
+      const participants = await ContestService.getContestParticipants(req.params.id);
+      res.status(200).json({ success: true, participants });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Error fetching participants" });
+    }
+  }
+
+  static async disqualifyParticipant(req, res) {
+    try {
+      if (req.user.role !== "ADMIN") return res.status(403).json({ success: false, message: "Forbidden: Admins only" });
+      
+      await ContestService.disqualifyParticipant(req.params.id, req.params.userId);
+      res.status(200).json({ success: true, message: "Participant disqualified" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message || "Error disqualifying participant" });
+    }
+  }
 }
 
 export default ContestController;

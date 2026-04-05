@@ -85,6 +85,24 @@ export default function ContestArena() {
     return () => clearInterval(timer);
   }, [contest]);
 
+  // Tab switch detection
+  useEffect(() => {
+    if (!contest || contest.status !== "ACTIVE") return;
+
+    const handleVisibilityChange = async () => {
+      try {
+        await axiosInstance.post(`/contest/${contestId}/tab-switch`, {
+          isVisible: !document.hidden
+        });
+      } catch (error) {
+        console.error("Failed to record tab switch:", error);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [contest, contestId]);
+
   const resize = useCallback((e) => {
     if (isResizing) {
         const newWidth = e.clientX;
@@ -131,7 +149,7 @@ export default function ContestArena() {
       return "idle";
   };
 
-  if (!problem || !contest) return <div className="h-screen flex items-center justify-center bg-[var(--color-bg-dark)] text-[var(--color-primary)] font-mono uppercase">Loading Arena...</div>;
+  if (!problem || !contest) return <div className="h-screen flex items-center justify-center bg-[var(--color-bg-dark)] text-[var(--color-primary)] font-mono uppercase">Loading...</div>;
 
   const now = new Date();
   const startTime = new Date(contest.startTime);
@@ -142,17 +160,16 @@ export default function ContestArena() {
       return (
           <div className="h-screen flex flex-col items-center justify-center bg-[var(--color-bg-dark)] text-center p-6">
               <Shield size={64} className="text-red-500/20 mb-8 animate-pulse" />
-              <h1 className="text-4xl font-black text-[var(--color-text-main)] uppercase tracking-tighter mb-4">Mission Restricted</h1>
+              <h1 className="text-4xl font-black text-[var(--color-text-main)] uppercase tracking-tighter mb-4">Contest Not Started</h1>
               <p className="text-[var(--color-text-muted)] font-mono text-sm max-w-md uppercase tracking-widest leading-relaxed">
-                  Neural uplink failed. The requested objective vectors are currently encrypted. 
-                  Synchronization will commence at: <br/>
+                  Contest hasn't started yet. It will begin at: <br/>
                   <span className="text-[var(--color-primary)] mt-4 block">{startTime.toLocaleString()}</span>
               </p>
               <button 
                   onClick={() => navigate(`/contests/${contestId}`)}
                   className="mt-12 px-10 py-3 border border-white/10 text-[var(--color-text-main)] font-bold text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all"
               >
-                  Abort Connection
+                  Go Back
               </button>
           </div>
       );
@@ -168,11 +185,11 @@ export default function ContestArena() {
             className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-all font-bold text-[9px] uppercase tracking-widest group"
           >
             <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Return to Protocols
+            Back to Contest
           </button>
           <div className="h-6 w-[1px] bg-white/10" />
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-[var(--color-text-muted)] font-black uppercase tracking-[0.4em]">CONTEST ID:</span>
+            <span className="text-[10px] text-[var(--color-text-muted)] font-black uppercase tracking-[0.4em]">Contest ID:</span>
             <span className="text-[10px] text-[var(--color-text-main)] font-mono font-bold uppercase">{contestId.slice(0, 8)}...</span>
           </div>
         </div>
@@ -191,7 +208,7 @@ export default function ContestArena() {
             
             <div className="flex flex-col items-end">
                 <span className="text-[8px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Status</span>
-                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">Synchronized</span>
+                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">Active</span>
             </div>
         </div>
       </div>
@@ -206,7 +223,7 @@ export default function ContestArena() {
             {/* Tabs UI */}
             <div className="h-10 border-b border-white/5 flex bg-black/40 px-2 shrink-0">
               {[
-                { id: 'description', label: 'Mission Data', icon: <Target size={12} /> },
+                { id: 'description', label: 'Description', icon: <Target size={12} /> },
                 { id: 'console', label: 'Compiler Feed', icon: <Terminal size={12} /> }
               ].map(tab => (
                 <button
@@ -287,7 +304,7 @@ export default function ContestArena() {
         {isMobile && (
           <div className="h-14 bg-[var(--color-bg-card)] border-t border-white/10 flex shrink-0 relative z-[100]">
             {[
-              { id: 'problem', label: 'Mission', icon: <Target size={16} /> },
+              { id: 'problem', label: 'Problem', icon: <Target size={16} /> },
               { id: 'editor', label: 'Code', icon: <Terminal size={16} /> },
               { id: 'console', label: 'Feed', icon: <Activity size={16} /> }
             ].map(tab => (
@@ -340,7 +357,7 @@ export default function ContestArena() {
                     <div className="pt-10 border-t border-white/5">
                         <div className="flex items-center gap-2 mb-6">
                             <Activity size={14} className="text-[var(--color-primary)]" />
-                            <span className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-widest">Protocol Instructions</span>
+                            <span className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-widest">Instructions</span>
                         </div>
                         <p className="text-[var(--color-text-muted)] text-[10px] font-mono leading-relaxed space-y-4">
                             1. Ensure all test cases are processed.<br/><br/>

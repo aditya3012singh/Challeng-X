@@ -18,6 +18,7 @@ model Contest {
   problems     ContestProblem[]
   participants ContestParticipant[]
   submissions  Submission[]
+  tabSwitches  ContestTabSwitch[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -43,9 +44,23 @@ model ContestParticipant {
   score     Int    @default(0)
   penaltyMs Int    @default(0)
   rank      Int?
+  disqualified Boolean @default(false)
 
   contest Contest @relation(fields: [contestId], references: [id])
   user    User    @relation(fields: [userId], references: [id])
 
   @@unique([contestId, userId])
+}
+
+model ContestTabSwitch {
+  id          String   @id @default(uuid())
+  contestId   String
+  userId      String
+  timestamp   DateTime @default(now())
+  isVisible   Boolean  // true when tab becomes visible, false when hidden
+
+  contest Contest @relation(fields: [contestId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([contestId, userId])
 }
