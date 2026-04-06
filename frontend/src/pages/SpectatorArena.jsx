@@ -22,6 +22,9 @@ export default function SpectatorArena() {
 
     const { currentBattle } = useSelector((state) => state.battle);
 
+    const [isMobile, setIsMobile] = useState(false);
+    const [activePlayer, setActivePlayer] = useState("p1");
+    const [mobileDetailTab, setMobileDetailTab] = useState("code");
     const [p1State, setP1State] = useState({ code: "", language: "java" });
     const [p2State, setP2State] = useState({ code: "", language: "java" });
 
@@ -69,6 +72,13 @@ export default function SpectatorArena() {
             initialStateRef.current = null;
         }
     }, [currentBattle, applyInitialState]);
+
+    useEffect(() => {
+        const updateMobile = () => setIsMobile(window.innerWidth < 1024);
+        updateMobile();
+        window.addEventListener("resize", updateMobile);
+        return () => window.removeEventListener("resize", updateMobile);
+    }, []);
 
     useEffect(() => {
         const socket = getSocket();
@@ -143,6 +153,107 @@ export default function SpectatorArena() {
         };
     }, [battleId, currentBattle, dispatch, applyInitialState]);
 
+    const renderPlayerPanel = (playerKey, detailTab = "code") => {
+        const isP1 = playerKey === "p1";
+        const player = isP1 ? currentBattle.player1 : currentBattle.player2;
+        const codeState = isP1 ? p1State : p2State;
+        const outputState = isP1 ? p1Output : p2Output;
+        const attempts = isP1 ? currentBattle.attemptsPlayer1 : currentBattle.attemptsPlayer2;
+        const name = player?.username || (isP1 ? "Player 1" : "Player 2");
+        const accentClass = isP1 ? "text-[var(--color-primary)]" : "text-blue-500";
+        const playerAlertList = cheatAlerts.filter((alert) => !alert.userId || alert.userId === (isP1 ? currentBattle.player1Id : currentBattle.player2Id));
+
+        const renderAlertItems = () => {
+            if (playerAlertList.length === 0) {
+                return (
+                    <div className="flex-1 min-h-55 flex items-center justify-center px-6 text-center text-slate-400 text-xs uppercase tracking-[0.24em]">
+                        No switch or paste events for {name} yet.
+                    </div>
+                );
+            }
+
+            return (
+                <div className="flex-1 min-h-55 overflow-y-auto px-3 py-2 space-y-2">
+                    {playerAlertList.map((alert, i) => (
+                        <div key={`${alert.timestamp || i}-${i}`} className="rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-2 text-[11px] text-slate-200">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="font-semibold text-slate-100">{alert.username}</span>
+                                <span className="text-[9px] uppercase tracking-[0.3em] text-slate-500">
+                                    {alert.type === "PASTE" ? "Paste" : "Switch"}
+                                </span>
+                            </div>
+                            <div className="mt-1 text-slate-400 text-[10px] uppercase tracking-[0.2em]">
+                                {alert.type === "PASTE" ? "Code paste detected" : "Tab switch detected"}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        return (
+            <div className={`${isMobile ? 'w-full h-full' : 'w-1/2'} flex flex-col ${!isMobile && isP1 ? 'border-r border-[#1a1a1a]' : ''}`}>
+                <div className="h-10 bg-[var(--color-bg-card)] border-b border-[#1a1a1a] flex items-center justify-between px-4 shrink-0">
+                    <span className={`${accentClass} font-bold text-xs uppercase tracking-wider`}>
+                        {isP1 ? "P1:" : "P2:"} {name}
+                    </span>
+                    <div className="flex items-center gap-3">
+                        {outputState.loadingAction && (
+                            <span className="text-yellow-500 text-[9px] uppercase tracking-widest animate-pulse font-bold">
+                                {outputState.loadingAction}ING...
+                            </span>
+                        )}
+                        <span className="text-gray-600 text-[10px] uppercase font-mono">
+                            Attempts: {attempts}
+                        </span>
+                    </div>
+                </div>
+                <div className="flex-1 min-h-0 bg-[var(--color-bg-card)] flex flex-col">
+                    {player || isP1 ? (
+                        <>
+                            {detailTab === "code" && (
+                                <div className="flex-1 min-h-55">
+                                    <CodeEditor
+                                        language={LANGUAGES[codeState.language]?.monaco || "java"}
+                                        value={codeState.code || "// Waiting for code stream..."}
+                                        readOnly={true}
+                                    />
+                                </div>
+                            )}
+                            {detailTab === "output" && (
+                                <div className="flex-1 min-h-55">
+                                    <OutputPanel
+                                        output={outputState.output}
+                                        status={outputState.status}
+                                        testCaseResults={outputState.testCaseResults}
+                                        problem={currentBattle?.problem ? { ...currentBattle.problem, beatsPercentile: outputState.beatsPercentile } : null}
+                                    />
+                                </div>
+                            )}
+                            {detailTab === "events" && renderAlertItems()}
+                            {!isMobile && (
+                                <div className="h-48 border-t border-[#1a1a1a] shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10 transition-all duration-300">
+                                    <OutputPanel
+                                        output={outputState.output}
+                                        status={outputState.status}
+                                        testCaseResults={outputState.testCaseResults}
+                                        problem={currentBattle?.problem ? { ...currentBattle.problem, beatsPercentile: outputState.beatsPercentile } : null}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center px-6">
+                            <div className="text-gray-600 text-xs tracking-widest uppercase font-mono text-center">
+                                Waiting for Challenger to join this match.
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     if (!currentBattle) {
         return (
             <div className="h-screen flex items-center justify-center bg-[var(--color-bg-dark)]">
@@ -173,90 +284,67 @@ export default function SpectatorArena() {
             </div>
 
             {/* Main Dual Pane View */}
-            <div className="flex-1 flex overflow-hidden">
-
-                {/* PLAYER 1 */}
-                <div className="w-1/2 flex flex-col border-r border-[#1a1a1a]">
-                    <div className="h-10 bg-[var(--color-bg-card)] border-b border-[#1a1a1a] flex items-center justify-between px-4 shrink-0">
-                        <span className="text-[var(--color-primary)] font-bold text-xs uppercase tracking-wider">
-                            P1: {currentBattle.player1?.username}
-                        </span>
-                        <div className="flex items-center gap-3">
-                            {p1Output.loadingAction && (
-                                <span className="text-yellow-500 text-[9px] uppercase tracking-widest animate-pulse font-bold">{p1Output.loadingAction}ING...</span>
-                            )}
-                            <span className="text-gray-600 text-[10px] uppercase font-mono">
-                                Attempts: {currentBattle.attemptsPlayer1}
-                            </span>
+            <div className={`flex-1 flex overflow-hidden ${isMobile ? 'flex-col' : ''}`}>
+                {isMobile ? (
+                    <div className="flex flex-col min-h-0 h-full">
+                        <div className="flex items-center gap-2 px-2 py-1 border-b border-[#2e2e2e] bg-black">
+                            <button
+                                type="button"
+                                onClick={() => setActivePlayer("p1")}
+                                className={`flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] transition-all ${activePlayer === "p1" ? "bg-white/10 text-white" : "bg-black text-slate-500 hover:text-slate-200"}`}
+                            >
+                                <span className="block">P1</span>
+                                <span className="truncate text-[10px] font-medium text-slate-400">{currentBattle.player1?.username || "Player 1"}</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActivePlayer("p2")}
+                                className={`flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] transition-all ${activePlayer === "p2" ? "bg-white/10 text-white" : "bg-black text-slate-500 hover:text-slate-200"}`}
+                            >
+                                <span className="block">P2</span>
+                                <span className="truncate text-[10px] font-medium text-slate-400">{currentBattle.player2?.username || "Awaiting"}</span>
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-2 px-2 py-2 border-b border-[#2e2e2e] bg-black text-[10px] uppercase tracking-[0.25em] text-slate-400">
+                            <button
+                                type="button"
+                                onClick={() => setMobileDetailTab("code")}
+                                className={`flex-1 rounded-lg px-2 py-1 transition-all ${mobileDetailTab === "code" ? "bg-white/10 text-white" : "bg-black text-slate-500 hover:text-slate-200"}`}
+                            >
+                                Code
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMobileDetailTab("output")}
+                                className={`flex-1 rounded-lg px-2 py-1 transition-all ${mobileDetailTab === "output" ? "bg-white/10 text-white" : "bg-black text-slate-500 hover:text-slate-200"}`}
+                            >
+                                Console
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMobileDetailTab("events")}
+                                className={`flex-1 rounded-lg px-2 py-1 transition-all ${mobileDetailTab === "events" ? "bg-white/10 text-white" : "bg-black text-slate-500 hover:text-slate-200"}`}
+                            >
+                                Switch/Paste
+                            </button>
+                        </div>
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                            {renderPlayerPanel(activePlayer, mobileDetailTab)}
                         </div>
                     </div>
-                    <div className="flex-1 min-h-0 bg-[var(--color-bg-card)] flex flex-col">
-                        <div className="flex-1 min-h-0">
-                            <CodeEditor
-                                language={LANGUAGES[p1State.language]?.monaco || "java"}
-                                value={p1State.code || "// Waiting for code stream..."}
-                                readOnly={true}
-                            />
-                        </div>
-                        <div className="h-48 border-t border-[#1a1a1a] shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10 transition-all duration-300">
-                            <OutputPanel
-                                output={p1Output.output}
-                                status={p1Output.status}
-                                testCaseResults={p1Output.testCaseResults}
-                                problem={currentBattle?.problem ? { ...currentBattle.problem, beatsPercentile: p1Output.beatsPercentile } : null}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* PLAYER 2 */}
-                <div className="w-1/2 flex flex-col">
-                    <div className="h-10 bg-[var(--color-bg-card)] border-b border-[#1a1a1a] flex items-center justify-between px-4 shrink-0">
-                        <span className="text-blue-500 font-bold text-xs uppercase tracking-wider">
-                            P2: {currentBattle.player2?.username || "Awaiting..."}
-                        </span>
-                        <div className="flex items-center gap-3">
-                            {p2Output.loadingAction && (
-                                <span className="text-yellow-500 text-[9px] uppercase tracking-widest animate-pulse font-bold">{p2Output.loadingAction}ING...</span>
-                            )}
-                            <span className="text-gray-600 text-[10px] uppercase font-mono">
-                                Attempts: {currentBattle.attemptsPlayer2}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex-1 min-h-0 bg-[var(--color-bg-card)] flex flex-col">
-                        {currentBattle.player2Id ? (
-                            <>
-                                <div className="flex-1 min-h-0">
-                                    <CodeEditor
-                                        language={LANGUAGES[p2State.language]?.monaco || "java"}
-                                        value={p2State.code || "// Waiting for code stream..."}
-                                        readOnly={true}
-                                    />
-                                </div>
-                                <div className="h-48 border-t border-[#1a1a1a] shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10 transition-all duration-300">
-                                    <OutputPanel
-                                        output={p2Output.output}
-                                        status={p2Output.status}
-                                        testCaseResults={p2Output.testCaseResults}
-                                        problem={currentBattle?.problem ? { ...currentBattle.problem, beatsPercentile: p2Output.beatsPercentile } : null}
-                                    />
-                                </div>
-                            </>
-                        ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center">
-                                <div className="text-gray-600 text-xs tracking-widest uppercase font-mono">Waiting for Challenger...</div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
+                ) : (
+                    <>
+                        {renderPlayerPanel("p1")}
+                        {renderPlayerPanel("p2")}
+                    </>
+                )}
             </div>
 
-            {/* Absolute center problem overlay (Optional: minimal view) */}
-            <div className="absolute top-30 left-1/2 -translate-x-1/2 bg-black border border-[#222] px-6 py-2 shadow-2xl z-40 rounded flex flex-col items-center">
-                <span className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Problem</span>
-                <span className="text-sm font-bold text-[var(--color-text-main)] uppercase">{currentBattle.problem?.title}</span>
+            <div className={`border-b border-white/10 bg-[var(--color-bg-card)] ${isMobile ? 'px-4 py-3' : 'px-6 py-3'} flex flex-col items-center text-center`}>
+                <div className="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Problem</div>
+                <div className="text-sm sm:text-base font-bold text-[var(--color-text-main)] uppercase truncate w-full">
+                    {currentBattle.problem?.title}
+                </div>
                 {currentBattle.status === "FINISHED" && (
                     <div className="mt-2 text-xs font-black text-[var(--color-primary)] uppercase tracking-widest animate-pulse">
                         {currentBattle.winner ? `${currentBattle.winner.username} Wins` : "Draw"}
@@ -265,8 +353,8 @@ export default function SpectatorArena() {
             </div>
 
             {/* Anti-Cheat Alert Feed */}
-            {cheatAlerts.length > 0 && (
-                <div className="absolute bottom-4 right-4 z-50 w-80 max-h-60 overflow-y-auto flex flex-col gap-1.5" style={{ scrollbarWidth: "none" }}>
+            {!isMobile && cheatAlerts.length > 0 && (
+                <div className={`absolute bottom-4 ${isMobile ? 'left-2 right-2 w-auto' : 'right-4 w-80'} z-50 max-h-60 overflow-y-auto flex flex-col gap-1.5`} style={{ scrollbarWidth: "none" }}>
                     {cheatAlerts.map((alert, i) => (
                         <div
                             key={`${alert.timestamp}-${i}`}
@@ -291,7 +379,7 @@ export default function SpectatorArena() {
 
             {/* AI Live Commentary Feed */}
             {aiCommentary && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-xl w-full px-6 py-4 bg-black/90 border border-[var(--color-primary)]/20 backdrop-blur-xl shadow-[0_0_40px_rgba(255,170,0,0.1)] flex items-center gap-4 animate-in fade-in slide-in-from-bottom-5 duration-700" style={{ borderRadius: "2px" }}>
+                <div className={`absolute bottom-4 ${isMobile ? 'left-2 right-2 w-auto' : 'left-1/2 -translate-x-1/2 w-full max-w-xl'} px-4 py-4 bg-black/90 border border-[var(--color-primary)]/20 backdrop-blur-xl shadow-[0_0_40px_rgba(255,170,0,0.1)] flex items-center gap-4 animate-in fade-in slide-in-from-bottom-5 duration-700`} style={{ borderRadius: "2px" }}>
                     <div className="shrink-0 w-8 h-8 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 flex items-center justify-center">
                         <span className="text-[10px] animate-pulse">🎙️</span>
                     </div>
