@@ -219,7 +219,7 @@ const BattleArena = () => {
             setUnlockedHints(prev => [...prev, index]);
             // Refresh problem to get the actual hint text
             dispatch(getBattle({ battleId }));
-            toast.success("Neural Link Synchronized. Hint Decrypted.", { icon: '💡' });
+            toast.success("Hint unlocked successfully!", { icon: '💡' });
         } catch (error) {
             console.error("Hint Unlock Error:", error);
             toast.error(error.response?.data?.message || "Connection Failed: Check Cores");
@@ -745,7 +745,7 @@ const BattleArena = () => {
     const renderConsole = () => {
         if (status === "idle") return (
             <div className="h-full flex items-center justify-center text-slate-700 italic text-xs">
-                Waiting for transmission...
+                Waiting for results...
             </div>
         );
 
@@ -827,7 +827,7 @@ const BattleArena = () => {
                             <Cpu size={24} className="text-[var(--color-primary)] animate-pulse" />
                         </div>
                     </div>
-                    <div className="text-[var(--color-primary)] text-xs font-black uppercase tracking-[0.5em] font-mono animate-pulse">Initializing Arena...</div>
+                    <div className="text-[var(--color-primary)] text-xs font-black uppercase tracking-[0.5em] font-mono animate-pulse">Loading Arena...</div>
                 </div>
             </div>
         );
@@ -955,12 +955,12 @@ const BattleArena = () => {
                                         </div>
                                     </div>
                                     <div className="space-y-4 max-w-xs">
-                                        <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--color-text-main)]">Signal Blocked</h3>
+                                        <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--color-text-main)]">Awaiting Opponent</h3>
                                         <p className="text-[10px] text-[var(--color-text-muted)] font-mono italic leading-relaxed">
-                                            Mission objectives are encrypted. The data stream will initialize once an opponent synchronizes with this sector.
+                                            The problem details will appear once an opponent joins the battle.
                                         </p>
                                         <div className="pt-4">
-                                            <div className="text-[8px] font-bold text-[var(--color-primary)] uppercase tracking-widest mb-2 opacity-50">Awaiting Target Acquisition...</div>
+                                            <div className="text-[8px] font-bold text-[var(--color-primary)] uppercase tracking-widest mb-2 opacity-50">Searching for Opponent...</div>
                                             <div className="h-1 w-full bg-white/5 overflow-hidden">
                                                 <div className="h-full bg-[var(--color-primary)]/30 w-1/3 animate-[shimmer_2s_infinite]" />
                                             </div>
@@ -973,7 +973,7 @@ const BattleArena = () => {
                                         <div className="flex items-center justify-between mb-4 lg:mb-8">
                                             <div className="flex flex-col gap-2">
                                                 <div className="px-3 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-black uppercase tracking-widest self-start">
-                                                    {problem?.difficulty || "MISSION DATA"}
+                                                    {problem?.difficulty || "DIFFICULTY"}
                                                 </div>
                                                 <div className="flex flex-wrap gap-2">
                                                     {problem?.tags?.map((tag, idx) => (
@@ -1001,7 +1001,7 @@ const BattleArena = () => {
                                     {/* HINTS SECTION */}
                                     <section>
                                         <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
-                                            <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Mission Intel (Hints)
+                                            <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Problem Hints
                                         </h3>
                                         <div className="grid grid-cols-1 gap-3">
                                             {[0, 1, 2].map((idx) => {
@@ -1009,7 +1009,7 @@ const BattleArena = () => {
                                                 return (
                                                     <div key={idx} className={`p-4 border transition-all ${isUnlocked ? 'bg-white/5 border-white/10' : 'bg-black/40 border-white/5 opacity-60'}`}>
                                                         <div className="flex items-center justify-between mb-2">
-                                                            <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Protocol Hint {idx + 1}</div>
+                                                            <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Problem Hint {idx + 1}</div>
                                                             {!isUnlocked && (
                                                                 <button
                                                                     onClick={() => handleUnlockHint(idx)}
@@ -1059,7 +1059,7 @@ const BattleArena = () => {
                                     {problem?.constraints && (
                                         <section>
                                             <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
-                                                <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> System Constraints
+                                                <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Constraints
                                             </h3>
                                             <ul className="space-y-3">
                                                 {(typeof problem.constraints === 'string' ? problem.constraints.split('\n') : problem.constraints).map((c, i) => (
@@ -1102,7 +1102,7 @@ const BattleArena = () => {
                 <div className={`flex-1 min-h-0 flex flex-col bg-[var(--color-bg-dark)] min-w-0 lg:min-w-[400px] ${mobileTab === "editor" ? "flex" : "hidden lg:flex"}`}>
                     {(!opponent || currentBattle?.status === "WAITING" || currentBattle?.status === "COUNTDOWN") ? (
                         <div className="flex-1 flex items-center justify-center bg-[var(--color-bg-dark)] text-[var(--color-text-muted)] uppercase text-[10px] tracking-widest animate-pulse">
-                            <Rocket size={16} className="mr-3" /> Waiting for transmission start...
+                            <Rocket size={16} className="mr-3" /> Waiting for battle to start...
                         </div>
                     ) : (
                         <>
@@ -1255,7 +1255,7 @@ const BattleArena = () => {
                                         </div>
                                         <div className="flex items-center gap-1.5 mt-1">
                                             <div className={`w-1 h-1 rounded-full ${opponentStatus === 'submitting' ? 'bg-[var(--color-primary)] animate-ping' : 'bg-slate-600'}`} />
-                                            <span className="text-[8px] uppercase font-bold text-slate-600">{opponentStatus === 'submitting' ? 'Transmitting Data...' : 'Idle'}</span>
+                                            <span className="text-[8px] uppercase font-bold text-slate-600">{opponentStatus === 'submitting' ? 'Submitting...' : 'Idle'}</span>
                                         </div>
                                     </div>
                                     <span className="text-[var(--color-text-muted)] font-mono text-xs">{opponentProgress.passed}/{opponentProgress.total || 0}</span>
@@ -1280,7 +1280,7 @@ const BattleArena = () => {
 
                     <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
                         <div className="flex justify-between items-center mb-4">
-                            <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em]">Anti-Cheat Stream</div>
+                            <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em]">Security Logs</div>
                             {opponentViolations.length > 0 && (
                                 <div className="px-2 py-0.5 bg-red-600 border border-white/10 text-[8px] font-black text-white uppercase tracking-widest rounded-sm shadow-[0_0_10px_rgba(255,0,0,0.2)]">
                                     {opponentViolations.length} {opponentViolations.length === 1 ? 'Violation' : 'Violations'}
@@ -1304,7 +1304,7 @@ const BattleArena = () => {
                                 ))
                             ) : (
                                 <div className="h-24 border-2 border-dashed border-white/5 flex items-center justify-center p-4 text-center">
-                                    <span className="text-[8px] uppercase font-bold text-slate-700 tracking-widest leading-relaxed">No violations detected in current stream</span>
+                                    <span className="text-[8px] uppercase font-bold text-slate-700 tracking-widest leading-relaxed">No security issues detected</span>
                                 </div>
                             )}
                         </div>
@@ -1368,7 +1368,7 @@ const BattleArena = () => {
                             </div>
 
                             <div className="text-[10px] font-black text-[var(--color-primary)] tracking-[0.6em] uppercase mb-2 opacity-70 text-center">
-                                {winner === user?.id ? "Superiority Established" : "Signal Terminated"}
+                                {winner === user?.id ? "Victory!" : "Defeat"}
                             </div>
 
                             <h1 className="text-4xl sm:text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase mb-2 leading-none text-center">
@@ -1377,8 +1377,8 @@ const BattleArena = () => {
 
                             <p className="text-[var(--color-text-muted)] text-[10px] font-medium mb-8 uppercase tracking-[0.2em] text-center">
                                 {winner === user?.id
-                                    ? "Competitive objectives completed with high efficiency."
-                                    : "Operational failure. Opponent achieved target first."}
+                                    ? "You solved the problem before your opponent."
+                                    : "You were unable to complete the challenge in time."}
                             </p>
 
                             {/* MATCH STATS */}
@@ -1437,7 +1437,7 @@ const BattleArena = () => {
                                     onClick={() => navigate('/battles')}
                                     className="w-full sm:flex-1 py-4 bg-white/5 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-black transition-all"
                                 >
-                                    Exit Arena
+                                    Exit Battle
                                 </button>
                                 {/* {!surgeonReport && (
                                     <button
@@ -1522,13 +1522,13 @@ const BattleArena = () => {
                                     <ShieldAlert size={40} className="text-red-500" />
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="text-[10px] font-black text-red-500 uppercase tracking-[0.6em]">Violation Detected</div>
+                                    <div className="text-[10px] font-black text-red-500 uppercase tracking-[0.6em]">Tab Switch Detected</div>
                                     <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Stay in Arena</h2>
                                 </div>
                             </div>
 
                             <p className="text-[var(--color-text-muted)] text-xs font-mono mb-10 leading-relaxed uppercase tracking-widest">
-                                External signal interference detected. Re-synchronize with the arena immediately to prevent data termination.
+                                Please stay on this tab to avoid forfeiting the match. Return to the battle to stay in the match.
                             </p>
 
                             <div className="relative">
