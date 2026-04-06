@@ -93,11 +93,11 @@ const Home = () => {
                                         event.stopPropagation();
                                         setShowStatsPanel((prev) => !prev);
                                     }}
-                                    className="color-pulse-btn inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2.5 sm:py-3 rounded-l-full sm:rounded-full border border-yellow-600 text-black shadow-[-8px_8px_24px_rgba(202,138,4,0.4)] sm:shadow-[0_8px_24px_rgba(202,138,4,0.4)] hover:shadow-[-8px_8px_32px_rgba(234,179,8,0.6)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all duration-200"
+                                    className="color-pulse-btn inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 mt-20 md:mt-0 py-2.5 sm:py-3 rounded-l-full sm:rounded-full border border-yellow-600 text-black shadow-[-8px_8px_24px_rgba(202,138,4,0.4)] sm:shadow-[0_8px_24px_rgba(202,138,4,0.4)] hover:shadow-[-8px_8px_32px_rgba(234,179,8,0.6)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all duration-200"
                                 >
                                     <span className="w-2 h-2 rounded-full bg-black shadow-[0_0_14px_rgba(0,0,0,0.3)] animate-pulse" />
                                     <span className="hidden sm:inline text-xs font-bold uppercase tracking-[0.3em]">Currently Active</span>
-                                    <span className="sm:hidden text-[10px] font-bold uppercase tracking-[0.2em]">Active</span>
+                                    <span className="sm:hidden text-[10px] font-bold uppercase tracking-[0.2em]">{showStatsPanel ? 'Currently Active' : 'Active'}</span>
                                 </motion.button>
 
                                 <AnimatePresence>
