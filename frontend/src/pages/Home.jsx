@@ -78,12 +78,12 @@ const Home = () => {
 
             <div className="relative z-10">
                 {/* HERO SECTION */}
-                    <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden md:pt-">
+                    <section className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 text-center relative overflow-hidden pt-28 sm:pt-32 pb-20 sm:pb-24">
                         {/* Background Visual */}
 
 
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10 w-full max-w-4xl mx-auto">
-                            <div ref={statsPanelRef} className="fixed right-0 sm:right-4 top-24 sm:top-28 flex flex-col items-end z-50">
+                            <div ref={statsPanelRef} className="fixed right-0 top-32 sm:top-28 flex flex-col items-end z-50">
                                 <motion.button
                                     animate={{ x: showStatsPanel ? 100 : 0, opacity: showStatsPanel ? 0 : 1 }}
                                     transition={{ duration: 0.25 }}
@@ -93,11 +93,11 @@ const Home = () => {
                                         event.stopPropagation();
                                         setShowStatsPanel((prev) => !prev);
                                     }}
-                                    className="color-pulse-btn inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 mt-20 md:mt-0 py-2.5 sm:py-3 rounded-l-full sm:rounded-full border border-yellow-600 text-black shadow-[-8px_8px_24px_rgba(202,138,4,0.4)] sm:shadow-[0_8px_24px_rgba(202,138,4,0.4)] hover:shadow-[-8px_8px_32px_rgba(234,179,8,0.6)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all duration-200"
+                                    className="color-pulse-btn inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-2 sm:py-2.5 rounded-l-full sm:rounded-full border border-yellow-600 text-black shadow-[-8px_8px_24px_rgba(202,138,4,0.4)] sm:shadow-[0_8px_24px_rgba(202,138,4,0.4)] hover:shadow-[-8px_8px_32px_rgba(234,179,8,0.6)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all duration-200"
                                 >
                                     <span className="w-2 h-2 rounded-full bg-black shadow-[0_0_14px_rgba(0,0,0,0.3)] animate-pulse" />
                                     <span className="hidden sm:inline text-xs font-bold uppercase tracking-[0.3em]">Currently Active</span>
-                                    <span className="sm:hidden text-[10px] font-bold uppercase tracking-[0.2em]">{showStatsPanel ? 'Currently Active' : 'Active'}</span>
+                                    <span className="sm:hidden text-[9px] font-bold uppercase tracking-[0.2em]">Active</span>
                                 </motion.button>
 
                                 <AnimatePresence>
@@ -153,28 +153,28 @@ const Home = () => {
                                 </div>
                             </div>
 
-                            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.9] mb-8 font-[family:var(--font-heading)] uppercase text-[var(--color-text-main)]">
+                            <h1 className="w-full max-w-3xl mx-auto text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] mb-8 font-[family:var(--font-heading)] uppercase text-[var(--color-text-main)] break-words px-3">
                                 THE ULTIMATE<br />
-                                CHALLENG<span className="text-[var(--color-primary)]">X</span>
+                                CHALLENG<span className="text-[var(--color-primary)] inline-block">X</span>
                             </h1>
 
-                            <p className="max-w-2xl mx-auto text-[var(--color-text-muted)] text-lg md:text-xl font-medium leading-relaxed mb-12 tracking-tight">
+                            <p className="max-w-xl sm:max-w-2xl mx-auto text-[var(--color-text-muted)] text-base sm:text-lg md:text-xl font-medium leading-relaxed mb-10 tracking-tight">
                                 {isAuthenticated
                                     ? "Welcome back. You're ready to play. Join a match and prove your skills in the arena."
                                     : "Master your algorithms, compete in intense real-time matches, and climb the global ranks. The next generation of competitive coding is here."}
                             </p>
 
-                            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                                 <button
                                     onClick={() => navigate(isAuthenticated ? "/matchmaking" : "/login")}
-                                    className="group relative px-10 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.1em] text-xs hover:bg-white transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(204,255,0,0.3)] active:scale-95"
+                                    className="w-full sm:w-auto px-8 sm:px-10 py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.1em] text-xs hover:bg-white transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(204,255,0,0.3)] active:scale-95"
                                     style={{ borderRadius: "4px" }}
                                 >
                                     {isAuthenticated ? "Start Matching" : "Access the Arena"}
                                 </button>
                                 <button
                                     onClick={() => navigate(isAuthenticated ? "/battles" : "/login")}
-                                    className="px-10 py-5 border border-white/10 hover:border-white/40 text-[var(--color-text-main)] font-bold uppercase tracking-[0.1em] text-xs transition-all hover:bg-white/5 backdrop-blur-sm"
+                                    className="w-full sm:w-auto px-8 sm:px-10 py-4 border border-white/10 hover:border-white/40 text-[var(--color-text-main)] font-bold uppercase tracking-[0.1em] text-xs transition-all hover:bg-white/5 backdrop-blur-sm"
                                     style={{ borderRadius: "4px" }}
                                 >
                                     {isAuthenticated ? "View Matches" : "Login"}
@@ -196,7 +196,7 @@ const Home = () => {
                                 </p>
                             </div>
 
-                            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-left">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
                                 {[
                                     {
                                         title: "1v1 Duel",
@@ -230,7 +230,7 @@ const Home = () => {
                                     <div
                                         key={i}
                                         onClick={() => navigate(mode.path)}
-                                        className="group p-10 bg-[var(--color-bg-card)] border border-[var(--glass-border)] hover:border-[var(--color-primary)]/50 transition-all relative overflow-hidden cursor-pointer"
+                                        className="group p-6 sm:p-8 bg-[var(--color-bg-card)] border border-[var(--glass-border)] hover:border-[var(--color-primary)]/50 transition-all relative overflow-hidden cursor-pointer"
                                         style={{ borderRadius: "12px" }}
                                     >
                                         <div className="absolute top-0 right-0 p-6 text-[8px] font-bold text-slate-700 tracking-widest uppercase">
