@@ -91,7 +91,7 @@ const BattleArena = () => {
     const [isUnlockingHint, setIsUnlockingHint] = useState(false);
     const [isSurgeonOpen, setIsSurgeonOpen] = useState(false);
     const [isAborting, setIsAborting] = useState(false);
-    
+
     // Anti-Cheat Phase 2
     const [isTabSwitched, setIsTabSwitched] = useState(false);
     const [tabSwitchTimer, setTabSwitchTimer] = useState(5);
@@ -109,16 +109,16 @@ const BattleArena = () => {
 
         const joinRoom = () => {
             console.log("🔌 [Socket] Emitting join_battle for", battleId);
-            socket.emit("join_battle", { 
-                battleId, 
-                isCreator: user && player1?.id === user?.id 
+            socket.emit("join_battle", {
+                battleId,
+                isCreator: user && player1?.id === user?.id
             });
         };
 
         hasFetchedRef.current = battleId;
         dispatch(getBattle({ battleId }));
         dispatch(resetMatchmaking());
-        
+
         // Initial join
         joinRoom();
 
@@ -212,7 +212,7 @@ const BattleArena = () => {
         if (unlockedHints.includes(index)) return;
         setIsUnlockingHint(true);
         try {
-            const response = await axios.post(`/problem/${problem.id}/hints/unlock`, { 
+            const response = await axios.post(`/problem/${problem.id}/hints/unlock`, {
                 hintIndex: index,
                 battleId: battleId
             });
@@ -283,7 +283,7 @@ const BattleArena = () => {
         setIsAborting(true);
         try {
             await dispatch(forfeitBattle({ battleId })).unwrap();
-            toast.success("Match exited successfully", { 
+            toast.success("Match exited successfully", {
                 position: 'top-right',
                 icon: '🛡️',
                 style: { borderRadius: '2px', background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }
@@ -323,7 +323,7 @@ const BattleArena = () => {
 
         const handleEvent = (event, data) => {
             console.log(`📥 [SocketEvent] ${event}:`, data);
-            
+
             if (event === "submission_progress") {
                 const myEffectiveId = user?.id || GUEST_USER_ID;
                 const isMe = data.userId === myEffectiveId;
@@ -363,10 +363,12 @@ const BattleArena = () => {
                     if (data.status === "PASSED") {
                         setMessage("Submission Successful!");
                         setMyProgress({ passed: data.totalTests || 1, total: data.totalTests || 1 });
+                        /* 
                         if (data.aiFeedback) {
                             setSurgeonReport(data.aiFeedback);
                             setIsSurgeonOpen(true);
                         }
+                        */
                     } else {
                         setMessage(`Submission Failed: ${data.errorMessage || "Error encountered"}`);
                     }
@@ -385,7 +387,7 @@ const BattleArena = () => {
                 } else if (data.userId === opponent?.id) {
                     setOpponentStatus("idle");
                     setOpponentProgress({ passed: data.passedTests || 0, total: data.totalTests || 100 });
-                    
+
                     if (isMobile && data.status === "PASSED") {
                         toast.success(`${opponent?.username || 'Opponent'} passed all test cases!`, {
                             icon: '🚀',
@@ -422,9 +424,9 @@ const BattleArena = () => {
                 const isMe = (user && data.userId === user.id) || (!user && data.userId === GUEST_USER_ID);
                 if (isMe) return; // Only notify about opponent actions
                 console.log("🛡️ [ANTI-CHEAT] SIGNAL RECEIVED:", data);
-                
+
                 const violationId = data.violationId || `${data.userId}-${Date.now()}`;
-                
+
                 // If it's a TAB_SWITCH END, update duration
                 if (data.type === "TAB_SWITCH" && data.status === "END") {
                     console.log("🛡️ [ANTI-CHEAT] UPDATING DURATION:", data.duration);
@@ -448,22 +450,22 @@ const BattleArena = () => {
                         timestamp: new Date(data.timestamp || Date.now()).toLocaleTimeString(),
                         duration: data.duration || null
                     };
-                    
+
                     console.log("🛡️ [ANTI-CHEAT] ADDING NEW VIOLATION:", newViolation);
                     setOpponentViolations(prev => [...prev, newViolation]);
 
                     setOpponentAlert({
                         type: data.type,
-                        message: data.type === "CODE_PASTE" 
+                        message: data.type === "CODE_PASTE"
                             ? `${data.username || 'Opponent'} pasted ${data.charCount || 'significant'} characters!`
                             : `${data.username || 'Opponent'} engaged in ${data.type}`
                     });
 
                     if (isMobile) {
-                        const alertMsg = data.type === "TAB_SWITCH" 
+                        const alertMsg = data.type === "TAB_SWITCH"
                             ? `Security Alert: ${data.username || 'Opponent'} switched tab!`
                             : `Security Alert: ${data.username || 'Opponent'} pasted ${data.charCount || 'some'} characters!`;
-                            
+
                         toast.error(alertMsg, {
                             icon: '🛡️',
                             position: 'top-right',
@@ -529,7 +531,7 @@ const BattleArena = () => {
                 hiddenStartTimeRef.current = Date.now();
                 setIsTabSwitched(true);
                 setTabSwitchTimer(5);
-                
+
                 socket.emit("anti_cheat_flag", {
                     battleId,
                     userId: user?.id || 'guest',
@@ -673,7 +675,7 @@ const BattleArena = () => {
         if (!socket || !battleId || !hasInitializedCode) return;
         // Guests only emit if they are actually in the battle (handled by backend room participation)
         // userId: user?.id || 'guest'
-        
+
         socket.emit("spectator_code_sync", {
             battleId,
             userId: user?.id || GUEST_USER_ID,
@@ -710,7 +712,7 @@ const BattleArena = () => {
             // Save code already happens on change, but let's be sure
             localStorage.setItem(`battle_code_${battleId}`, code);
             localStorage.setItem(`battle_lang_${battleId}`, language);
-            
+
             navigate(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`);
             return;
         }
@@ -843,9 +845,9 @@ const BattleArena = () => {
                     <div className="flex items-center gap-2 sm:gap-3">
                         <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-ping hidden xs:block" />
                         <h1 className="text-xs sm:text-sm font-black tracking-tighter uppercase text-[var(--color-text-main)] flex items-center gap-2 sm:gap-3">
-                            <span className="hidden sm:inline">Battle Code:</span> 
+                            <span className="hidden sm:inline">Battle Code:</span>
                             <span className="text-[var(--color-primary)] font-mono">{currentBattle?.battleCode || "......"}</span>
-                            <button 
+                            <button
                                 onClick={() => setIsShareModalOpen(true)}
                                 className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-1 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[9px] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] flex items-center gap-2"
                                 style={{ borderRadius: "2px" }}
@@ -913,7 +915,7 @@ const BattleArena = () => {
                 {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
                 <div
                     className={`min-h-0 border-r border-white/5 bg-[var(--color-bg-card)] relative group/sidebar lg:shrink-0
-                        ${mobileTab === "problem" || mobileTab === "console" ? "flex-1 flex flex-col" : "hidden lg:flex lg:flex-col lg:flex-none"}`}                    style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
+                        ${mobileTab === "problem" || mobileTab === "console" ? "flex-1 flex flex-col" : "hidden lg:flex lg:flex-col lg:flex-none"}`} style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
                 >
                     {/* Resize Handle - Desktop Only */}
                     {!isMobile && (
@@ -981,14 +983,14 @@ const BattleArena = () => {
                                                     ))}
                                                 </div>
                                             </div>
-                                            <button 
+                                            {/* <button 
                                                 onClick={fetchAIHint}
                                                 disabled={isAILoading}
                                                 className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 text-[var(--color-text-main)] text-[9px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-black transition-all"
                                                 style={{ borderRadius: "2px" }}
                                             >
                                                 <Sparkles size={10} /> {isAILoading ? "Connecting..." : "Personalized Hint (-15)"}
-                                            </button>
+                                            </button> */}
                                         </div>
                                         <h2 className="text-xl lg:text-2xl font-black text-[var(--color-text-main)] mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem?.title}</h2>
                                         <div className="prose prose-invert prose-sm max-w-none text-[var(--color-text-muted)] font-light leading-relaxed mb-8 lg:mb-12">
@@ -1009,7 +1011,7 @@ const BattleArena = () => {
                                                         <div className="flex items-center justify-between mb-2">
                                                             <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Protocol Hint {idx + 1}</div>
                                                             {!isUnlocked && (
-                                                                <button 
+                                                                <button
                                                                     onClick={() => handleUnlockHint(idx)}
                                                                     disabled={isUnlockingHint}
                                                                     className="px-2 py-1 bg-[var(--color-primary)] text-black text-[8px] font-black uppercase tracking-tighter hover:bg-white transition-all"
@@ -1206,9 +1208,9 @@ const BattleArena = () => {
                 </div>
 
                 {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Resizable, Mobile: Tabbed) */}
-                <aside 
+                <aside
                     className={`min-h-0 border-l border-white/5 bg-[var(--color-bg-card)] lg:shrink-0 relative group/match
-                        ${mobileTab === "status" ? "flex-1 flex flex-col w-full" : "hidden lg:flex lg:flex-col lg:flex-none"}`}                    style={{ width: isMobile ? '100%' : `${rightSidebarWidth}px` }}
+                        ${mobileTab === "status" ? "flex-1 flex flex-col w-full" : "hidden lg:flex lg:flex-col lg:flex-none"}`} style={{ width: isMobile ? '100%' : `${rightSidebarWidth}px` }}
                 >
                     {/* Resize Handle - Desktop Only */}
                     {!isMobile && (
@@ -1396,39 +1398,39 @@ const BattleArena = () => {
                             </div>
 
                             {/* CODE SURGEON DIAGNOSTICS */}
-                            <div className="w-full mb-8">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="h-[1px] flex-1 bg-white/5" />
-                                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-sm">
-                                        <Activity size={10} className="text-slate-500" />
-                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Diagnostic Stream</span>
-                                    </div>
-                                    <div className="h-[1px] flex-1 bg-white/5" />
-                                </div>
+                            {/* <div className="w-full mb-8">
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <div className="h-[1px] flex-1 bg-white/5" />
+                                                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-sm">
+                                                        <Activity size={10} className="text-slate-500" />
+                                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Diagnostic Stream</span>
+                                                    </div>
+                                                    <div className="h-[1px] flex-1 bg-white/5" />
+                                                </div>
 
-                                {isSurgeonLoading ? (
-                                    <div className="py-6 flex flex-col items-center gap-3">
-                                        <Loader2 size={16} className="animate-spin text-slate-700" />
-                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">Analyzing Logic...</span>
-                                    </div>
-                                ) : surgeonReport ? (
-                                    <div className="p-5 bg-white/[0.01] border border-white/5 relative group overflow-hidden" style={{ borderRadius: "2px" }}>
-                                        <div className="absolute top-0 left-0 w-0.5 h-full bg-[var(--color-primary)]/20" />
-                                        <p className="text-[11px] text-[var(--color-text-muted)] font-light leading-relaxed tracking-wide italic font-mono">
-                                            "{surgeonReport}"
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-2">
-                                        <button 
-                                            onClick={() => setIsSurgeonOpen(true)}
-                                            className="text-[9px] font-black text-[var(--color-primary)] uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto decoration-[var(--color-primary)]/30 underline-offset-4 hover:underline"
-                                        >
-                                            <Sparkles size={10} /> Reveal Diagnostic Report
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+                                                {isSurgeonLoading ? (
+                                                    <div className="py-6 flex flex-col items-center gap-3">
+                                                        <Loader2 size={16} className="animate-spin text-slate-700" />
+                                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">Analyzing Logic...</span>
+                                                    </div>
+                                                ) : surgeonReport ? (
+                                                    <div className="p-5 bg-white/[0.01] border border-white/5 relative group overflow-hidden" style={{ borderRadius: "2px" }}>
+                                                        <div className="absolute top-0 left-0 w-0.5 h-full bg-[var(--color-primary)]/20" />
+                                                        <p className="text-[11px] text-[var(--color-text-muted)] font-light leading-relaxed tracking-wide italic font-mono">
+                                                            "{surgeonReport}"
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-2">
+                                                        <button 
+                                                            onClick={() => setIsSurgeonOpen(true)}
+                                                            className="text-[9px] font-black text-[var(--color-primary)] uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto decoration-[var(--color-primary)]/30 underline-offset-4 hover:underline"
+                                                        >
+                                                            <Sparkles size={10} /> Reveal Diagnostic Report
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div> */}
 
                             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
                                 <button
@@ -1437,7 +1439,7 @@ const BattleArena = () => {
                                 >
                                     Exit Arena
                                 </button>
-                                {!surgeonReport && (
+                                {/* {!surgeonReport && (
                                     <button
                                         onClick={fetchAISurgeonReport}
                                         disabled={isSurgeonLoading}
@@ -1445,7 +1447,7 @@ const BattleArena = () => {
                                     >
                                         {isSurgeonLoading ? <Loader2 size={12} className="animate-spin" /> : <Activity size={12} />} Process Diagnostic
                                     </button>
-                                )}
+                                )} */}
                             </div>
                         </div>
                     </div>
@@ -1455,13 +1457,13 @@ const BattleArena = () => {
             {/* CONFIRMATION MODAL */}
             <AnimatePresence>
                 {showForfeitModal && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
                     >
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -1469,26 +1471,26 @@ const BattleArena = () => {
                             style={{ borderRadius: "2px" }}
                         >
                             <div className="absolute top-0 left-0 w-full h-1 bg-red-600" />
-                            
+
                             <div className="flex items-center gap-4 text-red-500 mb-6">
                                 <AlertTriangle size={24} />
                                 <div className="text-[10px] font-black uppercase tracking-[0.4em]">Signal Termination</div>
                             </div>
-                            
+
                             <h3 className="text-2xl font-black text-[var(--color-text-main)] uppercase tracking-tight mb-4 leading-tight">Abort Match?</h3>
                             <p className="text-[var(--color-text-muted)] text-xs font-mono leading-relaxed mb-10">
                                 This action will result in an immediate forfeit. Your performance metrics will be recorded as a failure for this sector.
                             </p>
-                            
+
                             <div className="flex gap-4">
-                                <button 
+                                <button
                                     onClick={() => setShowForfeitModal(false)}
                                     className="flex-1 py-4 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[10px] hover:text-[var(--color-text-main)] hover:bg-white/5 transition-all"
                                     style={{ borderRadius: "2px" }}
                                 >
                                     Cancel
                                 </button>
-                                <button 
+                                <button
                                     onClick={confirmForfeit}
                                     disabled={isAborting}
                                     className="flex-1 py-4 bg-red-600 text-white font-black uppercase tracking-widest text-[10px] hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(255,0,0,0.3)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1514,7 +1516,7 @@ const BattleArena = () => {
                         <div className="absolute inset-0 bg-red-600/5 animate-pulse pointer-events-none" />
                         <div className="max-w-md w-full bg-[var(--color-bg-card)] border border-red-600/20 p-12 text-center relative overflow-hidden" style={{ borderRadius: "2px" }}>
                             <div className="absolute top-0 left-0 w-full h-1 bg-red-600 shadow-[0_0_20px_rgba(255,0,0,0.5)]" />
-                            
+
                             <div className="flex flex-col items-center gap-6 mb-8">
                                 <div className="w-20 h-20 bg-red-600/10 border border-red-600/20 rounded-full flex items-center justify-center animate-bounce">
                                     <ShieldAlert size={40} className="text-red-500" />
@@ -1524,11 +1526,11 @@ const BattleArena = () => {
                                     <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Stay in Arena</h2>
                                 </div>
                             </div>
-                            
+
                             <p className="text-[var(--color-text-muted)] text-xs font-mono mb-10 leading-relaxed uppercase tracking-widest">
                                 External signal interference detected. Re-synchronize with the arena immediately to prevent data termination.
                             </p>
-                            
+
                             <div className="relative">
                                 <div className="text-7xl font-black text-red-600 font-mono mb-4 tabular-nums shadow-red-600/20 drop-shadow-2xl">
                                     VIOLATION
@@ -1545,20 +1547,20 @@ const BattleArena = () => {
             </AnimatePresence>
 
             {/* SHARE MODAL */}
-            <ShareModal 
+            <ShareModal
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
-                link={(!opponent && currentBattle?.status !== "FINISHED") 
+                link={(!opponent && currentBattle?.status !== "FINISHED")
                     ? `${window.location.origin}/battle/${battleId}/ide`
                     : `${window.location.origin}/spectate/${battleId}`}
                 title={(!opponent && currentBattle?.status !== "FINISHED") ? "INVITE CHALLENGER" : "SHARE BATTLE STREAM"}
-                message={(!opponent && currentBattle?.status !== "FINISHED") 
+                message={(!opponent && currentBattle?.status !== "FINISHED")
                     ? `Join me in a code battle on ChallengX! Code: ${currentBattle?.battleCode}`
                     : `Check out this live battle on ChallengX! Code: ${currentBattle?.battleCode}`}
             />
 
             {/* CYBER MENTOR MODAL */}
-            <CyberMentorModal 
+            <CyberMentorModal
                 isOpen={isCyberMentorOpen}
                 onClose={() => setIsCyberMentorOpen(false)}
                 hint={aiHint}
@@ -1566,7 +1568,7 @@ const BattleArena = () => {
             />
 
             {/* CODE SURGEON MODAL */}
-            <CodeSurgeonModal 
+            <CodeSurgeonModal
                 isOpen={isSurgeonOpen}
                 onClose={() => setIsSurgeonOpen(false)}
                 report={surgeonReport}
