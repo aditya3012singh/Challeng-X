@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import logo from "../assets/logo.png";
 import axios from "../../lib/axios";
 import { getSocket } from "../../lib/socket";
@@ -16,9 +16,16 @@ const Home = () => {
         totalSolved: 0,
         activeBattles: 0
     });
+    const [showStatsPanel, setShowStatsPanel] = useState(false);
+    const statsPanelRef = useRef(null);
 
     useEffect(() => {
-        // 1. Initial Fetch
+        const handleClickOutside = (event) => {
+            if (statsPanelRef.current && !statsPanelRef.current.contains(event.target)) {
+                setShowStatsPanel(false);
+            }
+        };
+
         const fetchStats = async () => {
             try {
                 const res = await axios.get("/analytics/global/stats");
@@ -27,21 +34,42 @@ const Home = () => {
                 console.error("Failed to fetch global stats:", err);
             }
         };
+
         fetchStats();
 
-        // 2. Socket Listen
         const socket = getSocket();
         socket.on("global_stats_update", (newStats) => {
             setStats(newStats);
         });
 
+        document.addEventListener("mousedown", handleClickOutside);
         return () => {
             socket.off("global_stats_update");
+            document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
 
     return (
         <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] font-[family:var(--font-body)] transition-colors duration-300">
+            <style>{`
+                @keyframes colorPulse {
+                    0% { background-color: rgb(202, 138, 4); }
+                    25% { background-color: rgb(234, 179, 8); }
+                    50% { background-color: rgb(250, 204, 21); }
+                    75% { background-color: rgb(234, 179, 8); }
+                    100% { background-color: rgb(202, 138, 4); }
+                }
+                .color-pulse-btn {
+                    animation: colorPulse 3s ease-in-out infinite;
+                }
+                @keyframes statBlink {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.6; }
+                }
+                .stat-blink {
+                    animation: statBlink 2s ease-in-out infinite;
+                }
+            `}</style>
             {/* MINIMALIST BACKGROUND */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute inset-0 grid-bg opacity-[0.03]"></div>
@@ -50,37 +78,65 @@ const Home = () => {
 
             <div className="relative z-10">
                 {/* HERO SECTION */}
-                    <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
+                    <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden md:pt-">
                         {/* Background Visual */}
 
 
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10 w-full max-w-4xl mx-auto">
-                            {/* LIVE ARENA STATS BANNER */}
-                            <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12">
-                                {[
-                                    { label: "ARENA ACTIVE", value: stats.onlineUsersCount, icon: Globe, color: "var(--color-primary)" },
-                                    { label: "QUEUING", value: stats.totalInQueue, icon: Users, color: "var(--color-primary)" },
-                                    { label: "IN BATTLE", value: stats.activeBattles, icon: Swords, color: "#ef4444" },
-                                    { label: "TOTAL SOLVED", value: stats.totalSolved, icon: CheckCircle, color: "var(--color-success)" }
-                                ].map((stat, i) => (
-                                    <motion.div 
-                                        key={i}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.1 }}
-                                        className="flex items-center gap-3 px-5 py-2.5 rounded-sm border border-white/5 bg-white/[0.02] backdrop-blur-md"
-                                    >
-                                        <stat.icon size={12} style={{ color: stat.color }} className="opacity-80" />
-                                        <div className="flex flex-col items-start translate-y-[1px]">
-                                            <span className="text-[14px] font-black tabular-nums leading-none mb-1">
-                                                {stat.value.toLocaleString()}
-                                            </span>
-                                            <span className="text-[8px] font-bold tracking-[0.2em] text-slate-500 uppercase leading-none">
-                                                {stat.label}
-                                            </span>
-                                        </div>
-                                    </motion.div>
-                                ))}
+                            <div ref={statsPanelRef} className="fixed right-0 sm:right-4 top-24 sm:top-28 flex flex-col items-end z-50">
+                                <motion.button
+                                    animate={{ x: showStatsPanel ? 100 : 0, opacity: showStatsPanel ? 0 : 1 }}
+                                    transition={{ duration: 0.25 }}
+                                    type="button"
+                                    aria-expanded={showStatsPanel}
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        setShowStatsPanel((prev) => !prev);
+                                    }}
+                                    className="color-pulse-btn inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2.5 sm:py-3 rounded-l-full sm:rounded-full border border-yellow-600 text-black shadow-[-8px_8px_24px_rgba(202,138,4,0.4)] sm:shadow-[0_8px_24px_rgba(202,138,4,0.4)] hover:shadow-[-8px_8px_32px_rgba(234,179,8,0.6)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all duration-200"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-black shadow-[0_0_14px_rgba(0,0,0,0.3)] animate-pulse" />
+                                    <span className="hidden sm:inline text-xs font-bold uppercase tracking-[0.3em]">Currently Active</span>
+                                    <span className="sm:hidden text-[10px] font-bold uppercase tracking-[0.2em]">Active</span>
+                                </motion.button>
+
+                                <AnimatePresence>
+                                    {showStatsPanel && (
+                                        <motion.div
+                                            initial={{ opacity: 0, x: 50 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 50 }}
+                                            transition={{ duration: 0.25 }}
+                                            className="fixed right-0 top-24 sm:top-28 w-[280px] sm:w-[300px] rounded-l-2xl border-l border-white/10 bg-[var(--color-bg-dark)]/95 backdrop-blur-xl shadow-[-20px_8px_60px_rgba(0,0,0,0.4)] overflow-hidden"
+                                        >
+                                            <div className="px-4 py-3 border-b border-white/10 text-[9px] font-bold uppercase tracking-[0.35em] text-[var(--color-primary)]">
+                                                Arena Stats
+                                            </div>
+                                            <div className="space-y-1.5 p-3">
+                                                {[
+                                                    { label: "ARENA ACTIVE", value: stats.onlineUsersCount, icon: Globe, color: "var(--color-primary)" },
+                                                    { label: "QUEUING", value: stats.totalInQueue, icon: Users, color: "var(--color-primary)" },
+                                                    { label: "IN BATTLE", value: stats.activeBattles, icon: Swords, color: "#ef4444" },
+                                                    { label: "TOTAL SOLVED", value: stats.totalSolved, icon: CheckCircle, color: "var(--color-success)" }
+                                                ].map((stat, i) => (
+                                                    <div key={i} className="stat-blink flex items-center gap-2.5 rounded-lg bg-white/[0.02] border border-white/5 px-3 py-2.5 transition-all">
+                                                        <div className="flex items-center gap-2 flex-1">
+                                                            <stat.icon size={13} style={{ color: stat.color }} className="opacity-80 flex-shrink-0" />
+                                                            <div className="min-w-0">
+                                                                <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 truncate">
+                                                                    {stat.label}
+                                                                </div>
+                                                                <div className="text-sm font-black tabular-nums text-[var(--color-text-main)]">
+                                                                    {stat.value.toLocaleString()}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
 
                             <div className="inline-block px-4 py-1 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">

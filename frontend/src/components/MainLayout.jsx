@@ -42,7 +42,7 @@ const MainLayout = ({ children }) => {
                 </Suspense>
             )}
 
-            <main className={`flex-1 w-full mx-auto transition-all duration-300 ${showNav ? 'pt-20' : ''}`}>
+            <main className={`flex-1 w-full mx-auto transition-all duration-300 ${showNav ? 'pt-6' : ''}`}>
                 {children}
             </main>
 

@@ -91,7 +91,7 @@ export default function ContestDetail() {
         setSubmitting(true);
         try {
             await axiosInstance.post(`/contest/${id}/register`);
-            toast.success("Deployment Successful! You are now synchronized with the contest.");
+            toast.success("Successfully registered for the contest!");
             setShowRegisterModal(false);
             // Optimistically reload contest data to show problems if ACTIVE
             const res = await axiosInstance.get(`/contest/${id}`);
@@ -113,14 +113,14 @@ export default function ContestDetail() {
     if (loading) return (
         <div className="min-h-screen bg-[var(--color-bg-dark)] flex flex-col items-center justify-center gap-6">
             <Loader2 className="animate-spin text-[var(--color-primary)]" size={40} />
-            <div className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.6em] animate-pulse">Establishing Secure Uplink...</div>
+            <div className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.6em] animate-pulse">Loading...</div>
         </div>
     );
 
     if (!contest) return (
         <div className="min-h-screen bg-[var(--color-bg-dark)] flex flex-col items-center justify-center text-red-500 font-mono tracking-widest uppercase gap-4">
             <AlertCircle size={48} />
-            Sector Not Found
+            Contest Not Found
         </div>
     );
 
@@ -139,7 +139,7 @@ export default function ContestDetail() {
                             className="text-[var(--color-text-muted)] text-[10px] hover:text-[var(--color-primary)] uppercase tracking-[0.3em] font-black mb-10 flex items-center gap-2 group transition-all"
                         >
                             <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                            Sector Archives
+                            Back to Contests
                         </motion.button>
                         
                         <motion.div
@@ -149,7 +149,7 @@ export default function ContestDetail() {
                         >
                             <div className="flex items-center gap-4">
                                 <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] border ${contest.status === 'ACTIVE' ? 'bg-red-500/10 border-red-500/30 text-red-500 animate-pulse' : 'bg-white/5 border-white/10 text-[var(--color-text-muted)]'}`} style={{ borderRadius: "1px" }}>
-                                    {contest.status} Protocol
+                                    {contest.status} Status
                                 </span>
                                 <div className="h-px w-12 bg-white/10" />
                                 <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest font-mono">ID: {id.slice(0, 8)}</span>
@@ -168,14 +168,14 @@ export default function ContestDetail() {
                     >
                         <div className="space-y-4 text-right">
                             <div className="space-y-1">
-                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">Sync Commencement</span>
+                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">Start Time</span>
                                 <div className="flex items-center justify-end gap-3 text-sm font-black text-[var(--color-text-main)] font-mono">
                                     <Calendar size={14} className="text-[var(--color-text-muted)]" />
                                     {new Date(contest.startTime).toLocaleDateString()} @ {new Date(contest.startTime).toLocaleTimeString()}
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">Sync Termination</span>
+                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">End Time</span>
                                 <div className="flex items-center justify-end gap-3 text-sm font-black text-[var(--color-text-main)] font-mono">
                                     <Clock size={14} className="text-[var(--color-text-muted)]" />
                                     {new Date(contest.endTime).toLocaleDateString()} @ {new Date(contest.endTime).toLocaleTimeString()}
@@ -184,7 +184,7 @@ export default function ContestDetail() {
                         </div>
                         <div className="pt-4 border-t border-white/5 w-full flex justify-end gap-6">
                             <div className="flex flex-col items-end">
-                                <span className="text-[8px] font-bold text-slate-700 uppercase tracking-widest">Units</span>
+                                <span className="text-[8px] font-bold text-slate-700 uppercase tracking-widest">Participants</span>
                                 <span className="text-sm font-black text-[var(--color-primary)] font-mono">{contest._count?.participants || 0}</span>
                             </div>
                         </div>
@@ -204,10 +204,10 @@ export default function ContestDetail() {
                         <div className="relative z-10">
                             <div className="flex items-center gap-3 text-[var(--color-primary)] font-black uppercase tracking-[0.4em] mb-4">
                                 <Activity size={18} />
-                                Neural Sync Required
+                                Registration Required
                             </div>
-                            <h3 className="text-3xl font-black text-[var(--color-text-main)] uppercase tracking-tighter mb-2">Initialize Deployment</h3>
-                            <p className="text-[var(--color-text-muted)] text-xs font-mono max-w-lg leading-relaxed uppercase">Secure your position in the challenge matrix. All protocols will be synchronized upon deployment commencement.</p>
+                            <h3 className="text-3xl font-black text-[var(--color-text-main)] uppercase tracking-tighter mb-2">Register for Contest</h3>
+                            <p className="text-[var(--color-text-muted)] text-xs font-mono max-w-lg leading-relaxed uppercase">Register for this contest to participate. All details will be available when the contest starts.</p>
                         </div>
                         
                         <button 
@@ -215,7 +215,7 @@ export default function ContestDetail() {
                             className="relative z-10 px-12 py-5 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.3em] text-[10px] hover:bg-white transition-all shadow-[0_0_30px_rgba(var(--color-primary-rgb),0.3)]"
                             style={{ borderRadius: "2px" }}
                         >
-                            Establish Uplink
+                            Register
                         </button>
                     </motion.div>
                 )}
@@ -227,7 +227,7 @@ export default function ContestDetail() {
                         className="p-6 bg-emerald-500/10 border border-emerald-500/20 mb-16 flex items-center gap-4 text-emerald-400 font-black text-[10px] uppercase tracking-[0.3em] justify-center"
                     >
                         <Check size={18} />
-                        Uplink Synchronized. Stand by for Mission Objectives.
+                        Successfully registered. Wait for contest to start.
                     </motion.div>
                 )}
 
@@ -235,10 +235,10 @@ export default function ContestDetail() {
                 {/* Tab Window */}
                 <div className="flex gap-12 border-b border-white/5 mb-16">
                     {[
-                        { id: 'overview', label: 'Briefing', icon: <Target size={14} /> },
+                        { id: 'overview', label: 'Overview', icon: <Target size={14} /> },
                         // Hide Objectives tab if upcoming and user is not admin
-                        ...((contest.status !== 'UPCOMING' || user?.role === 'ADMIN') ? [{ id: 'problems', label: 'Objectives', icon: <Shield size={14} /> }] : []),
-                        { id: 'leaderboard', label: 'Rankings', icon: <Trophy size={14} /> }
+                        ...((contest.status !== 'UPCOMING' || user?.role === 'ADMIN') ? [{ id: 'problems', label: 'Problems', icon: <Shield size={14} /> }] : []),
+                        { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={14} /> }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -272,23 +272,24 @@ export default function ContestDetail() {
                                         <div className="space-y-4">
                                             <h2 className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-[0.3em] flex items-center gap-3">
                                                 <div className="w-1.5 h-1.5 bg-[var(--color-primary)]" />
-                                                Mission Parameter Details
+                                                Contest Description
                                             </h2>
                                             <p className="text-[var(--color-text-muted)] text-sm leading-[1.8] font-mono whitespace-pre-wrap bg-white/[0.01] border border-white/5 p-8">
-                                                {contest.description || "No briefing assets available for this sector."}
+                                                {contest.description || "No description available."}
                                             </p>
                                         </div>
                                     </div>
                                     
                                     <div className="space-y-8">
                                         <div className="p-8 bg-white/[0.02] border border-white/5 space-y-6">
-                                            <h2 className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-[0.3em]">Engagement Rules</h2>
+                                            <h2 className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-[0.3em]">Rules</h2>
                                             <ul className="space-y-4">
                                                 {[
-                                                    "Fixed temporal window for submission sync.",
-                                                    "Hidden test criteria for final validation.",
-                                                    "Penalty accumulation for invalid transmissions.",
-                                                    "Global sector-wide leaderboard broadcast."
+                                                    "Submit solutions within the time limit.",
+                                                    "Solutions are tested against hidden test cases.",
+                                                    "Solutions must pass all test cases.",
+                                                    "Wrong submissions may have penalties.",
+                                                    "Results shown on leaderboard."
                                                 ].map((rule, i) => (
                                                     <li key={i} className="flex gap-3 text-[10px] font-mono text-[var(--color-text-muted)] leading-relaxed uppercase">
                                                         <span className="text-[var(--color-primary)]">0{i+1}</span>
@@ -312,8 +313,8 @@ export default function ContestDetail() {
                                 {contest.status === "UPCOMING" && user?.role !== "ADMIN" ? (
                                     <div className="flex flex-col items-center justify-center py-40 border border-white/5 border-dashed">
                                         <Shield size={48} className="text-slate-800 mb-6" />
-                                        <p className="text-slate-600 tracking-[0.4em] uppercase text-[10px] font-black">Objectives are Encrypted</p>
-                                        <p className="text-slate-700 text-[9px] font-mono mt-2 uppercase tracking-widest">Protocol status: Awaiting synchronization commencement</p>
+                                        <p className="text-slate-600 tracking-[0.4em] uppercase text-[10px] font-black">Problems not available yet</p>
+                                        <p className="text-slate-700 text-[9px] font-mono mt-2 uppercase tracking-widest">Status: Contest hasn't started yet</p>
                                     </div>
                                 ) : (
                                     <div className="grid gap-6">
@@ -342,7 +343,7 @@ export default function ContestDetail() {
                                                         className="px-10 py-3 bg-[var(--color-primary)]/5 border border-[var(--color-primary)]/30 text-[var(--color-primary)] text-[10px] uppercase tracking-[0.3em] hover:bg-[var(--color-primary)] hover:text-black font-black transition-all"
                                                         style={{ borderRadius: "2px" }}
                                                     >
-                                                        Initialize Sync
+                                                        Register
                                                     </button>
                                                 )}
                                             </motion.div>
@@ -431,10 +432,10 @@ export default function ContestDetail() {
                             
                             <h2 className="text-2xl font-black text-[var(--color-text-main)] uppercase tracking-tighter mb-4 flex items-center gap-3">
                                 <Shield className="text-[var(--color-primary)]" />
-                                Protocol Confirmation
+                                Confirm Registration
                             </h2>
                             <p className="text-[var(--color-text-muted)] text-sm font-mono leading-relaxed mb-10 uppercase">
-                                You are about to synchronize with the {contest.title} challenge matrix. This action will commit your unit to the sector leaderboard. Do you wish to proceed?
+                                You are about to register for the {contest.title} contest. This will add you to the participant list. Do you want to continue?
                             </p>
                             
                             <div className="flex gap-4">
@@ -449,7 +450,7 @@ export default function ContestDetail() {
                                     disabled={submitting}
                                     className="flex-1 py-4 bg-[var(--color-primary)] text-black font-black text-[10px] uppercase tracking-[0.3em] hover:brightness-110 transition-all shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.2)] flex items-center justify-center gap-2"
                                 >
-                                    {submitting ? <Loader2 className="animate-spin" size={14} /> : "Initiate Sync"}
+                                    {submitting ? <Loader2 className="animate-spin" size={14} /> : "Register"}
                                 </button>
                             </div>
                         </motion.div>
