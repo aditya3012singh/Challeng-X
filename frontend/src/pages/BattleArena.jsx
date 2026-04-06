@@ -314,7 +314,7 @@ const BattleArena = () => {
 
         editor.setPosition(newPosition);
         editor.revealPositionInCenterIfOutsideViewport(newPosition);
-        editor.focus();
+        // Removed editor.focus() to prevent triggering virtual keyboard on mobile
     };
 
     // Handle Socket Events
@@ -1174,11 +1174,35 @@ const BattleArena = () => {
                                 {/* MOBILE D-PAD */}
                                 {isMobile && showMobileTools && (
                                     <div className="absolute bottom-6 right-6 z-50 flex flex-col items-center gap-2 bg-[var(--color-bg-card)]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-90 sm:scale-100">
-                                        <button onClick={() => moveCursor('up')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronUp size={20} /></button>
+                                        <button
+                                            onMouseDown={(e) => { e.preventDefault(); moveCursor('up'); }}
+                                            onTouchStart={(e) => { e.preventDefault(); moveCursor('up'); }}
+                                            className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"
+                                        >
+                                            <ChevronUp size={20} />
+                                        </button>
                                         <div className="flex gap-2">
-                                            <button onClick={() => moveCursor('left')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronLeft size={20} /></button>
-                                            <button onClick={() => moveCursor('down')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronDown size={20} /></button>
-                                            <button onClick={() => moveCursor('right')} className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"><ChevronRight size={20} /></button>
+                                            <button
+                                                onMouseDown={(e) => { e.preventDefault(); moveCursor('left'); }}
+                                                onTouchStart={(e) => { e.preventDefault(); moveCursor('left'); }}
+                                                className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"
+                                            >
+                                                <ChevronLeft size={20} />
+                                            </button>
+                                            <button
+                                                onMouseDown={(e) => { e.preventDefault(); moveCursor('down'); }}
+                                                onTouchStart={(e) => { e.preventDefault(); moveCursor('down'); }}
+                                                className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"
+                                            >
+                                                <ChevronDown size={20} />
+                                            </button>
+                                            <button
+                                                onMouseDown={(e) => { e.preventDefault(); moveCursor('right'); }}
+                                                onTouchStart={(e) => { e.preventDefault(); moveCursor('right'); }}
+                                                className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"
+                                            >
+                                                <ChevronRight size={20} />
+                                            </button>
                                         </div>
                                     </div>
                                 )}
