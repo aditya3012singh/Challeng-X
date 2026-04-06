@@ -912,9 +912,8 @@ const BattleArena = () => {
 
                 {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
                 <div
-                    className={`min-h-0 border-r border-white/5 bg-[var(--color-bg-card)] relative group/sidebar shrink-0
-                        ${mobileTab === "problem" || mobileTab === "console" ? "flex flex-col" : "hidden lg:flex lg:flex-col"}`}
-                    style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
+                    className={`min-h-0 border-r border-white/5 bg-[var(--color-bg-card)] relative group/sidebar lg:shrink-0
+                        ${mobileTab === "problem" || mobileTab === "console" ? "flex-1 flex flex-col" : "hidden lg:flex lg:flex-col lg:flex-none"}`}                    style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
                 >
                     {/* Resize Handle - Desktop Only */}
                     {!isMobile && (
@@ -1208,9 +1207,8 @@ const BattleArena = () => {
 
                 {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Resizable, Mobile: Tabbed) */}
                 <aside 
-                    className={`min-h-0 border-l border-white/5 bg-[var(--color-bg-card)] shrink-0 relative group/match
-                        ${mobileTab === "status" ? "flex flex-col w-full" : "hidden lg:flex lg:flex-col"}`}
-                    style={{ width: isMobile ? '100%' : `${rightSidebarWidth}px` }}
+                    className={`min-h-0 border-l border-white/5 bg-[var(--color-bg-card)] lg:shrink-0 relative group/match
+                        ${mobileTab === "status" ? "flex-1 flex flex-col w-full" : "hidden lg:flex lg:flex-col lg:flex-none"}`}                    style={{ width: isMobile ? '100%' : `${rightSidebarWidth}px` }}
                 >
                     {/* Resize Handle - Desktop Only */}
                     {!isMobile && (
