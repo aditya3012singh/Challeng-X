@@ -9,16 +9,16 @@ import SocialLobby from './SocialLobby';
 const MainLayout = ({ children }) => {
     const location = useLocation();
     const { isAuthenticated } = useSelector((state) => state.auth);
-    
+
     // Define routes where elements should be hidden
-    const isAuthRoute = ["/login", "/forgot-password", "/reset-password"].some(path => 
+    const isAuthRoute = ["/login", "/forgot-password", "/reset-password"].some(path =>
         location.pathname.startsWith(path)
     );
-    
+
     // Hide navbar/social/footer in focused arena modes
     const isFocusedMode = [
-        "/ide", 
-        "/arena/", 
+        "/ide",
+        "/arena/",
         "/spectate/",
         "/battle-room/"
     ].some(path => location.pathname.includes(path));
@@ -42,7 +42,7 @@ const MainLayout = ({ children }) => {
                 </Suspense>
             )}
 
-            <main className={`flex-1 w-full mx-auto transition-all duration-300 ${showNav ? 'pt-6' : ''}`}>
+            <main className={`flex-1 w-full mx-auto transition-all duration-300 ${showNav ? 'pt-20' : ''}`}>
                 {children}
             </main>
 

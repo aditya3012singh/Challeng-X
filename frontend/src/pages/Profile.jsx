@@ -3,10 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchUserProfile, updateUserProfile, getPublicProfile, changePassword } from '../../store/api/auth.thunk';
 import { getSocialStatus, toggleFollow, sendFriendRequest, getIncomingRequests, respondToFriendRequest } from '../../store/api/social.thunk';
-import { 
-  User, Users, Mail, LayoutDashboard, Shield, Trophy, Activity, 
-  Github, Linkedin, Instagram, Twitter, Edit2, Check, X,
-  ExternalLink, Calendar, Code, Target, Award, Camera, Zap, Flame
+import {
+    User, Users, Mail, LayoutDashboard, Shield, Trophy, Activity,
+    Github, Linkedin, Instagram, Twitter, Edit2, Check, X,
+    ExternalLink, Calendar, Code, Target, Award, Camera, Zap, Flame
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/axios';
@@ -14,10 +14,10 @@ import ProfileRadarChart from '../components/profile/ProfileRadarChart';
 import MatchHistory from '../components/profile/MatchHistory';
 
 const DEPARTMENTS = [
-  { value: 'leetcode', label: 'LeetCode', icon: Code, color: 'text-yellow-500' },
-  { value: 'gfg', label: 'GeeksforGeeks', icon: Code, color: 'text-green-500' },
-  { value: 'hackerrank', label: 'HackerRank', icon: Code, color: 'text-green-600' },
-  { value: 'codeforces', label: 'Codeforces', icon: Target, color: 'text-blue-500' },
+    { value: 'leetcode', label: 'LeetCode', icon: Code, color: 'text-yellow-500' },
+    { value: 'gfg', label: 'GeeksforGeeks', icon: Code, color: 'text-green-500' },
+    { value: 'hackerrank', label: 'HackerRank', icon: Code, color: 'text-green-600' },
+    { value: 'codeforces', label: 'Codeforces', icon: Target, color: 'text-blue-500' },
 ];
 
 const Profile = () => {
@@ -26,7 +26,7 @@ const Profile = () => {
     const dispatch = useDispatch();
     const { user: currentUser, publicProfile, publicProfileLoading } = useSelector((state) => state.auth);
     const { followersCount, followingCount, isFollowing, friendStatus, isLoading: socialLoading } = useSelector((state) => state.social);
-    
+
     const isOwner = currentUser?.username === urlUsername;
     const profileData = isOwner ? currentUser : publicProfile;
     const isLoading = isOwner ? false : publicProfileLoading;
@@ -34,7 +34,7 @@ const Profile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
-    
+
     const [formData, setFormData] = useState({
         profilePic: '',
         linkedin: '',
@@ -141,7 +141,7 @@ const Profile = () => {
             });
 
             setFormData(prev => ({ ...prev, profilePic: fileUrl }));
-            
+
         } catch (error) {
             console.error("Upload error:", error);
             toast.error("Failed to upload image.");
@@ -173,9 +173,9 @@ const Profile = () => {
 
         setPasswordStatus({ loading: true, error: '', success: '' });
         try {
-            await dispatch(changePassword({ 
-                oldPassword: passwordData.oldPassword, 
-                newPassword: passwordData.newPassword 
+            await dispatch(changePassword({
+                oldPassword: passwordData.oldPassword,
+                newPassword: passwordData.newPassword
             })).unwrap();
             setPasswordStatus({ loading: false, error: '', success: 'Password updated successfully!' });
             setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
@@ -186,7 +186,7 @@ const Profile = () => {
 
     if (isLoading && !profileData) {
         return (
-            <div className="min-h-screen pt-24 bg-[var(--color-bg-dark)] flex justify-center">
+            <div className="min-h-screen pt-12 bg-[var(--color-bg-dark)] flex justify-center">
                 <div className="animate-spin text-[var(--color-primary)] mt-20">
                     <Activity size={32} />
                 </div>
@@ -196,10 +196,10 @@ const Profile = () => {
 
     if (!profileData) {
         return (
-            <div className="min-h-screen pt-24 bg-[var(--color-bg-dark)] flex flex-col items-center justify-center text-center px-4">
+            <div className="min-h-screen pt-12 bg-[var(--color-bg-dark)] flex flex-col items-center justify-center text-center px-4">
                 <h2 className="text-2xl font-bold text-[var(--color-text-muted)] mb-4 font-mono uppercase tracking-widest">Profile Not Found</h2>
                 <p className="text-[var(--color-text-muted)] opacity-60 mb-8 max-w-md">The user profile you are looking for does not exist or has been deleted.</p>
-                <button 
+                <button
                     onClick={() => navigate('/')}
                     className="px-6 py-3 bg-[var(--color-primary)] text-black font-black font-mono uppercase tracking-widest hover:brightness-110 transition-all rounded-sm"
                 >
@@ -217,8 +217,8 @@ const Profile = () => {
             return (
                 <div className="flex items-center gap-3 w-full bg-white/5 p-3 rounded-lg border border-[var(--glass-border)]">
                     <Icon size={18} className="text-[var(--color-text-muted)]" />
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         name={name}
                         value={formData[name]}
                         onChange={handleChange}
@@ -232,9 +232,9 @@ const Profile = () => {
         if (!value) return null;
 
         return (
-            <a 
-                href={isUrl ? value : `https://${value}`} 
-                target="_blank" 
+            <a
+                href={isUrl ? value : `https://${value}`}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-[var(--glass-border)] hover:border-[var(--color-primary)]/40 transition-all group"
             >
@@ -248,16 +248,16 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen pt-12 pb-12 bg-[var(--color-bg-dark)] text-[var(--color-text-main)] selection:bg-[var(--color-primary)] selection:text-black font-sans">
+        <div className="min-h-screen pt-8 pb-12 bg-[var(--color-bg-dark)] text-[var(--color-text-main)] selection:bg-[var(--color-primary)] selection:text-black font-sans">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                
+
                 {/* Header Action */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <h1 className="text-xl sm:text-2xl font-black font-mono text-[var(--color-primary)] tracking-tight uppercase">Player Profile</h1>
-                    
+
                     {isOwner && (
                         !isEditing ? (
-                            <button 
+                            <button
                                 onClick={() => setIsEditing(true)}
                                 className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-[var(--color-text-main)] border border-[var(--glass-border)] hover:border-[var(--color-primary)] rounded-md transition-all text-xs font-black uppercase tracking-wider shadow-sm"
                             >
@@ -265,19 +265,19 @@ const Profile = () => {
                             </button>
                         ) : (
                             <div className="flex gap-3">
-                                <button 
+                                <button
                                     onClick={() => setIsEditing(false)}
                                     className="flex items-center gap-2 px-4 py-2 bg-transparent hover:bg-red-500/10 text-[var(--color-text-muted)] hover:text-red-400 border border-[var(--glass-border)] hover:border-red-500/30 rounded-md transition-all text-xs font-black uppercase tracking-wider"
                                     disabled={saving}
                                 >
                                     <X size={14} /> Cancel
                                 </button>
-                                <button 
+                                <button
                                     onClick={handleSubmit}
                                     className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-black border border-transparent rounded-md transition-all text-xs font-black uppercase tracking-wider disabled:opacity-50 shadow-[0_10px_20px_rgba(var(--color-primary-rgb),0.1)]"
                                     disabled={saving}
                                 >
-                                    {saving ? <Activity size={14} className="animate-spin" /> : <Check size={14} />} 
+                                    {saving ? <Activity size={14} className="animate-spin" /> : <Check size={14} />}
                                     {saving ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
@@ -286,16 +286,16 @@ const Profile = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
+
                     {/* Left Col - Main Info */}
                     <div className="lg:col-span-1 space-y-6">
-                        
+
                         {/* Profile Card */}
                         <div className="bg-[var(--color-bg-card)] border border-[var(--glass-border)] rounded-xl overflow-hidden relative group shadow-sm backdrop-blur-md">
                             <div className="h-32 bg-white/[0.03] relative border-b border-[var(--glass-border)]">
                                 <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
                             </div>
-                            
+
                             <div className="relative px-6 pb-6 text-center -mt-16">
                                 <div className="inline-block relative">
                                     {isEditing ? (
@@ -307,7 +307,7 @@ const Profile = () => {
                                                     <User size={40} />
                                                 </div>
                                             )}
-                                            
+
                                             <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
                                                 {uploading ? (
                                                     <Activity size={24} className="animate-spin text-[var(--color-primary)]" />
@@ -317,9 +317,9 @@ const Profile = () => {
                                                         <span className="text-[10px] font-black text-white uppercase tracking-wider">Upload</span>
                                                     </>
                                                 )}
-                                                <input 
-                                                    type="file" 
-                                                    className="hidden" 
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
                                                     accept="image/*"
                                                     onChange={handleImageUpload}
                                                     disabled={uploading}
@@ -327,7 +327,7 @@ const Profile = () => {
                                             </label>
 
                                             <div className="absolute bottom-0 left-0 right-0 bg-black/80 px-2 py-1 transform translate-y-full group-hover/avatar:translate-y-0 transition-transform">
-                                                <input 
+                                                <input
                                                     type="text"
                                                     name="profilePic"
                                                     value={formData.profilePic}
@@ -355,12 +355,12 @@ const Profile = () => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <h2 className="text-xl font-black mt-4 text-[var(--color-text-main)] uppercase">{profileData.username}</h2>
                                 <p className="text-[var(--color-text-muted)] text-xs flex items-center justify-center gap-2 mt-1 font-medium opacity-60">
                                     <Mail size={12} className="opacity-40" /> {profileData.email || 'PROTECTED_SIG'}
                                 </p>
-                                
+
                                 <div className="mt-6 flex justify-center gap-2">
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-[var(--glass-border)] rounded-full text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
                                         <Shield size={10} className={profileData.role === 'ADMIN' ? 'text-red-500' : 'text-blue-500'} />
@@ -375,28 +375,26 @@ const Profile = () => {
                                 {!isOwner && profileData && (
                                     <div className="mt-8 flex flex-col gap-2 w-full pt-6 border-t border-[var(--glass-border)]">
                                         <div className="flex gap-2">
-                                            <button 
+                                            <button
                                                 onClick={() => dispatch(toggleFollow(profileData.id))}
-                                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all border ${
-                                                    isFollowing 
-                                                        ? 'bg-transparent border-[var(--glass-border)] text-[var(--color-text-muted)] hover:border-red-500/30 hover:text-red-500' 
+                                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all border ${isFollowing
+                                                        ? 'bg-transparent border-[var(--glass-border)] text-[var(--color-text-muted)] hover:border-red-500/30 hover:text-red-500'
                                                         : 'bg-[var(--color-primary)] border-transparent text-black shadow-[0_10px_20px_rgba(var(--color-primary-rgb),0.1)]'
-                                                }`}
+                                                    }`}
                                             >
                                                 {isFollowing ? <X size={14} /> : <Zap size={14} fill="currentColor" />}
                                                 {isFollowing ? 'Unfollow' : 'Connect'}
                                             </button>
-                                            
-                                            <button 
+
+                                            <button
                                                 onClick={() => !friendStatus && dispatch(sendFriendRequest(profileData.id))}
                                                 disabled={friendStatus === 'PENDING' || friendStatus === 'ACCEPTED'}
-                                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all border ${
-                                                    friendStatus === 'ACCEPTED'
+                                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all border ${friendStatus === 'ACCEPTED'
                                                         ? 'bg-green-500/10 border-green-500/20 text-green-500'
                                                         : friendStatus === 'PENDING'
                                                             ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
                                                             : 'bg-white/5 border-[var(--glass-border)] text-[var(--color-text-main)] hover:border-[var(--color-primary)]/40'
-                                                }`}
+                                                    }`}
                                             >
                                                 <Users size={14} strokeWidth={3} />
                                                 {friendStatus === 'ACCEPTED' ? 'Partner' : friendStatus === 'PENDING' ? 'Waiting' : 'Add'}
@@ -429,13 +427,13 @@ const Profile = () => {
                                                 <span className="text-[11px] font-black text-[var(--color-text-main)] uppercase tracking-tight">{req.sender.username}</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button 
+                                                <button
                                                     onClick={() => dispatch(respondToFriendRequest({ requestId: req.id, status: 'ACCEPTED' }))}
                                                     className="p-1.5 rounded-md bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-black transition-all border border-green-500/20"
                                                 >
                                                     <Check size={12} />
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => dispatch(respondToFriendRequest({ requestId: req.id, status: 'REJECTED' }))}
                                                     className="p-1.5 rounded-md bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-black transition-all border border-red-500/20"
                                                 >
@@ -468,19 +466,19 @@ const Profile = () => {
 
                     {/* Right Col - Details */}
                     <div className="lg:col-span-2 space-y-6">
-                        
+
                         {/* Radar Chart */}
-                        <ProfileRadarChart 
-                            data={analytics?.radarData} 
-                            loading={analyticsLoading} 
+                        <ProfileRadarChart
+                            data={analytics?.radarData}
+                            loading={analyticsLoading}
                         />
-                        
+
                         {/* Arena Standings */}
                         <div className="bg-[var(--color-bg-card)] border border-[var(--glass-border)] rounded-xl p-8 backdrop-blur-md">
                             <h3 className="text-[10px] font-black text-[var(--color-text-muted)] mb-8 flex items-center gap-2 uppercase tracking-widest opacity-30">
                                 <Trophy size={14} /> Arena Standings
                             </h3>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div className="space-y-3">
                                     <div className="text-[10px] text-[var(--color-text-muted)] uppercase font-black tracking-widest opacity-40">Combat Rating</div>
@@ -489,7 +487,7 @@ const Profile = () => {
                                         <div className="h-full bg-[var(--color-primary)]" style={{ width: `${Math.min(100, (profileData.rankPoints / 2500) * 100)}%` }} />
                                     </div>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-2 gap-4 col-span-2">
                                     <div className="bg-white/5 border border-[var(--glass-border)] p-5 rounded-sm text-center">
                                         <div className="text-2xl font-black text-green-500 font-mono">{profileData.wins || 0}</div>
@@ -561,7 +559,7 @@ const Profile = () => {
                         )}
 
                         <MatchHistory history={matchHistory} loading={analyticsLoading} />
-                        
+
                         {/* Coding Profiles */}
                         <div className="bg-[var(--color-bg-card)] border border-[var(--glass-border)] rounded-xl p-6 backdrop-blur-md">
                             <h3 className="text-[10px] font-black text-[var(--color-text-muted)] opacity-30 mb-6 flex items-center gap-2 uppercase tracking-widest">
@@ -569,12 +567,12 @@ const Profile = () => {
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {DEPARTMENTS.map(dept => (
-                                    <SocialLink 
+                                    <SocialLink
                                         key={dept.value}
-                                        icon={dept.icon} 
-                                        value={isEditing ? formData[dept.value] : profileData[dept.value]} 
-                                        placeholder={dept.label} 
-                                        name={dept.value} 
+                                        icon={dept.icon}
+                                        value={isEditing ? formData[dept.value] : profileData[dept.value]}
+                                        placeholder={dept.label}
+                                        name={dept.value}
                                         isUrl={true}
                                     />
                                 ))}
@@ -615,7 +613,7 @@ const Profile = () => {
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] uppercase font-black text-[var(--color-text-muted)] opacity-40 tracking-widest">Current Signature</label>
-                                        <input 
+                                        <input
                                             type="password"
                                             name="oldPassword"
                                             value={passwordData.oldPassword}
@@ -624,11 +622,11 @@ const Profile = () => {
                                             required
                                         />
                                     </div>
-                                    
+
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-[10px] uppercase font-black text-[var(--color-text-muted)] opacity-40 tracking-widest">New Protocol</label>
-                                            <input 
+                                            <input
                                                 type="password"
                                                 name="newPassword"
                                                 value={passwordData.newPassword}
@@ -639,7 +637,7 @@ const Profile = () => {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] uppercase font-black text-[var(--color-text-muted)] opacity-40 tracking-widest">Confirm Link</label>
-                                            <input 
+                                            <input
                                                 type="password"
                                                 name="confirmPassword"
                                                 value={passwordData.confirmPassword}
@@ -650,7 +648,7 @@ const Profile = () => {
                                         </div>
                                     </div>
 
-                                    <button 
+                                    <button
                                         type="submit"
                                         disabled={passwordStatus.loading}
                                         className="w-full py-4 bg-white/5 hover:bg-[var(--color-primary)] text-[var(--color-text-muted)] hover:text-black border border-[var(--glass-border)] hover:border-transparent rounded-sm transition-all text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3"
@@ -661,7 +659,7 @@ const Profile = () => {
                                 </form>
                             </div>
                         )}
-                        
+
                         {/* Meta Info */}
                         <div className="bg-white/[0.03] border border-[var(--glass-border)] rounded-xl px-8 py-5 flex justify-between items-center text-[10px] text-[var(--color-text-muted)] font-black uppercase tracking-widest opacity-40 shadow-sm">
                             <span className="flex items-center gap-3">

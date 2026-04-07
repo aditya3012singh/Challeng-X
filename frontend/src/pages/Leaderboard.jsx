@@ -73,7 +73,7 @@ export const Leaderboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] py-20 px-6 font-[family:var(--font-body)]">
+    <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] pt-10 pb-20 px-6 font-[family:var(--font-body)]">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/3 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.01] blur-[150px] rounded-full"></div>
@@ -89,27 +89,26 @@ export const Leaderboard = () => {
 
         {/* Filter Tabs */}
         <div className="flex justify-center mt-12">
-            <div className="inline-flex bg-white/[0.02] border border-white/5 p-1 rounded-sm gap-1">
-                {[
-                    { id: 'GLOBAL', label: 'Global', icon: Globe },
-                    { id: 'REGIONAL', label: 'Regional', icon: MapPin },
-                    { id: 'FRIENDS', label: 'Friends', icon: Users }
-                ].map(filter => (
-                    <button
-                        key={filter.id}
-                        onClick={() => handleFilterChange(filter.id)}
-                        className={`flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
-                            activeFilter === filter.id 
-                                ? 'bg-[var(--color-primary)] text-black' 
-                                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white/5'
-                        }`}
-                        style={{ borderRadius: '2px' }}
-                    >
-                        <filter.icon size={14} />
-                        {filter.label}
-                    </button>
-                ))}
-            </div>
+          <div className="inline-flex bg-white/[0.02] border border-white/5 p-1 rounded-sm gap-1">
+            {[
+              { id: 'GLOBAL', label: 'Global', icon: Globe },
+              { id: 'REGIONAL', label: 'Regional', icon: MapPin },
+              { id: 'FRIENDS', label: 'Friends', icon: Users }
+            ].map(filter => (
+              <button
+                key={filter.id}
+                onClick={() => handleFilterChange(filter.id)}
+                className={`flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-widest transition-all ${activeFilter === filter.id
+                    ? 'bg-[var(--color-primary)] text-black'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white/5'
+                  }`}
+                style={{ borderRadius: '2px' }}
+              >
+                <filter.icon size={14} />
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
