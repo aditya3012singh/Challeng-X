@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import Database from "../config/db.js";
 import logger from "../utils/logger.js";
 import NotificationService from "./notification.service.js";
-
-const prisma = new PrismaClient();
 
 class RewardService {
   /**
@@ -10,10 +8,10 @@ class RewardService {
    */
   static async grantBattleRewards(battleId) {
     try {
-      const battle = await prisma.battle.findUnique({
+      const battle = await Database.client.battle.findUnique({
         where: { id: battleId },
-        include: { 
-          player1: true, 
+        include: {
+          player1: true,
           player2: true,
           problem: true
         }
@@ -34,16 +32,16 @@ class RewardService {
       };
 
       const baseReward = difficultyMultipliers[battle.problem.difficulty] || 50;
-      
+
       // Grant to winner
-      await prisma.user.update({
+      await Database.client.user.update({
         where: { id: winner.id },
         data: { cyberCores: { increment: baseReward } }
       });
 
       // Grant a small amount to loser for participation
       if (loser) {
-        await prisma.user.update({
+        await Database.client.user.update({
           where: { id: loser.id },
           data: { cyberCores: { increment: Math.floor(baseReward / 5) } }
         });
@@ -59,7 +57,7 @@ class RewardService {
 
       // Check for achievements
       await this.checkAchievements(winner.id, "BATTLE_WIN", winner.wins + 1);
-      
+
       logger.info(`Battle rewards granted for battle ${battleId}`);
     } catch (error) {
       logger.error("Error granting battle rewards:", error);
@@ -72,18 +70,18 @@ class RewardService {
   static async grantProblemRewards(userId, problemId) {
     try {
       // 1. Check if already rewarded to prevent double-claiming
-      const existingSubmission = await prisma.submission.findFirst({
+      const existingSubmission = await Database.client.submission.findFirst({
         where: { userId, problemId, status: "PASSED" },
         orderBy: { createdAt: "asc" }
       });
 
       // If this isn't the FIRST time they passed this problem, don't grant rewards again
-      const passCount = await prisma.submission.count({
+      const passCount = await Database.client.submission.count({
         where: { userId, problemId, status: "PASSED" }
       });
       if (passCount > 1) return;
 
-      const problem = await prisma.problem.findUnique({
+      const problem = await Database.client.problem.findUnique({
         where: { id: problemId },
         select: { difficulty: true }
       });
@@ -98,7 +96,7 @@ class RewardService {
       const initialReward = reward;
 
       // 2. Check for hints usage
-      const hintsUsed = await prisma.userHint.count({
+      const hintsUsed = await Database.client.userHint.count({
         where: { userId, problemId }
       });
 
@@ -106,11 +104,11 @@ class RewardService {
       // This effectively makes hints "refundable" if you solve it? 
       // No, let's make it a penalty. 
       const hintPenalty = hintsUsed * 8; // Penalty is more than the cost to encourage no-hint solves
-      
+
       reward = Math.max(5, reward - hintPenalty);
 
       // 3. Update user
-      await prisma.user.update({
+      await Database.client.user.update({
         where: { id: userId },
         data: { cyberCores: { increment: reward } }
       });
@@ -119,7 +117,7 @@ class RewardService {
       await NotificationService.sendNotification(userId, {
         type: "REWARD",
         title: "Mission Accomplished!",
-        message: hintsUsed === 0 
+        message: hintsUsed === 0
           ? `Perfect solve! You earned ${reward} Cyber-Cores.`
           : `Problem solved! You earned ${reward} Cyber-Cores (${hintsUsed} hints used).`,
         metadata: { problemId, amount: reward, perfect: hintsUsed === 0 }
@@ -136,16 +134,16 @@ class RewardService {
    */
   static async processDailyLogin(userId) {
     try {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const user = await Database.client.user.findUnique({ where: { id: userId } });
       if (!user) return;
 
       const now = new Date();
       const lastLogin = new Date(user.lastLogin);
-      
+
       // Check if it's a new day (UTC)
       const isSameDay = now.getUTCFullYear() === lastLogin.getUTCFullYear() &&
-                        now.getUTCMonth() === lastLogin.getUTCMonth() &&
-                        now.getUTCDate() === lastLogin.getUTCDate();
+        now.getUTCMonth() === lastLogin.getUTCMonth() &&
+        now.getUTCDate() === lastLogin.getUTCDate();
 
       if (isSameDay) return;
 
@@ -160,7 +158,7 @@ class RewardService {
 
       const reward = 10 * newStreak; // 10, 20, 30...
 
-      await prisma.user.update({
+      await Database.client.user.update({
         where: { id: userId },
         data: {
           dailyLoginStreak: newStreak,
@@ -189,7 +187,7 @@ class RewardService {
   static async checkAchievements(userId, type, currentVal) {
     try {
       // Find eligible achievements the user hasn't unlocked yet
-      const achievements = await prisma.achievement.findMany({
+      const achievements = await Database.client.achievement.findMany({
         where: {
           users: { none: { userId } }
         }
@@ -199,7 +197,7 @@ class RewardService {
         const criteria = ach.criteria;
         if (criteria.type === type && currentVal >= criteria.threshold) {
           // Unlock!
-          await prisma.userAchievement.create({
+          await Database.client.userAchievement.create({
             data: {
               userId,
               achievementId: ach.id
@@ -208,12 +206,12 @@ class RewardService {
 
           // Grant reward
           if (ach.rewardType === "CORES") {
-            await prisma.user.update({
+            await Database.client.user.update({
               where: { id: userId },
               data: { cyberCores: { increment: parseInt(ach.rewardValue) } }
             });
           } else if (ach.rewardType === "BADGE") {
-            await prisma.userBadge.create({
+            await Database.client.userBadge.create({
               data: {
                 userId,
                 badgeId: ach.rewardValue
