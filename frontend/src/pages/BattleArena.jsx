@@ -915,7 +915,7 @@ const BattleArena = () => {
                 {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
                 <div
                     className={`min-h-0 border-r border-white/5 bg-[var(--color-bg-card)] relative group/sidebar lg:shrink-0
-                        ${mobileTab === "problem" || mobileTab === "console" ? "flex-1 flex flex-col" : "hidden lg:flex lg:flex-col lg:flex-none"}`} style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
+                        ${mobileTab === "problem" || mobileTab === "console" ? "flex-1 lg:flex-none flex flex-col" : "hidden lg:flex lg:flex-col lg:flex-none"}`} style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
                 >
                     {/* Resize Handle - Desktop Only */}
                     {!isMobile && (
