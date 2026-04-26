@@ -64,16 +64,16 @@ const Navbar = () => {
       ]
     },
     { label: "LIVE ARENAS", path: "/live", type: "link" },
-    // {
-    //   label: "CONTESTS",
-    //   type: "dropdown",
-    //   items: [
-    //     { label: "All Contests", path: "/contests", icon: <Award size={14} /> },
-    //     { label: "Leaderboard", path: "/leaderboard", icon: <Activity size={14} /> },
-    //     { label: "Achievements", path: "/achievements", icon: <Award size={14} /> },
-    //     ...(user?.role === "ADMIN" ? [{ label: "Host Contest", path: "/admin-contests", icon: <Shield size={14} /> }] : []),
-    //   ]
-    // },
+    {
+      label: "CONTESTS",
+      type: "dropdown",
+      items: [
+        { label: "All Contests", path: "/contests", icon: <Award size={14} /> },
+        { label: "Leaderboard", path: "/leaderboard", icon: <Activity size={14} /> },
+        { label: "Achievements", path: "/achievements", icon: <Award size={14} /> },
+        ...(user?.role === "ADMIN" ? [{ label: "Host Contest", path: "/admin-contests", icon: <Shield size={14} /> }] : []),
+      ]
+    },
     { label: "JOIN LOBBY", path: "/join-room", type: "link" },
   ];
 
