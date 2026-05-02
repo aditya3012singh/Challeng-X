@@ -23,8 +23,13 @@ module.exports = {
             max_memory_restart: "500M",
             env: {
                 NODE_ENV: "production",
-                WORKER_CONCURRENCY: 5, // Increased to 10 since we dropped Python/JS/C wrappers
-                JUDGE_POOL_SIZE: 5
+                WORKER_CONCURRENCY: 5,
+                JUDGE_POOL_SIZE: 5,
+                S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
+                S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+                S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+                S3_ENDPOINT: process.env.S3_ENDPOINT,
+                S3_REGION: process.env.S3_REGION || "auto"
             },
             node_args: "--max-old-space-size=1024"
         }

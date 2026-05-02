@@ -135,10 +135,10 @@ const problemMetadata = {
 
 async function main() {
   console.log("🌱 Seeding hints and tags...");
-  
+
   for (const [title, metadata] of Object.entries(problemMetadata)) {
     console.log(`Updating: ${title}`);
-    
+
     await prisma.problem.updateMany({
       where: { title },
       data: {

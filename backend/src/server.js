@@ -52,17 +52,19 @@ class ServerApp {
           try {
             const parsed = JSON.parse(message);
             const { event, data } = parsed;
-            
+
             logger.info(`📡 [RedisSub] Event: ${event} for ${data?.contestId ? 'Contest' : data?.battleId ? 'Battle' : data?.squidGameId ? 'Squid' : 'User'} ${data?.contestId || data?.battleId || data?.squidGameId || data?.userId}`);
 
             if (data && data.battleId) {
               const room = data.battleId;
               const sockets = io.sockets.adapter.rooms.get(room);
               const count = sockets ? (sockets.size || sockets.length) : 0;
-              logger.info(`⚔️ [Emit] ${event} -> Battle Room: ${room} (Members: ${count})`);
+
+              const socketIds = sockets ? Array.from(sockets) : [];
+              logger.info(`⚔️ [Emit] ${event} -> Battle Room: ${room} (Members: ${count}) [Sockets: ${socketIds.join(', ')}]`);
               io.to(room).emit(event, data);
-            } 
-            
+            }
+
             if (data && data.squidGameId) {
               const sgNamespace = io.of("/squid-game");
               const room = `tournament-${data.squidGameId}`;
@@ -76,8 +78,8 @@ class ServerApp {
                   m.default.handleSquidGameResult(data).catch(err => logger.error(`Error: ${err.message}`));
                 });
               }
-            } 
-            
+            }
+
             if (data && data.contestId) {
               const namespace = io.of("/"); // Assuming generic namespace
               const room = `contest-${data.contestId}`;
@@ -92,7 +94,7 @@ class ServerApp {
                 });
               }
             }
-            
+
             if (data && (data.userId || data.user?.id)) {
               const targetId = data.userId || data.user?.id;
               const room = `user_${targetId}`;

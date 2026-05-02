@@ -26,7 +26,7 @@ import AnalyticsRoutes from "./routes/analytics.route.js";
 import AIRoutes from "./routes/ai.route.js";
 
 class App {
-    static createApp() {
+  static createApp() {
     const app = express();
 
     // 🛡️ Middlewares
@@ -67,7 +67,7 @@ class App {
     app.use("/api/team-battle", TeamBattleRoutes.createRouter());
     app.use("/api/squid-game", SquidGameRoutes.createRouter());
     app.use("/api/contest", ContestRoutes.createRouter());
-    
+
     // Social & Notifications use refactored standard router exports
     app.use("/api/social", SocialRoutes);
     app.use("/api/notifications", NotificationRoutes);
@@ -84,13 +84,13 @@ class App {
 
     // Centralized Error Handler (must be the last middleware)
     app.use((err, req, res, next) => {
-      import("./middlewares/errorHandler.middleware.js").then(({ default: errorHandler }) => {
+      import("./middlewares/errorhandler.middleware.js").then(({ default: errorHandler }) => {
         errorHandler(err, req, res, next);
       }).catch(next);
     });
 
     return app;
-    }
+  }
 }
 
 export default App;

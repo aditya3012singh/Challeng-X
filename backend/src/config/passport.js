@@ -10,6 +10,7 @@ passport.use(
       clientID: env.GOOGLE_CLIENT_ID || 'dummy',
       clientSecret: env.GOOGLE_CLIENT_SECRET || 'dummy',
       callbackURL: env.GOOGLE_CALLBACK_URL || 'http://localhost:4000/api/auth/google/callback',
+      proxy: true, // Handle reverse proxy setups
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -72,6 +73,7 @@ passport.use(
       clientID: env.GITHUB_CLIENT_ID || 'dummy',
       clientSecret: env.GITHUB_CLIENT_SECRET || 'dummy',
       callbackURL: env.GITHUB_CALLBACK_URL || 'http://localhost:4000/api/auth/github/callback',
+      proxy: true,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

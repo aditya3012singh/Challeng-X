@@ -8,7 +8,7 @@ class AnalyticsService {
 
         // 1. Fetch all submissions for the user with problem and tags
         const submissions = await prisma.submission.findMany({
-            where: { 
+            where: {
                 userId,
                 status: 'PASSED' // Only count successful solutions for skill metrics
             },
@@ -41,7 +41,7 @@ class AnalyticsService {
         // 3. Calculate Scores
         let totalSpeedScore = 0;
         let totalAccuracyScore = 0;
-        
+
         const difficultyMap = { EASY: 40, MEDIUM: 75, HARD: 100 };
         let totalDifficultyScore = 0;
 
@@ -96,9 +96,9 @@ class AnalyticsService {
             where: { userId },
             include: {
                 problem: {
-                    select: { 
-                        title: true, 
-                        difficulty: true 
+                    select: {
+                        title: true,
+                        difficulty: true
                     }
                 }
             },
