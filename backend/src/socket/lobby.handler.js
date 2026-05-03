@@ -2,7 +2,7 @@ import logger from "../utils/logger.js";
 import RedisClient from "../cache/redis.client.js";
 import Database from "../config/db.js";
 import { v4 as uuidv4 } from "uuid";
-import NotificationService from "../services/notification.service.js";
+import eventBus from "../events/eventBus.js";
 
 export const handleLobbyEvents = (io, socket) => {
     
@@ -54,12 +54,11 @@ export const handleLobbyEvents = (io, socket) => {
                 lobbyId
             });
 
-            // Trigger Persistent Notification
-            await NotificationService.createNotification(friendId, {
-                type: 'MATCH_INVITE',
-                title: 'Match Invitation',
-                message: `${socket.user.username} invited you to join a lobby.`,
-                link: `/battles` // Or a specific lobby link if we had one
+            // Emit match invitation sent event (Phase 2: Event-driven)
+            eventBus.emitEvent('MatchInvitationSent', {
+                inviterId: socket.userId,
+                inviteeId: friendId,
+                inviterUsername: socket.user.username
             });
 
             logger.info(`Lobby invite sent from ${socket.userId} to ${friendId}`);

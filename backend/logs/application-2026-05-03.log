@@ -1,0 +1,556 @@
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:35:49"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5174","timestamp":"2026-05-03 11:36:12"}
+{"level":"info","message":"ℹ️ [SocketAuth] Guest connection allowed (_3vX2hLG4OvVJ4dIAAAB)","timestamp":"2026-05-03 11:36:12"}
+{"level":"info","message":"🟢 User connected: _3vX2hLG4OvVJ4dIAAAB (User: null)","timestamp":"2026-05-03 11:36:12"}
+{"level":"info","message":"🏠 User null joined private room: user_null (Total in room: 1)","timestamp":"2026-05-03 11:36:12"}
+{"level":"info","message":"📜 Synced 11 messages to user null","timestamp":"2026-05-03 11:36:12"}
+{"level":"info","message":"🔴 User disconnected: _3vX2hLG4OvVJ4dIAAAB, userId: null","timestamp":"2026-05-03 11:36:23"}
+{"eventName":"UserAuthenticated","level":"info","message":"[EventBus] 📤 Emitting: UserAuthenticated","payloadKeys":["userId","timestamp","method"],"timestamp":"2026-05-03 11:36:30"}
+{"level":"info","message":"[EventBus] 🔔 Processing: UserAuthenticated","timestamp":"2026-05-03 11:36:30"}
+{"level":"info","message":"[Reward Listener] 📥 UserAuthenticated event received","method":"google","timestamp":"2026-05-03 11:36:30","userId":"23081c3f-d375-4c33-b00f-1fa3c988ab10"}
+{"level":"info","message":"[EventBus] ✅ Completed: UserAuthenticated","timestamp":"2026-05-03 11:36:30"}
+{"level":"info","message":"🔔 Notification emitted to user_23081c3f-d375-4c33-b00f-1fa3c988ab10: DAILY_REWARD","timestamp":"2026-05-03 11:36:32"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:37:02"}
+{"level":"info","message":"ℹ️ [SocketAuth] Guest connection allowed (_8rhcyvOwV-qM6UgAAAD)","timestamp":"2026-05-03 11:37:02"}
+{"level":"info","message":"🟢 User connected: _8rhcyvOwV-qM6UgAAAD (User: null)","timestamp":"2026-05-03 11:37:02"}
+{"level":"info","message":"🏠 User null joined private room: user_null (Total in room: 1)","timestamp":"2026-05-03 11:37:02"}
+{"level":"info","message":"📜 Synced 11 messages to user null","timestamp":"2026-05-03 11:37:02"}
+{"level":"info","message":"🔴 User disconnected: _8rhcyvOwV-qM6UgAAAD, userId: null","timestamp":"2026-05-03 11:37:07"}
+{"eventName":"UserAuthenticated","level":"info","message":"[EventBus] 📤 Emitting: UserAuthenticated","payloadKeys":["userId","timestamp","method"],"timestamp":"2026-05-03 11:37:12"}
+{"level":"info","message":"[EventBus] 🔔 Processing: UserAuthenticated","timestamp":"2026-05-03 11:37:12"}
+{"level":"info","message":"[Reward Listener] 📥 UserAuthenticated event received","method":"google","timestamp":"2026-05-03 11:37:12","userId":"23081c3f-d375-4c33-b00f-1fa3c988ab10"}
+{"level":"info","message":"[EventBus] ✅ Completed: UserAuthenticated","timestamp":"2026-05-03 11:37:12"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:37:14"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (KZyGL9IVG5lffeZhAAAF)","timestamp":"2026-05-03 11:37:14"}
+{"level":"info","message":"🟢 User connected: KZyGL9IVG5lffeZhAAAF (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:37:14"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:37:14"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:37:14"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:43:07"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:43:11"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (BUadAFyNcbfUMcT3AAAB)","timestamp":"2026-05-03 11:43:11"}
+{"level":"info","message":"🟢 User connected: BUadAFyNcbfUMcT3AAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:43:11"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:43:11"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:43:11"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (mLMEaz2pKLqj20IsAAAB)","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"🟢 User connected: mLMEaz2pKLqj20IsAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:47:13"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (H-B0MmsGEg7T1AqtAAAB)","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"🟢 User connected: H-B0MmsGEg7T1AqtAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:47:19"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (M3hiYnrcF4rl7DbqAAAB)","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"🟢 User connected: M3hiYnrcF4rl7DbqAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:47:23"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (jhTi0GlppTYzBDyQAAAB)","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"🟢 User connected: jhTi0GlppTYzBDyQAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:47:29"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (3dd8XFm3OHk_wQ4uAAAB)","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"🟢 User connected: 3dd8XFm3OHk_wQ4uAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:47:35"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (AMb8zK5hPodBQeWVAAAB)","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"🟢 User connected: AMb8zK5hPodBQeWVAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:47:40"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (Po7z_kBVPkTNlwLcAAAB)","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"🟢 User connected: Po7z_kBVPkTNlwLcAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:47:55"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (yaSiqUTwBL8Op8QFAAAB)","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"🟢 User connected: yaSiqUTwBL8Op8QFAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:48:05"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (ul4XZ3Mv1n0NvmzpAAAB)","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"🟢 User connected: ul4XZ3Mv1n0NvmzpAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:48:15"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (-MuRxXjGYNFh2-lRAAAB)","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"🟢 User connected: -MuRxXjGYNFh2-lRAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:48:28"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (cDTpr5rWOfJxOBdCAAAB)","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"🟢 User connected: cDTpr5rWOfJxOBdCAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:48:36"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (tdpXDhnx74dUjcWBAAAB)","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"🟢 User connected: tdpXDhnx74dUjcWBAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:48:41"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (w1DNhtSl3EuYJZWBAAAB)","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"🟢 User connected: w1DNhtSl3EuYJZWBAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:48:51"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"🔐 [SocketAuth] SUCCESS: 23081c3f-d375-4c33-b00f-1fa3c988ab10 (jQPF3y5CVebbSZnjAAAB)","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"🟢 User connected: jQPF3y5CVebbSZnjAAAB (User: 23081c3f-d375-4c33-b00f-1fa3c988ab10)","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"🏠 User 23081c3f-d375-4c33-b00f-1fa3c988ab10 joined private room: user_23081c3f-d375-4c33-b00f-1fa3c988ab10 (Total in room: 1)","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"📜 Synced 11 messages to user 23081c3f-d375-4c33-b00f-1fa3c988ab10","timestamp":"2026-05-03 11:49:03"}
+{"level":"info","message":"[EventBus] 🚀 Registering all event listeners...","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchFound","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: UserAuthenticated","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: RewardGranted","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: AchievementUnlocked","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestSent","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: FriendRequestAccepted","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: MatchInvitationSent","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleStateChanged","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleAttemptUpdated","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: SubmissionCompleted","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleCreated","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📥 Registering listener for: BattleFinished","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] ✅ All event listeners registered successfully","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"[EventBus] 📊 Total listeners registered:","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"✅ [Phase 1] Event bus initialized successfully","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"🔌 Socket.IO Redis Adapter configured successfully","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"⏱️ Starting Contest State Manager Cron...","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"🚀 CodeArena Production Server running on port 4000","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"✅ Redis connected","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"📡 [RedisSub] Subscriber connected successfully","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"✅ [RedisSub] Subscribed to worker_events (1 channel)","timestamp":"2026-05-03 11:56:48"}
+{"level":"info","message":"🔌 [SocketCORS] ACCEPTED: http://localhost:5173","timestamp":"2026-05-03 11:56:49"}
+{"level":"warn","message":"🛑 [SocketAuth] INVALID TOKEN (Proceeding as Guest): jwt expired (45SZpeWZGLVk2x3SAAAB)","timestamp":"2026-05-03 11:56:49"}
+{"level":"info","message":"🟢 User connected: 45SZpeWZGLVk2x3SAAAB (User: null)","timestamp":"2026-05-03 11:56:49"}
+{"level":"info","message":"🏠 User null joined private room: user_null (Total in room: 1)","timestamp":"2026-05-03 11:56:49"}
+{"level":"info","message":"📜 Synced 11 messages to user null","timestamp":"2026-05-03 11:56:49"}

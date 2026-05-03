@@ -1,7 +1,7 @@
 import Database from "../config/db.js";
 import logger from "../utils/logger.js";
 import RedisClient from "../cache/redis.client.js";
-import NotificationService from "../services/notification.service.js";
+import eventBus from "../events/eventBus.js";
 
 class SocialController {
     /**
@@ -75,13 +75,12 @@ class SocialController {
                 data: { senderId, receiverId }
             });
 
-            // Trigger Notification
+            // Emit friend request sent event (Phase 2: Event-driven)
             const sender = await Database.client.user.findUnique({ where: { id: senderId } });
-            await NotificationService.createNotification(receiverId, {
-                type: 'FRIEND_REQUEST',
-                title: 'New Friend Request',
-                message: `${sender?.username || 'Someone'} sent you a friend request.`,
-                link: `/profile/${sender?.username}`
+            eventBus.emitEvent('FriendRequestSent', {
+                senderId,
+                receiverId,
+                senderUsername: sender?.username
             });
 
             res.json({ message: "Friend request sent" });
@@ -116,14 +115,13 @@ class SocialController {
                 data: { status }
             });
 
-            // Trigger Notification if accepted
+            // Emit friend request accepted event (Phase 2: Event-driven)
             if (status === 'ACCEPTED') {
                 const receiver = await Database.client.user.findUnique({ where: { id: userId } });
-                await NotificationService.createNotification(request.senderId, {
-                    type: 'FRIEND_REQUEST',
-                    title: 'Friend Request Accepted',
-                    message: `${receiver?.username || 'Someone'} accepted your friend request.`,
-                    link: `/profile/${receiver?.username}`
+                eventBus.emitEvent('FriendRequestAccepted', {
+                    senderId: request.senderId,
+                    receiverId: userId,
+                    receiverUsername: receiver?.username
                 });
             }
 

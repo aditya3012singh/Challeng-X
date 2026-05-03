@@ -2,6 +2,8 @@ import Database from "../config/db.js";
 import SocketEmitter from "../config/socket.js";
 import { submissionQueue } from "../queues/submission.queue.js";
 import BattleService from "./battle.service.js";
+import eventBus from "../events/eventBus.js";
+import { EventTypes } from "../events/eventTypes.js";
 
 /**
  * Process a code submission
@@ -97,6 +99,17 @@ class SubmissionService {
         contestId: contestId || null,
         userId,
         status: "QUEUED",
+        type
+      });
+
+      // 4. Emit SubmissionQueued event (DUAL MODE - keeping all existing logic)
+      eventBus.emitEvent(EventTypes.SubmissionQueued, {
+        submissionId: submission.id,
+        userId,
+        problemId,
+        battleId: battleId || null,
+        contestId: contestId || null,
+        squidGameId: squidGameId || null,
         type
       });
 

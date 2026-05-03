@@ -8,6 +8,8 @@ import SubmissionService from "../src/services/submission.service.js";
 import BattleService from "../src/services/battle.service.js";
 import S3Service from "../src/services/s3.service.js";
 import logger from "../src/utils/logger.js";
+import eventBus from "../src/events/eventBus.js";
+import { EventTypes } from "../src/events/eventTypes.js";
 
 process.on("uncaughtException", (err) => {
     console.error("💥 Uncaught Exception:", err);
@@ -141,6 +143,24 @@ const worker = new Worker(
                     executionTimeMs
                 });
 
+                // Emit SubmissionCompleted event (DUAL MODE - keeping all existing logic)
+                eventBus.emitEvent(EventTypes.SubmissionCompleted, {
+                    submissionId,
+                    userId: userId || submission.user.id,
+                    problemId: submission.problemId,
+                    status: firstFailedIndex === -1 ? "PASSED" : "FAILED",
+                    executionTimeMs,
+                    passedTests: stopped_at,
+                    totalTests: total,
+                    type: "RUN",
+                    context: {
+                        battleId: battleId || submission.battleId || null,
+                        contestId: contestId || (submission.contest ? submission.contest.id : null),
+                        squidGameId: squidGameId || (submission.squidGame ? submission.squidGame.id : null)
+                    },
+                    testCaseResults: runDetails
+                });
+
                 logger.info(`📡 [Worker] Publishing RUN result for subId=${submissionId} (userId=${userId || submission.user.id}, battleId=${battleId || submission.battleId || null})`);
                 publisher.publish("worker_events", JSON.stringify({
                     event: "submission_result",
@@ -170,6 +190,30 @@ const worker = new Worker(
                     passedTests: firstFailedIndex,
                     totalTests: total,
                     executionTimeMs
+                });
+
+                // Emit SubmissionCompleted event (DUAL MODE - keeping all existing logic)
+                eventBus.emitEvent(EventTypes.SubmissionCompleted, {
+                    submissionId,
+                    userId: userId || submission.user.id,
+                    problemId: submission.problemId,
+                    status: "FAILED",
+                    executionTimeMs,
+                    passedTests: firstFailedIndex,
+                    totalTests: total,
+                    type: "SUBMIT",
+                    context: {
+                        battleId: battleId || submission.battleId || null,
+                        contestId: contestId || (submission.contest ? submission.contest.id : null),
+                        squidGameId: squidGameId || (submission.squidGame ? submission.squidGame.id : null)
+                    },
+                    failureDetails: {
+                        failedTestCase: firstFailedIndex + 1,
+                        input: failed.input,
+                        expectedOutput: failed.expected,
+                        actualOutput: failed.actual,
+                        errorMessage: failed.error
+                    }
                 });
 
                 console.log(`📡 [Worker] Publishing FAILED submit result for subId=${submissionId} (userId=${userId || submission.user.id})`);
@@ -244,6 +288,23 @@ const worker = new Worker(
                 const RewardService = (await import("../src/services/reward.service.js")).default;
                 await RewardService.grantProblemRewards(userId || submission.user.id, submission.problemId);
             }
+
+            // Emit SubmissionCompleted event (DUAL MODE - keeping all existing logic)
+            eventBus.emitEvent(EventTypes.SubmissionCompleted, {
+                submissionId,
+                userId: userId || submission.user.id,
+                problemId: submission.problemId,
+                status: "PASSED",
+                executionTimeMs,
+                passedTests: total,
+                totalTests: total,
+                type: "SUBMIT",
+                context: {
+                    battleId: battleId || submission.battleId || null,
+                    contestId: contestId || (submission.contest ? submission.contest.id : null),
+                    squidGameId: squidGameId || (submission.squidGame ? submission.squidGame.id : null)
+                }
+            });
 
             console.log(`📡 [Worker] Publishing PASSED submit result for subId=${submissionId} (userId=${userId || submission.user.id})`);
             publisher.publish("worker_events", JSON.stringify({

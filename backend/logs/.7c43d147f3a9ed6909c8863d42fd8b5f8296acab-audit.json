@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "D:\\challeng-x\\backend\\logs\\.7c43d147f3a9ed6909c8863d42fd8b5f8296acab-audit.json",
+    "files": [
+        {
+            "date": 1777788347792,
+            "name": "D:\\challeng-x\\backend\\logs\\rejections-2026-05-03.log",
+            "hash": "d905c4a673c1fd491871fb84cd1d5394b9247ee41a90d691eb25be18059edbe9"
+        }
+    ],
+    "hashType": "sha256"
+}

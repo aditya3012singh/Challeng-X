@@ -1,6 +1,7 @@
 import Database from "../config/db.js";
 import logger from "../utils/logger.js";
-import NotificationService from "./notification.service.js";
+import eventBus from "../events/eventBus.js";
+import { EventTypes } from "../events/eventTypes.js";
 
 class RewardService {
   /**
@@ -47,12 +48,13 @@ class RewardService {
         });
       }
 
-      // Notify winner
-      await NotificationService.sendNotification(winner.id, {
-        type: "REWARD",
-        title: "Cyber-Cores Earned!",
-        message: `You earned ${baseReward} Cyber-Cores for winning the battle!`,
-        metadata: { battleId, amount: baseReward }
+      // Notify winner via event (Phase 2: Event-driven)
+      eventBus.emitEvent(EventTypes.REWARD_GRANTED, {
+        userId: winner.id,
+        rewardType: 'BATTLE',
+        amount: baseReward,
+        reason: 'Battle victory',
+        metadata: { battleId, opponentId: loser?.id }
       });
 
       // Check for achievements
@@ -113,14 +115,13 @@ class RewardService {
         data: { cyberCores: { increment: reward } }
       });
 
-      // 4. Notify
-      await NotificationService.sendNotification(userId, {
-        type: "REWARD",
-        title: "Mission Accomplished!",
-        message: hintsUsed === 0
-          ? `Perfect solve! You earned ${reward} Cyber-Cores.`
-          : `Problem solved! You earned ${reward} Cyber-Cores (${hintsUsed} hints used).`,
-        metadata: { problemId, amount: reward, perfect: hintsUsed === 0 }
+      // 4. Notify via event (Phase 2: Event-driven)
+      eventBus.emitEvent(EventTypes.REWARD_GRANTED, {
+        userId,
+        rewardType: 'PROBLEM',
+        amount: reward,
+        reason: 'Problem solved',
+        metadata: { problemId, hintsUsed, perfect: hintsUsed === 0 }
       });
 
       logger.info(`Solo rewards granted for user ${userId} on problem ${problemId}`);
@@ -167,11 +168,13 @@ class RewardService {
         }
       });
 
-      await NotificationService.sendNotification(userId, {
-        type: "DAILY_REWARD",
-        title: "Daily Login Reward!",
-        message: `Welcome back! You earned ${reward} Cyber-Cores. Streak: ${newStreak} days.`,
-        metadata: { amount: reward, streak: newStreak }
+      // Notify via event (Phase 2: Event-driven)
+      eventBus.emitEvent(EventTypes.REWARD_GRANTED, {
+        userId,
+        rewardType: 'DAILY',
+        amount: reward,
+        reason: 'Daily login',
+        metadata: { streak: newStreak }
       });
 
       await this.checkAchievements(userId, "LOGIN_STREAK", newStreak);
@@ -219,11 +222,13 @@ class RewardService {
             });
           }
 
-          await NotificationService.sendNotification(userId, {
-            type: "ACHIEVEMENT",
-            title: "Achievement Unlocked!",
-            message: `Congratulations! You unlocked: ${ach.name}`,
-            metadata: { achievementId: ach.id, rewardType: ach.rewardType }
+          // Emit achievement unlocked event (Phase 2: Event-driven)
+          eventBus.emitEvent(EventTypes.ACHIEVEMENT_UNLOCKED, {
+            userId,
+            achievementId: ach.id,
+            achievementName: ach.name,
+            rewardType: ach.rewardType,
+            rewardValue: ach.rewardValue
           });
         }
       }

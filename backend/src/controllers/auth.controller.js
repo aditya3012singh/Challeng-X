@@ -11,6 +11,9 @@ import S3Service from "../services/s3.service.js";
 import JwtService from "../utils/jwt.js";
 import env from "../config/env.js";
 import passport from "passport";
+// ✅ PHASE 1: Import event bus
+import eventBus from "../events/eventBus.js";
+import { EventTypes } from "../events/eventTypes.js";
 
 class AuthController {
     static async login(req, res) {
@@ -40,6 +43,14 @@ class AuthController {
                     }
                 });
 
+            // ✅ PHASE 1: Emit event (DUAL MODE - keeping existing call)
+            eventBus.emitEvent(EventTypes.USER_AUTHENTICATED, {
+                userId: user.id,
+                timestamp: new Date(),
+                method: 'password'
+            });
+
+            // ⚠️ KEEPING: Existing direct call (will remove in Phase 3)
             // Phase 4: Process Daily Reward
             RewardService.processDailyLogin(user.id);
         } catch (error) {
@@ -398,6 +409,14 @@ class AuthController {
                 .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
                 .redirect(finalUrl);
 
+            // ✅ PHASE 1: Emit event (DUAL MODE - keeping existing call)
+            eventBus.emitEvent(EventTypes.USER_AUTHENTICATED, {
+                userId: user.id,
+                timestamp: new Date(),
+                method: user.googleId ? 'google' : 'github'
+            });
+
+            // ⚠️ KEEPING: Existing direct call (will remove in Phase 3)
             // Phase 4: Process Daily Reward
             RewardService.processDailyLogin(user.id);
         } catch (error) {

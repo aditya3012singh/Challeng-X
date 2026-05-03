@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "D:\\challeng-x\\backend\\logs\\.91d03ca9e4bcde9d8af67bda4913447b5bea1263-audit.json",
+    "files": [
+        {
+            "date": 1777788347788,
+            "name": "D:\\challeng-x\\backend\\logs\\exceptions-2026-05-03.log",
+            "hash": "d0332e436aeee4797cd1953f1ac7ce3061c5be442eece9634fec167be05befb7"
+        }
+    ],
+    "hashType": "sha256"
+}

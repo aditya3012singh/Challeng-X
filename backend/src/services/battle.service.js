@@ -10,6 +10,9 @@ import RewardService from "./reward.service.js";
 import AISimulatorService from "./aiSimulator.service.js";
 import AIService from "./ai.service.js";
 import env from "../config/env.js";
+// ✅ PHASE 1: Import event bus
+import eventBus from "../events/eventBus.js";
+import { EventTypes } from "../events/eventTypes.js";
 // • Start timer
 // • Assign problem
 // • End match
@@ -389,6 +392,29 @@ class BattleService {
       // 👻 Stop AI Simulation if it was active
       AISimulatorService.stopSimulation(battleId);
 
+      // ✅ PHASE 1: Emit event (DUAL MODE - keeping existing calls)
+      if (winnerId && !isTeamMatch) {
+        const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
+        
+        // Get problem details for event
+        const battle = await Database.client.battle.findUnique({
+          where: { id: battleId },
+          include: { problem: true }
+        });
+
+        eventBus.emitEvent(EventTypes.BATTLE_FINISHED, {
+          battleId,
+          winnerId,
+          loserId,
+          problemId: battle?.problemId,
+          difficulty: battle?.problem?.difficulty,
+          duration: battle?.startedAt ? Date.now() - battle.startedAt.getTime() : 0,
+          player1Attempts: battleResult.attemptsPlayer1 || 0,
+          player2Attempts: battleResult.attemptsPlayer2 || 0
+        });
+      }
+
+      // ⚠️ KEEPING: Existing background tasks (will remove in Phase 3-4)
       // Perform background tasks (ranking, cache flush)
       (async () => {
         try {
