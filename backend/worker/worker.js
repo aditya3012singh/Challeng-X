@@ -1,15 +1,15 @@
-import env from "../src/config/env.js";
+import env from "../src/core/config/env.js";
 import { Worker } from "bullmq";
-import AIService from "../src/services/ai.service.js";
+import AIService from "../src/modules/ai/ai.service.js";
 import IORedis from "ioredis";
 
-import JudgeService from "../src/services/judge.service.js";
-import SubmissionService from "../src/services/submission.service.js";
-import BattleService from "../src/services/battle.service.js";
-import S3Service from "../src/services/s3.service.js";
-import logger from "../src/utils/logger.js";
-import eventBus from "../src/events/eventBus.js";
-import { EventTypes } from "../src/events/eventTypes.js";
+import JudgeService from "../src/integrations/judge/judge.service.js";
+import SubmissionService from "../src/modules/submission/submission.service.js";
+import BattleService from "../src/modules/battle/battle.service.js";
+import S3Service from "../src/integrations/s3/s3.service.js";
+import logger from "../src/core/logger/logger.js";
+import eventBus from "../src/core/events/eventBus.js";
+import { EventTypes } from "../src/core/events/eventTypes.js";
 
 process.on("uncaughtException", (err) => {
     console.error("💥 Uncaught Exception:", err);
@@ -285,7 +285,7 @@ const worker = new Worker(
                 console.timeEnd(`Job-${job.id}-battle-finish`);
             } else if (!squidGameId && !contestId && status === "PASSED") {
                 // Solo Problem Reward
-                const RewardService = (await import("../src/services/reward.service.js")).default;
+                const RewardService = (await import("../src/modules/reward/reward.service.js")).default;
                 await RewardService.grantProblemRewards(userId || submission.user.id, submission.problemId);
             }
 

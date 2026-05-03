@@ -1,8 +1,8 @@
 import ServerApp from "./server.js";
-import { registerAllListeners } from "./events/listeners/index.js";
-import eventConsumer from "./events/eventConsumer.js";
-import logger from "./utils/logger.js";
-import healthCheckService from "./utils/healthCheck.js";
+import { registerAllListeners } from "./core/events/listeners/index.js";
+import eventConsumer from "./core/events/eventConsumer.js";
+import logger from "./core/logger/logger.js";
+import healthCheckService from "./core/health/healthCheck.js";
 
 // ✅ PHASE 1: Register all event listeners BEFORE starting server
 try {

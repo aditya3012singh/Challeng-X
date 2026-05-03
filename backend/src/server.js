@@ -1,11 +1,11 @@
-import env from "./config/env.js";
+import env from "./core/config/env.js";
 import App from "./app.js";
 import http from "http";
-import SquidGameSocket from "./config/squidGameSocket.js";
-import logger from "./utils/logger.js";
-import SocketServer from "./socket/socketServer.js";
-import SocketEmitter from "./config/socket.js";
-import ContestCronService from "./services/contestCron.service.js";
+import SquidGameSocket from "./modules/squidGame/squidGame.socket.js";
+import logger from "./core/logger/logger.js";
+import SocketServer from "./integrations/socket/socket.server.js";
+import SocketEmitter from "./core/config/socket.js";
+import ContestCronService from "./modules/contest/contest.cron.js";
 import Redis from "ioredis";
 
 class ServerApp {
@@ -74,7 +74,7 @@ class ServerApp {
               sgNamespace.to(room).emit(event, data);
 
               if (event === "submission_result" && data.type === "SUBMIT") {
-                import("./services/squidGame.service.js").then(m => {
+                import("./modules/squidGame/squidGame.service.js").then(m => {
                   m.default.handleSquidGameResult(data).catch(err => logger.error(`Error: ${err.message}`));
                 });
               }
@@ -89,7 +89,7 @@ class ServerApp {
               io.to(room).emit(event, data);
 
               if (event === "submission_result" && data.type === "SUBMIT") {
-                import("./services/contest.service.js").then(m => {
+                import("./modules/contest/contest.service.js").then(m => {
                   m.default.handleContestResult(data).catch(err => logger.error(`Error: ${err.message}`));
                 });
               }

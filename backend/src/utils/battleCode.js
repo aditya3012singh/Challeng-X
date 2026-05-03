@@ -1,4 +1,4 @@
-import Database from "../config/db.js";
+import Database from "../core/config/db.js";
 
 /**
  * Generate a unique 6-digit battle code

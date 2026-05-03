@@ -1,0 +1,194 @@
+import Database from "../../core/config/db.js";
+import { submissionQueue } from "../../core/queue/submission.queue.js";
+import BattleService from "../battle/battle.service.js";
+import eventBus from "../../core/events/eventBus.js";
+import { EventTypes } from "../../core/events/eventTypes.js";
+
+/**
+ * Process a code submission
+ * @param {object} params
+ * @param {string} params.userId
+ * @param {string} params.problemId
+ * @param {string} params.code
+ * @param {string} params.language
+ * @param {string} [params.battleId] - Optional battleId for battle submissions
+ * @param {string} [params.type] - RUN or SUBMIT
+ */
+class SubmissionService {
+  static async processSubmission({ userId, problemId, code, language, battleId, squidGameId, contestId, type = "SUBMIT" }) {
+    return await Database.client.$transaction(async (tx) => {
+      // 1. If SUBMIT in a battle, check and increment attempts
+      if (battleId && type === "SUBMIT") {
+        // Try Battle first
+        let battle = await tx.battle.findUnique({
+          where: { id: battleId },
+          select: { player1Id: true, player2Id: true, attemptsPlayer1: true, attemptsPlayer2: true }
+        });
+
+        let isTeamMatch = false;
+        if (!battle) {
+          battle = await tx.teamBattleMatch.findUnique({
+            where: { id: battleId },
+            select: { player1Id: true, player2Id: true, attemptsPlayer1: true, attemptsPlayer2: true }
+          });
+          if (battle) isTeamMatch = true;
+        }
+
+        if (!battle) throw new Error("Battle not found.");
+
+        const used = battle.player1Id === userId ? battle.attemptsPlayer1 : battle.attemptsPlayer2;
+        if (used >= 10) {
+          throw new Error("No attempts remaining. You have already submitted 10 times.");
+        }
+
+        // Increment attempt count
+        const updateData = {};
+        if (battle.player1Id === userId) {
+          updateData.attemptsPlayer1 = { increment: 1 };
+        } else {
+          updateData.attemptsPlayer2 = { increment: 1 };
+        }
+
+        let updatedBattle;
+        if (isTeamMatch) {
+          updatedBattle = await tx.teamBattleMatch.update({
+            where: { id: battleId },
+            data: updateData
+          });
+        } else {
+          updatedBattle = await tx.battle.update({
+            where: { id: battleId },
+            data: updateData
+          });
+        }
+
+        // ✅ PHASE 3B: Emit BATTLE_ATTEMPT_UPDATED event (will be handled by Socket listener)
+        eventBus.emitEvent(EventTypes.BATTLE_ATTEMPT_UPDATED, {
+          battleId,
+          player1Attempts: updatedBattle.attemptsPlayer1,
+          player2Attempts: updatedBattle.attemptsPlayer2
+        });
+      }
+
+      // 2. Create submission
+      const submission = await tx.submission.create({
+        data: {
+          userId,
+          problemId,
+          code,
+          language,
+          battleId,
+          squidGameId,
+          contestId,
+          status: "QUEUED",
+          type
+        }
+      });
+
+      // 3. Add to queue
+      await submissionQueue.add('processSubmission', {
+        submissionId: submission.id,
+        battleId: battleId || null,
+        squidGameId: squidGameId || null,
+        contestId: contestId || null,
+        userId,
+        status: "QUEUED",
+        type
+      });
+
+      // 4. Emit SubmissionQueued event (DUAL MODE - keeping all existing logic)
+      eventBus.emitEvent(EventTypes.SubmissionQueued, {
+        submissionId: submission.id,
+        userId,
+        problemId,
+        battleId: battleId || null,
+        contestId: contestId || null,
+        squidGameId: squidGameId || null,
+        type
+      });
+
+      return {
+        submissionId: submission.id,
+        status: "QUEUED",
+        message: type === "RUN" ? "Run started..." : "Final submission queued..."
+      };
+    });
+  }
+
+  static async calculateBeatsPercentile(problemId, language, executionTimeMs) {
+    if (!executionTimeMs || executionTimeMs === 0) return 0;
+
+    // Get all successful submissions for this problem and language
+    const successfulSubmissions = await Database.client.submission.findMany({
+      where: {
+        problemId,
+        language,
+        status: "PASSED"
+      },
+      select: { executionTimeMs: true }
+    });
+
+    if (successfulSubmissions.length <= 1) return 100;
+
+    // Calculate how many people we beat (everyone who took longer)
+    const slowerCount = successfulSubmissions.filter(s => s.executionTimeMs > executionTimeMs).length;
+    const percentile = (slowerCount / successfulSubmissions.length) * 100;
+
+    return Math.round(percentile);
+  }
+
+  static async getSubmissionById(submissionId) {
+    const submission = await Database.client.submission.findUnique({
+      where: { id: submissionId },
+      include: {
+        problem: {
+          select: { id: true }
+        }
+      }
+    });
+
+    if (!submission) return null;
+
+    let beatsPercentile = 0;
+    if (submission.status === "PASSED") {
+      beatsPercentile = await this.calculateBeatsPercentile(
+        submission.problemId,
+        submission.language,
+        submission.executionTimeMs
+      );
+    }
+
+    return {
+      ...submission,
+      beatsPercentile,
+      squidGameId: submission.squidGameId
+    };
+  }
+
+  /**
+   * Used by worker to fetch submission details along with problem testcases and user id
+   */
+  static async getSubmissionWithProblemAndUser(submissionId) {
+    return await Database.client.submission.findUnique({
+      where: { id: submissionId },
+      include: {
+        problem: { include: { testcases: true } },
+        user: { select: { id: true } },
+        squidGame: { select: { id: true } },
+        contest: { select: { id: true } }
+      }
+    });
+  }
+
+  /**
+   * Used by worker to update status, passed tests, and execution time
+   */
+  static async updateSubmissionStatus(submissionId, data) {
+    return await Database.client.submission.update({
+      where: { id: submissionId },
+      data
+    });
+  }
+}
+
+export default SubmissionService;

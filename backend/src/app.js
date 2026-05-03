@@ -4,29 +4,29 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import helmet from "helmet";
 import passport from "passport";
-import env from "./config/env.js";
+import env from "./core/config/env.js";
 import { rateLimit } from "express-rate-limit";
-import logger from "./utils/logger.js";
-import { traceIdMiddleware } from "./middleware/traceIdMiddleware.js";
-import metricsCollector from "./utils/metricsCollector.js";
-import healthCheckService from "./utils/healthCheck.js";
+import logger from "./core/logger/logger.js";
+import { traceIdMiddleware } from "./api/middleware/traceId.middleware.js";
+import metricsCollector from "./core/metrics/metricsCollector.js";
+import healthCheckService from "./core/health/healthCheck.js";
 
 // Routes
-import AuthRoutes from "./routes/auth.route.js";
-import ProblemRoutes from "./routes/problem.route.js";
-import TestcaseRoutes from "./routes/testcase.route.js";
-import SubmissionRoutes from "./routes/submission.route.js";
-import BattleRoutes from "./routes/battle.route.js";
-import LeaderboardRoutes from "./routes/leaderboard.route.js";
-import MatchmakingRoutes from "./routes/matchmaking.route.js";
-import TeamRoutes from "./routes/team.route.js";
-import TeamBattleRoutes from "./routes/teamBattle.route.js";
-import SquidGameRoutes from "./routes/squidGame.route.js";
-import ContestRoutes from "./routes/contest.route.js";
-import SocialRoutes from "./routes/social.route.js";
-import NotificationRoutes from "./routes/notification.route.js";
-import AnalyticsRoutes from "./routes/analytics.route.js";
-import AIRoutes from "./routes/ai.route.js";
+import AuthRoutes from "./modules/auth/auth.routes.js";
+import ProblemRoutes from "./modules/problem/problem.routes.js";
+import TestcaseRoutes from "./modules/testcase/testcase.routes.js";
+import SubmissionRoutes from "./modules/submission/submission.routes.js";
+import BattleRoutes from "./modules/battle/battle.routes.js";
+import LeaderboardRoutes from "./modules/leaderboard/leaderboard.routes.js";
+import MatchmakingRoutes from "./modules/matchmaking/matchmaking.routes.js";
+import TeamRoutes from "./modules/team/team.routes.js";
+import TeamBattleRoutes from "./modules/team/teamBattle.routes.js";
+import SquidGameRoutes from "./modules/squidGame/squidGame.routes.js";
+import ContestRoutes from "./modules/contest/contest.routes.js";
+import SocialRoutes from "./modules/social/social.routes.js";
+import NotificationRoutes from "./modules/notification/notification.routes.js";
+import AnalyticsRoutes from "./modules/analytics/analytics.routes.js";
+import AIRoutes from "./modules/ai/ai.routes.js";
 
 class App {
   static createApp() {
@@ -50,7 +50,7 @@ class App {
 
     // 🔑 Passport
     app.use(passport.initialize());
-    import("./config/passport.js");
+    import("./core/config/passport.js");
 
     // 🚀 Rate Limiting
     const limiter = rateLimit({
@@ -130,7 +130,7 @@ class App {
 
     // Centralized Error Handler (must be the last middleware)
     app.use((err, req, res, next) => {
-      import("./middlewares/errorhandler.middleware.js").then(({ default: errorHandler }) => {
+      import("./api/middleware/errorHandler.middleware.js").then(({ default: errorHandler }) => {
         errorHandler(err, req, res, next);
       }).catch(next);
     });
