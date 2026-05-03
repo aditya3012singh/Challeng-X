@@ -3,7 +3,6 @@
 // • Issue JWT
 
 import AuthService from "../services/auth.service.js";
-import RewardService from "../services/reward.service.js";
 import CookieOptions from "../utils/cookies.js";
 import AuthSchema from "../validation/auth.schema.js";
 import Database from "../config/db.js";
@@ -50,9 +49,8 @@ class AuthController {
                 method: 'password'
             });
 
-            // ⚠️ KEEPING: Existing direct call (will remove in Phase 3)
-            // Phase 4: Process Daily Reward
-            RewardService.processDailyLogin(user.id);
+            // ✅ PHASE 4: Removed RewardService call - now handled by Reward listener
+            // Daily login rewards are triggered by USER_AUTHENTICATED event
         } catch (error) {
             res.status(error.status || 401).json({
                 message: error.message || "Authentication failed",
@@ -416,9 +414,8 @@ class AuthController {
                 method: user.googleId ? 'google' : 'github'
             });
 
-            // ⚠️ KEEPING: Existing direct call (will remove in Phase 3)
-            // Phase 4: Process Daily Reward
-            RewardService.processDailyLogin(user.id);
+            // ✅ PHASE 4: Removed RewardService call - now handled by Reward listener
+            // Daily login rewards are triggered by USER_AUTHENTICATED event
         } catch (error) {
             console.error("Social auth callback error:", error);
             res.redirect(`${env.FRONTEND_URL}/login?error=server_error`);

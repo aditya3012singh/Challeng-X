@@ -1,7 +1,8 @@
 // 🏆 ranking.service.js
 
 import Database from "../config/db.js";
-import SocketEmitter from "../config/socket.js";
+import eventBus from "../events/eventBus.js";
+import { EventTypes } from "../events/eventTypes.js";
 
 // Updates:
 
@@ -31,8 +32,10 @@ class RankingService {
       }
     });
 
+    // ✅ PHASE 3B: Emit USER_RANK_UPDATED event (will be handled by Socket listener)
     if (battleId) {
-      SocketEmitter.emitToBattle(battleId, "rating_update", {
+      eventBus.emitEvent(EventTypes.USER_RANK_UPDATED, {
+        battleId,
         winner: { id: winnerId, delta: 30 },
         loser: { id: loserId, delta: -20 }
       });

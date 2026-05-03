@@ -7,6 +7,9 @@ import passport from "passport";
 import env from "./config/env.js";
 import { rateLimit } from "express-rate-limit";
 import logger from "./utils/logger.js";
+import { traceIdMiddleware } from "./middleware/traceIdMiddleware.js";
+import metricsCollector from "./utils/metricsCollector.js";
+import healthCheckService from "./utils/healthCheck.js";
 
 // Routes
 import AuthRoutes from "./routes/auth.route.js";
@@ -41,6 +44,9 @@ class App {
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
     app.use(morgan("dev"));
+
+    // ✅ PHASE 6: Add trace ID middleware for observability
+    app.use(traceIdMiddleware);
 
     // 🔑 Passport
     app.use(passport.initialize());
@@ -80,6 +86,46 @@ class App {
 
     app.get("/api/health", (req, res) => {
       res.status(200).json({ status: "OK", database: "connected", redis: "active" });
+    });
+
+    // ✅ PHASE 6: Metrics endpoint for observability
+    app.get("/api/metrics", (req, res) => {
+      try {
+        const metrics = metricsCollector.getMetrics();
+        res.status(200).json({
+          status: "success",
+          timestamp: new Date().toISOString(),
+          traceId: req.traceId,
+          metrics
+        });
+      } catch (error) {
+        logger.error('Failed to get metrics:', error);
+        res.status(500).json({
+          status: "error",
+          message: "Failed to retrieve metrics",
+          traceId: req.traceId
+        });
+      }
+    });
+
+    // ✅ PHASE 6: Health check endpoint for production readiness
+    app.get("/api/health-check", async (req, res) => {
+      try {
+        const health = await healthCheckService.getHealthStatus();
+        const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 503 : 500;
+        res.status(statusCode).json({
+          ...health,
+          traceId: req.traceId
+        });
+      } catch (error) {
+        logger.error('Failed to get health status:', error);
+        res.status(500).json({
+          status: "unhealthy",
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          traceId: req.traceId
+        });
+      }
     });
 
     // Centralized Error Handler (must be the last middleware)

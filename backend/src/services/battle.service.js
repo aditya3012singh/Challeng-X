@@ -2,11 +2,9 @@
 
 import RedisClient from "../cache/redis.client.js";
 import Database from "../config/db.js";
-import RankingService from "./ranking.service.js";
 import SocketEmitter from "../config/socket.js";
 import BattleCode from "../utils/battleCode.js";
 import S3Service from "./s3.service.js";
-import RewardService from "./reward.service.js";
 import AISimulatorService from "./aiSimulator.service.js";
 import AIService from "./ai.service.js";
 import env from "../config/env.js";
@@ -102,12 +100,29 @@ class BattleService {
       seconds: 5
     });
 
+    // ✅ PHASE 3B: Emit BATTLE_STATE_CHANGED event (will be handled by Socket listener)
+    eventBus.emitEvent(EventTypes.BATTLE_STATE_CHANGED, {
+      battleId: battle.id,
+      oldState: 'WAITING',
+      newState: 'COUNTDOWN',
+      metadata: { seconds: 5 }
+    });
+
     setTimeout(async () => {
       try {
         await Database.client.battle.update({
           where: { id: battle.id },
           data: { status: "ONGOING", startedAt: new Date() }
         });
+        
+        // ✅ PHASE 3B: Emit BATTLE_STATE_CHANGED event
+        eventBus.emitEvent(EventTypes.BATTLE_STATE_CHANGED, {
+          battleId: battle.id,
+          oldState: 'COUNTDOWN',
+          newState: 'ONGOING',
+          metadata: { startedAt: new Date() }
+        });
+        
         SocketEmitter.emitToBattle(battle.id, "battle_start", {
           startedAt: new Date()
         });
@@ -414,17 +429,12 @@ class BattleService {
         });
       }
 
-      // ⚠️ KEEPING: Existing background tasks (will remove in Phase 3-4)
-      // Perform background tasks (ranking, cache flush)
+      // ✅ PHASE 3B: Removed RankingService call - now handled by Profile listener
+      // Perform background tasks (cache flush)
       (async () => {
         try {
-          if (winnerId && !isTeamMatch) {
-            // Only update ranks for 1v1 battles for now (Team ranking is separate)
-            const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
-            await RankingService.updateRanks(battleId, winnerId, loserId);
-            // Phase 4: Grant rewards
-            await RewardService.grantBattleRewards(battleId);
-          }
+          // ✅ PHASE 4: Removed RewardService call - now handled by Reward listener
+          // Reward granting is triggered by BATTLE_FINISHED event
           await RedisClient.client.del("problems:all");
           console.log(`✅ ${isTeamMatch ? 'Team ' : ''}Battle Finish: ${battleId} (Winner: ${winnerId})`);
         } catch (err) {

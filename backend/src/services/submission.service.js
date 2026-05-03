@@ -1,5 +1,4 @@
 import Database from "../config/db.js";
-import SocketEmitter from "../config/socket.js";
 import { submissionQueue } from "../queues/submission.queue.js";
 import BattleService from "./battle.service.js";
 import eventBus from "../events/eventBus.js";
@@ -63,16 +62,11 @@ class SubmissionService {
           });
         }
 
-        // Notify listeners about the attempt update
-        SocketEmitter.emitToBattle(battleId, "attempts_updated", {
+        // ✅ PHASE 3B: Emit BATTLE_ATTEMPT_UPDATED event (will be handled by Socket listener)
+        eventBus.emitEvent(EventTypes.BATTLE_ATTEMPT_UPDATED, {
+          battleId,
           player1Attempts: updatedBattle.attemptsPlayer1,
           player2Attempts: updatedBattle.attemptsPlayer2
-        });
-
-        // Emit opponent_submitted to room
-        SocketEmitter.emitToBattle(battleId, "opponent_submitted", {
-          userId,
-          status: "pending"
         });
       }
 
