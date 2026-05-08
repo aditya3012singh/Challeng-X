@@ -1,0 +1,57 @@
+# ChallengX Root .gitignore
+
+# Temporary documentation files
+DEPLOYMENT_*.md
+JUDGE_SERVICE_*.md
+DOCKER_BUILD_*.md
+PHASE_*_CHANGES_DETAILED.md
+PHASE_*_COMPLETION_REPORT.md
+PHASE_*_INDEX.md
+PHASE_*_PREPARATION_SUMMARY.md
+*_FIX.md
+*_FIXES_*.md
+*_STATUS.md
+*_READY.md
+QUICK_FIX_*.md
+CRITICAL_FIXES_*.md
+
+# Temporary directories
+tmp/
+temp/
+
+# Log files
+*.log
+*.log.*
+
+# Process tracking files
+*_pids.txt
+*_processes.txt
+
+# Debug scripts
+*_debug.js
+*_test.js
+*_crash.js
+check_*.js
+verify_*.js
+wipe_*.js
+debug_*.js
+
+# Environment files (keep templates)
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Cleanup scripts
+cleanup-*.sh
+cleanup-*.bat

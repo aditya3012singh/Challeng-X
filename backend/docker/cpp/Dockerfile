@@ -5,4 +5,4 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-CMD ["bash"]
+CMD ["python3", "-u", "/runners/cpp_runner.py"]

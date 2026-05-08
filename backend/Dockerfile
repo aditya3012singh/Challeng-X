@@ -29,7 +29,7 @@ RUN apt-get update -y && apt-get install -y docker.io openssl && rm -rf /var/lib
 
 # Copy only production dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy built app (or source if no build step) from builder
 COPY --from=builder /app ./
@@ -38,7 +38,7 @@ COPY --from=builder /app ./
 RUN npx prisma generate
 
 # Create a non-root user for security (Optional: requires GID matching host docker group)
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 # USER appuser 
 
 # Set production environment

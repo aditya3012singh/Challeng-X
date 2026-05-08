@@ -32,6 +32,18 @@ const LANGUAGE_CONFIG = {
         image: 'codearena-cpp',
         runnerCmd: ['python3', '-u', '/runners/cpp_runner.py'],
     },
+    python: {
+        image: 'codearena-python',
+        runnerCmd: ['python3', '-u', '/runners/python_runner.py'],
+    },
+    c: {
+        image: 'codearena-c',
+        runnerCmd: ['python3', '-u', '/runners/c_runner.py'],
+    },
+    javascript: {
+        image: 'codearena-js',
+        runnerCmd: ['node', '/runners/js_runner.mjs'],
+    },
 };
 
 /**

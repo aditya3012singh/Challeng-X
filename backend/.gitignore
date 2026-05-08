@@ -1,6 +1,13 @@
 node_modules
 # Keep environment variables out of version control
 .env
+.env.local
+.env.production
+.env.production.v2
+.env.*.local
+
+# Judge service env
+judge-service/.env.production
 
 /generated/prisma
 
