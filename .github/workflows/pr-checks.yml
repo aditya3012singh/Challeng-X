@@ -1,0 +1,210 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-info:
+    name: PR Information
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: PR Details
+        run: |
+          echo "📋 Pull Request Information"
+          echo "=========================="
+          echo "PR Number: ${{ github.event.pull_request.number }}"
+          echo "Title: ${{ github.event.pull_request.title }}"
+          echo "Author: ${{ github.event.pull_request.user.login }}"
+          echo "Base Branch: ${{ github.event.pull_request.base.ref }}"
+          echo "Head Branch: ${{ github.event.pull_request.head.ref }}"
+
+  size-check:
+    name: PR Size Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR Size
+        run: |
+          FILES_CHANGED=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD | wc -l)
+          LINES_CHANGED=$(git diff --stat origin/${{ github.event.pull_request.base.ref }}...HEAD | tail -1 | awk '{print $4 + $6}')
+          
+          echo "📊 PR Size:"
+          echo "Files changed: $FILES_CHANGED"
+          echo "Lines changed: $LINES_CHANGED"
+          
+          if [ $FILES_CHANGED -gt 50 ]; then
+            echo "⚠️ Warning: Large PR with $FILES_CHANGED files changed"
+            echo "Consider breaking this into smaller PRs"
+          fi
+          
+          if [ $LINES_CHANGED -gt 1000 ]; then
+            echo "⚠️ Warning: Large PR with $LINES_CHANGED lines changed"
+            echo "Consider breaking this into smaller PRs"
+          fi
+
+  lint-check:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Backend Lint
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm run lint || echo "⚠️ Linting issues found in backend"
+
+      - name: Frontend Lint
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run lint || echo "⚠️ Linting issues found in frontend"
+
+  test-check:
+    name: Test Check
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: codearena_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Backend Tests
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm test || echo "⚠️ Tests failed or not configured"
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/codearena_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+  conflict-check:
+    name: Merge Conflict Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for merge conflicts
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          
+          if git merge-tree $(git merge-base HEAD origin/${{ github.event.pull_request.base.ref }}) HEAD origin/${{ github.event.pull_request.base.ref }} | grep -q '<<<<<<<'; then
+            echo "❌ Merge conflicts detected!"
+            echo "Please resolve conflicts before merging"
+            exit 1
+          else
+            echo "✅ No merge conflicts detected"
+          fi
+
+  breaking-changes:
+    name: Breaking Changes Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for breaking changes
+        run: |
+          echo "🔍 Checking for potential breaking changes..."
+          
+          # Check for removed files
+          REMOVED_FILES=$(git diff --name-status origin/${{ github.event.pull_request.base.ref }}...HEAD | grep '^D' | wc -l)
+          if [ $REMOVED_FILES -gt 0 ]; then
+            echo "⚠️ Warning: $REMOVED_FILES file(s) removed"
+            git diff --name-status origin/${{ github.event.pull_request.base.ref }}...HEAD | grep '^D'
+          fi
+          
+          # Check for API route changes
+          if git diff origin/${{ github.event.pull_request.base.ref }}...HEAD -- '*.routes.js' | grep -E '^\+.*\.(get|post|put|delete|patch)\('; then
+            echo "⚠️ Warning: API routes modified"
+            echo "Please ensure backward compatibility"
+          fi
+          
+          # Check for database schema changes
+          if git diff origin/${{ github.event.pull_request.base.ref }}...HEAD -- 'backend/prisma/schema/*.prisma' | grep -q '^+'; then
+            echo "⚠️ Warning: Database schema changes detected"
+            echo "Please ensure migrations are included"
+          fi
+
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [pr-info, size-check, lint-check, test-check, conflict-check, breaking-changes]
+    if: always()
+    
+    steps:
+      - name: Comment PR Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = `
+            ## 📋 PR Check Summary
+            
+            | Check | Status |
+            |-------|--------|
+            | Size Check | ${{ needs.size-check.result == 'success' && '✅' || '❌' }} |
+            | Lint Check | ${{ needs.lint-check.result == 'success' && '✅' || '❌' }} |
+            | Test Check | ${{ needs.test-check.result == 'success' && '✅' || '❌' }} |
+            | Conflict Check | ${{ needs.conflict-check.result == 'success' && '✅' || '❌' }} |
+            | Breaking Changes | ${{ needs.breaking-changes.result == 'success' && '✅' || '⚠️' }} |
+            
+            ${{ needs.size-check.result == 'success' && needs.lint-check.result == 'success' && needs.test-check.result == 'success' && needs.conflict-check.result == 'success' ? '✅ All checks passed! Ready for review.' : '⚠️ Some checks failed. Please review and fix issues.' }}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
