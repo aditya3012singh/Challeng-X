@@ -6,6 +6,7 @@ import { fetchUserProfile } from '../store/api/auth.thunk'
 import { addNotification } from '../store/slices/notification.slice'
 import { getSocket } from '../lib/socket'
 import { Toaster } from 'react-hot-toast'
+import { useSocketEvents } from './hooks/useSocketEvents'
 import './App.css'
 
 const Login = lazy(() => import('./auth/Login'))
@@ -49,6 +50,9 @@ const GlobalSocketListener = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  
+  // Initialize socket event handlers for query invalidation
+  useSocketEvents();
 
   useEffect(() => {
     // 1. Handle dynamic import failures (stale build chunks)
