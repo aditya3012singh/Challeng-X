@@ -6,16 +6,12 @@ import axios from "../../lib/axios";
 import { getSocket } from "../../lib/socket";
 import { Users, Swords, CheckCircle, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGlobalStats } from "../hooks/useGlobalStats";
 
 const Home = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
     const navigate = useNavigate();
-    const [stats, setStats] = useState({
-        onlineUsersCount: 0,
-        totalInQueue: 0,
-        totalSolved: 0,
-        activeBattles: 0
-    });
+    const { data: stats, isLoading } = useGlobalStats();
     const [showStatsPanel, setShowStatsPanel] = useState(false);
     const statsPanelRef = useRef(null);
 
@@ -26,20 +22,12 @@ const Home = () => {
             }
         };
 
-        const fetchStats = async () => {
-            try {
-                const res = await axios.get("/analytics/global/stats");
-                setStats(res.data);
-            } catch (err) {
-                console.error("Failed to fetch global stats:", err);
-            }
-        };
-
-        fetchStats();
+        // Stats are now fetched by useGlobalStats hook
 
         const socket = getSocket();
         socket.on("global_stats_update", (newStats) => {
-            setStats(newStats);
+            // Socket updates are now handled by TanStack Query invalidation
+            // queryClient.invalidateQueries({ queryKey: ['globalStats'] });
         });
 
         document.addEventListener("mousedown", handleClickOutside);

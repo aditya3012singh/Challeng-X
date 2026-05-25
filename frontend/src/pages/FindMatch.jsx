@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getSocket, isSocketConnected } from "../../lib/socket";
-import { joinMatchmaking, leaveMatchmaking, getQueueStatus } from "../../store/api/matchmaking.thunk";
+import { joinMatchmaking, leaveMatchmaking } from "../../store/api/matchmaking.thunk";
 import { setMatchFound, resetMatchmaking } from "../../store/slices/matchmaking.slice";
 import { toast } from "react-hot-toast";
 import { Sparkles } from "lucide-react";
 import axios from "../../lib/axios";
 import MatchmakingRadar from "../components/common/MatchmakingRadar";
+import { queryClient } from "../lib/queryClient";
+import { useQueueStatus } from "../hooks/useQueueStatus";
 
 export const FindMatch = () => {
     const [selectedDifficulty, setSelectedDifficulty] = useState("MEDIUM");
@@ -20,11 +22,10 @@ export const FindMatch = () => {
     const { inQueue, loading, error, queueSize, waitTime, matchFound, battleId, opponent, difficulty: restoredDifficulty } = useSelector(
         (state) => state.matchmaking
     );
+    // Note: queueStatus is now handled by useQueueStatus hook but we keep Redux state for compatibility
 
     // Initial status check on mount to handle reloads
-    useEffect(() => {
-        dispatch(getQueueStatus());
-    }, [dispatch]);
+    // useEffect removed - queue status is now handled by useQueueStatus hook
 
     // Sync restored difficulty from store to local state
     useEffect(() => {
@@ -53,11 +54,11 @@ export const FindMatch = () => {
             handleLeaveQueue();
         });
 
-        // Poll queue status every 2 seconds when in queue
+        // Poll queue status every 2 seconds when in queue (using query invalidation)
         let statusInterval;
         if (inQueue && !matchFound) {
             statusInterval = setInterval(() => {
-                dispatch(getQueueStatus());
+                queryClient.invalidateQueries({ queryKey: ['queueStatus'] });
             }, 2000);
         }
 

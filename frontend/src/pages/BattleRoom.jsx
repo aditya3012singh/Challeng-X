@@ -6,6 +6,8 @@ import { TeamChat } from "../components/TeamChat";
 import { getSocket } from "../../lib/socket";
 import { toast } from "react-hot-toast";
 import ShareModal from "../components/common/ShareModal";
+import { useBattle } from "../hooks/useBattle";
+import { queryClient } from "../lib/queryClient";
 
 export const BattleRoom = () => {
   const { battleId } = useParams();
@@ -13,24 +15,20 @@ export const BattleRoom = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  const [battleData, setBattleData] = useState(null);
+  const { data: battleData, isLoading: loading } = useBattle(battleId);
   const [countdown, setCountdown] = useState(null);
   const [isStarting, setIsStarting] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  // Fetch initial battle data
+  // Fetch initial battle data (fallback for socket events)
   const fetchBattleData = async () => {
     try {
-      setLoading(true);
       const result = await dispatch(getBattleById(battleId)).unwrap();
-      setBattleData(result);
+      queryClient.setQueryData(['battle', battleId], result);
     } catch (error) {
       console.error("Failed to fetch battle:", error);
       toast.error("Failed to load battle room. Redirecting...");
       navigate("/team-battle");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -59,8 +57,8 @@ export const BattleRoom = () => {
     // Listen for events
     socket.on("player_joined_lobby", (data) => {
       console.log("New player joined lobby:", data);
-      // Refresh data to show the new player
-      fetchBattleData();
+      // Invalidate query to refresh data
+      queryClient.invalidateQueries({ queryKey: ['battle', battleId] });
     });
 
     socket.on("battle_countdown_start", (data) => {

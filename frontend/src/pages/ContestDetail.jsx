@@ -9,44 +9,19 @@ import {
     ChevronLeft, Calendar, Clock, Users, Trophy, 
     Target, Activity, Shield, Check, AlertCircle, Loader2 
 } from "lucide-react";
+import { useContest } from "../hooks/useContest";
 
 export default function ContestDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const user = useSelector((state) => state.auth.user);
     
-    const [contest, setContest] = useState(null);
-    const [problems, setProblems] = useState([]);
-    const [leaderboard, setLeaderboard] = useState([]);
+    const { contest, problems, leaderboard, isLoading } = useContest(id);
     const [activeTab, setActiveTab] = useState("overview"); // overview, problems, leaderboard
-    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-    useEffect(() => {
-        const fetchAll = async () => {
-            try {
-                const res = await axiosInstance.get(`/contest/${id}`);
-                const c = res.data.contest;
-                setContest(c);
-
-                if (c.status !== "UPCOMING" || (user && user.role === "ADMIN")) {
-                    const [probRes, leadRes] = await Promise.all([
-                        axiosInstance.get(`/contest/${id}/problems`),
-                        axiosInstance.get(`/contest/${id}/leaderboard`)
-                    ]);
-                    setProblems(probRes.data.problems || []);
-                    setLeaderboard(leadRes.data.leaderboard || []);
-                    if (c.status === "ACTIVE") setActiveTab("problems");
-                }
-            } catch (err) {
-                console.error("Failed to load contest detail", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAll();
-    }, [id, user]);
+    // useEffect removed - data is now fetched by useContest hook
 
     useEffect(() => {
         const socket = getSocket();
@@ -93,15 +68,7 @@ export default function ContestDetail() {
             await axiosInstance.post(`/contest/${id}/register`);
             toast.success("Successfully registered for the contest!");
             setShowRegisterModal(false);
-            // Optimistically reload contest data to show problems if ACTIVE
-            const res = await axiosInstance.get(`/contest/${id}`);
-            setContest(res.data.contest);
-            const [probRes, leadRes] = await Promise.all([
-                axiosInstance.get(`/contest/${id}/problems`),
-                axiosInstance.get(`/contest/${id}/leaderboard`)
-            ]);
-            setProblems(probRes.data.problems || []);
-            setLeaderboard(leadRes.data.leaderboard || []);
+            // Query will be automatically invalidated by TanStack Query
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to register");
             setShowRegisterModal(false);
@@ -110,7 +77,7 @@ export default function ContestDetail() {
         }
     };
 
-    if (loading) return (
+    if (isLoading) return (
         <div className="min-h-screen bg-[var(--color-bg-dark)] flex flex-col items-center justify-center gap-6">
             <Loader2 className="animate-spin text-[var(--color-primary)]" size={40} />
             <div className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.6em] animate-pulse">Loading...</div>
