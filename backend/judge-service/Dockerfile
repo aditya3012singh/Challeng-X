@@ -5,7 +5,10 @@ WORKDIR /app
 # Install Docker CLI for sibling container orchestration
 RUN apt-get update -y && \
     apt-get install -y docker.io && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # Add node user to docker group for socket access
+    groupadd -f docker && \
+    usermod -aG docker node
 
 # Copy package files
 COPY package*.json ./
@@ -15,6 +18,9 @@ RUN npm ci --omit=dev
 
 # Copy source code
 COPY . .
+
+# Copy .env file for production
+COPY .env .env
 
 # Set production environment
 ENV NODE_ENV=production

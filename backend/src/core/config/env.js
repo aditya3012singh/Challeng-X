@@ -4,6 +4,14 @@ import dotenv from "dotenv";
 // Load .env before validation
 dotenv.config();
 
+// Helper function to substitute ${VAR_NAME} patterns with actual env values
+function substituteEnvVars(str) {
+  if (!str) return str;
+  return str.replace(/\$\{([^}]+)\}/g, (_, varName) => {
+    return process.env[varName] || '';
+  });
+}
+
 const envSchema = z.object({
   // Server
   PORT: z.string().transform(Number).default("4000"),
@@ -15,7 +23,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
 
   // Redis
-  REDIS_URL: z.string().transform(val => val?.trim()).pipe(z.string().url()).optional(),
+  REDIS_URL: z.string().transform(val => val ? substituteEnvVars(val.trim()) : val).pipe(z.string().url()).optional(),
   REDIS_HOST: z.string().default("redis"),
   REDIS_PORT: z.string().transform(Number).default("6379"),
   REDIS_PASSWORD: z.string().optional(),
@@ -36,6 +44,7 @@ const envSchema = z.object({
 
   // App Configs
   CHALLENGX_RUNNERS_PATH: z.string().optional(),
+  CODEARENA_RUNNERS_PATH: z.string().optional(),
   JUDGE_POOL_SIZE: z.string().transform(Number).default("10"),
   MATCHMAKING_RANK_THRESHOLD: z.string().transform(Number).default("2000"),
   WORKER_CONCURRENCY: z.string().transform(Number).default("10"),

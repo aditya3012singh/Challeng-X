@@ -7,6 +7,7 @@
 
 import { spawn, execSync } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import env from '../config/env.js';
 import logger from '../utils/logger.js';
@@ -15,10 +16,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Path to runners directory
 const RUNNERS_DIR = env.CODEARENA_RUNNERS_PATH || path.resolve(__dirname, '../../runners');
-logger.info(`[Judge] RUNNERS_DIR = ${RUNNERS_DIR}`);
+logger.info(`[Judge] RUNNERS_DIR = ${String(RUNNERS_DIR)}`);
 
 // Convert Windows path to Docker-compatible path
 function toDockerPath(p) {
+    // Handle WSL path format (/mnt/d/...)
+    if (p.startsWith('/mnt/')) {
+        return p;
+    }
+    // Handle Windows path format (D:\...)
     return p.replace(/\\/g, '/').replace(/^([A-Za-z]):/, '/$1');
 }
 
@@ -64,13 +70,12 @@ class WarmContainer {
         const runnersMount = toDockerPath(RUNNERS_DIR);
 
         this._proc = spawn('docker', [
-            'run', '--rm',
+            'run',
             '-i',
-            '--network', 'none',
             '--memory', '512m',
             '--pids-limit', '512',
             '--cpus', '2.0',
-            '-v', `${runnersMount}:/runners:ro`,
+            '-v', '/mnt/d/challeng-x/backend/runners:/runners:ro',
             this.config.image,
             ...this.config.runnerCmd,
         ]);

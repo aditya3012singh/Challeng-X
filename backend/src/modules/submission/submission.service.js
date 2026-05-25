@@ -97,7 +97,7 @@ class SubmissionService {
       });
 
       // 4. Emit SubmissionQueued event (DUAL MODE - keeping all existing logic)
-      eventBus.emitEvent(EventTypes.SubmissionQueued, {
+      eventBus.emitEvent(EventTypes.SUBMISSION_QUEUED, {
         submissionId: submission.id,
         userId,
         problemId,

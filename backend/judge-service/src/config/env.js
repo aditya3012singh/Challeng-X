@@ -2,6 +2,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Helper function to substitute ${VAR_NAME} patterns with actual env values
+function substituteEnvVars(str) {
+  if (!str) return str;
+  return str.replace(/\$\{([^}]+)\}/g, (_, varName) => {
+    return process.env[varName] || '';
+  });
+}
+
 export default {
     // Service
     JUDGE_SERVICE_PORT: process.env.JUDGE_SERVICE_PORT || 3001,
@@ -9,7 +17,7 @@ export default {
     NODE_ENV: process.env.NODE_ENV || 'development',
 
     // Redis
-    REDIS_URL: process.env.REDIS_URL,
+    REDIS_URL: substituteEnvVars(process.env.REDIS_URL),
     REDIS_HOST: process.env.REDIS_HOST || 'localhost',
     REDIS_PORT: process.env.REDIS_PORT || 6379,
     REDIS_PASSWORD: process.env.REDIS_PASSWORD,

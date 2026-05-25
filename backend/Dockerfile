@@ -19,6 +19,9 @@ COPY . .
 # Delete local .env and node_modules to ensure fresh build
 RUN rm -rf .env node_modules
 
+# Copy .env.production to .env for production build
+COPY .env.production .env
+
 # Stage 2: Run Stage
 FROM node:20-bookworm-slim
 

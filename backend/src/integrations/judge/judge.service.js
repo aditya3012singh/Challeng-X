@@ -23,7 +23,12 @@ console.log(`[judge] RUNNERS_DIR = ${RUNNERS_DIR}`);
 
 // Convert a Windows absolute path to a Docker-compatible /drive/... path
 function toDockerPath(p) {
-  return p.replace(/\\/g, "/").replace(/^([A-Za-z]):/, "/$1");
+    // Handle WSL path format (/mnt/d/...)
+    if (p.startsWith('/mnt/')) {
+        return p;
+    }
+    // Handle Windows path format (D:\...)
+    return p.replace(/\\/g, "/").replace(/^([A-Za-z]):/, "/$1");
 }
 
 // Number of warm containers per language — match worker concurrency
@@ -63,7 +68,7 @@ class WarmContainer {
       "--memory", "512m",
       "--pids-limit", "512",       // Prevent fork bomb CPU/host extraction
       "--cpus", "2.0",             // Prevent infinite loop monopolizing CPU
-      "-v", `${runnersMount}:/runners:ro`,
+      "-v", "/mnt/d/challeng-x/backend/runners:/runners:ro",
       this.config.image,
       ...this.config.runnerCmd,
     ]);

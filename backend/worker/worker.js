@@ -144,7 +144,7 @@ const worker = new Worker(
                 });
 
                 // Emit SubmissionCompleted event (DUAL MODE - keeping all existing logic)
-                eventBus.emitEvent(EventTypes.SubmissionCompleted, {
+                eventBus.emitEvent(EventTypes.SUBMISSION_COMPLETED, {
                     submissionId,
                     userId: userId || submission.user.id,
                     problemId: submission.problemId,
@@ -193,7 +193,7 @@ const worker = new Worker(
                 });
 
                 // Emit SubmissionCompleted event (DUAL MODE - keeping all existing logic)
-                eventBus.emitEvent(EventTypes.SubmissionCompleted, {
+                eventBus.emitEvent(EventTypes.SUBMISSION_COMPLETED, {
                     submissionId,
                     userId: userId || submission.user.id,
                     problemId: submission.problemId,
@@ -290,7 +290,7 @@ const worker = new Worker(
             }
 
             // Emit SubmissionCompleted event (DUAL MODE - keeping all existing logic)
-            eventBus.emitEvent(EventTypes.SubmissionCompleted, {
+            eventBus.emitEvent(EventTypes.SUBMISSION_COMPLETED, {
                 submissionId,
                 userId: userId || submission.user.id,
                 problemId: submission.problemId,

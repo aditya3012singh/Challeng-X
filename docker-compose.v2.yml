@@ -7,8 +7,8 @@ services:
       dockerfile: Dockerfile
     container_name: codearena-backend
     restart: always
-    env_file:
-      - ./backend/.env.production.v2
+    ports:
+      - "4000:4000"  # Expose port 4000 to host for frontend development
     depends_on:
       - redis
     networks:
@@ -30,14 +30,18 @@ services:
     container_name: codearena-worker
     command: npm run worker:prod
     restart: always
-    env_file:
-      - ./backend/.env.production.v2
+    user: "root"
+    environment:
+      - CODEARENA_RUNNERS_PATH=/runners
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/d/challeng-x/backend/runners:/runners:ro
     depends_on:
       - redis
     networks:
       - codearena-network
 
-  # Judge Service (Code Execution Microservice) - NEW
+  # Judge Service (Code Execution Microservice)
   judge:
     image: codearena-judge-service:latest
     build:
@@ -45,10 +49,13 @@ services:
       dockerfile: Dockerfile
     container_name: codearena-judge
     restart: always
-    env_file:
-      - ./backend/judge-service/.env.production
+    user: "root"
+    environment:
+      - CODEARENA_RUNNERS_PATH=/host-runners
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/d/challeng-x/backend/runners:/host-runners:ro
+    command: sh -c "chmod 666 /var/run/docker.sock && npm start"
     depends_on:
       - redis
     networks:

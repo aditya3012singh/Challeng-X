@@ -33,7 +33,19 @@ class RedisEventBus {
      */
     async connect() {
         try {
-            const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+            // Use REDIS_URL if available, otherwise construct from individual vars
+            let redisUrl = process.env.REDIS_URL;
+            
+            // If REDIS_URL contains ${REDIS_PASSWORD}, replace it with actual value
+            if (redisUrl && redisUrl.includes('${REDIS_PASSWORD}')) {
+                redisUrl = redisUrl.replace('${REDIS_PASSWORD}', process.env.REDIS_PASSWORD || '');
+            }
+            
+            // Fallback to individual config if REDIS_URL is not set
+            if (!redisUrl) {
+                const password = process.env.REDIS_PASSWORD ? `:${process.env.REDIS_PASSWORD}@` : '';
+                redisUrl = `redis://${password}${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`;
+            }
 
             // Create publisher client
             this.publisher = redis.createClient({
