@@ -7,6 +7,7 @@ import { addNotification } from '../store/slices/notification.slice'
 import { getSocket } from '../lib/socket'
 import { Toaster } from 'react-hot-toast'
 import { useSocketEvents } from './hooks/useSocketEvents'
+import { ThemeProvider } from './context/ThemeContext'
 import './App.css'
 
 const Login = lazy(() => import('./auth/Login'))
@@ -178,28 +179,29 @@ function App() {
   }
 
   return (
-    <MainLayout>
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: 'var(--color-bg-card)',
-            color: 'var(--color-text-main)',
-            border: '1px solid var(--glass-border)',
-            fontSize: '12px',
-            fontFamily: 'var(--font-mono)',
-            borderRadius: '2px',
-          },
-          success: {
-            iconTheme: {
-              primary: 'var(--color-primary)',
-              secondary: 'var(--color-bg-dark)',
+    <ThemeProvider>
+      <MainLayout>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: 'var(--color-bg-card)',
+              color: 'var(--color-text-main)',
+              border: '1px solid var(--glass-border)',
+              fontSize: '12px',
+              fontFamily: 'var(--font-mono)',
+              borderRadius: '2px',
             },
-          },
-        }}
-      />
-      <GlobalSocketListener />
-      <Routes>
+            success: {
+              iconTheme: {
+                primary: 'var(--color-primary)',
+                secondary: 'var(--color-bg-dark)',
+              },
+            },
+          }}
+        />
+        <GlobalSocketListener />
+        <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Navigate to="/login" replace />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -299,7 +301,8 @@ function App() {
             </ProtectedRoute>
           } />
         </Routes>
-    </MainLayout>
+      </MainLayout>
+    </ThemeProvider>
   )
 }
 

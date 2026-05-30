@@ -6,6 +6,7 @@ import ProblemService from "./problem.service.js";
 import TestcaseService from "../testcase/testcase.service.js";
 import ProblemSchema from "./problem.schema.js";
 import Database from "../../core/config/db.js";
+import { parsePagination, createPaginationMeta } from "../pagination/pagination.utils.js";
 
 class ProblemController {
     static async createProblem(req, res) {
@@ -24,8 +25,25 @@ class ProblemController {
 
     static async getAllProblems(req, res) {
         try {
-            const problems = await ProblemService.getAllProblemsService();
-            return res.status(200).json({ message: "Problems fetched successfully", problems: problems });
+            // Parse pagination parameters
+            const pagination = parsePagination(req, { defaultLimit: 20, maxLimit: 100 });
+            const { page, limit, offset } = pagination;
+
+            // Get total count
+            const total = await Database.client.problem.count();
+
+            // Get paginated problems
+            const problems = await Database.client.problem.findMany({
+                skip: offset,
+                take: limit,
+                orderBy: { createdAt: 'desc' }
+            });
+
+            return res.status(200).json({ 
+                message: "Problems fetched successfully", 
+                data: problems,
+                meta: createPaginationMeta(total, page, limit)
+            });
         } catch (error) {
             console.error("Error fetching problems:", error);
             return res.status(500).json({ message: "Internal server error" });

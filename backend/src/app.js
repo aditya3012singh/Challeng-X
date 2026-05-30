@@ -27,6 +27,7 @@ import SocialRoutes from "./modules/social/social.routes.js";
 import NotificationRoutes from "./modules/notification/notification.routes.js";
 import AnalyticsRoutes from "./modules/analytics/analytics.routes.js";
 import AIRoutes from "./modules/ai/ai.routes.js";
+import HealthRoutes from "./core/health/health.routes.js";
 
 class App {
   static createApp() {
@@ -79,13 +80,10 @@ class App {
     app.use("/api/notifications", NotificationRoutes);
     app.use("/api/analytics", AnalyticsRoutes);
     app.use("/api/ai", AIRoutes.createRouter());
+    app.use("/api/health", HealthRoutes);
 
     app.get("/", (req, res) => {
       res.status(200).json({ status: "your are live", timestamp: new Date().toISOString() });
-    });
-
-    app.get("/api/health", (req, res) => {
-      res.status(200).json({ status: "OK", database: "connected", redis: "active" });
     });
 
     // ✅ PHASE 6: Metrics endpoint for observability
