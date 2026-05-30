@@ -5,6 +5,7 @@ import Database from "../../core/config/db.js";
 import SocketEmitter from "../../core/config/socket.js";
 import BattleCode from "../../utils/battleCode.js";
 import S3Service from "../../integrations/s3/s3.service.js";
+import ProblemCache from "../../core/cache/problemCache.js";
 import AISimulatorService from "../ai/ai.simulator.js";
 import AIService from "../ai/ai.service.js";
 import env from "../../core/config/env.js";
@@ -18,9 +19,38 @@ import { EventTypes } from "../../core/events/eventTypes.js";
 
 class BattleService {
   static async createBattleRandomQuestionService(player1Id) {
+    // Get random problem from cache
+    const randomProblem = await ProblemCache.getRandomProblemByDifficulty(null);
 
-    const problems = await Database.client.problem.findMany();
-    const randomProblem = problems[Math.floor(Math.random() * problems.length)];
+    if (!randomProblem) {
+      // Fallback to DB if cache is empty
+      const problems = await Database.client.problem.findMany();
+      if (problems.length === 0) {
+        throw new Error("No problems available");
+      }
+      const randomProblemFromDB = problems[Math.floor(Math.random() * problems.length)];
+      
+      // Cache the problem for future use
+      await ProblemCache.cacheProblem(randomProblemFromDB);
+      
+      const battleCode = await BattleCode.generateBattleCode();
+
+      const battle = await Database.client.battle.create({
+        data: {
+          player1Id,
+          problemId: randomProblemFromDB.id,
+          status: "WAITING",
+          battleCode,
+        }
+      });
+
+      // Pre-cache hidden test cases asynchronously to speed up the first submission
+      S3Service.fetchHiddenTestCases(randomProblemFromDB.id).catch(err => 
+        console.error(`[Pre-cache] Failed for problem ${randomProblemFromDB.id}:`, err.message)
+      );
+
+      return battle;
+    }
 
     const battleCode = await BattleCode.generateBattleCode();
 
@@ -42,12 +72,30 @@ class BattleService {
   }
 
   static async createBattleWithSelectedQuestionService(player1Id, problemId) {
+    // Get problem from cache
+    let problem = await ProblemCache.getProblem(problemId);
+    
+    if (!problem) {
+      // Fallback to DB if not in cache
+      problem = await Database.client.problem.findUnique({
+        where: { id: problemId },
+        include: { testcases: true, tags: true }
+      });
+      
+      if (!problem) {
+        throw new Error("Problem not found");
+      }
+      
+      // Cache the problem for future use
+      await ProblemCache.cacheProblem(problem);
+    }
+
     const battleCode = await BattleCode.generateBattleCode();
 
     const battle = await Database.client.battle.create({
       data: {
         player1Id,
-        problemId,
+        problemId: problemId,
         status: "WAITING",
         battleCode,
       }

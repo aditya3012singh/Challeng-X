@@ -7,6 +7,9 @@ import SocketServer from "./integrations/socket/socket.server.js";
 import SocketEmitter from "./core/config/socket.js";
 import ContestCronService from "./modules/contest/contest.cron.js";
 import Redis from "ioredis";
+import UserCache from "./core/cache/userCache.js";
+import ProblemCache from "./core/cache/problemCache.js";
+import TestcaseCache from "./core/cache/testcaseCache.js";
 
 class ServerApp {
   static io = null;
@@ -111,7 +114,7 @@ class ServerApp {
     }
   }
 
-  static start() {
+  static async start() {
     const app = App.createApp();
     const server = this.createServer(app);
 
@@ -122,6 +125,9 @@ class ServerApp {
 
     // Initialize Squid Game socket handlers
     SquidGameSocket.initializeSquidGameSocket(this.io);
+
+    // Warm up caches on startup
+    await this.warmUpCaches();
 
     ContestCronService.start();
 
@@ -138,6 +144,24 @@ class ServerApp {
     server.listen(PORT, () => {
       logger.info(`🚀 CodeArena Production Server running on port ${PORT}`);
     });
+  }
+
+  /**
+   * Warm up all caches on server startup
+   */
+  static async warmUpCaches() {
+    try {
+      logger.info(" warming up Redis caches...");
+      
+      await UserCache.warmUp();
+      await ProblemCache.warmUp();
+      await TestcaseCache.warmUp();
+      
+      logger.info("✅ All caches warmed up");
+    } catch (error) {
+      logger.error("❌ Cache warm-up failed:", error);
+      logger.warn("⚠️  Continuing without cache warm-up");
+    }
   }
 }
 

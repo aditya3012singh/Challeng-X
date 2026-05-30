@@ -5,6 +5,7 @@ import RedisClient from "../../core/cache/redis.client.js";
 import jwt from "jsonwebtoken";
 import env from "../../core/config/env.js";
 import logger from "../../core/logger/logger.js";
+import UserCache from "../../core/cache/userCache.js";
 import { handleQueue } from "./queue.handlers.js";
 import { 
     joinBattleRoom, 
@@ -182,6 +183,11 @@ class SocketServer {
             // 9. Presence Tracking (Online Status)
             this.updatePresence(socket.userId, true);
 
+            // 10. Heartbeat Handler (keeps presence updated)
+            socket.on("heartbeat", () => {
+                this.updateHeartbeat(socket.userId);
+            });
+
             // 9. Reconnect & Disconnect
             socket.on("rejoin_battle", (payload) => handleReconnect(this.io, socket, payload));
             socket.on("disconnect", () => {
@@ -194,16 +200,35 @@ class SocketServer {
     static async updatePresence(userId, isOnline) {
         if (!userId) return;
         try {
-            const presenceKey = "online_users";
             if (isOnline) {
-                await RedisClient.client.sadd(presenceKey, userId);
+                await UserCache.markOnline(userId);
+                // Also cache user data if available
+                if (this.io && this.io.sockets && this.io.sockets.sockets) {
+                    const socket = Array.from(this.io.sockets.sockets.values()).find(s => s.userId === userId);
+                    if (socket && socket.user) {
+                        await UserCache.cacheUser(socket.user, true);
+                    }
+                }
             } else {
-                await RedisClient.client.srem(presenceKey, userId);
+                await UserCache.markOffline(userId);
             }
             // Broadcast presence change to everyone (or just friends - for now everyone is simpler)
             this.io.emit("user_presence_update", { userId, isOnline });
         } catch (err) {
             logger.error(`Error updating presence for ${userId}: ${err.message}`);
+        }
+    }
+
+    /**
+     * Update user presence (heartbeat) - called every 10 seconds
+     * @param {string} userId 
+     */
+    static async updateHeartbeat(userId) {
+        if (!userId) return;
+        try {
+            await UserCache.updatePresence(userId);
+        } catch (err) {
+            logger.error(`Error updating heartbeat for ${userId}: ${err.message}`);
         }
     }
 }

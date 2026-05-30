@@ -289,7 +289,7 @@ const BattleArena = () => {
                 style: { borderRadius: '2px', background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }
             });
             setShowForfeitModal(false);
-            navigate('/battles');
+            navigate('/');
         } catch (err) {
             console.error(err);
             toast.error("Signal Termination Failed");
@@ -1458,7 +1458,7 @@ const BattleArena = () => {
 
                             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
                                 <button
-                                    onClick={() => navigate('/battles')}
+                                    onClick={() => navigate('/')}
                                     className="w-full sm:flex-1 py-4 bg-white/5 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-black transition-all"
                                 >
                                     Exit Battle

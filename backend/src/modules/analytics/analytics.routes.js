@@ -8,7 +8,7 @@ const router = express.Router();
  */
 const handleGetProfileAnalytics = async (req, res) => {
     try {
-        const { default: AnalyticsController } = await import("../controllers/analytics.controller.js");
+        const { default: AnalyticsController } = await import("./analytics.controller.js");
         return AnalyticsController.getProfileAnalytics(req, res);
     } catch (error) {
         console.error("Analytics Route Error:", error);
@@ -29,7 +29,7 @@ router.get("/:username", AuthMiddleware.handle, handleGetProfileAnalytics);
 // 3. Global Stats (Public)
 router.get("/global/stats", async (req, res) => {
     try {
-        const { default: AnalyticsController } = await import("../controllers/analytics.controller.js");
+        const { default: AnalyticsController } = await import("./analytics.controller.js");
         return AnalyticsController.getGlobalStats(req, res);
     } catch (error) {
         console.error("Global Stats Route Error:", error);

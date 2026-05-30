@@ -7,6 +7,8 @@ import JudgeService from "../src/integrations/judge/judge.service.js";
 import SubmissionService from "../src/modules/submission/submission.service.js";
 import BattleService from "../src/modules/battle/battle.service.js";
 import S3Service from "../src/integrations/s3/s3.service.js";
+import UserCache from "../src/core/cache/userCache.js";
+import ProblemCache from "../src/core/cache/problemCache.js";
 import logger from "../src/core/logger/logger.js";
 import eventBus from "../src/core/events/eventBus.js";
 import { EventTypes } from "../src/core/events/eventTypes.js";
@@ -50,6 +52,9 @@ const worker = new Worker(
             if (!submission) throw new Error("Submission not found");
             if (!submission.problem) throw new Error("Submission has no associated problem");
             console.timeEnd(`Job-${job.id}-init`);
+
+            // Cache user data for future requests
+            await UserCache.cacheUser(submission.user);
 
             // Filter testcases based on type (RUN only uses sample cases)
             let testcases = submission.problem.testcases;

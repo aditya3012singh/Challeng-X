@@ -6,6 +6,8 @@ import Database from "../../core/config/db.js";
 import BattleCode from "../../utils/battleCode.js";
 import SocketEmitter from "../../core/config/socket.js";
 import S3Service from "../../integrations/s3/s3.service.js";
+import UserCache from "../../core/cache/userCache.js";
+import ProblemCache from "../../core/cache/problemCache.js";
 import logger from "../../core/logger/logger.js";
 
 const MATCHMAKING_QUEUE = "matchmaking:queue";
@@ -22,15 +24,26 @@ const QUEUE_TIMEOUT = 60000; // 60 seconds timeout
 
 class MatchmakingService {
   static async joinQueue(userId, difficulty, socketId, lobbyId = null) {
-    // Get user's rank points
-    const user = await Database.client.user.findUnique({
-      where: { id: userId },
-      select: { rankPoints: true, username: true }
-    });
-
+    // Get user's rank points from cache (fallback to DB)
+    let user = await UserCache.getUser(userId);
+    
     if (!user) {
-      throw new Error("User not found");
+      // Fallback to DB if not in cache
+      user = await Database.client.user.findUnique({
+        where: { id: userId },
+        select: { rankPoints: true, username: true }
+      });
+      
+      if (!user) {
+        throw new Error("User not found");
+      }
+      
+      // Cache the user for future requests
+      await UserCache.cacheUser(user);
     }
+
+    // Ensure rankPoints is a valid number (default to 1000 if null/undefined)
+    const rankPoints = user.rankPoints ?? 1000;
 
     // Check if user already in queue - if so, remove them and re-join (allows refreshing session)
     const existingQueue = await RedisClient.client.get(`matchmaking:user:${userId}`);
@@ -42,7 +55,7 @@ class MatchmakingService {
     const queueData = {
       userId,
       username: user.username,
-      rankPoints: user.rankPoints,
+      rankPoints,
       difficulty,
       socketId,
       lobbyId,
@@ -59,11 +72,11 @@ class MatchmakingService {
     // Add to difficulty-based queue
     await RedisClient.client.zadd(
       `${MATCHMAKING_QUEUE}:${difficulty}`,
-      user.rankPoints,
+      rankPoints,
       userId
     );
 
-    logger.info(`[Matchmaking] User ${user.username} (${userId}) joined ${difficulty} queue with rank ${user.rankPoints}`);
+    logger.info(`[Matchmaking] User ${user.username} (${userId}) joined ${difficulty} queue with rank ${rankPoints}`);
 
     // Try to find a match immediately
     await MatchmakingService.findMatch(userId, difficulty);
@@ -165,23 +178,85 @@ static async leaveQueue(userId) {
       MatchmakingService.leaveQueue(player2.userId)
     ]);
 
-    // Get random problem of specified difficulty
-    const problems = await Database.client.problem.findMany({
-      where: { difficulty }
-    });
+    // Get random problem of specified difficulty from cache
+    const randomProblem = await ProblemCache.getRandomProblemByDifficulty(difficulty);
 
-    if (problems.length === 0) {
-      // Notify players - no problems available
-      SocketEmitter.io?.to(player1.socketId).emit("matchmakingError", {
-        message: "No problems available for this difficulty"
+    if (!randomProblem) {
+      // Fallback to DB if cache is empty
+      const problems = await Database.client.problem.findMany({
+        where: { difficulty }
       });
-      SocketEmitter.io?.to(player2.socketId).emit("matchmakingError", {
-        message: "No problems available for this difficulty"
+
+      if (problems.length === 0) {
+        // Notify players - no problems available
+        SocketEmitter.io?.to(player1.socketId).emit("matchmakingError", {
+          message: "No problems available for this difficulty"
+        });
+        SocketEmitter.io?.to(player2.socketId).emit("matchmakingError", {
+          message: "No problems available for this difficulty"
+        });
+        return;
+      }
+
+      const randomProblemFromDB = problems[Math.floor(Math.random() * problems.length)];
+      
+      // Cache the problem for future use
+      await ProblemCache.cacheProblem(randomProblemFromDB);
+      
+      const battleCode = await BattleCode.generateBattleCode();
+
+      // Create battle with both players
+      const battle = await Database.client.battle.create({
+        data: {
+          player1Id: player1.userId,
+          player2Id: player2.userId,
+          problemId: randomProblemFromDB.id,
+          status: "ONGOING",
+          startedAt: new Date(),
+          battleCode
+        },
+        include: {
+          problem: {
+            select: {
+              id: true,
+              title: true,
+              difficulty: true,
+              description: true,
+              timeLimitMs: true
+            }
+          }
+        }
       });
-      return;
+      
+      // Pre-cache hidden test cases asynchronously to speed up the first submission
+      S3Service.fetchHiddenTestCases(randomProblemFromDB.id).catch(err => 
+        console.error(`[Pre-cache] Matchmaking failed for problem ${randomProblemFromDB.id}:`, err.message)
+      );
+      
+      // Notify both players via user-specific rooms (more stable than socket IDs)
+      const user1Room = `user_${player1.userId}`;
+      logger.info(`[Matchmaking] Emitting match_found to room: ${user1Room}`);
+      SocketEmitter.io?.to(user1Room).emit("match_found", {
+        battleId: battle.id,
+        battleCode: battle.battleCode,
+        opponent: player2.username,
+        problem: battle.problem
+      });
+    
+      // For ghost matches, player2.socketId/userId might be system-level, but we follow the same pattern
+      if (player2.userId && player2.userId !== 'ghost') {
+          const user2Room = `user_${player2.userId}`;
+          SocketEmitter.io?.to(user2Room).emit("match_found", {
+            battleId: battle.id,
+            battleCode: battle.battleCode,
+            opponent: player1.username,
+            problem: battle.problem
+          });
+      }
+
+      return battle;
     }
 
-    const randomProblem = problems[Math.floor(Math.random() * problems.length)];
     const battleCode = await BattleCode.generateBattleCode();
 
     // Create battle with both players
