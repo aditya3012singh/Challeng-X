@@ -28,6 +28,7 @@ import NotificationRoutes from "./modules/notification/notification.routes.js";
 import AnalyticsRoutes from "./modules/analytics/analytics.routes.js";
 import AIRoutes from "./modules/ai/ai.routes.js";
 import HealthRoutes from "./core/health/health.routes.js";
+import GrpcJudgeClient from "./integrations/judge/grpcJudgeClient.js";
 
 class App {
   static createApp() {
@@ -117,6 +118,26 @@ class App {
         });
       } catch (error) {
         logger.error('Failed to get health status:', error);
+        res.status(500).json({
+          status: "unhealthy",
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          traceId: req.traceId
+        });
+      }
+    });
+
+    // Judge Service Health Check
+    app.get("/api/health/judge", async (req, res) => {
+      try {
+        const health = await GrpcJudgeClient.getHealth();
+        const statusCode = health.status === 'healthy' ? 200 : 503;
+        res.status(statusCode).json({
+          ...health,
+          traceId: req.traceId
+        });
+      } catch (error) {
+        logger.error('Failed to get judge health:', error);
         res.status(500).json({
           status: "unhealthy",
           error: error.message,

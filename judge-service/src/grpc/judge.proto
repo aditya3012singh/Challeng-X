@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package judge;
+
+service JudgeService {
+  rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
+}
+
+message RunCodeRequest {
+  string submissionId = 1;
+  string language = 2;
+  string code = 3;
+  repeated string inputs = 4;
+  bool earlyExit = 5;
+}
+
+message TestCaseResult {
+  string output = 1;
+  string error = 2;
+  bool passed = 3;
+}
+
+message RunCodeResponse {
+  repeated TestCaseResult results = 1;
+  int32 stoppedAt = 2;
+  int64 executionTimeMs = 3;
+  string error = 4;
+}

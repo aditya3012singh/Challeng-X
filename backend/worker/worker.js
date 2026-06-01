@@ -3,7 +3,7 @@ import { Worker } from "bullmq";
 import AIService from "../src/modules/ai/ai.service.js";
 import IORedis from "ioredis";
 
-import JudgeService from "../src/integrations/judge/judge.service.js";
+import GrpcJudgeClient from "../src/integrations/judge/grpcJudgeClient.js";
 import SubmissionService from "../src/modules/submission/submission.service.js";
 import BattleService from "../src/modules/battle/battle.service.js";
 import S3Service from "../src/integrations/s3/s3.service.js";
@@ -83,36 +83,16 @@ const worker = new Worker(
 
             logger.info(`⏱ [${submission.language}] Starting ${type} — ${total} test case(s)`);
 
-            // RUN type disable early_exit to get full feedback on all sample cases
-            const { results, stopped_at } = await JudgeService.runTestCases(
-                submission.language,
-                submission.code,
-                testcases.map(tc => tc.input),
-                !isRun, // earlyExit = true for SUBMIT, false for RUN
-                (progress) => {
-                    // Touch the job lock to prevent stalling on massive evaluations
-                    job.updateProgress(Math.floor((progress.index / total) * 100)).catch(() => { });
+            // Execute code via gRPC
+            const { results, stopped_at, executionTimeMs } = await GrpcJudgeClient.runCode({
+                submissionId,
+                language: submission.language,
+                code: submission.code,
+                inputs: testcases.map(tc => tc.input),
+                earlyExit: !isRun, // earlyExit = true for SUBMIT, false for RUN
+            });
 
-                    // Publish progress to Redjs channel
-                    publisher.publish("worker_events", JSON.stringify({
-                        event: "submission_progress",
-                        data: {
-                            submissionId,
-                            userId: userId || submission.user.id,
-                            battleId: battleId || submission.battleId || null,
-                            index: progress.index,
-                            total,
-                            passed: progress.passed,
-                            language: submission.language
-                        }
-                    })).catch(err => console.error("Redis publish error PROGRESS:", err));
-                }
-            );
-
-            const judgeMs = Date.now() - t0;
-            const executionTimeMs = judgeMs;
-
-            console.log(`⏱  [${submission.language}] ${type} done in ${judgeMs}ms | passed=${stopped_at}/${total}`);
+            console.log(`⏱  [${submission.language}] ${type} done in ${executionTimeMs}ms | passed=${stopped_at}/${total}`);
 
             // Process results
             const runDetails = [];
