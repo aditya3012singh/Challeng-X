@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import env from "../../core/config/env.js";
 import logger from "../../core/logger/logger.js";
+import { recordGrpcRequest, recordJudgeExecution } from "../../core/metrics/prometheus.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -176,6 +177,23 @@ class GrpcJudgeClient {
                     if (err) {
                         logger.error(`[GrpcJudgeClient] gRPC error for ${submissionId}:`, err);
 
+                        // Record gRPC error metrics
+                        recordGrpcRequest({
+                            method: 'RunCode',
+                            status: 'error',
+                            duration: executionTimeMs,
+                            errorCode: err.code || 'UNKNOWN'
+                        });
+
+                        // Record judge execution failure
+                        const isTimeout = err.code === grpc.status.DEADLINE_EXCEEDED;
+                        recordJudgeExecution({
+                            language,
+                            status: 'failed',
+                            duration: executionTimeMs,
+                            timeout: isTimeout
+                        });
+
                         // Check if error is non-retryable (INVALID_ARGUMENT)
                         if (this._isNonRetryableError(err)) {
                             // Throw non-retryable error - BullMQ will mark job as failed
@@ -191,6 +209,21 @@ class GrpcJudgeClient {
                         // Default: throw error for BullMQ to handle
                         return reject(err);
                     }
+
+                    // Record successful gRPC request
+                    recordGrpcRequest({
+                        method: 'RunCode',
+                        status: 'success',
+                        duration: executionTimeMs
+                    });
+
+                    // Record successful judge execution
+                    recordJudgeExecution({
+                        language,
+                        status: 'success',
+                        duration: executionTimeMs,
+                        timeout: false
+                    });
 
                     // Convert gRPC results to internal format
                     const results = response.results.map((res) => ({

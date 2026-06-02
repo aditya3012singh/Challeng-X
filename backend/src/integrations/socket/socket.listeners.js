@@ -1,13 +1,209 @@
 import logger from '../../core/logger/logger.js';
 import SocketEmitter from '../../core/config/socket.js';
+import { EventTypes } from '../../core/events/eventTypes.js';
 
 /**
  * Socket Module Event Listeners
  * Phase 3A: Implement socket emissions via events (DUAL MODE)
  * 
  * Socket module listens to battle and submission events to broadcast real-time updates
- * Keeps existing SocketEmitter calls for now (dual mode)
+ * This decouples BattleService from direct SocketEmitter calls
  */
+
+/**
+ * Handle BattleSocketJoined event - Notify players that opponent joined
+ */
+export async function handleBattleSocketJoined(payload) {
+    const { battleId, playerId } = payload;
+    
+    if (!battleId || !playerId) {
+        logger.warn('[Socket Listener] ⚠️ BattleSocketJoined event missing battleId or playerId');
+        return;
+    }
+
+    try {
+        logger.info('[Socket Listener] 📥 BattleSocketJoined event received', {
+            battleId,
+            playerId
+        });
+
+        SocketEmitter.emitToBattle(battleId, 'battle_joined', {
+            playerId
+        });
+
+        logger.info('[Socket Listener] ✅ battle_joined emitted', { battleId, playerId });
+    } catch (error) {
+        logger.error('[Socket Listener] ❌ Error handling BattleSocketJoined event:', error);
+    }
+}
+
+/**
+ * Handle BattleSocketCountdown event - Start countdown before battle
+ */
+export async function handleBattleSocketCountdown(payload) {
+    const { battleId, seconds } = payload;
+    
+    if (!battleId) {
+        logger.warn('[Socket Listener] ⚠️ BattleSocketCountdown event missing battleId');
+        return;
+    }
+
+    try {
+        logger.info('[Socket Listener] 📥 BattleSocketCountdown event received', {
+            battleId,
+            seconds
+        });
+
+        SocketEmitter.emitToBattle(battleId, 'battle_countdown', {
+            seconds
+        });
+
+        logger.info('[Socket Listener] ✅ battle_countdown emitted', { battleId, seconds });
+    } catch (error) {
+        logger.error('[Socket Listener] ❌ Error handling BattleSocketCountdown event:', error);
+    }
+}
+
+/**
+ * Handle BattleSocketStarted event - Notify battle has started
+ */
+export async function handleBattleSocketStarted(payload) {
+    const { battleId, startedAt } = payload;
+    
+    if (!battleId) {
+        logger.warn('[Socket Listener] ⚠️ BattleSocketStarted event missing battleId');
+        return;
+    }
+
+    try {
+        logger.info('[Socket Listener] 📥 BattleSocketStarted event received', {
+            battleId,
+            startedAt
+        });
+
+        SocketEmitter.emitToBattle(battleId, 'battle_start', {
+            startedAt
+        });
+
+        logger.info('[Socket Listener] ✅ battle_start emitted', { battleId });
+    } catch (error) {
+        logger.error('[Socket Listener] ❌ Error handling BattleSocketStarted event:', error);
+    }
+}
+
+/**
+ * Handle BattleSocketTimeout event - Notify battle timeout
+ */
+export async function handleBattleSocketTimeout(payload) {
+    const { battleId, draw } = payload;
+    
+    if (!battleId) {
+        logger.warn('[Socket Listener] ⚠️ BattleSocketTimeout event missing battleId');
+        return;
+    }
+
+    try {
+        logger.info('[Socket Listener] 📥 BattleSocketTimeout event received', {
+            battleId,
+            draw
+        });
+
+        SocketEmitter.emitToBattle(battleId, 'battle_timeout', {
+            draw
+        });
+
+        logger.info('[Socket Listener] ✅ battle_timeout emitted', { battleId, draw });
+    } catch (error) {
+        logger.error('[Socket Listener] ❌ Error handling BattleSocketTimeout event:', error);
+    }
+}
+
+/**
+ * Handle BattleSocketEnd event - Notify battle end
+ */
+export async function handleBattleSocketEnd(payload) {
+    const { battleId, winnerId, draw } = payload;
+    
+    if (!battleId) {
+        logger.warn('[Socket Listener] ⚠️ BattleSocketEnd event missing battleId');
+        return;
+    }
+
+    try {
+        logger.info('[Socket Listener] 📥 BattleSocketEnd event received', {
+            battleId,
+            winnerId,
+            draw
+        });
+
+        SocketEmitter.emitToBattle(battleId, 'battle_end', {
+            winnerId,
+            draw
+        });
+
+        logger.info('[Socket Listener] ✅ battle_end emitted', { battleId, winnerId, draw });
+    } catch (error) {
+        logger.error('[Socket Listener] ❌ Error handling BattleSocketEnd event:', error);
+    }
+}
+
+/**
+ * Handle BattleSocketAttemptsUpdated event - Notify attempt count update
+ */
+export async function handleBattleSocketAttemptsUpdated(payload) {
+    const { battleId, player1Attempts, player2Attempts } = payload;
+    
+    if (!battleId) {
+        logger.warn('[Socket Listener] ⚠️ BattleSocketAttemptsUpdated event missing battleId');
+        return;
+    }
+
+    try {
+        logger.info('[Socket Listener] 📥 BattleSocketAttemptsUpdated event received', {
+            battleId,
+            player1Attempts,
+            player2Attempts
+        });
+
+        SocketEmitter.emitToBattle(battleId, 'attempts_updated', {
+            player1Attempts,
+            player2Attempts
+        });
+
+        logger.info('[Socket Listener] ✅ attempts_updated emitted', { battleId, player1Attempts, player2Attempts });
+    } catch (error) {
+        logger.error('[Socket Listener] ❌ Error handling BattleSocketAttemptsUpdated event:', error);
+    }
+}
+
+/**
+ * Handle BattleSocketCommentary event - Emit AI commentary to spectators
+ */
+export async function handleBattleSocketCommentary(payload) {
+    const { battleId, commentary, timestamp } = payload;
+    
+    if (!battleId) {
+        logger.warn('[Socket Listener] ⚠️ BattleSocketCommentary event missing battleId');
+        return;
+    }
+
+    try {
+        logger.info('[Socket Listener] 📥 BattleSocketCommentary event received', {
+            battleId
+        });
+
+        if (SocketEmitter.io) {
+            SocketEmitter.io.to(`spectator_${battleId}`).emit('battle_commentary', {
+                commentary,
+                timestamp
+            });
+        }
+
+        logger.info('[Socket Listener] ✅ battle_commentary emitted', { battleId });
+    } catch (error) {
+        logger.error('[Socket Listener] ❌ Error handling BattleSocketCommentary event:', error);
+    }
+}
 
 /**
  * Handle BattleStateChanged event - Broadcast state to clients

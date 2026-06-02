@@ -1,6 +1,7 @@
 import RedisClient from "./redis.client.js";
 import Database from "../../core/config/db.js";
 import logger from "../../core/logger/logger.js";
+import { recordCacheOperation } from "../../core/metrics/prometheus.js";
 
 const PROBLEMS_SET = "problems:cached";
 const PROBLEM_PREFIX = "problem:cached:";
@@ -23,10 +24,12 @@ class ProblemCache {
             const cached = await RedisClient.client.get(`${PROBLEM_PREFIX}${problemId}`);
             if (cached) {
                 logger.debug(`[ProblemCache] Cache hit for problem ${problemId}`);
+                recordCacheOperation({ cacheType: 'problem', hit: true });
                 return JSON.parse(cached);
             }
 
             // Single-flight: Try to acquire lock
+            recordCacheOperation({ cacheType: 'problem', hit: false });
             const lockKey = `${LOCK_PREFIX}${problemId}`;
             const lock = await RedisClient.client.set(lockKey, '1', 'NX', 'EX', LOCK_TTL);
             
@@ -80,6 +83,7 @@ class ProblemCache {
             
             if (!randomId) {
                 // Cache miss - fetch from DB
+                recordCacheOperation({ cacheType: 'problem', hit: false });
                 const problems = await Database.client.problem.findMany({
                     where: { difficulty },
                     select: { id: true }
@@ -97,6 +101,7 @@ class ProblemCache {
             }
 
             // Get full problem from cache
+            recordCacheOperation({ cacheType: 'problem', hit: true });
             return await this.getProblem(randomId);
         } catch (error) {
             logger.error(`[ProblemCache] Error getting random problem for difficulty ${difficulty}:`, error);

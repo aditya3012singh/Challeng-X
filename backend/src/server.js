@@ -10,6 +10,8 @@ import Redis from "ioredis";
 import UserCache from "./core/cache/userCache.js";
 import ProblemCache from "./core/cache/problemCache.js";
 import TestcaseCache from "./core/cache/testcaseCache.js";
+import { updateQueueDepth } from "./core/metrics/prometheus.js";
+import submissionQueue from "./core/queue/submissionQueue.js";
 
 class ServerApp {
   static io = null;
@@ -131,6 +133,9 @@ class ServerApp {
 
     ContestCronService.start();
 
+    // ✅ PHASE 1A: Start queue metrics collection
+    this.startQueueMetricsCollection();
+
     const PORT = env.PORT || 4000;
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
@@ -162,6 +167,27 @@ class ServerApp {
       logger.error("❌ Cache warm-up failed:", error);
       logger.warn("⚠️  Continuing without cache warm-up");
     }
+  }
+
+  /**
+   * Periodically collect and update queue metrics
+   */
+  static startQueueMetricsCollection() {
+    setInterval(async () => {
+      try {
+        const stats = await submissionQueue.getStats();
+        if (stats) {
+          updateQueueDepth({
+            waiting: stats.jobCounts?.waiting || 0,
+            active: stats.jobCounts?.active || 0,
+            completed: stats.jobCounts?.completed || 0,
+            failed: stats.jobCounts?.failed || 0
+          });
+        }
+      } catch (error) {
+        logger.error('Failed to collect queue metrics:', error);
+      }
+    }, 30000); // Update every 30 seconds
   }
 }
 

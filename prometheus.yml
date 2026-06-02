@@ -1,0 +1,54 @@
+# Prometheus Configuration for CodeArena
+# Phase 1A: MVP - Core metrics collection
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'codearena'
+
+# Alertmanager configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - localhost:9093
+
+rule_files:
+  # - "alert_rules.yml"
+  # - "recording_rules.yml"
+
+scrape_configs:
+  # Backend API Server
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['localhost:4000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    
+  # Worker Process (if exposed on separate port)
+  - job_name: 'worker'
+    static_configs:
+      - targets: ['localhost:4001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    
+  # Judge Service (if exposed on separate port)
+  - job_name: 'judge-service'
+    static_configs:
+      - targets: ['localhost:50052']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Redis (if using redis_exporter)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['localhost:9121']
+
+  # Node exporter (for system metrics)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['localhost:9100']

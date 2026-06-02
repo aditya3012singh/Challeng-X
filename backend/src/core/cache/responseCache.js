@@ -1,5 +1,6 @@
 import RedisClient from "../cache/redis.client.js";
 import logger from "../logger/logger.js";
+import { recordCacheOperation } from "../../core/metrics/prometheus.js";
 
 const CACHE_PREFIX = "response:";
 const CACHE_TTL = 300; // 5 minutes default
@@ -33,8 +34,10 @@ class ResponseCache {
             const cached = await RedisClient.client.get(key);
             if (cached) {
                 logger.debug(`[ResponseCache] Cache hit for ${key}`);
+                recordCacheOperation({ cacheType: 'response', hit: true });
                 return JSON.parse(cached);
             }
+            recordCacheOperation({ cacheType: 'response', hit: false });
             return null;
         } catch (error) {
             logger.error(`[ResponseCache] Error getting cache ${key}:`, error);

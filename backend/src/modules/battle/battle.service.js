@@ -2,7 +2,6 @@
 
 import RedisClient from "../../core/cache/redis.client.js";
 import Database from "../../core/config/db.js";
-import SocketEmitter from "../../core/config/socket.js";
 import BattleCode from "../../utils/battleCode.js";
 import S3Service from "../../integrations/s3/s3.service.js";
 import ProblemCache from "../../core/cache/problemCache.js";
@@ -140,11 +139,15 @@ class BattleService {
       }
     });
 
-    SocketEmitter.emitToBattle(battle.id, "battle_joined", {
+    // Emit battle_joined event via eventBus
+    eventBus.emitEvent(EventTypes.BATTLE_SOCKET_JOINED, {
+      battleId: battle.id,
       playerId: player2Id
     });
 
-    SocketEmitter.emitToBattle(battle.id, "battle_countdown", {
+    // Emit battle_countdown event via eventBus
+    eventBus.emitEvent(EventTypes.BATTLE_SOCKET_COUNTDOWN, {
+      battleId: battle.id,
       seconds: 5
     });
 
@@ -171,7 +174,9 @@ class BattleService {
           metadata: { startedAt: new Date() }
         });
         
-        SocketEmitter.emitToBattle(battle.id, "battle_start", {
+        // Emit battle_start event via eventBus
+        eventBus.emitEvent(EventTypes.BATTLE_SOCKET_STARTED, {
+          battleId: battle.id,
           startedAt: new Date()
         });
 
@@ -182,8 +187,18 @@ class BattleService {
             if (b && b.status === "ONGOING") {
               const result = await BattleService.finishBattleService(battle.id, null); // draw
               if (result) {
-                SocketEmitter.emitToBattle(battle.id, "battle_timeout", { draw: true });
-                SocketEmitter.emitToBattle(battle.id, "battle_end", { winnerId: null, draw: true });
+                // Emit battle_timeout event via eventBus
+                eventBus.emitEvent(EventTypes.BATTLE_SOCKET_TIMEOUT, {
+                  battleId: battle.id,
+                  draw: true
+                });
+                
+                // Emit battle_end event via eventBus
+                eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {
+                  battleId: battle.id,
+                  winnerId: null,
+                  draw: true
+                });
               }
             }
           } catch (e) {
@@ -408,8 +423,9 @@ class BattleService {
       });
     }
 
-    // Notify listeners about the attempt update
-    SocketEmitter.emitToBattle(battleId, "attempts_updated", {
+    // Notify listeners about the attempt update via eventBus
+    eventBus.emitEvent(EventTypes.BATTLE_SOCKET_ATTEMPTS_UPDATED, {
+      battleId,
       player1Attempts: updatedBattle.attemptsPlayer1 || 0,
       player2Attempts: updatedBattle.attemptsPlayer2 || 0
     });
@@ -521,7 +537,12 @@ class BattleService {
           }
         });
         await RedisClient.client.del("problems:all");
-        SocketEmitter.emitToBattle(battleId, "battle_end", { winnerId: null, draw: true });
+        // Emit battle_end event via eventBus
+        eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {
+          battleId,
+          winnerId: null,
+          draw: true
+        });
         console.log(`✅ Double failure penalties applied for battle ${battleId}`);
       } catch (err) {
         console.error(`❌ handleDoubleFailure error: ${err.message}`);
@@ -563,7 +584,12 @@ class BattleService {
     const result = await this.finishBattleService(battleId, winnerId);
 
     if (result) {
-      SocketEmitter.emitToBattle(battleId, "battle_end", { winnerId, draw: false });
+      // Emit battle_end event via eventBus
+      eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {
+        battleId,
+        winnerId,
+        draw: false
+      });
     }
 
     return result;
@@ -656,12 +682,12 @@ class BattleService {
           battle.problem
         );
 
-        if (SocketEmitter.io) {
-          SocketEmitter.io.to(`spectator_${battleId}`).emit("battle_commentary", {
-            commentary,
-            timestamp: new Date()
-          });
-        }
+        // Emit battle_commentary event via eventBus
+        eventBus.emitEvent(EventTypes.BATTLE_SOCKET_COMMENTARY, {
+          battleId,
+          commentary,
+          timestamp: new Date()
+        });
       } catch (err) {
         console.error("AI Commentary Error:", err.message);
       }

@@ -44,6 +44,15 @@ export function registerAllListeners() {
         eventBus.onEvent(EventTypes.SUBMISSION_COMPLETED, SocketListeners.handleSubmissionCompleted);
         eventBus.onEvent(EventTypes.BATTLE_CREATED, SocketListeners.handleBattleCreated);
         eventBus.onEvent(EventTypes.BATTLE_FINISHED, SocketListeners.handleBattleFinished);
+        
+        // Battle Socket Events (decoupled from BattleService)
+        eventBus.onEvent(EventTypes.BATTLE_SOCKET_JOINED, SocketListeners.handleBattleSocketJoined);
+        eventBus.onEvent(EventTypes.BATTLE_SOCKET_COUNTDOWN, SocketListeners.handleBattleSocketCountdown);
+        eventBus.onEvent(EventTypes.BATTLE_SOCKET_STARTED, SocketListeners.handleBattleSocketStarted);
+        eventBus.onEvent(EventTypes.BATTLE_SOCKET_TIMEOUT, SocketListeners.handleBattleSocketTimeout);
+        eventBus.onEvent(EventTypes.BATTLE_SOCKET_END, SocketListeners.handleBattleSocketEnd);
+        eventBus.onEvent(EventTypes.BATTLE_SOCKET_ATTEMPTS_UPDATED, SocketListeners.handleBattleSocketAttemptsUpdated);
+        eventBus.onEvent(EventTypes.BATTLE_SOCKET_COMMENTARY, SocketListeners.handleBattleSocketCommentary);
 
         logger.info('[EventBus] ✅ All event listeners registered successfully');
         logger.info('[EventBus] 📊 Total listeners registered:', eventBus.listenerCount());

@@ -4,7 +4,7 @@ import Database from "../../core/config/db.js";
 import SquidGameConfig from "../../core/constants/squidGameConfig.js";
 import SocketEmitter from "../../core/config/socket.js";
 import SquidGameSocket from "./squidGame.socket.js";
-import SubmissionService from "../submission/submission.service.js";
+import SubmissionOrchestrator from "../submission/submission.orchestrator.js";
 import S3Service from "../../integrations/s3/s3.service.js";
 import AIService from "../ai/ai.service.js";
 
@@ -377,9 +377,9 @@ class SquidGameService {
 
     if (!round) throw new Error("Round not found");
 
-    // 2. Queue the submission via the standard SubmissionService
+    // 2. Queue the submission via the standard SubmissionOrchestrator
     // This will trigger the judge worker
-    return await SubmissionService.processSubmission({
+    return await SubmissionOrchestrator.processSubmission({
       userId,
       problemId: round.problemId,
       code,

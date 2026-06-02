@@ -2,6 +2,7 @@ import RedisClient from "./redis.client.js";
 import Database from "../../core/config/db.js";
 import S3Service from "../../integrations/s3/s3.service.js";
 import logger from "../../core/logger/logger.js";
+import { recordCacheOperation } from "../../core/metrics/prometheus.js";
 
 const TESTCASE_PREFIX = "testcases:cached:";
 const TESTCASE_TTL = 86400; // 24 hours
@@ -24,6 +25,7 @@ class TestcaseCache {
             const activeCached = await RedisClient.client.get(`${ACTIVE_TESTCASE_PREFIX}${problemId}`);
             if (activeCached) {
                 logger.debug(`[TestcaseCache] Active cache hit for testcases ${problemId}`);
+                recordCacheOperation({ cacheType: 'testcase', hit: true });
                 return JSON.parse(activeCached);
             }
 
@@ -31,10 +33,12 @@ class TestcaseCache {
             const cached = await RedisClient.client.get(`${TESTCASE_PREFIX}${problemId}`);
             if (cached) {
                 logger.debug(`[TestcaseCache] Cache hit for testcases ${problemId}`);
+                recordCacheOperation({ cacheType: 'testcase', hit: true });
                 return JSON.parse(cached);
             }
 
             // Cache miss - fetch from S3
+            recordCacheOperation({ cacheType: 'testcase', hit: false });
             const testcases = await S3Service.fetchHiddenTestCases(problemId);
 
             if (testcases && testcases.length > 0) {

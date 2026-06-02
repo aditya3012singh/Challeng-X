@@ -1,6 +1,7 @@
 import RedisClient from "./redis.client.js";
 import Database from "../../core/config/db.js";
 import logger from "../../core/logger/logger.js";
+import { recordCacheOperation } from "../../core/metrics/prometheus.js";
 
 const ONLINE_USERS_SET = "online_users";
 const PRESENCE_PREFIX = "presence:";
@@ -23,10 +24,12 @@ class UserCache {
             const cached = await RedisClient.client.get(`${USER_PREFIX}${userId}`);
             if (cached) {
                 logger.debug(`[UserCache] Cache hit for user ${userId}`);
+                recordCacheOperation({ cacheType: 'user', hit: true });
                 return JSON.parse(cached);
             }
 
             // Cache miss - fetch from DB
+            recordCacheOperation({ cacheType: 'user', hit: false });
             const user = await Database.client.user.findUnique({
                 where: { id: userId },
                 select: {

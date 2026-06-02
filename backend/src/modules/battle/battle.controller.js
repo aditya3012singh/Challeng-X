@@ -4,7 +4,7 @@
 // • Get status
 
 import BattleService from "./battle.service.js";
-import SubmissionService from "../submission/submission.service.js";
+import SubmissionOrchestrator from "../submission/submission.orchestrator.js";
 
 class BattleController {
     static async createBattleRandomQuestionController(req, res, next) {
@@ -89,7 +89,7 @@ class BattleController {
                 return res.status(400).json({ message: "Battle not active" });
             }
 
-            const submissionResult = await SubmissionService.processSubmission({
+            const submissionResult = await SubmissionOrchestrator.processSubmission({
                 userId,
                 problemId: battle.problemId,
                 code,

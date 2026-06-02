@@ -8,6 +8,8 @@ import env from "./core/config/env.js";
 import { rateLimit } from "express-rate-limit";
 import logger from "./core/logger/logger.js";
 import { traceIdMiddleware } from "./api/middleware/traceId.middleware.js";
+import { metricsMiddleware } from "./api/middleware/metrics.middleware.js";
+import { metricsToPrometheus } from "./core/metrics/prometheus.js";
 import metricsCollector from "./core/metrics/metricsCollector.js";
 import healthCheckService from "./core/health/healthCheck.js";
 
@@ -49,6 +51,9 @@ class App {
 
     // ✅ PHASE 6: Add trace ID middleware for observability
     app.use(traceIdMiddleware);
+
+    // ✅ PHASE 1A: Add Prometheus metrics middleware
+    app.use(metricsMiddleware);
 
     // 🔑 Passport
     app.use(passport.initialize());
@@ -124,6 +129,18 @@ class App {
           timestamp: new Date().toISOString(),
           traceId: req.traceId
         });
+      }
+    });
+
+    // ✅ PHASE 1A: Prometheus metrics endpoint
+    app.get("/metrics", async (req, res) => {
+      try {
+        const metrics = await metricsToPrometheus();
+        res.set('Content-Type', 'text/plain');
+        res.send(metrics);
+      } catch (error) {
+        logger.error('Failed to generate Prometheus metrics:', error);
+        res.status(500).send('Error generating metrics');
       }
     });
 

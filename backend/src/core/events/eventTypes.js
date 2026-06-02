@@ -42,7 +42,16 @@ export const EventTypes = {
     NOTIFICATION_SENT: 'NotificationSent',
     FRIEND_REQUEST_SENT: 'FriendRequestSent',
     FRIEND_REQUEST_ACCEPTED: 'FriendRequestAccepted',
-    MATCH_INVITATION_SENT: 'MatchInvitationSent'
+    MATCH_INVITATION_SENT: 'MatchInvitationSent',
+    
+    // Battle Socket Events (for decoupling BattleService from SocketEmitter)
+    BATTLE_SOCKET_JOINED: 'BattleSocketJoined',
+    BATTLE_SOCKET_COUNTDOWN: 'BattleSocketCountdown',
+    BATTLE_SOCKET_STARTED: 'BattleSocketStarted',
+    BATTLE_SOCKET_TIMEOUT: 'BattleSocketTimeout',
+    BATTLE_SOCKET_END: 'BattleSocketEnd',
+    BATTLE_SOCKET_ATTEMPTS_UPDATED: 'BattleSocketAttemptsUpdated',
+    BATTLE_SOCKET_COMMENTARY: 'BattleSocketCommentary'
 };
 
 /**
@@ -126,5 +135,44 @@ export const EventSchemas = {
         achievementName: 'string',
         rewardType: "'CORES' | 'BADGE'",
         rewardValue: 'string'
+    },
+    
+    // Battle Socket Event Schemas
+    [EventTypes.BATTLE_SOCKET_JOINED]: {
+        battleId: 'string',
+        playerId: 'string'
+    },
+    
+    [EventTypes.BATTLE_SOCKET_COUNTDOWN]: {
+        battleId: 'string',
+        seconds: 'number'
+    },
+    
+    [EventTypes.BATTLE_SOCKET_STARTED]: {
+        battleId: 'string',
+        startedAt: 'Date'
+    },
+    
+    [EventTypes.BATTLE_SOCKET_TIMEOUT]: {
+        battleId: 'string',
+        draw: 'boolean'
+    },
+    
+    [EventTypes.BATTLE_SOCKET_END]: {
+        battleId: 'string',
+        winnerId: 'string | null',
+        draw: 'boolean'
+    },
+    
+    [EventTypes.BATTLE_SOCKET_ATTEMPTS_UPDATED]: {
+        battleId: 'string',
+        player1Attempts: 'number',
+        player2Attempts: 'number'
+    },
+    
+    [EventTypes.BATTLE_SOCKET_COMMENTARY]: {
+        battleId: 'string',
+        commentary: 'string',
+        timestamp: 'Date'
     }
 };

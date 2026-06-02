@@ -2,7 +2,7 @@
 // • Trigger judge
 // • Return result
 
-import SubmissionService from "./submission.service.js";
+import SubmissionOrchestrator from "./submission.orchestrator.js";
 
 class SubmissionController {
   static async submitCode(req, res, next) {
@@ -12,7 +12,7 @@ class SubmissionController {
 
       const userId = req.user.id; // from auth middleware
 
-      const result = await SubmissionService.processSubmission({
+      const result = await SubmissionOrchestrator.processSubmission({
         userId,
         //   battleId,
         problemId,
@@ -32,7 +32,7 @@ class SubmissionController {
   static async getSubmissionStatus(req, res, next) {
     try {
       const { id } = req.params;
-      const result = await SubmissionService.getSubmissionById(id);
+      const result = await SubmissionOrchestrator.getSubmissionById(id);
 
       if (!result) {
         return res.status(404).json({ error: "Submission not found" });

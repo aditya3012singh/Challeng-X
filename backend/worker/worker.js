@@ -12,6 +12,7 @@ import ProblemCache from "../src/core/cache/problemCache.js";
 import logger from "../src/core/logger/logger.js";
 import eventBus from "../src/core/events/eventBus.js";
 import { EventTypes } from "../src/core/events/eventTypes.js";
+import { recordJobCompletion, updateQueueDepth, recordSubmission } from "../src/core/metrics/prometheus.js";
 
 process.on("uncaughtException", (err) => {
     console.error("💥 Uncaught Exception:", err);
@@ -44,6 +45,7 @@ const worker = new Worker(
     "submissionQueue",
     async (job) => {
         const { submissionId, battleId, squidGameId, contestId, userId, type } = job.data;
+        const jobStartTime = Date.now();
         logger.info(`📦 Job ${job.id} picked up — subId=${submissionId} type=${type || "SUBMIT"}`);
 
         try {
@@ -147,6 +149,14 @@ const worker = new Worker(
                 });
 
                 logger.info(`📡 [Worker] Publishing RUN result for subId=${submissionId} (userId=${userId || submission.user.id}, battleId=${battleId || submission.battleId || null})`);
+                
+                // Record submission metrics
+                recordSubmission({
+                    type: type || 'SUBMIT',
+                    language: submission.language,
+                    resultStatus: firstFailedIndex === -1 ? 'passed' : 'failed'
+                });
+                
                 publisher.publish("worker_events", JSON.stringify({
                     event: "submission_result",
                     data: {
@@ -292,6 +302,14 @@ const worker = new Worker(
             });
 
             console.log(`📡 [Worker] Publishing PASSED submit result for subId=${submissionId} (userId=${userId || submission.user.id})`);
+            
+            // Record submission metrics
+            recordSubmission({
+                type: 'SUBMIT',
+                language: submission.language,
+                resultStatus: 'passed'
+            });
+            
             publisher.publish("worker_events", JSON.stringify({
                 event: "submission_result",
                 data: {
@@ -325,7 +343,17 @@ const worker = new Worker(
             }
 
         } catch (err) {
+            const jobDuration = Date.now() - jobStartTime;
             console.error(`💥 Job ${job.id} processor error:`, err.message);
+            
+            // Record job failure metrics
+            recordJobCompletion({
+                status: 'failed',
+                language: submission?.problem?.languages?.[0] || 'unknown',
+                duration: jobDuration,
+                reason: err.message || 'unknown_error'
+            });
+            
             // Re-throw so BullMQ marks it as failed (fires worker.on("failed"))
             throw err;
         }
@@ -339,10 +367,27 @@ const worker = new Worker(
 
 worker.on("completed", (job) => {
     console.log(`✅ Job ${job.id} completed`);
+    
+    // Record successful job completion
+    const jobData = job.data || {};
+    recordJobCompletion({
+        status: 'completed',
+        language: jobData.language || 'unknown',
+        duration: job.finishedOn - job.processedOn
+    });
 });
 
 worker.on("failed", (job, err) => {
     console.error(`❌ Job ${job?.id} failed:`, err.message);
+    
+    // Record failed job
+    const jobData = job?.data || {};
+    recordJobCompletion({
+        status: 'failed',
+        language: jobData.language || 'unknown',
+        duration: job?.finishedOn - job?.processedOn,
+        reason: err.message || 'unknown'
+    });
 });
 
 console.log("🚀 Worker started, waiting for jobs... (concurrency: 5)");
