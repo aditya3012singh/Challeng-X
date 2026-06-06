@@ -96,8 +96,14 @@ class HealthCheckService {
      */
     async checkDatabase() {
         try {
-            // Try a simple query
-            await Database.client.user.count();
+            // Try a simple query with timeout
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Database check timeout after 5s')), 5000)
+            );
+            
+            const queryPromise = Database.client.user.count();
+            
+            await Promise.race([queryPromise, timeoutPromise]);
 
             return {
                 status: 'healthy',
@@ -123,30 +129,39 @@ class HealthCheckService {
      */
     async getHealthStatus() {
         try {
-            const redisHealth = await this.checkRedis();
-            const queueHealth = await this.checkQueue();
-            const dbHealth = await this.checkDatabase();
+            // Add timeout to entire health check (15 seconds)
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Health check timeout after 15s')), 15000)
+            );
+            
+            const checksPromise = (async () => {
+                const redisHealth = await this.checkRedis();
+                const queueHealth = await this.checkQueue();
+                const dbHealth = await this.checkDatabase();
 
-            // Determine overall status
-            let overallStatus = 'healthy';
-            if (redisHealth.status === 'unhealthy' || queueHealth.status === 'unhealthy' || dbHealth.status === 'unhealthy') {
-                overallStatus = 'unhealthy';
-            } else if (redisHealth.status === 'degraded' || queueHealth.status === 'degraded' || dbHealth.status === 'degraded') {
-                overallStatus = 'degraded';
-            }
-
-            const health = {
-                status: overallStatus,
-                timestamp: new Date().toISOString(),
-                checks: {
-                    redis: redisHealth,
-                    queue: queueHealth,
-                    database: dbHealth
+                // Determine overall status
+                let overallStatus = 'healthy';
+                if (redisHealth.status === 'unhealthy' || queueHealth.status === 'unhealthy' || dbHealth.status === 'unhealthy') {
+                    overallStatus = 'unhealthy';
+                } else if (redisHealth.status === 'degraded' || queueHealth.status === 'degraded' || dbHealth.status === 'degraded') {
+                    overallStatus = 'degraded';
                 }
-            };
 
-            this.lastCheck = health;
-            return health;
+                const health = {
+                    status: overallStatus,
+                    timestamp: new Date().toISOString(),
+                    checks: {
+                        redis: redisHealth,
+                        queue: queueHealth,
+                        database: dbHealth
+                    }
+                };
+
+                this.lastCheck = health;
+                return health;
+            })();
+            
+            return await Promise.race([checksPromise, timeoutPromise]);
         } catch (error) {
             structuredLogger.error('Health check failed', {
                 error: error.message

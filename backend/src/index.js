@@ -16,6 +16,7 @@ try {
 // ✅ PHASE 5: Initialize dual mode event bus (local + Redis)
 async function initializePhase5() {
     try {
+        logger.info('[Phase 5] Starting initialization...');
         await eventConsumer.initialize();
         logger.info('✅ [Phase 5] Dual mode event bus initialized successfully');
         eventConsumer.printStatus();
@@ -28,6 +29,7 @@ async function initializePhase5() {
 // ✅ PHASE 6: Initialize health check service
 async function initializePhase6() {
     try {
+        logger.info('[Phase 6] Starting initialization...');
         const health = await healthCheckService.getHealthStatus();
         logger.info('✅ [Phase 6] Health check service initialized successfully');
         logger.info(`📊 [Phase 6] Initial health status: ${health.status}`);
@@ -41,10 +43,13 @@ async function initializePhase6() {
 }
 
 // Initialize Phase 5 before starting server
+logger.info('[Startup] Initializing Phase 5...');
 await initializePhase5();
 
 // Initialize Phase 6 before starting server
+logger.info('[Startup] Initializing Phase 6...');
 await initializePhase6();
 
 // Entry point for the main backend server
+logger.info('[Startup] Starting server...');
 ServerApp.start();

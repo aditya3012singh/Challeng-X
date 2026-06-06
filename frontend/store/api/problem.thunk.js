@@ -17,9 +17,11 @@ export const createProblem = createAsyncThunk(
 // Get all problems
 export const getAllProblems = createAsyncThunk(
     "problem/getAll",
-    async (_, { rejectWithValue }) => {
+    async (params = {}, { rejectWithValue }) => {
         try {
-            const res = await api.get("/problem/list");
+            const queryString = new URLSearchParams(params).toString();
+            const url = queryString ? `/problem/list?${queryString}` : "/problem/list";
+            const res = await api.get(url);
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response.data);

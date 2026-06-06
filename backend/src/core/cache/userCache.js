@@ -96,6 +96,13 @@ class UserCache {
                 }
             };
 
+            // Delete any existing key with potential wrong type
+            try {
+                await RedisClient.client.del(`${USER_PREFIX}${user.id}`);
+            } catch (delErr) {
+                logger.debug(`[UserCache] Could not delete old key for ${user.id}, will overwrite`);
+            }
+
             await RedisClient.client.set(
                 `${USER_PREFIX}${user.id}`,
                 JSON.stringify(userData),
@@ -309,11 +316,20 @@ class UserCache {
                 }
             });
 
+            let successCount = 0;
+            let errorCount = 0;
+
             for (const user of users) {
-                await this.cacheUser(user);
+                try {
+                    await this.cacheUser(user);
+                    successCount++;
+                } catch (err) {
+                    errorCount++;
+                    logger.debug(`[UserCache] Skipping user ${user.id} due to cache error`);
+                }
             }
 
-            logger.info(`[UserCache] Warm up complete: ${users.length} users cached`);
+            logger.info(`[UserCache] Warm up complete: ${successCount} users cached${errorCount > 0 ? `, ${errorCount} skipped` : ''}`);
         } catch (error) {
             logger.error("[UserCache] Error warming up cache:", error);
         }

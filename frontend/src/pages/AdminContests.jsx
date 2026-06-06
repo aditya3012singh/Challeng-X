@@ -95,7 +95,7 @@ const AdminContests = () => {
     const fetchProblems = async () => {
       try {
         const res = await axiosInstance.get('/problem/list');
-        setAvailableProblems(res.data.problems || []);
+        setAvailableProblems(res.data.data || []);
       } catch (err) {
         console.error("Failed to load problems", err);
       }

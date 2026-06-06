@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package judge;
+
+// Judge Service definition
+service JudgeService {
+  rpc RunCode (CodeExecutionRequest) returns (CodeExecutionResponse) {}
+}
+
+// Request message for code execution
+message CodeExecutionRequest {
+  string submissionId = 1;
+  string language = 2;
+  string code = 3;
+  repeated string inputs = 4;
+  bool earlyExit = 5;
+}
+
+// Response message for code execution
+message CodeExecutionResponse {
+  repeated TestResult results = 1;
+  string stoppedAt = 2;
+}
+
+// Individual test case result
+message TestResult {
+  string output = 1;
+  string error = 2;
+  bool passed = 3;
+}

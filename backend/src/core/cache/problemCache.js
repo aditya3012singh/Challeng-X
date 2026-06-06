@@ -128,6 +128,13 @@ class ProblemCache {
                 // They are cached separately in TestcaseCache when needed
             };
 
+            // Delete any existing key with potential wrong type (old List-based data)
+            try {
+                await RedisClient.client.del(`${PROBLEM_PREFIX}${problem.id}`);
+            } catch (delErr) {
+                logger.debug(`[ProblemCache] Could not delete old key for ${problem.id}, will overwrite`);
+            }
+
             await RedisClient.client.set(
                 `${PROBLEM_PREFIX}${problem.id}`,
                 JSON.stringify(problemData),
@@ -234,11 +241,20 @@ class ProblemCache {
                 }
             });
 
+            let successCount = 0;
+            let errorCount = 0;
+
             for (const problem of problems) {
-                await this.cacheProblem(problem);
+                try {
+                    await this.cacheProblem(problem);
+                    successCount++;
+                } catch (err) {
+                    errorCount++;
+                    logger.debug(`[ProblemCache] Skipping problem ${problem.id} due to cache error`);
+                }
             }
 
-            logger.info(`[ProblemCache] Warm up complete: ${problems.length} problems cached`);
+            logger.info(`[ProblemCache] Warm up complete: ${successCount} problems cached${errorCount > 0 ? `, ${errorCount} skipped` : ''}`);
         } catch (error) {
             logger.error("[ProblemCache] Error warming up cache:", error);
         }

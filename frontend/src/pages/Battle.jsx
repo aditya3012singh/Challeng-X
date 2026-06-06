@@ -16,6 +16,7 @@ export const Battle = () => {
   const [activeTab, setActiveTab] = useState("random"); // random, selected, join
   const [battleId, setBattleId] = useState("");
   const [selectedProblemId, setSelectedProblemId] = useState("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState(""); // "" = all, "EASY", "MEDIUM", "HARD"
 
   const {
     currentBattle,
@@ -37,10 +38,11 @@ export const Battle = () => {
 
   // Fetch problems for selected battle option
   useEffect(() => {
-    if (activeTab === "selected" && problems.length === 0) {
-      dispatch(getAllProblems());
+    if (activeTab === "selected") {
+      const params = selectedDifficulty ? { difficulty: selectedDifficulty } : {};
+      dispatch(getAllProblems(params));
     }
-  }, [activeTab, dispatch, problems.length]);
+  }, [activeTab, selectedDifficulty, dispatch]);
 
   // Clear error when tab changes
   useEffect(() => {
@@ -149,6 +151,29 @@ export const Battle = () => {
               </div>
 
               <form onSubmit={handleCreateSelected}>
+                <div className="mb-12">
+                  <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
+                    Filter by Difficulty
+                  </label>
+                  <div className="flex gap-3">
+                    {["", "EASY", "MEDIUM", "HARD"].map((diff) => (
+                      <button
+                        key={diff || "all"}
+                        type="button"
+                        onClick={() => setSelectedDifficulty(diff)}
+                        className={`px-4 py-2 font-bold text-[9px] uppercase tracking-widest transition-all ${
+                          selectedDifficulty === diff
+                            ? "bg-[var(--color-primary)] text-black"
+                            : "bg-white/5 border border-white/10 text-slate-400 hover:border-white/30"
+                        }`}
+                        style={{ borderRadius: "2px" }}
+                      >
+                        {diff || "ALL"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="mb-12">
                   <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em] mb-4">
                     Choose a Problem

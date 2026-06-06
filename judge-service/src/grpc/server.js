@@ -14,14 +14,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  */
 function loadProto() {
     const protoPath = path.join(__dirname, "judge.proto");
-    const packageDefinition = protoLoader.loadSync(protoPath, {
-        keepCase: true,
-        longs: String,
-        enums: String,
-        defaults: true,
-        oneofs: true,
-    });
-    return grpc.loadPackageDefinition(packageDefinition);
+    
+    try {
+        const packageDefinition = protoLoader.loadSync(protoPath, {
+            keepCase: true,
+            longs: String,
+            enums: String,
+            defaults: true,
+            oneofs: true,
+        });
+        
+        return grpc.loadPackageDefinition(packageDefinition);
+    } catch (error) {
+        console.error(`[ERROR] Failed to load proto: ${error.message}`);
+        console.error(`[ERROR] Proto path: ${protoPath}`);
+        throw error;
+    }
 }
 
 /**
@@ -29,13 +37,43 @@ function loadProto() {
  */
 function createServer() {
     const proto = loadProto();
-    const judgeService = proto.judge.JudgeService;
+    
+    // Proto structure should be: proto.judge.JudgeService
+    const judgePackage = proto.judge;
+    
+    if (!judgePackage) {
+        console.error("[ERROR] proto.judge is undefined");
+        console.error("[ERROR] Proto keys:", Object.keys(proto));
+        throw new Error("proto.judge not found");
+    }
+    
+    const judgeService = judgePackage.JudgeService;
+    
+    if (!judgeService) {
+        console.error("[ERROR] judgeService is undefined");
+        console.error("[ERROR] judge package keys:", Object.keys(judgePackage));
+        throw new Error("JudgeService not found in proto.judge");
+    }
+    
+    console.error("[DEBUG] judgeService type:", typeof judgeService);
+    console.error("[DEBUG] judgeService keys:", Object.keys(judgeService));
+    console.error("[DEBUG] judgeService:", JSON.stringify(judgeService, null, 2));
+    
+    // The service definition is directly judgeService, not judgeService.service
+    // Proto-loader returns { service: { ... }, ... } structure
+    const serviceDef = judgeService.service || judgeService;
+    
+    if (!serviceDef) {
+        console.error("[ERROR] Could not find service definition");
+        throw new Error("Service definition not found");
+    }
+    
     const judgeImpl = new JudgeServiceImpl();
-
     const server = new grpc.Server();
 
-    // Add service
-    server.addService(judgeService, {
+    // server.addService requires (serviceDef, implementations)
+    // The implementations object keys must match the RPC method names
+    server.addService(serviceDef, {
         runCode: judgeImpl.runCode.bind(judgeImpl),
     });
 

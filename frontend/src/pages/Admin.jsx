@@ -33,7 +33,7 @@ const Admin = () => {
   const fetchProblems = async () => {
     try {
       const response = await axios.get('/problem/list');
-      setProblems(response.data.problems);
+      setProblems(response.data.data);
     } catch (error) {
       console.error('Error fetching problems:', error);
     }

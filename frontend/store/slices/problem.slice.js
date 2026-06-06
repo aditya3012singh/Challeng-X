@@ -42,7 +42,7 @@ const problemSlice = createSlice({
             })
             .addCase(getAllProblems.fulfilled, (state, action) => {
                 state.loading = false;
-                state.problems = action.payload.problems || action.payload;
+                state.problems = action.payload.data || action.payload;
                 state.error = null;
             })
             .addCase(getAllProblems.rejected, (state, action) => {
