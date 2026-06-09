@@ -55,3 +55,10 @@ desktop.ini
 # Cleanup scripts
 cleanup-*.sh
 cleanup-*.bat
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Judge service
+judge-service/node_modules/

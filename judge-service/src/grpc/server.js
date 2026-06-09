@@ -55,24 +55,23 @@ function createServer() {
         throw new Error("JudgeService not found in proto.judge");
     }
     
-    console.error("[DEBUG] judgeService type:", typeof judgeService);
-    console.error("[DEBUG] judgeService keys:", Object.keys(judgeService));
-    console.error("[DEBUG] judgeService:", JSON.stringify(judgeService, null, 2));
-    
-    // The service definition is directly judgeService, not judgeService.service
-    // Proto-loader returns { service: { ... }, ... } structure
-    const serviceDef = judgeService.service || judgeService;
+    // Proto-loader returns { service: { ... }, serviceName: "...", ... } structure
+    // We need the .service property for addService()
+    const serviceDef = judgeService.service;
     
     if (!serviceDef) {
-        console.error("[ERROR] Could not find service definition");
-        throw new Error("Service definition not found");
+        console.error("[ERROR] Could not find service definition in judgeService.service");
+        console.error("[ERROR] judgeService type:", typeof judgeService);
+        console.error("[ERROR] judgeService keys:", Object.keys(judgeService));
+        throw new Error("Service definition (.service) not found");
     }
     
     const judgeImpl = new JudgeServiceImpl();
     const server = new grpc.Server();
 
     // server.addService requires (serviceDef, implementations)
-    // The implementations object keys must match the RPC method names
+    // The implementations object keys must match the RPC method names (case-sensitive)
+    // Proto defines: rpc RunCode(...) so the method name is "RunCode" with capital R
     server.addService(serviceDef, {
         runCode: judgeImpl.runCode.bind(judgeImpl),
     });
@@ -102,7 +101,7 @@ export function startGrpcServer() {
             const poolSize = parseInt(env.JUDGE_POOL_SIZE || "2", 10);
             initializePools(poolSize);
 
-            server.start();
+            // Note: server.start() is no longer necessary - server is ready after bindAsync
         }
     );
 

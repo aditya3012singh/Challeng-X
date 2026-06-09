@@ -8,13 +8,13 @@ RUN apk add --no-cache docker-cli
 WORKDIR /app
 
 # Copy package files
-COPY judge-service/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm ci --omit=dev
 
 # Copy source code
-COPY judge-service/src/ ./src/
+COPY src/ ./src/
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \

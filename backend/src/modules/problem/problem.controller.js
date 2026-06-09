@@ -6,7 +6,7 @@ import ProblemService from "./problem.service.js";
 import TestcaseService from "../testcase/testcase.service.js";
 import ProblemSchema from "./problem.schema.js";
 import Database from "../../core/config/db.js";
-// import { parsePagination, createPaginationMeta } from "../pagination/pagination.utils.js";
+import { parsePagination, createPaginationMeta } from "../../core/pagination/pagination.utils.js";
 
 class ProblemController {
     static async createProblem(req, res) {
@@ -28,12 +28,19 @@ class ProblemController {
             // Parse pagination parameters
             const pagination = parsePagination(req, { defaultLimit: 20, maxLimit: 100 });
             const { page, limit, offset } = pagination;
+            
+            // Parse difficulty filter from query params
+            const { difficulty } = req.query;
+            const whereClause = difficulty && ['EASY', 'MEDIUM', 'HARD'].includes(difficulty.toUpperCase())
+                ? { difficulty: difficulty.toUpperCase() }
+                : {};
 
-            // Get total count
-            const total = await Database.client.problem.count();
+            // Get total count with filters applied
+            const total = await Database.client.problem.count({ where: whereClause });
 
-            // Get paginated problems
+            // Get paginated problems with filters applied
             const problems = await Database.client.problem.findMany({
+                where: whereClause,
                 skip: offset,
                 take: limit,
                 orderBy: { createdAt: 'desc' }
