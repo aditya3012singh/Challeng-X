@@ -293,40 +293,51 @@ class UserCache {
         try {
             logger.info("[UserCache] Warming up user cache...");
 
-            const users = await Database.client.user.findMany({
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    rankPoints: true,
-                    profilePic: true,
-                    wins: true,
-                    losses: true,
-                    cyberCores: true,
-                    country: true,
-                    region: true,
-                    linkedin: true,
-                    github: true,
-                    leetcode: true,
-                    codeforces: true,
-                    hackerrank: true,
-                    gfg: true,
-                    twitter: true,
-                    instagram: true
-                }
-            });
-
+            const PAGE_SIZE = 500;
+            let skip = 0;
             let successCount = 0;
             let errorCount = 0;
 
-            for (const user of users) {
-                try {
-                    await this.cacheUser(user);
-                    successCount++;
-                } catch (err) {
-                    errorCount++;
-                    logger.debug(`[UserCache] Skipping user ${user.id} due to cache error`);
+            while (true) {
+                const users = await Database.client.user.findMany({
+                    skip,
+                    take: PAGE_SIZE,
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        rankPoints: true,
+                        profilePic: true,
+                        wins: true,
+                        losses: true,
+                        cyberCores: true,
+                        country: true,
+                        region: true,
+                        linkedin: true,
+                        github: true,
+                        leetcode: true,
+                        codeforces: true,
+                        hackerrank: true,
+                        gfg: true,
+                        twitter: true,
+                        instagram: true
+                    }
+                });
+
+                if (users.length === 0) break;
+
+                for (const user of users) {
+                    try {
+                        await this.cacheUser(user);
+                        successCount++;
+                    } catch (err) {
+                        errorCount++;
+                        logger.debug(`[UserCache] Skipping user ${user.id} due to cache error`);
+                    }
                 }
+
+                skip += PAGE_SIZE;
+                if (users.length < PAGE_SIZE) break; // last page
             }
 
             logger.info(`[UserCache] Warm up complete: ${successCount} users cached${errorCount > 0 ? `, ${errorCount} skipped` : ''}`);

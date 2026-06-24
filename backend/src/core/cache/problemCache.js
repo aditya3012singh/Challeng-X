@@ -244,15 +244,36 @@ class ProblemCache {
             let successCount = 0;
             let errorCount = 0;
 
+            // Use Redis pipeline to batch writes for better performance
+            const pipeline = RedisClient.client.pipeline();
+
             for (const problem of problems) {
                 try {
-                    await this.cacheProblem(problem);
+                    const problemData = {
+                        id: problem.id,
+                        title: problem.title,
+                        description: problem.description,
+                        constraints: problem.constraints,
+                        difficulty: problem.difficulty,
+                        timeLimitMs: problem.timeLimitMs,
+                        tags: (problem.tags || []).map(tag => tag.name)
+                    };
+
+                    pipeline.set(
+                        `${PROBLEM_PREFIX}${problem.id}`,
+                        JSON.stringify(problemData),
+                        'EX', PROBLEMS_TTL
+                    );
+                    pipeline.sadd(`${PROBLEMS_SET}:${problem.difficulty}`, problem.id);
+                    pipeline.sadd(PROBLEMS_SET, problem.id);
                     successCount++;
                 } catch (err) {
                     errorCount++;
-                    logger.debug(`[ProblemCache] Skipping problem ${problem.id} due to cache error`);
+                    logger.debug(`[ProblemCache] Skipping problem ${problem.id} due to error`);
                 }
             }
+
+            await pipeline.exec();
 
             logger.info(`[ProblemCache] Warm up complete: ${successCount} problems cached${errorCount > 0 ? `, ${errorCount} skipped` : ''}`);
         } catch (error) {
