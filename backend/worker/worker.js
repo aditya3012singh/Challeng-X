@@ -278,7 +278,7 @@ const worker = new Worker(
                     console.error(`❌ Worker finishBattleService error: ${err.message}`);
                 }
                 console.timeEnd(`Job-${job.id}-battle-finish`);
-            } else if (!squidGameId && !contestId && status === "PASSED") {
+            } else if (!squidGameId && !contestId && type === "SUBMIT") {
                 // Solo Problem Reward
                 const RewardService = (await import("../src/modules/reward/reward.service.js")).default;
                 await RewardService.grantProblemRewards(userId || submission.user.id, submission.problemId);
@@ -331,6 +331,9 @@ const worker = new Worker(
               .catch(err => console.error("Redis publish error PASSED submit:", err));
 
             // Notify clients that the battle is over via pub/sub
+            // NOTE: battle_end socket event is already emitted by finishBattleService
+            // via eventBus → BATTLE_SOCKET_END → socket.listeners.js
+            // Only publish for cross-process (worker → server) communication
             if (battleFinished) {
                 console.log(`📡 Publishing battle_end event for ${battleId}`);
                 publisher.publish("worker_events", JSON.stringify({

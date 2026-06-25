@@ -20,7 +20,7 @@ export function registerAllListeners() {
         // Battle Module Listeners
         eventBus.onEvent(EventTypes.MATCH_FOUND, BattleListeners.handleMatchFound);
         eventBus.onEvent(EventTypes.SUBMISSION_COMPLETED, BattleListeners.handleSubmissionCompleted);
-        eventBus.on(EventTypes.SUBMISSION_ATTEMPTED, BattleListeners.validateSubmissionAttempt);
+        eventBus.onEvent(EventTypes.SUBMISSION_ATTEMPTED, BattleListeners.validateSubmissionAttempt);
 
         // Reward Module Listeners
         eventBus.onEvent(EventTypes.BATTLE_FINISHED, RewardListeners.handleBattleFinished);

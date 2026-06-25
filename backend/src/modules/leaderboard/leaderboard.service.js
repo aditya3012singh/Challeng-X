@@ -3,7 +3,10 @@ import Database from "../../core/config/db.js";
 
 class LeaderboardService {
   static async getLeaderboard(page = 1, limit = 20, filter = 'GLOBAL', userId = null) {
-    const key = `leaderboard:${filter}:user:${userId || 'anon'}:page:${page}:limit:${limit}`;
+    // Only include userId in cache key for FRIENDS filter (data is user-specific)
+    // GLOBAL and REGIONAL are public data — shared cache key improves hit rate
+    const cacheUserId = filter === 'FRIENDS' ? (userId || 'anon') : 'shared';
+    const key = `leaderboard:${filter}:user:${cacheUserId}:page:${page}:limit:${limit}`;
 
     try {
       const cached = await RedisClient.client.get(key);

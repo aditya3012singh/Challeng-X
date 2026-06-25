@@ -57,8 +57,12 @@ class RewardService {
         metadata: { battleId, opponentId: loser?.id }
       });
 
-      // Check for achievements
-      await this.checkAchievements(winner.id, "BATTLE_WIN", winner.wins + 1);
+      // Check for achievements — fetch fresh wins count to avoid race with social listener
+      const freshWinner = await Database.client.user.findUnique({
+        where: { id: winner.id },
+        select: { wins: true }
+      });
+      await this.checkAchievements(winner.id, "BATTLE_WIN", freshWinner?.wins ?? winner.wins);
 
       logger.info(`Battle rewards granted for battle ${battleId}`);
     } catch (error) {

@@ -14,7 +14,7 @@ class SubmissionController {
 
       const result = await SubmissionOrchestrator.processSubmission({
         userId,
-        //   battleId,
+        battleId,
         problemId,
         contestId,
         code,

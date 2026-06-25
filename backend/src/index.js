@@ -27,14 +27,27 @@ async function initializePhase5() {
 }
 
 // ✅ PHASE 6: Initialize health check service
+// Runs AFTER the server starts so the queue and Redis are fully ready
 async function initializePhase6() {
     try {
         logger.info('[Phase 6] Starting initialization...');
         const health = await healthCheckService.getHealthStatus();
         logger.info('✅ [Phase 6] Health check service initialized successfully');
         logger.info(`📊 [Phase 6] Initial health status: ${health.status}`);
+
         if (health.status !== 'healthy') {
-            logger.warn(`⚠️ [Phase 6] System health is ${health.status}:`, JSON.stringify(health.checks, null, 2));
+            // Log each individual check result so we know exactly what failed
+            if (health.checks) {
+                Object.entries(health.checks).forEach(([name, check]) => {
+                    if (check.status !== 'healthy') {
+                        logger.warn(`⚠️ [Phase 6] ${name}: ${check.status} — ${check.error || JSON.stringify(check)}`);
+                    } else {
+                        logger.info(`✅ [Phase 6] ${name}: healthy`);
+                    }
+                });
+            } else {
+                logger.warn(`⚠️ [Phase 6] System health is ${health.status}: ${health.error || 'unknown'}`);
+            }
         }
     } catch (error) {
         logger.error('❌ [Phase 6] Failed to initialize health check service:', error);
@@ -46,10 +59,13 @@ async function initializePhase6() {
 logger.info('[Startup] Initializing Phase 5...');
 await initializePhase5();
 
-// Initialize Phase 6 before starting server
-logger.info('[Startup] Initializing Phase 6...');
-await initializePhase6();
-
-// Entry point for the main backend server
+// Start server first — queue and caches initialize inside ServerApp.start()
 logger.info('[Startup] Starting server...');
 ServerApp.start();
+
+// Phase 6 health check runs after full startup (cache warmup ~12s + queue init)
+// We use a generous delay to ensure everything is initialized
+setTimeout(() => {
+    logger.info('[Startup] Initializing Phase 6...');
+    initializePhase6();
+}, 15000);

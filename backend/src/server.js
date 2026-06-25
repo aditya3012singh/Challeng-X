@@ -22,9 +22,8 @@ class ServerApp {
   }
 
   static setupRedisSubscriber(io) {
-    // 🛡️ Robust Redis Config: Trim potential whitespace from env vars
     const redisUrl = env.REDIS_URL ? env.REDIS_URL.trim() : null;
-    const redisConfig = redisUrl || {
+    const redisConnectOptions = {
       host: env.REDIS_HOST,
       port: env.REDIS_PORT,
       password: env.REDIS_PASSWORD,
@@ -34,7 +33,9 @@ class ServerApp {
 
     if (redisUrl || env.REDIS_HOST) {
       // 🛡️ Assign to static property to prevent GC
-      this.subscriber = redisUrl ? new Redis(redisUrl, redisConfig) : new Redis(redisConfig);
+      this.subscriber = redisUrl
+        ? new Redis(redisUrl, { maxRetriesPerRequest: null, retryStrategy: (t) => Math.min(t * 50, 2000) })
+        : new Redis(redisConnectOptions);
 
       this.subscriber.on("connect", () => {
         logger.info("📡 [RedisSub] Subscriber connected successfully");
@@ -131,6 +132,15 @@ class ServerApp {
     // Warm up caches on startup
     await this.warmUpCaches();
 
+    // ✅ Initialize the class-based SubmissionQueue (for health checks + Prometheus queue depth)
+    try {
+      await submissionQueue.initialize();
+      logger.info('✅ SubmissionQueue initialized');
+    } catch (err) {
+      logger.error('❌ SubmissionQueue initialization failed (non-fatal):', err.message);
+    }
+
+    // ✅ Start contest cron jobs (auto-start/end contests on schedule)
     ContestCronService.start();
 
     // ✅ PHASE 1A: Start queue metrics collection
@@ -156,16 +166,67 @@ class ServerApp {
    */
   static async warmUpCaches() {
     try {
-      logger.info(" warming up Redis caches...");
-      
+      logger.info("🔥 Warming up Redis caches...");
+      const t0 = Date.now();
+
+      // 1. Users — paginated, non-blocking errors
       await UserCache.warmUp();
+
+      // 2. Problems — all problems + difficulty sets
       await ProblemCache.warmUp();
-      await TestcaseCache.warmUp();
-      
-      logger.info("✅ All caches warmed up");
+
+      // 3. Testcases — warm S3 testcases for ONGOING battles and active contests
+      const activeProblemIds = await this.getActiveProblemIds();
+      if (activeProblemIds.length > 0) {
+        await TestcaseCache.warmUp(activeProblemIds);
+      } else {
+        logger.info("[WarmUp] No active battles/contests — skipping testcase warm-up");
+      }
+
+      logger.info(`✅ All caches warmed up in ${Date.now() - t0}ms`);
     } catch (error) {
       logger.error("❌ Cache warm-up failed:", error);
       logger.warn("⚠️  Continuing without cache warm-up");
+    }
+  }
+
+  /**
+   * Collect problem IDs from currently ONGOING battles and active contests
+   * so we can pre-warm their testcases from S3
+   */
+  static async getActiveProblemIds() {
+    try {
+      const { default: Database } = await import("./core/config/db.js");
+      const now = new Date();
+
+      const [ongoingBattles, activeContestProblems] = await Promise.all([
+        // Battles currently in progress
+        Database.client.battle.findMany({
+          where: { status: { in: ["ONGOING", "COUNTDOWN"] } },
+          select: { problemId: true }
+        }),
+        // Contest problems whose contest is currently running
+        Database.client.contestProblem.findMany({
+          where: {
+            contest: {
+              startTime: { lte: now },
+              endTime: { gte: now }
+            }
+          },
+          select: { problemId: true }
+        })
+      ]);
+
+      const ids = new Set([
+        ...ongoingBattles.map(b => b.problemId),
+        ...activeContestProblems.map(cp => cp.problemId)
+      ]);
+
+      logger.info(`[WarmUp] Found ${ids.size} active problem(s) for testcase pre-warming`);
+      return [...ids];
+    } catch (error) {
+      logger.error("[WarmUp] Failed to collect active problem IDs:", error.message);
+      return [];
     }
   }
 

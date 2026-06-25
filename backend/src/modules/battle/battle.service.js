@@ -471,10 +471,12 @@ class BattleService {
       // 👻 Stop AI Simulation if it was active
       AISimulatorService.stopSimulation(battleId);
 
-      // ✅ PHASE 1: Emit event (DUAL MODE - keeping existing calls)
-      if (winnerId && !isTeamMatch) {
-        const loserId = (battleResult.player1Id === winnerId) ? battleResult.player2Id : battleResult.player1Id;
-        
+      // ✅ Emit BATTLE_FINISHED for all non-team battles (including draws)
+      if (!isTeamMatch) {
+        const loserId = winnerId
+          ? (battleResult.player1Id === winnerId ? battleResult.player2Id : battleResult.player1Id)
+          : null;
+
         // Get problem details for event
         const battle = await Database.client.battle.findUnique({
           where: { id: battleId },
@@ -483,7 +485,7 @@ class BattleService {
 
         eventBus.emitEvent(EventTypes.BATTLE_FINISHED, {
           battleId,
-          winnerId,
+          winnerId: winnerId || null,
           loserId,
           problemId: battle?.problemId,
           difficulty: battle?.problem?.difficulty,
@@ -536,6 +538,12 @@ class BattleService {
             losses: { increment: 1 }
           }
         });
+
+        // ✅ Invalidate cache for both players so stale rankPoints aren't served
+        const { default: UserCache } = await import("../../core/cache/userCache.js");
+        await UserCache.invalidateUser(p1Id);
+        await UserCache.invalidateUser(p2Id);
+
         await RedisClient.client.del("problems:all");
         // Emit battle_end event via eventBus
         eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {

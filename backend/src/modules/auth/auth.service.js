@@ -2,6 +2,7 @@ import Database from "../../core/config/db.js";
 import bcrypt from "bcrypt";
 import JwtService from "../../utils/jwt.js";
 import crypto from "crypto";
+import env from "../../core/config/env.js";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 15 * 60 * 1000; // 15 minutes

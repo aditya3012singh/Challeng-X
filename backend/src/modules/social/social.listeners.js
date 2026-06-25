@@ -22,8 +22,9 @@ import { EventTypes } from '../../core/events/eventTypes.js';
 export async function handleBattleFinished(payload) {
     const { winnerId, loserId, battleId } = payload;
     
-    if (!winnerId || !loserId) {
-        logger.warn('[Profile Listener] ⚠️ BattleFinished event missing winnerId or loserId', { battleId });
+    // Allow draws (winnerId may be null) — still update loser stats
+    if (!battleId) {
+        logger.warn('[Profile Listener] ⚠️ BattleFinished event missing battleId');
         return;
     }
     
@@ -34,44 +35,52 @@ export async function handleBattleFinished(payload) {
             loserId
         });
 
-        // Update winner stats
-        await Database.client.user.update({
-            where: { id: winnerId },
-            data: {
-                rankPoints: { increment: 30 },
-                wins: { increment: 1 }
-            }
-        });
+        // Update winner stats (only if there is a winner — not a draw)
+        if (winnerId) {
+            await Database.client.user.update({
+                where: { id: winnerId },
+                data: {
+                    rankPoints: { increment: 30 },
+                    wins: { increment: 1 }
+                }
+            });
 
-        // Update loser stats
-        await Database.client.user.update({
-            where: { id: loserId },
-            data: {
-                rankPoints: { decrement: 20 },
-                losses: { increment: 1 }
-            }
-        });
+            eventBus.emitEvent(EventTypes.USER_RANK_UPDATED, {
+                userId: winnerId,
+                rankPoints: 30,
+                delta: 30,
+                reason: 'Battle victory',
+                battleId
+            });
+        }
 
-        // Emit UserRankUpdated event for other modules
-        eventBus.emitEvent(EventTypes.USER_RANK_UPDATED, {
-            userId: winnerId,
-            rankPoints: 30,
-            delta: 30,
-            reason: 'Battle victory',
-            battleId
-        });
+        // Update loser stats (only if there is a loser — not a draw)
+        if (loserId) {
+            await Database.client.user.update({
+                where: { id: loserId },
+                data: {
+                    rankPoints: { decrement: 20 },
+                    losses: { increment: 1 }
+                }
+            });
 
-        eventBus.emitEvent(EventTypes.USER_RANK_UPDATED, {
-            userId: loserId,
-            rankPoints: -20,
-            delta: -20,
-            reason: 'Battle loss',
-            battleId
-        });
+            eventBus.emitEvent(EventTypes.USER_RANK_UPDATED, {
+                userId: loserId,
+                rankPoints: -20,
+                delta: -20,
+                reason: 'Battle loss',
+                battleId
+            });
+        }
+
+        // Handle draw — both players get a loss with smaller penalty
+        if (!winnerId && !loserId) {
+            logger.info('[Profile Listener] ℹ️ Draw detected — no rank change applied', { battleId });
+        }
 
         logger.info('[Profile Listener] ✅ User ranks updated', {
-            winner: { id: winnerId, delta: 30 },
-            loser: { id: loserId, delta: -20 }
+            winner: winnerId ? { id: winnerId, delta: 30 } : 'none (draw)',
+            loser: loserId ? { id: loserId, delta: -20 } : 'none (draw)'
         });
     } catch (error) {
         logger.error('[Profile Listener] ❌ Error handling BattleFinished event:', error);
@@ -132,12 +141,8 @@ export async function handleUserAuthenticated(payload) {
             userId
         });
 
-        // Optional: Update last login timestamp
-        await Database.client.user.update({
-            where: { id: userId },
-            data: { lastLogin: new Date() }
-        });
-
+        // NOTE: lastLogin is updated by RewardService.processDailyLogin to avoid
+        // a duplicate write. We only log here for observability.
         logger.info('[Profile Listener] ✅ User login tracked', { userId });
     } catch (error) {
         logger.error('[Profile Listener] ❌ Error handling UserAuthenticated event:', error);

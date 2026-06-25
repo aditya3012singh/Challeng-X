@@ -393,12 +393,14 @@ class SquidGameService {
    * Process the final result from the judge (called by server listener)
    */
   static async handleSquidGameResult(data) {
-    const { squidGameId, userId, code, language, status, executionTimeMs, passedTests, totalTests, score: maybeScore } = data;
+    const { squidGameId, userId, submissionId, status, executionTimeMs, passedTests, totalTests, score: maybeScore } = data;
 
     // 1. Get current round
     const squidGame = await Database.client.squidGame.findUnique({
       where: { id: squidGameId }
     });
+
+    if (!squidGame) return;
 
     const round = await Database.client.squidGameRound.findFirst({
       where: {
@@ -406,6 +408,22 @@ class SquidGameService {
         roundNumber: squidGame.currentRound
       }
     });
+
+    if (!round) return;
+
+    // Fetch code and language from the actual submission record (not passed via pub/sub)
+    let code = "// Redacted";
+    let language = "unknown";
+    if (submissionId) {
+      const submission = await Database.client.submission.findUnique({
+        where: { id: submissionId },
+        select: { code: true, language: true }
+      });
+      if (submission) {
+        code = submission.code || code;
+        language = submission.language || language;
+      }
+    }
 
     // 2. Calculate score (if not already provided)
     const score = maybeScore || this.calculateScore(
@@ -507,6 +525,10 @@ class SquidGameService {
 
     const activePlayers = squidGame.participants;
     const currentRound = squidGame.roundProblems[0];
+
+    if (!currentRound) {
+      throw new Error(`No round record found for round ${tempSquidGame.currentRound} in tournament ${squidGameId}`);
+    }
 
     // Calculate number to eliminate
     const toEliminate = Math.ceil(activePlayers.length * eliminationPercentage);
