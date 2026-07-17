@@ -1,144 +1,148 @@
 # ChallengX 🚀
 
-**ChallengX** is a competitive programming platform where students can participate in 1v1 coding battles, join live contests, and compete in team-based wars. The platform features a modern UI, real-time updates, leaderboards, and a robust backend powered by Node.js, Redis, and PostgreSQL.
+**ChallengX** is a high-octane, real-time competitive programming platform designed for developers to face off in head-to-head coding battles, run team-based wars, and spectate live matches. Built using a decoupled, event-driven microservices architecture, ChallengX delivers isolated sandboxed code execution, real-time state synchronization, and AI-powered performance diagnostics.
 
-## 🌟 Key Features
+---
+
+## 🌟 Core Features (Current Focus)
 
 ### 🥊 1v1 Battles
-- Real-time competitive programming matches with code execution
-- Split-screen editor with syntax highlighting
-- Automated judging with instant feedback
-- Matchmaking and rematch system
+*   **Real-Time Code Duels**: Compete head-to-head against opponents in live coding matches.
+*   **Synchronized Editors**: Responsive split-screen environment with real-time compilation, code synchronization, and syntax highlighting.
+*   **Automated Verification**: Immediate testcase evaluation with instant pass/fail validation.
+*   **Matchmaking & Queue**: Smart queuing engine to pair developers based on skill ratings (Elo/RankPoints).
 
-### 🏆 Live Contests
-- Scheduled coding contests with countdown timers
-- Real-time leaderboards with dynamic scoring
-- Problem difficulty categorization (Easy, Medium, Hard)
-- Comprehensive analytics for participants and organizers
+### 👥 Team Battles (Wars)
+*   **Guild-Style Wars**: Create teams, generate custom team join-codes, and battle other teams.
+*   **Pair Matchups**: Multi-player team matchups resolved through parallel individual pairings.
+*   **Live Team Scoreboard**: Real-time aggregation of points to determine the winning guild.
 
-### 👥 Team Wars (Coming Soon)
-- Team-based coding competitions
-- Collaborative problem-solving
-- Team vs team battles
-- Performance tracking and analytics
+### 👁️ Spectator Mode
+*   **Live Stream Broadcasts**: Spectators can join active battle rooms to watch code editors and run progress in real-time.
+*   **Technical esports Hype**: Integrated **Gemini AI Commentator** broadcasting live esports-style commentary directly into spectator feeds.
 
-### 🎮 Squid Games
-- Eliminator-style coding challenges with live rankings
-- Multi-stage tournaments with increasing difficulty
-- Real-time leaderboard updates
-- High-stakes competitions with limited eliminations
+---
 
-## 🛠️ Tech Stack
+## 🔮 Future Roadmap
 
-### Backend
-- **Node.js** - High-performance JavaScript runtime
-- **Express.js** - Web framework
-- **Socket.IO** - Real-time communication
-- **BullMQ** - Job queue system
-- **ioredis** - Redis client
-- **PostgreSQL** - Relational database
-- **Docker** - Containerization
+### 🏆 Scheduled Live Contests
+*   Organized, time-bound programming tournaments with scheduled countdown timers and difficulty tiers (Easy, Medium, Hard).
+*   Live scoring systems utilizing execution speed coefficients and hints-used deductions.
 
-### Frontend
-- **React** - UI library
-- **Redux Toolkit** - State management
-- **Tailwind CSS** - Styling
-- **Material-UI** - Component library
-- **Syncfusion** - Charting and scheduling
-- **Socket.IO** - Real-time updates
+### 🎮 Squid Game Tournaments 🦑
+*   A **50-player progressive elimination mode** spanning 5 rounds of increasing problem difficulty.
+*   Automatic stage timeouts and elimination loops where the bottom $X\%$ of performers are deleted from the roster until the last coder stands.
 
-## 📂 Project Structure
+---
 
-```
-ChallengX/
-├── backend/            # Node.js backend services
-│   ├── core/           # Core modules
-│   ├── modules/        # Application modules
-│   ├── utils/          # Utility functions
-│   └── config/         # Configuration files
-│
-├── frontend/           # React frontend
-│   ├── src/
-│   │   ├── components/ # Reusable components
-│   │   ├── pages/      # Page components
-│   │   ├── redux/      # Redux stores
-│   │   ├── services/   # API services
-│   │   └── utils/      # Frontend utilities
-│   └── public/
-│
-└── docker/             # Docker configuration
-    └── docker-compose.yml
-```
+## 🏗️ Backend System Architecture
 
-## ⚙️ Setup & Installation
-
-### Prerequisites
-- Node.js (v18+)
-- Docker Desktop (v4.27+)
-- PostgreSQL (v17+)
-
-### Backend Setup
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-### Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Docker Setup
-```bash
-cd docker
-docker-compose up -d
-```
-
-## 🌐 Running the Application
-
-Once all services are running:
-1. Open **http://localhost:5173** in your browser
-2. Register or log in
-3. Create a match or join a contest
-4. Start competing!
-
-## 📈 Prometheus Monitoring
-
-ChallengX includes Prometheus metrics for monitoring:
-- Active/waiting jobs in the submission queue
-- Container health
-- Real-time statistics
-
-Access the metrics endpoint:
-```
-http://localhost:4000/metrics
-```
-
-## 🏗️ Backend Architecture Overview
-
-CodeArena is designed as a hybrid microservice architecture built to support highly concurrent real-time competitive programming events:
+ChallengX operates on a highly scalable, event-driven hybrid microservices architecture designed to isolate expensive code execution runs from the primary API serving loops:
 
 ```mermaid
 graph TD
-    Client[React Frontend] <-->|HTTP/Websockets| Express[Express & Socket.io Server]
-    Express <-->|Prisma ORM| DB[(PostgreSQL Database)]
-    Express --->|Push Jobs| Queue[BullMQ Queue]
-    Worker[BullMQ Worker] --->|Pull Jobs| Queue
-    Worker <-->|gRPC RunCode| Judge[Judge Microservice]
-    Worker --->|Publish Events| RedisPub[Redis Pub/Sub Channel]
-    Express <-->|Subscribe| RedisPub
-    Judge <-->|Docker Socket| Daemon[Host Docker Daemon]
-    Daemon <--->|Spawn| Containers[Sibling Runner Containers]
+    Client[React Frontend App] <-->|HTTPS / WebSockets| Express[Express & Socket.io Server]
+    Express <-->|Prisma ORM| PG[(PostgreSQL RDS)]
+    Express --->|Push Job| Queue[BullMQ Queue - Redis]
+    
+    subgraph Job Processing Boundary
+        Worker[BullMQ Worker Process] --->|Pulls Jobs| Queue
+        Worker <-->|gRPC: RunCode| Judge[gRPC Judge Service]
+        Worker --->|Publish Events| RedisPub[Redis Event Bus]
+        Express <-->|Subscribe| RedisPub
+    end
+    
+    subgraph Isolated Compilation Boundary
+        Judge <-->|Docker Socket| Daemon[Host Docker Daemon]
+        Daemon <--->|Control| Sandboxes[Warm Container Pool]
+    end
+    
+    Worker --->|Fetch Hidden Cases| R2[(Cloudflare R2 Storage)]
+    Worker --->|Request Diagnostics| Gemini[Gemini AI API]
 ```
 
-### Components
-1. **API & Real-time Layer**: Express.js server exposing REST endpoints and managing Socket.io channels. It subscribes to Redis Pub/Sub events to push compile states back to the client.
-2. **Distributed Queue**: BullMQ queues submissions asynchronously, preventing compilation runs from blocking primary user sessions.
-3. **Execution Worker**: A dedicated background worker process that downloads Cloudflare R2/S3 hidden test cases, interfaces with the judge microservice over gRPC, and coordinates AI feedback.
-4. **Judge Microservice**: A completely stateless gRPC service (`judge-service`) that communicates with the host `/var/run/docker.sock` to run user code inside sandboxed sibling containers.
+### Core Architecture Components
 
-For a full, production-level C4 container analysis and review, see [architecture_audit.md](file:///C:/Users/LOQ/.gemini/antigravity-ide/brain/604d8e6f-f943-4a8e-a12e-b5caf7fff0ae/architecture_audit.md).
+1.  **API Gateway & Websockets (Express & Socket.io)**:
+    *   Exposes secure REST routes, handles JWT credential rotation, and coordinates Socket.io rooms (e.g., matchmaking, spectator channels).
+    *   Subscribes to a Redis Pub/Sub channel (`worker_events`) to dynamically stream compilation status changes down to client browser sessions.
+2.  **Distributed Task Queue (BullMQ & Redis)**:
+    *   Offloads compilation requests from the primary event loop. Jobs are safely persisted and processed asynchronously.
+3.  **Job Execution Worker (`backend/worker/worker.js`)**:
+    *   A stateless Node.js runner that fetches hidden testcase payloads from **Cloudflare R2 (S3)**, makes gRPC compiler calls, interacts with Gemini AI, and commits user rating changes directly to **PostgreSQL**.
+4.  **Sandbox Judge microservice (`judge-service`)**:
+    *   A high-performance gRPC server that maintains a warm pool of sandboxed Docker containers (Python, JavaScript, Java, C, C++).
+    *   **Strict Security Sandboxing**: Containers run network-disabled, with strict resource envelopes: **512MB RAM**, **2.0 CPU cores**, and **512 process limits**.
 
+---
+
+## 🛠️ Technology Stack
+
+*   **Frontend**: React (Vite), Redux Toolkit, Tailwind CSS, Socket.io-client.
+*   **Backend API**: Node.js, Express.js, Socket.io, Prisma ORM, PostgreSQL.
+*   **Job Processing**: BullMQ, Redis.
+*   **Code Sandbox**: gRPC, Protocol Buffers, Docker API.
+*   **AI Diagnostics**: Gemini-1.5-flash & Gemini-1.5-pro (`@google/generative-ai`).
+*   **Telemetry**: Prometheus (`prom-client`), Winston Logger.
+
+---
+
+## ⚙️ Quick Start
+
+### Prerequisites
+*   Node.js (v20+)
+*   Docker Desktop (Active)
+*   PostgreSQL & Redis
+
+### Local Development Setup
+
+#### 1. Setup Environment Files
+Create `.env` in the `/backend` and `/frontend` folders based on the configurations:
+*   [backend/.env](file:///d:/challeng-x/backend/.env) should have database, Redis, S3, Google/Github client keys, and your `GEMINI_API_KEY`.
+*   [frontend/.env](file:///d:/challeng-x/frontend/.env) must point `VITE_API_BASE_URL` to `http://localhost:4000/api`.
+
+#### 2. Build sandbox runner images
+```bash
+npm run docker:build --prefix backend
+```
+
+#### 3. Spin up services (in separate terminals)
+*   **Start Judge Service**:
+    ```bash
+    cd judge-service && npm install && npm run dev
+    ```
+*   **Seed PostgreSQL Schema**:
+    ```bash
+    cd backend && npm install && npx prisma migrate dev && npx prisma db seed
+    ```
+*   **Start Backend API**:
+    ```bash
+    cd backend && npm run dev
+    ```
+*   **Start Queue Worker**:
+    ```bash
+    cd backend && npm run worker
+    ```
+*   **Start Frontend**:
+    ```bash
+    cd frontend && npm install && npm run dev
+    ```
+    Open `http://localhost:3000` to competition!
+
+---
+
+### Docker Compose Setup (Single-Command Run)
+
+To run the complete backend services stack in containerized production mode, cd into the new directory:
+```bash
+cd docker
+docker compose -f docker-compose.v2.yml up -d --build
+```
+This automatically spins up Nginx, the API server, database tables, the worker process, Redis, and the Judge microservice.
+
+---
+
+### 📊 Observability & Metrics
+
+*   **Prometheus endpoint**: Exposes API performance, cache hits, queue depth, and runner times at `http://localhost:4000/metrics`.
+*   **Winston Logger**: Keeps daily gzipped log files inside `/backend/logs`.
