@@ -136,7 +136,7 @@ npm run docker:build --prefix backend
 To run the complete backend services stack in containerized production mode, cd into the new directory:
 ```bash
 cd docker
-docker compose -f docker-compose.v2.yml up -d --build
+docker compose up -d --build
 ```
 This automatically spins up Nginx, the API server, database tables, the worker process, Redis, and the Judge microservice.
 

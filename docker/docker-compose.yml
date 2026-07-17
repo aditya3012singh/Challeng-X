@@ -1,72 +1,77 @@
-version: '3.8'
-
 services:
+  # API Backend Service
   backend:
-    image: ${DOCKERHUB_USERNAME:-your-username}/codearena-backend:latest
+    image: codearena-backend:latest
     build:
       context: ../backend
       dockerfile: Dockerfile
     container_name: codearena-backend
     restart: always
-    environment:
-      - NODE_ENV=production
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - REDIS_HOST=${REDIS_HOST:-redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - PORT=${PORT:-4000}
-      - CODEARENA_RUNNERS_PATH=${CODEARENA_RUNNERS_PATH}
-      - JUDGE_GRPC_HOST=${JUDGE_GRPC_HOST:-judge-service}
-      - JUDGE_GRPC_PORT=${JUDGE_GRPC_PORT:-50051}
-    env_file:
-      - ../backend/.env.production
+    ports:
+      - "4000:4000"  # Expose port 4000 to host for frontend development
     depends_on:
       - redis
-      - judge-service
     networks:
       - codearena-network
+    environment:
+      - PORT=4000
+    command: sh -c "npx prisma migrate deploy && npm start"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
+  # Worker Service (BullMQ Job Processing)
   worker:
-    image: ${DOCKERHUB_USERNAME:-your-username}/codearena-backend:latest
+    image: codearena-backend:latest
     build:
       context: ../backend
       dockerfile: Dockerfile
     container_name: codearena-worker
     command: npm run worker:prod
     restart: always
+    user: "root"
     environment:
-      - NODE_ENV=production
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - REDIS_HOST=${REDIS_HOST:-redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - CODEARENA_RUNNERS_PATH=${CODEARENA_RUNNERS_PATH}
-      - WORKER_CONCURRENCY=${WORKER_CONCURRENCY:-10}
-      - JUDGE_GRPC_HOST=${JUDGE_GRPC_HOST:-judge-service}
-      - JUDGE_GRPC_PORT=${JUDGE_GRPC_PORT:-50051}
-    env_file:
-      - ../backend/.env.production
+      - CODEARENA_RUNNERS_PATH=/runners
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/d/challeng-x/backend/runners:/runners:ro
     depends_on:
       - redis
-      - judge-service
     networks:
       - codearena-network
 
-  judge-service:
-    image: ${DOCKERHUB_USERNAME:-your-username}/codearena-judge:latest
+  # Judge Service (Code Execution Microservice)
+  judge:
+    image: codearena-judge-service:latest
     build:
-      context: ..
-      dockerfile: judge-service/Dockerfile
+      context: ../judge-service
+      dockerfile: Dockerfile
     container_name: codearena-judge
     restart: always
+    user: "root"
     environment:
+      - CODEARENA_RUNNERS_PATH=/host-runners
       - GRPC_PORT=${JUDGE_GRPC_PORT:-50051}
       - JUDGE_POOL_SIZE=${JUDGE_POOL_SIZE:-2}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/d/challeng-x/backend/runners:/host-runners:ro
+    command: sh -c "chmod 666 /var/run/docker.sock && npm start"
     depends_on:
       - redis
     networks:
       - codearena-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
+  # Redis Service (Event Bus + Queue)
   redis:
     image: redis:7-alpine
     container_name: codearena-redis
@@ -78,7 +83,13 @@ services:
       - redis-data:/data
     networks:
       - codearena-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # Nginx Reverse Proxy + Load Balancer
   nginx:
     image: nginx:stable-alpine
     container_name: codearena-nginx
@@ -92,9 +103,16 @@ services:
       - ../certbot/www:/var/www/certbot:ro
     depends_on:
       - backend
+      - judge
     networks:
       - codearena-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # Certbot (SSL Certificate Management)
   certbot:
     image: certbot/certbot
     container_name: codearena-certbot
@@ -103,50 +121,9 @@ services:
       - ../certbot/www:/var/www/certbot:rw
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: codearena-prometheus
-    restart: always
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=15d'
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/prometheus
-    networks:
-      - codearena-network
-    depends_on:
-      - backend
-      - worker
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: codearena-grafana
-    restart: always
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel
-      - GF_USERS_ALLOW_SIGN_UP=false
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
-      - grafana-data:/var/lib/grafana
-    networks:
-      - codearena-network
-    depends_on:
-      - prometheus
-
 networks:
   codearena-network:
     driver: bridge
 
 volumes:
   redis-data:
-  prometheus-data:
-  grafana-data:
