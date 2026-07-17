@@ -48,6 +48,8 @@ const envSchema = z.object({
   JUDGE_POOL_SIZE: z.string().transform(Number).default("10"),
   MATCHMAKING_RANK_THRESHOLD: z.string().transform(Number).default("2000"),
   WORKER_CONCURRENCY: z.string().transform(Number).default("10"),
+  JUDGE_GRPC_HOST: z.string().default("localhost"),
+  JUDGE_GRPC_PORT: z.string().transform(Number).default("50051"),
 
   // OAuth
   GOOGLE_CLIENT_ID: z.string().optional(),
