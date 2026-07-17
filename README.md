@@ -41,24 +41,24 @@ ChallengX operates on a highly scalable, event-driven hybrid microservices archi
 
 ```mermaid
 graph TD
-    Client[React Frontend App] <-->|HTTPS / WebSockets| Express[Express & Socket.io Server]
-    Express <-->|Prisma ORM| PG[(PostgreSQL RDS)]
-    Express --->|Push Job| Queue[BullMQ Queue - Redis]
+    Client[React Frontend App] -->|HTTPS / WebSockets| Express[Express & Socket.io Server]
+    Express -->|Prisma ORM| PG[(PostgreSQL Database)]
+    Express -->|Push Job| Queue[BullMQ Queue - Redis]
     
     subgraph Job Processing Boundary
-        Worker[BullMQ Worker Process] --->|Pulls Jobs| Queue
-        Worker <-->|gRPC: RunCode| Judge[gRPC Judge Service]
-        Worker --->|Publish Events| RedisPub[Redis Event Bus]
-        Express <-->|Subscribe| RedisPub
+        Worker[BullMQ Worker Process] -->|Pulls Jobs| Queue
+        Worker -->|gRPC: RunCode| Judge[gRPC Judge Service]
+        Worker -->|Publish Events| RedisPub[Redis Event Bus]
+        Express -->|Subscribe| RedisPub
     end
     
     subgraph Isolated Compilation Boundary
-        Judge <-->|Docker Socket| Daemon[Host Docker Daemon]
-        Daemon <--->|Control| Sandboxes[Warm Container Pool]
+        Judge -->|Docker Socket| Daemon[Host Docker Daemon]
+        Daemon -->|Control| Sandboxes[Warm Container Pool]
     end
     
-    Worker --->|Fetch Hidden Cases| R2[(Cloudflare R2 Storage)]
-    Worker --->|Request Diagnostics| Gemini[Gemini AI API]
+    Worker -->|Fetch Hidden Cases| R2[(Cloudflare R2 Storage)]
+    Worker -->|Request Diagnostics| Gemini[Gemini AI API]
 ```
 
 ### Core Architecture Components
