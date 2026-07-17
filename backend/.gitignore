@@ -12,3 +12,4 @@ judge-service/.env.production
 /generated/prisma
 
 /src/generated/prisma
+/src/logs/

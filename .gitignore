@@ -8,7 +8,7 @@ PHASE_*_CHANGES_DETAILED.md
 PHASE_*_COMPLETION_REPORT.md
 PHASE_*_INDEX.md
 PHASE_*_PREPARATION_SUMMARY.md
-*_FIX.md
+*_FIX.md+
 *_FIXES_*.md
 *_STATUS.md
 *_READY.md
@@ -22,6 +22,7 @@ temp/
 # Log files
 *.log
 *.log.*
+
 
 # Process tracking files
 *_pids.txt
@@ -62,3 +63,10 @@ node_modules/
 
 # Judge service
 judge-service/node_modules/
+ARCHITECTURE_STATE_PHASE_4.md
+ARCHITECTURE_STATE_PHASE_4.md
+.gitignore
+ARCHITECTURE_STATE_PHASE_4.md
+backend/.env.production.v2.template
+
+backend/docs

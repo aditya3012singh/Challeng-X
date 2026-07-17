@@ -11,4 +11,8 @@ export default {
 
     // Logging
     LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+
+    // Runners Path on Host (for Docker-out-of-Docker sibling mounts)
+    CODEARENA_RUNNERS_PATH: process.env.CODEARENA_RUNNERS_PATH || '/runners',
 };
+

@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import logger from "../../utils/logger.js";
+import env from "../../config/env.js";
 
 /**
  * Warm Container - Persistent Docker container for code execution
@@ -22,7 +23,7 @@ export class WarmContainer {
             "--memory", "512m",
             "--pids-limit", "512",
             "--cpus", "2.0",
-            "-v", "/runners:/runners:ro",
+            "-v", `${env.CODEARENA_RUNNERS_PATH}:/runners:ro`,
             this.config.image,
             ...this.config.runnerCmd,
         ]);

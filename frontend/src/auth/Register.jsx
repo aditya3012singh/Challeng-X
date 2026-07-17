@@ -190,7 +190,7 @@ const Register = () => {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => window.location.href = 'http://localhost:4000/api/auth/google'}
+                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/auth/google`}
                 className="flex items-center justify-center gap-3 py-4 bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all text-[9px] font-bold uppercase tracking-widest text-white"
                 style={{ borderRadius: "2px" }}
               >
@@ -201,7 +201,7 @@ const Register = () => {
               </button>
               <button
                 type="button"
-                onClick={() => window.location.href = 'http://localhost:4000/api/auth/github'}
+                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/auth/github`}
                 className="flex items-center justify-center gap-3 py-4 bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all text-[9px] font-bold uppercase tracking-widest text-white"
                 style={{ borderRadius: "2px" }}
               >

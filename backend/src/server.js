@@ -11,7 +11,8 @@ import UserCache from "./core/cache/userCache.js";
 import ProblemCache from "./core/cache/problemCache.js";
 import TestcaseCache from "./core/cache/testcaseCache.js";
 import { updateQueueDepth } from "./core/metrics/prometheus.js";
-import submissionQueue from "./core/queue/submissionQueue.js";
+import { submissionQueue } from "./core/queue/submission.queue.js";
+
 
 class ServerApp {
   static io = null;
@@ -132,13 +133,6 @@ class ServerApp {
     // Warm up caches on startup
     await this.warmUpCaches();
 
-    // ✅ Initialize the class-based SubmissionQueue (for health checks + Prometheus queue depth)
-    try {
-      await submissionQueue.initialize();
-      logger.info('✅ SubmissionQueue initialized');
-    } catch (err) {
-      logger.error('❌ SubmissionQueue initialization failed (non-fatal):', err.message);
-    }
 
     // ✅ Start contest cron jobs (auto-start/end contests on schedule)
     ContestCronService.start();
@@ -236,13 +230,13 @@ class ServerApp {
   static startQueueMetricsCollection() {
     setInterval(async () => {
       try {
-        const stats = await submissionQueue.getStats();
-        if (stats) {
+        const jobCounts = await submissionQueue.getJobCounts();
+        if (jobCounts) {
           updateQueueDepth({
-            waiting: stats.jobCounts?.waiting || 0,
-            active: stats.jobCounts?.active || 0,
-            completed: stats.jobCounts?.completed || 0,
-            failed: stats.jobCounts?.failed || 0
+            waiting: jobCounts.waiting || 0,
+            active: jobCounts.active || 0,
+            completed: jobCounts.completed || 0,
+            failed: jobCounts.failed || 0
           });
         }
       } catch (error) {
