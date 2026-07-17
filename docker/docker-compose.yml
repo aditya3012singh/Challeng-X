@@ -15,6 +15,8 @@ services:
       - codearena-network
     environment:
       - PORT=4000
+      - GOOGLE_CALLBACK_URL=http://localhost:4000/api/auth/google/callback
+      - GITHUB_CALLBACK_URL=http://localhost:4000/api/auth/github/callback
     command: sh -c "npx prisma migrate deploy && npm start"
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
@@ -53,7 +55,7 @@ services:
     restart: always
     user: "root"
     environment:
-      - CODEARENA_RUNNERS_PATH=/host-runners
+      - CODEARENA_RUNNERS_PATH=${CODEARENA_RUNNERS_PATH:-/mnt/d/challeng-x/backend/runners}
       - GRPC_PORT=${JUDGE_GRPC_PORT:-50051}
       - JUDGE_POOL_SIZE=${JUDGE_POOL_SIZE:-2}
     volumes:

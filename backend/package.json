@@ -12,7 +12,7 @@
     "start": "node src/index.js",
     "seed:s3": "node scripts/seed_s3_testcases.js",
     "setup:cors": "node scripts/setup_r2_cors.js",
-    "docker:build": "docker build -t python-runner ./docker/python",
+    "docker:build": "docker build -t codearena-python ./docker/python && docker build -t codearena-java ./docker/java && docker build -t codearena-cpp ./docker/cpp && docker build -t codearena-c ./docker/c && docker build -t codearena-js ./docker/js",
     "docker:test": "node src/testRunner.js"
   },
   "prisma": {
