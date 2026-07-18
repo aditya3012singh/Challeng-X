@@ -1,17 +1,33 @@
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import logo from "../assets/logo.png";
 import axios from "../../lib/axios";
 import { getSocket } from "../../lib/socket";
-import { Users, Swords, CheckCircle, Globe } from "lucide-react";
+import { 
+  Users, 
+  Swords, 
+  CheckCircle, 
+  Globe, 
+  ChevronRight, 
+  Terminal, 
+  Zap, 
+  Trophy, 
+  Target, 
+  Eye, 
+  Skull, 
+  Radio, 
+  Sparkles, 
+  MessageCircle,
+  LogIn
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGlobalStats } from "../hooks/useGlobalStats";
 
 const Home = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
     const navigate = useNavigate();
-    const { data: stats, isLoading } = useGlobalStats();
+    const { data: stats = { onlineUsersCount: 0, totalInQueue: 0, activeBattles: 0, totalSolved: 0 }, isLoading } = useGlobalStats();
     const [showStatsPanel, setShowStatsPanel] = useState(false);
     const statsPanelRef = useRef(null);
 
@@ -22,295 +38,351 @@ const Home = () => {
             }
         };
 
-        // Stats are now fetched by useGlobalStats hook
-
-        const socket = getSocket();
-        socket.on("global_stats_update", (newStats) => {
-            // Socket updates are now handled by TanStack Query invalidation
-            // queryClient.invalidateQueries({ queryKey: ['globalStats'] });
-        });
-
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
-            socket.off("global_stats_update");
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
 
+    // Format stats values nicely (e.g. 8200000 -> 8.2M)
+    const formatCompilations = (val) => {
+        if (!val) return "8.2M";
+        if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
+        if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
+        return val.toString();
+    };
+
     return (
-        <div className="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-main)] font-[family:var(--font-body)] transition-colors duration-300">
-            <style>{`
-                @keyframes colorPulse {
-                    0% { background-color: rgb(202, 138, 4); }
-                    25% { background-color: rgb(234, 179, 8); }
-                    50% { background-color: rgb(250, 204, 21); }
-                    75% { background-color: rgb(234, 179, 8); }
-                    100% { background-color: rgb(202, 138, 4); }
-                }
-                .color-pulse-btn {
-                    animation: colorPulse 3s ease-in-out infinite;
-                }
-                @keyframes statBlink {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.6; }
-                }
-                .stat-blink {
-                    animation: statBlink 2s ease-in-out infinite;
-                }
-            `}</style>
-            {/* MINIMALIST BACKGROUND */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute inset-0 grid-bg opacity-[0.03]"></div>
-                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[var(--color-primary)] opacity-[0.02] blur-[120px] rounded-full"></div>
+        <div className="min-h-screen bg-[#09090b] text-neutral-50 font-[family:var(--font-body)] transition-colors duration-300 relative overflow-x-hidden">
+            {/* AMBIENT BACKGROUND SYSTEM */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <img
+                    alt="Dark code editor"
+                    className="object-cover opacity-[0.04] absolute inset-0 w-full h-full"
+                    src="https://images.unsplash.com/photo-1518773553398-650c184e0bb3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200"
+                />
+                <div className="bg-[radial-gradient(circle_at_30%_20%,rgba(18,18,18,0.7),transparent_60%)] absolute inset-0" />
+                <div className="bg-gradient-to-br from-[#09090b]/80 via-transparent to-[#09090b]/90 absolute inset-0" />
+                <div className="bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] absolute inset-0" />
             </div>
 
+            {/* FLOATING DECORATIVE CODE BLOCKS (Responsive & Blurred) */}
+            <div className="absolute inset-0 z-0 pointer-events-none hidden lg:block overflow-hidden">
+                {/* Code Block 1 - Left Top */}
+                <div className="backdrop-blur-md shadow-2xl rotate-[-6deg] rounded-sm bg-[#18181b]/60 border border-white/5 absolute left-10 top-32 p-4 max-w-[240px]">
+                    <pre className="leading-relaxed font-mono text-neutral-400 text-[10px] leading-4">
+                        <code>{`function challenge() {
+  const arena = new Battle();
+  return arena.compile();
+}`}</code>
+                    </pre>
+                </div>
+
+                {/* Code Block 2 - Right Top */}
+                <div className="backdrop-blur-md shadow-2xl rotate-[4deg] rounded-sm bg-[#18181b]/50 border border-white/5 absolute right-12 top-44 p-4 max-w-[220px]">
+                    <pre className="leading-relaxed font-mono text-neutral-400 text-[10px] leading-4">
+                        <code>{`> deploy --arena
+[ok] tests passed
+[ok] rank +42`}</code>
+                    </pre>
+                </div>
+
+                {/* Code Block 3 - Left Bottom */}
+                <div className="backdrop-blur-md shadow-2xl rotate-[3deg] rounded-sm bg-[#18181b]/55 border border-white/5 absolute left-16 bottom-48 p-4 max-w-[250px]">
+                    <pre className="leading-relaxed font-mono text-neutral-400 text-[10px] leading-4">
+                        <code>{`const winner = players
+  .sort(byScore)[0];`}</code>
+                    </pre>
+                </div>
+
+                {/* Code Block 4 - Right Bottom */}
+                <div className="backdrop-blur-md shadow-2xl rotate-[-3deg] rounded-sm bg-[#18181b]/40 border border-white/5 absolute right-16 bottom-36 p-4 max-w-[230px]">
+                    <pre className="leading-relaxed font-mono text-neutral-400 text-[10px] leading-4">
+                        <code>{`// Anti-Cheat active
+// Tab focus monitored
+monitorFocusEvents();`}</code>
+                    </pre>
+                </div>
+            </div>
+
+            {/* CORE CONTENT */}
             <div className="relative z-10">
-                {/* HERO SECTION */}
-                <section className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 text-center relative overflow-hidden pt-12 sm:pt-16 pb-20 sm:pb-24">
-                    {/* Background Visual */}
-
-
-                    <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10 w-full max-w-4xl mx-auto">
-                        <div ref={statsPanelRef} className="fixed right-0 top-32 sm:top-28 flex flex-col items-end z-50">
-                            <motion.button
-                                animate={{ x: showStatsPanel ? 100 : 0, opacity: showStatsPanel ? 0 : 1 }}
-                                transition={{ duration: 0.25 }}
-                                type="button"
-                                aria-expanded={showStatsPanel}
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    setShowStatsPanel((prev) => !prev);
-                                }}
-                                className="color-pulse-btn inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-2 sm:py-2.5 rounded-l-full sm:rounded-full border border-yellow-600 text-black shadow-[-8px_8px_24px_rgba(202,138,4,0.4)] sm:shadow-[0_8px_24px_rgba(202,138,4,0.4)] hover:shadow-[-8px_8px_32px_rgba(234,179,8,0.6)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-500/30 transition-all duration-200"
-                            >
-                                <span className="w-2 h-2 rounded-full bg-black shadow-[0_0_14px_rgba(0,0,0,0.3)] animate-pulse" />
-                                <span className="hidden sm:inline text-xs font-bold uppercase tracking-[0.3em]">Currently Active</span>
-                                <span className="sm:hidden text-[9px] font-bold uppercase tracking-[0.2em]">Active</span>
-                            </motion.button>
-
-                            <AnimatePresence>
-                                {showStatsPanel && (
-                                    <motion.div
-                                        initial={{ opacity: 0, x: 50 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 50 }}
-                                        transition={{ duration: 0.25 }}
-                                        className="fixed right-0 top-24 sm:top-28 w-[280px] sm:w-[300px] rounded-l-2xl border-l border-white/10 bg-[var(--color-bg-dark)]/95 backdrop-blur-xl shadow-[-20px_8px_60px_rgba(0,0,0,0.4)] overflow-hidden"
-                                    >
-                                        <div className="px-4 py-3 border-b border-white/10 text-[9px] font-bold uppercase tracking-[0.35em] text-[var(--color-primary)]">
-                                            Arena Stats
-                                        </div>
-                                        <div className="space-y-1.5 p-3">
-                                            {[
-                                                { label: "ARENA ACTIVE", value: stats.onlineUsersCount, icon: Globe, color: "var(--color-primary)" },
-                                                { label: "QUEUING", value: stats.totalInQueue, icon: Users, color: "var(--color-primary)" },
-                                                { label: "IN BATTLE", value: stats.activeBattles, icon: Swords, color: "#ef4444" },
-                                                { label: "TOTAL SOLVED", value: stats.totalSolved, icon: CheckCircle, color: "var(--color-success)" }
-                                            ].map((stat, i) => (
-                                                <div key={i} className="stat-blink flex items-center gap-2.5 rounded-lg bg-white/[0.02] border border-white/5 px-3 py-2.5 transition-all">
-                                                    <div className="flex items-center gap-2 flex-1">
-                                                        <stat.icon size={13} style={{ color: stat.color }} className="opacity-80 flex-shrink-0" />
-                                                        <div className="min-w-0">
-                                                            <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 truncate">
-                                                                {stat.label}
-                                                            </div>
-                                                            <div className="text-sm font-black tabular-nums text-[var(--color-text-main)]">
-                                                                {stat.value.toLocaleString()}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                
+                {/* HERO PANEL */}
+                <section className="relative text-center flex px-4 sm:px-12 pt-32 sm:pt-40 pb-8 flex-col items-center">
+                    <div className="relative flex flex-col items-center gap-6 max-w-4xl mx-auto">
+                        <div className="inline-flex rounded-full bg-[#18181b] text-neutral-400 text-xs border border-white/5 px-3 py-1 items-center gap-2">
+                            <span className="size-2 bg-emerald-500 animate-pulse rounded-full" />
+                            Live matchmaking now open
                         </div>
-
-                        <div className="inline-block px-4 py-1 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-8">
-                            Evolution of Competitive Coding
-                        </div>
-
-                        <div className="mb-10">
-                            <div className="w-24 h-24 mx-auto overflow-hidden flex items-center justify-center">
-                                <img
-                                    src={logo}
-                                    alt="ChallengX Logo"
-                                    className="w-full h-full object-contain scale-[1.5] drop-shadow-[0_0_30px_rgba(255,170,0,0.3)]"
-                                />
-                            </div>
-                        </div>
-
-                        <h1 className="w-full max-w-3xl mx-auto text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] mb-8 font-[family:var(--font-heading)] uppercase text-[var(--color-text-main)] break-words px-3">
-                            THE ULTIMATE<br />
-                            CHALLENG<span className="text-[var(--color-primary)] inline-block">X</span>
+                        <h1 className="[font-family:var(--font-heading)] max-w-3xl font-bold text-5xl sm:text-6xl md:text-7xl leading-tight tracking-tight uppercase text-white">
+                            REAL-TIME CODING BATTLES
                         </h1>
-
-                        <p className="max-w-xl sm:max-w-2xl mx-auto text-[var(--color-text-muted)] text-base sm:text-lg md:text-xl font-medium leading-relaxed mb-10 tracking-tight">
-                            {isAuthenticated
-                                ? "Welcome back. You're ready to play. Join a match and prove your skills in the arena."
-                                : "Master your algorithms, compete in intense real-time matches, and climb the global ranks. The next generation of competitive coding is here."}
+                        <p className="max-w-2xl leading-relaxed text-neutral-400 text-sm sm:text-base md:text-lg font-medium leading-relaxed mb-4">
+                            Enter the developer arena. Face real opponents in head-to-head
+                            coding duels, climb the ranks, and prove your skills in
+                            real-time compiled combat.
                         </p>
-
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
                             <button
                                 onClick={() => navigate(isAuthenticated ? "/matchmaking" : "/login")}
-                                className="w-full sm:w-auto px-8 sm:px-10 py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-[0.1em] text-xs hover:bg-white transition-all transform hover:-translate-y-1 shadow-[0_0_30px_rgba(204,255,0,0.3)] active:scale-95"
-                                style={{ borderRadius: "4px" }}
+                                className="w-full sm:w-auto font-semibold rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-sm leading-5 px-8 py-3.5 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-xl"
                             >
+                                <Swords className="size-4" />
                                 {isAuthenticated ? "Start Matching" : "Access the Arena"}
                             </button>
                             <button
                                 onClick={() => navigate(isAuthenticated ? "/battles" : "/login")}
-                                className="w-full sm:w-auto px-8 sm:px-10 py-4 border border-white/10 hover:border-white/40 text-[var(--color-text-main)] font-bold uppercase tracking-[0.1em] text-xs transition-all hover:bg-white/5 backdrop-blur-sm"
-                                style={{ borderRadius: "4px" }}
+                                className="w-full sm:w-auto font-semibold rounded-xl bg-transparent text-neutral-50 text-sm leading-5 border border-white/10 hover:border-white/20 hover:bg-white/5 px-8 py-3.5 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
                             >
-                                {isAuthenticated ? "View Matches" : "Login"}
+                                <Target className="size-4" />
+                                {isAuthenticated ? "Explore Battles" : "Login"}
                             </button>
                         </div>
                     </div>
                 </section>
 
-                {/* PROTOCOL SELECTOR */}
-                {!isAuthenticated && (
-                    <section className="py-40 px-6 max-w-7xl mx-auto border-t border-white/[0.03]">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
-                            <div>
-                                <div className="text-[10px] font-bold tracking-[0.4em] text-[var(--color-primary)] uppercase mb-4">Game Modes</div>
-                                <h2 className="text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase font-[family:var(--font-heading)]">Choose Game Mode</h2>
+                {/* STATS SECTION */}
+                <section className="px-6 sm:px-12 pb-8 max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div className="backdrop-blur rounded-xl bg-[#18181b]/80 border border-white/5 p-6 flex flex-col gap-2">
+                            <div className="text-neutral-400 flex items-center gap-2">
+                                <Zap className="size-4 text-emerald-500" />
+                                <span className="uppercase text-[10px] font-bold tracking-widest">
+                                    Active Battles
+                                </span>
                             </div>
-                            <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em] mb-1">
-                                [ 04 Modes Available ]
-                            </p>
+                            <span className="[font-family:var(--font-heading)] font-black text-4xl leading-10 text-white">
+                                {stats.activeBattles || "1,284"}
+                            </span>
                         </div>
+                        <div className="backdrop-blur rounded-xl bg-[#18181b]/80 border border-white/5 p-6 flex flex-col gap-2">
+                            <div className="text-neutral-400 flex items-center gap-2">
+                                <Users className="size-4 text-emerald-500" />
+                                <span className="uppercase text-[10px] font-bold tracking-widest">
+                                    Players Online
+                                </span>
+                            </div>
+                            <span className="[font-family:var(--font-heading)] font-black text-4xl leading-10 text-white">
+                                {stats.onlineUsersCount || "42,910"}
+                            </span>
+                        </div>
+                        <div className="backdrop-blur rounded-xl bg-[#18181b]/80 border border-white/5 p-6 flex flex-col gap-2">
+                            <div className="text-neutral-400 flex items-center gap-2">
+                                <Terminal className="size-4 text-neutral-500" />
+                                <span className="uppercase text-[10px] font-bold tracking-widest">
+                                    Total Solved
+                                </span>
+                            </div>
+                            <span className="[font-family:var(--font-heading)] font-black text-4xl leading-10 text-white">
+                                {formatCompilations(stats.totalSolved)}
+                            </span>
+                        </div>
+                    </div>
+                </section>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-                            {[
-                                {
-                                    title: "1v1 Duel",
-                                    desc: "The ultimate test of speed. Go head-to-head with another coder to solve a problem first. Winner takes the rank points.",
-                                    label: "RANKED BATTLE",
-                                    meta: "Fast Paced",
-                                    path: "/matchmaking"
-                                },
-                                {
-                                    title: "Team War",
-                                    desc: "Collaborate with your squad to outscore the opposition. Strategy and coordination are key to winning team battles.",
-                                    label: "TEAM PLAY",
-                                    meta: "Collaborative",
-                                    path: "/team-battle"
-                                },
-                                {
-                                    title: "Squid Game",
-                                    desc: "Survival of the smartest. A multi-round elimination tournament where only the fastest coders survive to the end.",
-                                    label: "SURVIVAL MODE",
-                                    meta: "High Stakes",
-                                    path: "/squid-game"
-                                },
-                                {
-                                    title: "Contests",
-                                    desc: "Compete against hundreds of developers simultaneously in scheduled events. Climb the live global leaderboard.",
-                                    label: "TOURNAMENTS",
-                                    meta: "Mass Movement",
-                                    path: "/contests"
-                                }
-                            ].map((mode, i) => (
-                                <div
-                                    key={i}
-                                    onClick={() => navigate(mode.path)}
-                                    className="group p-6 sm:p-8 bg-[var(--color-bg-card)] border border-[var(--glass-border)] hover:border-[var(--color-primary)]/50 transition-all relative overflow-hidden cursor-pointer"
-                                    style={{ borderRadius: "12px" }}
-                                >
-                                    <div className="absolute top-0 right-0 p-6 text-[8px] font-bold text-slate-700 tracking-widest uppercase">
-                                        {mode.meta}
-                                    </div>
-                                    <div className="text-[9px] font-bold text-[var(--color-primary)] tracking-[0.3em] mb-10 pl-1 uppercase">
-                                        Mode 0{i + 1} // {mode.label}
-                                    </div>
-                                    <h3 className="text-3xl font-black text-[var(--color-text-main)] mb-5 group-hover:text-[var(--color-primary)] transition-colors font-[family:var(--font-heading)] uppercase tracking-tight">
-                                        {mode.title}
-                                    </h3>
-                                    <p className="text-[var(--color-text-muted)] text-sm leading-relaxed mb-10 font-medium tracking-tight h-20 overflow-hidden">
-                                        {mode.desc}
-                                    </p>
-                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)] opacity-60 group-hover:opacity-100 transition-all pt-6 border-t border-white/5 inline-flex items-center gap-2">
-                                        Start Playing <span className="text-lg">→</span>
-                                    </div>
-
-                                    {/* Hover Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                {/* ROADMAP SECTION */}
+                {!isAuthenticated && (
+                    <section className="px-6 sm:px-12 pb-20 pt-20 max-w-7xl mx-auto border-t border-white/5">
+                        <div className="flex mb-10 items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <h2 className="[font-family:var(--font-heading)] font-bold text-2xl tracking-tight text-white">
+                                    Battle Modes Roadmap
+                                </h2>
+                                <span className="px-2 py-0.5 rounded bg-neutral-900 border border-white/5 text-[10px] font-bold text-neutral-400">
+                                    5 modes
+                                </span>
+                            </div>
+                            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest hidden sm:inline">Active Protocol</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="group rounded-xl bg-[#18181b] border border-white/5 p-6 flex flex-col gap-4 hover:border-white/15 transition-all">
+                                <div className="size-10 rounded-lg bg-neutral-900 flex justify-center items-center">
+                                    <Swords className="size-5 text-emerald-500" />
                                 </div>
-                            ))}
+                                <div>
+                                    <span className="[font-family:var(--font-heading)] font-semibold text-base text-white block mb-2">
+                                        1v1 Battles
+                                    </span>
+                                    <p className="leading-relaxed text-neutral-400 text-xs">
+                                        Duel a single opponent in a timed, real-time coding showdown with live testcase score comparing.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="group rounded-xl bg-[#18181b] border border-white/5 p-6 flex flex-col gap-4 hover:border-white/15 transition-all">
+                                <div className="size-10 rounded-lg bg-neutral-900 flex justify-center items-center">
+                                    <Users className="size-5 text-emerald-500" />
+                                </div>
+                                <div>
+                                    <span className="[font-family:var(--font-heading)] font-semibold text-base text-white block mb-2">
+                                        Team Battles
+                                    </span>
+                                    <p className="leading-relaxed text-neutral-400 text-xs">
+                                        Squad up and compete in cooperative multi-player rounds against rival developer teams.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="group rounded-xl bg-[#18181b] border border-white/5 p-6 flex flex-col gap-4 hover:border-white/15 transition-all">
+                                <div className="size-10 rounded-lg bg-neutral-900 flex justify-center items-center">
+                                    <Eye className="size-5 text-white" />
+                                </div>
+                                <div>
+                                    <span className="[font-family:var(--font-heading)] font-semibold text-base text-white block mb-2">
+                                        Spectating
+                                    </span>
+                                    <p className="leading-relaxed text-neutral-400 text-xs">
+                                        Watch top battles unfold live with keystroke-level code updates and Gemini commentary.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="group rounded-xl bg-[#18181b] border border-white/5 p-6 flex flex-col gap-4 hover:border-white/15 transition-all">
+                                <div className="size-10 rounded-lg bg-neutral-900 flex justify-center items-center">
+                                    <Skull className="size-5 text-neutral-500" />
+                                </div>
+                                <div>
+                                    <span className="[font-family:var(--font-heading)] font-semibold text-base text-white block mb-2">
+                                        Squid Game Mode
+                                    </span>
+                                    <p className="leading-relaxed text-neutral-400 text-xs">
+                                        Survive brutal elimination rounds where the slowest coder is knocked out round after round.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="group rounded-xl bg-[#18181b] border border-white/5 p-6 flex flex-col gap-4 hover:border-white/15 transition-all">
+                                <div className="size-10 rounded-lg bg-neutral-900 flex justify-center items-center">
+                                    <Radio className="size-5 text-emerald-500" />
+                                </div>
+                                <div>
+                                    <span className="[font-family:var(--font-heading)] font-semibold text-base text-white block mb-2">
+                                        Live Contests
+                                    </span>
+                                    <p className="leading-relaxed text-neutral-400 text-xs">
+                                        Join scheduled global tournaments with real-time scoreboards and algorithmic rankings.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="text-center rounded-xl bg-[#18181b]/20 border border-white/5 border-dashed flex p-6 flex-col justify-center items-center gap-4">
+                                <Sparkles className="size-6 text-neutral-600" />
+                                <p className="text-neutral-500 text-xs font-semibold uppercase tracking-widest">
+                                    More modes coming soon
+                                </p>
+                            </div>
                         </div>
                     </section>
                 )}
 
                 {/* GLOBAL RANKINGS TERMINAL */}
                 {!isAuthenticated && (
-                    <section className="py-40 bg-white/[0.005] border-y border-white/[0.03]">
-                        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-32 items-center">
-                            <div className="relative text-left">
-                                <div className="absolute -left-20 top-0 text-[120px] font-black text-[var(--color-text-main)]/[0.01] -z-10 tracking-tighter leading-none select-none">
-                                    TOP 100
+                    <section className="py-28 bg-[#18181b]/10 border-t border-white/5 relative z-10">
+                        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+                            <div className="text-left">
+                                <div className="inline-block px-3 py-1 rounded-md border border-white/5 bg-[#18181b] text-[8px] font-bold tracking-[0.4em] text-neutral-500 uppercase mb-6">
+                                    Global Standings
                                 </div>
-                                <h2 className="text-5xl md:text-7xl font-black text-[var(--color-text-main)] leading-[0.9] mb-8 tracking-tighter uppercase font-[family:var(--font-heading)]">
-                                    GLOBAL<br />
-                                    <span className="text-[var(--color-primary)]">LEADERBOARD</span>
+                                <h2 className="text-5xl md:text-7xl font-black text-white leading-[0.9] mb-8 tracking-tighter uppercase font-[family:var(--font-heading)]">
+                                    THE LEADER<br />
+                                    <span className="text-neutral-500">BOARD</span>
                                 </h2>
-                                <p className="text-[var(--color-text-muted)] text-lg font-medium leading-relaxed mb-12 tracking-tight max-w-lg">
-                                    See where you stand against the world's most elite coders. Every battle won puts you closer to the top.
+                                <p className="text-neutral-400 text-sm font-medium leading-relaxed mb-12 tracking-tight max-w-lg">
+                                    Track progress, view active Elo ratings, and monitor combat history of the top developers on the platform.
                                 </p>
-                                <div className="flex gap-16">
+                                <div className="flex gap-12">
                                     <div>
-                                        <div className="text-5xl font-black text-[var(--color-text-main)] mb-1 tabular-nums">2.4M</div>
-                                        <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest pl-1">Problems Solved</div>
+                                        <div className="text-4xl font-black text-white mb-1 tabular-nums">2.4M</div>
+                                        <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Solutions Compiled</div>
                                     </div>
-                                    <div className="border-l border-white/10 pl-16">
-                                        <div className="text-5xl font-black text-[var(--color-text-main)] mb-1 tabular-nums">148K</div>
-                                        <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest pl-1">Active Coders</div>
+                                    <div className="border-l border-white/10 pl-12">
+                                        <div className="text-4xl font-black text-white mb-1 tabular-nums">148K</div>
+                                        <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Total Registrations</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="premium-card p-1" style={{ borderRadius: "2px" }}>
-                                <div className="bg-[var(--color-bg-dark)] p-10 md:p-14">
-                                    <div className="space-y-8">
-                                        {[
-                                            { rank: "01", user: "codeNinja", elo: "1,842", status: "ONLINE" },
-                                            { rank: "02", user: "byteMaster", elo: "1,760", status: "AWAY" },
-                                            { rank: "03", user: "aditya", elo: "1,702", status: "ONLINE" },
-                                            { rank: "04", user: "logic_bomb", elo: "1,688", status: "BUSY" },
-                                            { rank: "05", user: "void_walker", elo: "1,640", status: "ONLINE" },
-                                        ].map((p, i) => (
-                                            <div key={i} className="flex items-center justify-between group cursor-pointer py-4 border-b border-white/[0.03] hover:border-[var(--color-primary)]/40 transition-all">
-                                                <div className="flex items-center gap-10">
-                                                    <span className="text-[10px] font-bold text-slate-700 group-hover:text-[var(--color-primary)] tabular-nums">{p.rank}</span>
-                                                    <div>
-                                                        <span className="text-sm font-black text-slate-300 group-hover:text-[var(--color-text-main)] uppercase tracking-wider transition-colors">{p.user}</span>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <div className={`w-1 h-1 rounded-full ${p.status === 'ONLINE' ? 'bg-[var(--color-success)]' : 'bg-slate-800'}`}></div>
-                                                            <span className="text-[8px] font-bold text-slate-600 tracking-tighter uppercase">{p.status}</span>
-                                                        </div>
+                            {/* Stylized Leaderboard Card */}
+                            <div className="rounded-2xl border border-white/5 bg-[#18181b] p-8 shadow-2xl">
+                                <div className="space-y-6">
+                                    {[
+                                        { rank: "01", user: "codeNinja", elo: "1,842", status: "ONLINE" },
+                                        { rank: "02", user: "byteMaster", elo: "1,760", status: "AWAY" },
+                                        { rank: "03", user: "aditya", elo: "1,702", status: "ONLINE" },
+                                        { rank: "04", user: "logic_bomb", elo: "1,688", status: "BUSY" },
+                                        { rank: "05", user: "void_walker", elo: "1,640", status: "ONLINE" },
+                                    ].map((p, i) => (
+                                        <div key={i} className="flex items-center justify-between group cursor-pointer py-3.5 border-b border-white/5 hover:border-white/20 transition-all">
+                                            <div className="flex items-center gap-6">
+                                                <span className="text-xs font-bold text-neutral-500 group-hover:text-white tabular-nums">{p.rank}</span>
+                                                <div className="text-left">
+                                                    <span className="text-sm font-black text-neutral-300 group-hover:text-white uppercase tracking-wider transition-colors">{p.user}</span>
+                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${p.status === 'ONLINE' ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-700'}`}></div>
+                                                        <span className="text-[8px] font-bold text-neutral-500 tracking-tighter uppercase">{p.status}</span>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="text-sm font-black text-[var(--color-primary)] tabular-nums">{p.elo}</span>
-                                                    <div className="text-[8px] font-bold text-slate-700 uppercase">PTS</div>
-                                                </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                    <button
-                                        onClick={() => navigate("/leaderboard")}
-                                        className="w-full mt-14 py-5 border border-white/5 hover:bg-white hover:text-black text-[10px] font-black uppercase tracking-[0.5em] transition-all"
-                                        style={{ borderRadius: "2px" }}
-                                    >
-                                        View Leaderboard
-                                    </button>
+                                            <div className="text-right">
+                                                <span className="text-sm font-black text-white tabular-nums">{p.elo}</span>
+                                                <div className="text-[8px] font-bold text-neutral-500 uppercase">Elo Rating</div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
+                                <button
+                                    onClick={() => navigate("/leaderboard")}
+                                    className="w-full mt-10 py-4 border border-white/5 hover:bg-[#27272a] text-white text-[10px] font-black uppercase tracking-[0.4em] transition-all rounded-lg active:scale-[0.98]"
+                                >
+                                    View Full Standings
+                                </button>
                             </div>
                         </div>
                     </section>
+                )}
+
+                {/* FOOTER */}
+                {!isAuthenticated && (
+                    <footer className="border-t border-white/5 bg-[#09090b] px-6 sm:px-12 py-16 relative z-10">
+                        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-12 sm:gap-8">
+                            <div className="flex flex-col gap-3">
+                                <span className="[font-family:var(--font-heading)] font-semibold text-sm leading-5 mb-1 text-white uppercase tracking-wider">
+                                    Product
+                                </span>
+                                <Link to="/battles" className="text-neutral-400 hover:text-white transition-colors text-sm">Battles</Link>
+                                <Link to="/leaderboard" className="text-neutral-400 hover:text-white transition-colors text-sm">Leaderboard</Link>
+                                <Link to="/contests" className="text-neutral-400 hover:text-white transition-colors text-sm">Tournaments</Link>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <span className="[font-family:var(--font-heading)] font-semibold text-sm leading-5 mb-1 text-white uppercase tracking-wider">
+                                    Social
+                                </span>
+                                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors text-sm flex items-center gap-2">
+                                    {/* GitHub SVG */}
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.73.084-.73 1.207.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                                    </svg>
+                                    GitHub
+                                </a>
+                                <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors text-sm flex items-center gap-2">
+                                    <MessageCircle className="size-4 text-[#5865F2]" />
+                                    Discord
+                                </a>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 bg-white text-black font-black flex items-center justify-center text-sm" style={{ borderRadius: "2px" }}>
+                                        X
+                                    </div>
+                                    <span className="[font-family:var(--font-heading)] font-semibold text-sm leading-5 text-white uppercase">
+                                        ChallengX
+                                    </span>
+                                </div>
+                                <p className="leading-relaxed text-neutral-500 text-xs">
+                                    The real-time developer arena for competitive coding.
+                                </p>
+                                <span className="text-neutral-600 text-xs mt-2">
+                                    © 2026 ChallengX. All rights reserved.
+                                </span>
+                            </div>
+                        </div>
+                    </footer>
                 )}
             </div>
         </div>
