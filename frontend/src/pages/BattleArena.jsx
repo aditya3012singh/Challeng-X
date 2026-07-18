@@ -6,7 +6,7 @@ import {
     Zap, Terminal, Clock, Shield, ChevronLeft,
     Activity, Play, Send, X, Trophy, AlertTriangle,
     Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code, Sparkles,
-    ChevronUp, ChevronDown, ChevronRight, MousePointer2, Loader2, Users
+    ChevronUp, ChevronDown, ChevronRight, MousePointer2, Loader2, Users, Swords
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -834,701 +834,473 @@ const BattleArena = () => {
     }
 
     return (
-        <div className="h-screen bg-[var(--color-bg-dark)] text-slate-300 flex flex-col overflow-hidden font-mono selection:bg-[var(--color-primary)] selection:text-black">
+        <div className="min-h-screen bg-zinc-950 text-neutral-50 flex p-6 sm:p-8 flex-col gap-6 overflow-y-auto selection:bg-white selection:text-black">
+            
+            {/* AMBIENT BACKGROUND SYSTEM */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <img
+                    alt="Dark code editor"
+                    className="object-cover opacity-[0.02] absolute inset-0 w-full h-full"
+                    src="https://images.unsplash.com/photo-1518773553398-650c184e0bb3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200"
+                />
+                <div className="bg-[radial-gradient(circle_at_30%_20%,rgba(18,18,18,0.7),transparent_60%)] absolute inset-0" />
+                <div className="bg-[linear-gradient(rgba(255,255,255,0.005)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.005)_1px,transparent_1px)] bg-[size:40px_40px] absolute inset-0" />
+            </div>
 
-            {/* MATCH HEADER */}
-            <header className="h-14 border-b border-white/5 bg-[var(--color-bg-card)] flex items-center justify-between px-3 sm:px-6 shrink-0 relative z-40">
-                <div className="flex items-center gap-3 sm:gap-6">
-                    <button onClick={() => navigate('/')} className="hover:text-[var(--color-primary)] transition-colors p-1">
-                        <ChevronLeft size={20} />
+            {/* HEADER BAR */}
+            <div className="relative z-10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] rounded-xl bg-zinc-900 border border-zinc-800 flex px-6 py-4 justify-between items-center select-none">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => navigate('/')} className="rounded-xl bg-zinc-950 border border-zinc-800 flex justify-center items-center w-11 h-11 cursor-pointer hover:bg-zinc-900 text-emerald-500 hover:text-white transition-all">
+                        <Swords className="size-5" />
                     </button>
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-ping hidden xs:block" />
-                        <h1 className="text-xs sm:text-sm font-black tracking-tighter uppercase text-[var(--color-text-main)] flex items-center gap-2 sm:gap-3">
-                            <span className="hidden sm:inline">Battle Code:</span>
-                            <span className="text-[var(--color-primary)] font-mono">{currentBattle?.battleCode || "......"}</span>
-                            <button
-                                onClick={() => setIsShareModalOpen(true)}
-                                className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-1 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[9px] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] flex items-center gap-2"
-                                style={{ borderRadius: "2px" }}
-                                title="Share Battle"
-                            >
-                                <Send size={10} /> <span className="hidden sm:inline">Share</span>
-                            </button>
-                        </h1>
+                    <div className="space-y-1 text-left">
+                        <div className="font-[family:var(--font-heading)] font-semibold text-xl leading-7 tracking-tight">
+                            ChallengX Combat IDE Arena
+                        </div>
+                        <div className="text-zinc-400 text-xs leading-4">
+                            Room code: <span className="font-mono text-white select-all">{currentBattle?.battleCode}</span> · Matte Black Developer Arena
+                        </div>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-red-600 border border-white/10" style={{ borderRadius: "2px" }}>
-                    <div className="w-1.5 h-1.5 bg-white animate-pulse rounded-full" />
-                    <span className="text-[10px] uppercase font-black tracking-widest text-white">{formatTime(timeLeft)}</span>
-                </div>
-
-                <div className="h-4 w-[1px] bg-white/10 mx-2" />
-
-                <button
-                    onClick={handleForfeit}
-                    className="flex items-center gap-2 px-2.5 sm:px-4 py-1.5 bg-red-600 hover:bg-red-500 border border-white/20 text-white transition-all group shadow-[0_0_10px_rgba(255,0,0,0.3)]"
-                    style={{ borderRadius: "2px" }}
-                    title="Terminate Match"
-                >
-                    <Power size={14} className="group-hover:rotate-90 transition-transform text-white" />
-                    <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Abandon</span>
-                </button>
-            </header>
-
-            {/* MAIN ARENA CONTENT */}
-            <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-
-                {/* MOBILE TABS - PREMIUM SEGMENTED CONTROL */}
-                <div className="flex lg:hidden bg-[var(--color-bg-card)] border-b border-white/10 shrink-0 h-12 px-2 items-center">
-                    <div className="flex w-full bg-white/5 rounded-lg p-1 relative h-9">
-                        {[
-                            { id: 'problem', label: 'Problem', icon: Target },
-                            { id: 'editor', label: 'Editor', icon: Code },
-                            { id: 'console', label: 'Console', icon: Terminal },
-                            { id: 'status', label: 'Status', icon: Monitor }
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setMobileTab(tab.id)}
-                                className={`flex-1 flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-colors relative z-10 ${mobileTab === tab.id ? "text-[var(--color-text-main)]" : "text-[var(--color-text-muted)] hover:text-slate-300"}`}
-                            >
-                                <tab.icon size={11} />
-                                <span className={isMobile ? "hidden xs:inline" : "inline"}>{tab.label}</span>
-                                {mobileTab === tab.id && (
-                                    <motion.div
-                                        layoutId="mobileTabPill"
-                                        className="absolute inset-0 bg-white/10 rounded-md shadow-[0_0_15px_rgba(255,255,255,0.05)] border border-white/10"
-                                        initial={false}
-                                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-                                    />
-                                )}
-                                {tab.id === 'console' && status === 'running' && (
-                                    <div className="absolute top-1 right-1 w-1 h-1 bg-[var(--color-primary)] rounded-full animate-ping" />
-                                )}
-                            </button>
-                        ))}
+                <div className="font-medium text-zinc-400 text-xs leading-4 flex items-center gap-3">
+                    <button
+                        onClick={handleForfeit}
+                        className="rounded-full bg-red-950 hover:bg-red-900 text-red-500 border border-red-900/40 px-3 py-1 cursor-pointer transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider"
+                    >
+                        Abandon
+                    </button>
+                    <div className="rounded-full bg-zinc-950 border border-zinc-800 px-3 py-1 animate-pulse font-mono text-[10px] uppercase font-bold tracking-wider">
+                        Time Left: {formatTime(timeLeft)}
+                    </div>
+                    <div className="rounded-full bg-zinc-950 text-emerald-500 border border-zinc-800 px-3 py-1 font-bold text-[10px] uppercase tracking-wider">
+                        Live Match
                     </div>
                 </div>
+            </div>
 
-                {/* LEFT SIDEBAR - Problem (Desktop: Resizable, Mobile: Tabbed) */}
-                <div
-                    className={`min-h-0 border-r border-white/5 bg-[var(--color-bg-card)] relative group/sidebar lg:shrink-0
-                        ${mobileTab === "problem" || mobileTab === "console" ? "flex-1 lg:flex-none flex flex-col" : "hidden lg:flex lg:flex-col lg:flex-none"}`} style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
-                >
-                    {/* Resize Handle - Desktop Only */}
-                    {!isMobile && (
-                        <div
-                            onMouseDown={startResizing}
-                            className={`absolute -right-1 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizing ? 'bg-[var(--color-primary)]' : 'hover:bg-[var(--color-primary)]/30'}`}
-                        />
-                    )}
-
-                    {!isMobile && (
-                        <div className="flex border-b border-white/5 shrink-0">
-                            <button
-                                onClick={() => setActiveTab("description")}
-                                className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${activeTab === "description" ? "text-[var(--color-primary)] bg-white/5 shadow-[inset_0_-2px_0_var(--color-primary)]" : "text-slate-600 hover:text-slate-300"}`}
-                            >
-                                <Target size={14} /> Problem
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("console")}
-                                className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${activeTab === "console" ? "text-[var(--color-primary)] bg-white/5 shadow-[inset_0_-2px_0_var(--color-primary)]" : "text-slate-600 hover:text-slate-300"}`}
-                            >
-                                <Terminal size={14} /> Console {status !== "idle" && <div className="w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full animate-ping" />}
-                            </button>
-                        </div>
-                    )}
-
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8">
-                        {((isMobile && mobileTab === "problem") || (!isMobile && activeTab === "description")) ? (
-                            (!opponent || currentBattle?.status === "WAITING" || currentBattle?.status === "COUNTDOWN") ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-8 animate-in fade-in zoom-in duration-700">
-                                    <div className="relative">
-                                        <div className="w-20 h-20 border-2 border-dashed border-[var(--color-primary)]/20 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
-                                            <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full absolute -top-1 left-1/2 -translate-x-1/2" />
-                                        </div>
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <Users size={32} className="text-slate-700 animate-pulse" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-4 max-w-xs">
-                                        <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-[var(--color-text-main)]">Awaiting Opponent</h3>
-                                        <p className="text-[10px] text-[var(--color-text-muted)] font-mono italic leading-relaxed">
-                                            The problem details will appear once an opponent joins the battle.
-                                        </p>
-                                        <div className="pt-4">
-                                            <div className="text-[8px] font-bold text-[var(--color-primary)] uppercase tracking-widest mb-2 opacity-50">Searching for Opponent...</div>
-                                            <div className="h-1 w-full bg-white/5 overflow-hidden">
-                                                <div className="h-full bg-[var(--color-primary)]/30 w-1/3 animate-[shimmer_2s_infinite]" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="space-y-8 lg:space-y-12">
-                                    <section>
-                                        <div className="flex items-center justify-between mb-4 lg:mb-8">
-                                            <div className="flex flex-col gap-2">
-                                                <div className="px-3 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-primary)] text-[10px] font-black uppercase tracking-widest self-start">
-                                                    {problem?.difficulty || "DIFFICULTY"}
-                                                </div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {problem?.tags?.map((tag, idx) => (
-                                                        <span key={idx} className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">
-                                                            #{tag.name}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            {/* <button 
-                                                onClick={fetchAIHint}
-                                                disabled={isAILoading}
-                                                className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 text-[var(--color-text-main)] text-[9px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-black transition-all"
-                                                style={{ borderRadius: "2px" }}
-                                            >
-                                                <Sparkles size={10} /> {isAILoading ? "Connecting..." : "Personalized Hint (-15)"}
-                                            </button> */}
-                                        </div>
-                                        <h2 className="text-xl lg:text-2xl font-black text-[var(--color-text-main)] mb-4 lg:mb-6 tracking-tight uppercase leading-tight">{problem?.title}</h2>
-                                        <div className="prose prose-invert prose-sm max-w-none text-[var(--color-text-muted)] font-light leading-relaxed mb-8 lg:mb-12">
-                                            {problem?.description}
-                                        </div>
-                                    </section>
-
-                                    {/* HINTS SECTION */}
-                                    <section>
-                                        <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
-                                            <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Problem Hints
-                                        </h3>
-                                        <div className="grid grid-cols-1 gap-3">
-                                            {[0, 1, 2].map((idx) => {
-                                                const isUnlocked = problem?.hints?.[idx] !== null && problem?.hints?.[idx] !== undefined;
-                                                return (
-                                                    <div key={idx} className={`p-4 border transition-all ${isUnlocked ? 'bg-white/5 border-white/10' : 'bg-black/40 border-white/5 opacity-60'}`}>
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Problem Hint {idx + 1}</div>
-                                                            {!isUnlocked && (
-                                                                <button
-                                                                    onClick={() => handleUnlockHint(idx)}
-                                                                    disabled={isUnlockingHint}
-                                                                    className="px-2 py-1 bg-[var(--color-primary)] text-black text-[8px] font-black uppercase tracking-tighter hover:bg-white transition-all"
-                                                                >
-                                                                    Unlock (-5)
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                        {isUnlocked ? (
-                                                            <p className="text-[11px] text-slate-300 font-light italic">"{problem.hints[idx]}"</p>
-                                                        ) : (
-                                                            <div className="h-4 bg-white/5 animate-pulse w-full rounded-sm" />
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </section>
-
-                                    {problem?.testcases?.some(tc => tc.isSample) && (
-                                        <section>
-                                            <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
-                                                <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Sample Test Cases
-                                            </h3>
-                                            <div className="space-y-4">
-                                                {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
-                                                    <div key={i} className="bg-white/5 border border-white/5 p-4 rounded-sm">
-                                                        <div className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-3">Example {i + 1}</div>
-                                                        <div className="grid grid-cols-1 gap-4">
-                                                            <div>
-                                                                <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Input</div>
-                                                                <pre className="p-3 bg-black/40 text-[11px] text-[var(--color-text-main)] font-mono overflow-x-auto border border-white/5">{tc.input}</pre>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-[8px] font-black text-slate-700 uppercase mb-2">Expected Output</div>
-                                                                <pre className="p-3 bg-black/40 text-[11px] text-[var(--color-primary)] font-mono overflow-x-auto border border-white/5">{tc.output}</pre>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </section>
-                                    )}
-
-                                    {problem?.constraints && (
-                                        <section>
-                                            <h3 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.3em] mb-4 lg:mb-6 flex items-center gap-3">
-                                                <div className="w-4 h-[1px] bg-[var(--color-primary)]/30" /> Constraints
-                                            </h3>
-                                            <ul className="space-y-3">
-                                                {(typeof problem.constraints === 'string' ? problem.constraints.split('\n') : problem.constraints).map((c, i) => (
-                                                    <li key={i} className="flex items-start gap-3 text-[11px] lg:text-xs text-[var(--color-text-muted)] italic">
-                                                        <div className="mt-1.5 w-1 h-1 bg-[var(--color-primary)] rounded-full shadow-[0_0_5px_var(--color-primary)]" />
-                                                        {c}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </section>
-                                    )}
-                                </div>
-                            )
-                        ) : (
-                            renderConsole()
-                        )}
+            {/* THREE-COLUMN ARENA GRID */}
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)_300px] flex-1 gap-6">
+                
+                {/* Column 1: Tabs & Problem details (280px) */}
+                <div className="shadow-[0_10px_30px_rgba(0,0,0,0.28)] rounded-xl bg-zinc-900 border border-zinc-800 flex p-6 flex-col gap-6 text-left">
+                    <div className="grid grid-cols-3 rounded-lg bg-zinc-950 p-1 gap-1 w-full h-auto select-none">
+                        <button
+                            onClick={() => setActiveTab("description")}
+                            className={`border-transparent rounded-lg text-[10px] sm:text-xs leading-4 p-2 cursor-pointer transition-all ${
+                                activeTab === "description"
+                                    ? "bg-zinc-900 text-white font-bold border border-zinc-800"
+                                    : "text-zinc-400 hover:text-white bg-transparent"
+                            }`}
+                        >
+                            Problem
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("console")}
+                            className={`border-transparent rounded-lg text-[10px] sm:text-xs leading-4 p-2 cursor-pointer transition-all ${
+                                activeTab === "console"
+                                    ? "bg-zinc-900 text-white font-bold border border-zinc-800"
+                                    : "text-zinc-400 hover:text-white bg-transparent"
+                            }`}
+                        >
+                            Console
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("leaderboard")}
+                            className={`border-transparent rounded-lg text-[10px] sm:text-xs leading-4 p-2 cursor-pointer transition-all ${
+                                activeTab === "leaderboard"
+                                    ? "bg-zinc-900 text-white font-bold border border-zinc-800"
+                                    : "text-zinc-400 hover:text-white bg-transparent"
+                            }`}
+                        >
+                            Standing
+                        </button>
                     </div>
 
-                    {/* ACTIONS POD - Desktop Only here, mobile shows it inside editor tab */}
-                    {!isMobile && (
-                        <div className="p-6 bg-[var(--color-bg-card)] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0">
-                            <button
-                                onClick={() => handleRun("RUN")}
-                                disabled={status === "running"}
-                                className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] hover:border-white hover:text-[var(--color-text-main)] transition-all active:scale-95 flex items-center justify-center gap-2"
-                            >
-                                {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run Test
-                            </button>
-                            <button
-                                onClick={() => handleRun("SUBMIT")}
-                                disabled={status === "running" || (isCreator && currentBattle?.status !== "ONGOING")}
-                                className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all active:scale-95 shadow-[0_0_20px_rgba(204,255,0,0.1)] flex items-center justify-center gap-2"
-                            >
-                                {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} fill="currentColor" />} Submit Data
-                            </button>
-                        </div>
-                    )}
-                </div>
-                {/* CENTER AREA - Editor */}
-                <div className={`flex-1 min-h-0 flex flex-col bg-[var(--color-bg-dark)] min-w-0 lg:min-w-[400px] ${mobileTab === "editor" ? "flex" : "hidden lg:flex"}`}>
-                    {(!opponent || currentBattle?.status === "WAITING" || currentBattle?.status === "COUNTDOWN") ? (
-                        <div className="flex-1 flex items-center justify-center bg-[var(--color-bg-dark)] text-[var(--color-text-muted)] uppercase text-[10px] tracking-widest animate-pulse">
-                            <Rocket size={16} className="mr-3" /> Waiting for battle to start...
-                        </div>
-                    ) : (
-                        <>
-                            {/* EDITOR TOOLBAR */}
-                            <div className="h-10 lg:h-12 border-b border-white/5 bg-[var(--color-bg-card)] flex items-center justify-between px-4 lg:px-6 shrink-0">
-                                <div className="flex items-center gap-4 lg:gap-6">
-                                    <div className="flex items-center gap-2 border-r border-white/10 pr-4 lg:pr-6">
-                                        <Globe size={14} className="text-[var(--color-text-muted)]" />
-                                        <select
-                                            value={language}
-                                            onChange={handleLanguageChange}
-                                            className="bg-transparent text-[9px] lg:text-[10px] font-black text-[var(--color-text-main)] outline-none uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"
-                                        >
-                                            {Object.keys(LANGUAGES).map(lang => (
-                                                <option key={lang} value={lang} className="bg-[var(--color-bg-card)]">{lang}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                    {activeTab === "description" && (
+                        <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 custom-scrollbar">
+                            <div className="flex items-center gap-2 select-none">
+                                <span className="rounded-full bg-emerald-500/10 text-emerald-500 border border-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                                    {problem?.difficulty || "HARD"}
+                                </span>
+                                <div className="rounded-full bg-zinc-950 text-zinc-400 text-[10px] border border-zinc-800 px-3 py-1 font-bold uppercase tracking-wider">
+                                    Time Limit: 2s
                                 </div>
-
-                                {isMobile && (
-                                    <button
-                                        onClick={() => setShowMobileTools(!showMobileTools)}
-                                        className={`p-2 rounded-sm border transition-all ${showMobileTools ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/40 text-[var(--color-primary)]' : 'bg-white/5 border-white/10 text-[var(--color-text-muted)]'}`}
-                                    >
-                                        <MousePointer2 size={14} />
-                                    </button>
-                                )}
+                            </div>
+                            <div className="space-y-3">
+                                <div className="font-[family:var(--font-heading)] font-semibold text-lg leading-7 text-white uppercase tracking-tight">
+                                    {problem?.title || "Problem Description"}
+                                </div>
+                                <div className="text-zinc-300 text-xs sm:text-sm leading-6 font-light">
+                                    {problem?.description}
+                                </div>
                             </div>
 
-                            {/* MONACO EDITOR CONTAINER */}
-                            <div className="flex-1 relative">
-                                <Editor
-                                    height="100%"
-                                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                                    language={LANGUAGES[language].monaco}
-                                    value={code}
-                                    onChange={(val) => setCode(val)}
-                                    onMount={(editor) => {
-                                        editorRef.current = editor;
-                                    }}
-                                    options={{
-                                        minimap: { enabled: false },
-                                        fontSize: isMobile ? 12 : 13,
-                                        fontFamily: "var(--font-mono)",
-                                        fontLigatures: true,
-                                        scrollBeyondLastLine: false,
-                                        automaticLayout: true,
-                                        padding: { top: 20 },
-                                        cursorStyle: "line",
-                                        cursorWidth: 2,
-                                        cursorBlinking: 'blink',
-                                        selectionHighlight: false,
-                                        renderLineHighlight: "none",
-                                        lineNumbersMinChars: isMobile ? 2 : 3,
-                                        scrollbar: {
-                                            vertical: "auto",
-                                            horizontal: "auto",
-                                            verticalScrollbarSize: 8,
-                                            horizontalScrollbarSize: 8,
-                                        },
-                                        quickSuggestions: !isMobile,
-                                        hover: { enabled: !isMobile },
-                                        occurrenceHighlight: false,
-                                        matchBrackets: 'always',
-                                    }}
-                                />
-
-                                {/* MOBILE D-PAD */}
-                                {isMobile && showMobileTools && (
-                                    <div className="absolute bottom-6 right-6 z-50 flex flex-col items-center gap-2 bg-[var(--color-bg-card)]/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-90 sm:scale-100">
-                                        <button
-                                            onMouseDown={(e) => { e.preventDefault(); moveCursor('up'); }}
-                                            onTouchStart={(e) => { e.preventDefault(); moveCursor('up'); }}
-                                            className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"
-                                        >
-                                            <ChevronUp size={20} />
-                                        </button>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onMouseDown={(e) => { e.preventDefault(); moveCursor('left'); }}
-                                                onTouchStart={(e) => { e.preventDefault(); moveCursor('left'); }}
-                                                className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"
-                                            >
-                                                <ChevronLeft size={20} />
-                                            </button>
-                                            <button
-                                                onMouseDown={(e) => { e.preventDefault(); moveCursor('down'); }}
-                                                onTouchStart={(e) => { e.preventDefault(); moveCursor('down'); }}
-                                                className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"
-                                            >
-                                                <ChevronDown size={20} />
-                                            </button>
-                                            <button
-                                                onMouseDown={(e) => { e.preventDefault(); moveCursor('right'); }}
-                                                onTouchStart={(e) => { e.preventDefault(); moveCursor('right'); }}
-                                                className="p-3 bg-white/5 border border-white/10 rounded-lg active:bg-[var(--color-primary)]/20 active:border-[var(--color-primary)]/40"
-                                            >
-                                                <ChevronRight size={20} />
-                                            </button>
+                            {problem?.testcases?.some(tc => tc.isSample) && (
+                                <div className="space-y-4">
+                                    {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
+                                        <div key={i} className="space-y-3">
+                                            <div className="font-[family:var(--font-heading)] font-semibold text-zinc-200 text-xs leading-5 uppercase tracking-wider">
+                                                Sample Input {i + 1}
+                                            </div>
+                                            <pre className="font-mono rounded-xl bg-zinc-950 text-zinc-300 text-[11px] leading-6 border border-zinc-800 p-4 overflow-x-auto">
+                                                {tc.input}
+                                            </pre>
+                                            <div className="font-[family:var(--font-heading)] font-semibold text-zinc-200 text-xs leading-5 uppercase tracking-wider">
+                                                Sample Output {i + 1}
+                                            </div>
+                                            <pre className="font-mono rounded-xl bg-zinc-950 text-emerald-500 text-[11px] leading-6 border border-zinc-800 p-4 overflow-x-auto">
+                                                {tc.output}
+                                            </pre>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* MOBILE ACTIONS POD - STICKY FOR BETTER ACCESSIBILITY */}
-                            {isMobile && (
-                                <div className="sticky bottom-0 left-0 right-0 p-4 bg-[var(--color-bg-card)] border-t border-white/5 grid grid-cols-2 gap-4 shrink-0 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
-                                    <button
-                                        onClick={() => handleRun("RUN")}
-                                        disabled={status === "running"}
-                                        className="py-3 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] flex items-center justify-center gap-2 active:scale-95 transition-all"
-                                    >
-                                        {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-[var(--color-primary)]" /> : <Play size={12} fill="currentColor" />} Run
-                                    </button>
-                                    <button
-                                        onClick={() => handleRun("SUBMIT")}
-                                        disabled={status === "running" || (isCreator && currentBattle?.status !== "ONGOING")}
-                                        className="py-3 bg-[var(--color-primary)] text-black text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,170,0,0.2)]"
-                                    >
-                                        {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} fill="currentColor" />} Submit
-                                    </button>
+                                    ))}
                                 </div>
                             )}
-                        </>
+                        </div>
+                    )}
+
+                    {activeTab === "console" && (
+                        <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                            {renderConsole()}
+                        </div>
+                    )}
+
+                    {activeTab === "leaderboard" && (
+                        <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 custom-scrollbar text-xs">
+                            <div className="space-y-4">
+                                <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5 uppercase tracking-wider text-neutral-400">Live Standing</div>
+                                <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800 flex justify-between items-center">
+                                    <span className="text-white font-bold">{opponent?.username || "Player A"}</span>
+                                    <span className="font-mono text-emerald-500">{myProgress.passed}/{myProgress.total || problem?.testcases?.length || 10}</span>
+                                </div>
+                                <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800 flex justify-between items-center">
+                                    <span className="text-zinc-400">{opponent?.username || "Player B"}</span>
+                                    <span className="font-mono text-amber-500">{opponentProgress.passed}/{opponentProgress.total || problem?.testcases?.length || 10}</span>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
 
-                {/* RIGHT SIDEBAR - Opponent Progress (Desktop: Resizable, Mobile: Tabbed) */}
-                <aside
-                    className={`min-h-0 border-l border-white/5 bg-[var(--color-bg-card)] lg:shrink-0 relative group/match
-                        ${mobileTab === "status" ? "flex-1 flex flex-col w-full" : "hidden lg:flex lg:flex-col lg:flex-none"}`} style={{ width: isMobile ? '100%' : `${rightSidebarWidth}px` }}
-                >
-                    {/* Resize Handle - Desktop Only */}
-                    {!isMobile && (
-                        <div
-                            onMouseDown={startResizingRight}
-                            className={`absolute -left-1 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizingRight ? 'bg-[var(--color-primary)]' : 'hover:bg-[var(--color-primary)]/30'}`}
-                        />
-                    )}
-                    <div className="p-6 border-b border-white/5 bg-[var(--color-bg-card)]">
-                        <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em] mb-8">Match Status</div>
-
-                        <div className="space-y-8">
-                            {/* LOCAL PROGRESS */}
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-end">
-                                    <span className="text-[10px] font-black text-[var(--color-text-main)] uppercase tracking-wider">{user?.username || "Guest Player"}</span>
-                                    <span className="text-[var(--color-primary)] font-mono text-xs font-black">{myProgress.passed}/{myProgress.total || 0}</span>
+                {/* Column 2: Code Editor panel (flex-1) */}
+                <div className="shadow-[0_10px_30px_rgba(0,0,0,0.28)] rounded-xl bg-zinc-900 border border-zinc-800 flex p-6 flex-col gap-4">
+                    {/* Control Deck Header */}
+                    <div className="rounded-xl bg-zinc-950 border border-zinc-800 flex px-4 py-3 justify-between items-center gap-3 select-none">
+                        <div className="flex items-center gap-3">
+                            <div className="space-y-0.5 text-left">
+                                <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5 text-white">
+                                    Editor Control Deck
                                 </div>
-                                <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
-                                    <div
-                                        className="h-full bg-[var(--color-primary)] transition-all duration-500 shadow-[0_0_10px_var(--color-primary)]"
+                                <div className="text-zinc-400 text-xs leading-4">
+                                    Monaco-style Combat coding
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <select
+                                value={language}
+                                onChange={handleLanguageChange}
+                                className="rounded-lg bg-zinc-900 text-neutral-50 text-xs leading-4 border border-zinc-800 px-3 py-1.5 outline-none cursor-pointer focus:border-white/10"
+                            >
+                                {Object.keys(LANGUAGES).map(lang => (
+                                    <option key={lang} value={lang}>{lang}</option>
+                                ))}
+                            </select>
+                            <button
+                                onClick={() => setCode(LANGUAGES[language].defaultCode)}
+                                className="bg-transparent hover:bg-white/5 rounded-lg text-neutral-50 text-xs leading-4 border border-zinc-800 px-4 py-1.5 cursor-pointer transition-all active:scale-95"
+                            >
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Monaco Editor Wrapper */}
+                    <div className="min-h-[500px] rounded-xl bg-zinc-950 border border-zinc-800 flex flex-1 overflow-hidden relative">
+                        <Editor
+                            height="100%"
+                            theme="vs-dark"
+                            language={LANGUAGES[language].monaco}
+                            value={code}
+                            onChange={(val) => setCode(val)}
+                            onMount={(editor) => {
+                                editorRef.current = editor;
+                            }}
+                            options={{
+                                minimap: { enabled: false },
+                                fontSize: 13,
+                                fontFamily: "Fira Code, monospace",
+                                scrollBeyondLastLine: false,
+                                automaticLayout: true,
+                                padding: { top: 16 },
+                                renderLineHighlight: "none"
+                            }}
+                        />
+                    </div>
+
+                    {/* Console HUD Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 rounded-xl bg-zinc-950 border border-zinc-800 p-3 gap-3 text-left">
+                        <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-3">
+                            <div className="font-semibold text-zinc-400 text-xs leading-4 mb-2 select-none uppercase tracking-wider">
+                                Custom Input
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Paste test case"
+                                className="font-mono bg-zinc-950 text-neutral-50 text-xs border border-zinc-800 rounded-lg w-full px-3 py-2 outline-none focus:border-white/20"
+                            />
+                        </div>
+                        <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-3">
+                            <div className="font-semibold text-zinc-400 text-xs leading-4 mb-2 select-none uppercase tracking-wider">
+                                Test Output
+                            </div>
+                            <div className="font-mono rounded-md bg-zinc-950 text-emerald-500 text-xs border border-zinc-800 p-3 select-all">
+                                {status === "running" ? "COMPILING..." : (testResults.length > 0 ? "PASSED · " + myProgress.passed + "/" + myProgress.total + " cases matched" : "IDLE")}
+                            </div>
+                        </div>
+                        <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-3">
+                            <div className="font-semibold text-zinc-400 text-xs leading-4 mb-2 select-none uppercase tracking-wider">
+                                Console Logs
+                            </div>
+                            <div className="font-mono rounded-md bg-zinc-950 text-zinc-300 text-[10px] border border-zinc-800 p-3">
+                                {message || "[arena] ready for compile"}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Column 3: Combat stats, Anti-Cheat, Spectators (300px) */}
+                <div className="shadow-[0_10px_30px_rgba(0,0,0,0.28)] rounded-xl bg-zinc-900 border border-zinc-800 flex p-6 flex-col gap-6 text-left">
+                    
+                    {/* Combat Progress Tracker */}
+                    <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
+                        <div className="flex mb-4 justify-between items-center select-none">
+                            <div>
+                                <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5">
+                                    Combat Tracker
+                                </div>
+                                <div className="text-zinc-400 text-xs leading-4">
+                                    Real-time case compilation
+                                </div>
+                            </div>
+                            <span className="rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-bold border border-zinc-800 px-2 py-0.5 uppercase tracking-wider animate-pulse">
+                                Live
+                            </span>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <div className="text-xs leading-4 flex justify-between items-center">
+                                    <span className="text-white font-bold">{user?.username || "Player Alpha"}</span>
+                                    <span className="text-emerald-500 font-mono font-bold">{myProgress.passed}/{myProgress.total || problem?.testcases?.length || 10} passed</span>
+                                </div>
+                                <div className="rounded-full bg-zinc-800 h-2 overflow-hidden">
+                                    <div 
+                                        className="rounded-full bg-emerald-500 h-full transition-all duration-500" 
                                         style={{ width: `${(myProgress.passed / (myProgress.total || 1)) * 100}%` }}
                                     />
                                 </div>
                             </div>
-
-                            <div className="h-[1px] bg-white/5 w-1/2 mx-auto" />
-
-                            {/* OPPONENT PROGRESS */}
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center group">
-                                    <div className="flex flex-col">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`text-[10px] font-black uppercase tracking-wider ${opponent?.username === "CHALLENGX_GHOST" ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)]"}`}>
-                                                {opponent?.username || "GUEST_USER"}
-                                            </span>
-                                            {opponent?.username === "CHALLENGX_GHOST" && (
-                                                <span className="px-1.5 py-0.5 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[7px] font-black text-[var(--color-primary)] uppercase tracking-widest rounded-sm">
-                                                    GHOST
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <div className={`w-1 h-1 rounded-full ${opponentStatus === 'submitting' ? 'bg-[var(--color-primary)] animate-ping' : 'bg-slate-600'}`} />
-                                            <span className="text-[8px] uppercase font-bold text-slate-600">{opponentStatus === 'submitting' ? 'Submitting...' : 'Idle'}</span>
-                                        </div>
-                                    </div>
-                                    <span className="text-[var(--color-text-muted)] font-mono text-xs">{opponentProgress.passed}/{opponentProgress.total || 0}</span>
+                            <div className="space-y-2">
+                                <div className="text-xs leading-4 flex justify-between items-center">
+                                    <span className="text-zinc-400 font-bold">{opponent?.username || "Player Omega"}</span>
+                                    <span className="text-amber-500 font-mono font-bold">{opponentProgress.passed}/{opponentProgress.total || problem?.testcases?.length || 10} passed</span>
                                 </div>
-
-                                {opponentAlert && (
-                                    <div className="p-3 bg-red-600 border border-white/10 text-white text-[8px] font-black uppercase tracking-widest animate-pulse flex items-center gap-2 shadow-[0_0_15px_rgba(255,0,0,0.3)]">
-                                        <ShieldAlert size={12} />
-                                        {opponentAlert.message}
-                                    </div>
-                                ) || (
-                                        <div className="h-1.5 w-full bg-white/5 border border-white/5 overflow-hidden" style={{ borderRadius: "1px" }}>
-                                            <div
-                                                className={`h-full transition-all duration-500 ${opponent?.username === "CHALLENGX_GHOST" ? "bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]" : "bg-white/20"}`}
-                                                style={{ width: `${(opponentProgress.passed / (opponentProgress.total || 1)) * 100}%` }}
-                                            />
-                                        </div>
-                                    )}
+                                <div className="rounded-full bg-zinc-800 h-2 overflow-hidden">
+                                    <div 
+                                        className="rounded-full bg-amber-500 h-full transition-all duration-500" 
+                                        style={{ width: `${(opponentProgress.passed / (opponentProgress.total || 1)) * 100}%` }}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                        <div className="flex justify-between items-center mb-4">
-                            <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.3em]">Security Logs</div>
-                            {opponentViolations.length > 0 && (
-                                <div className="px-2 py-0.5 bg-red-600 border border-white/10 text-[8px] font-black text-white uppercase tracking-widest rounded-sm shadow-[0_0_10px_rgba(255,0,0,0.2)]">
-                                    {opponentViolations.length} {opponentViolations.length === 1 ? 'Violation' : 'Violations'}
+                    {/* Anti-Cheat violation details */}
+                    <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
+                        <div className="flex mb-4 justify-between items-center select-none">
+                            <div>
+                                <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5">
+                                    Anti-Cheat Panel
                                 </div>
-                            )}
+                                <div className="text-zinc-400 text-xs leading-4">
+                                    Integrity monitor active
+                                </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" defaultChecked className="sr-only peer" />
+                                <div className="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            </label>
                         </div>
-                        <div className="space-y-3">
-                            {opponentViolations.length > 0 ? (
-                                opponentViolations.map((v, index) => (
-                                    <div key={index} className="p-3 bg-red-900/10 border-l-2 border-red-600 animate-in slide-in-from-right duration-300">
-                                        <div className="flex justify-between items-center mb-1">
-                                            <div className="text-[10px] font-black text-red-500 uppercase tracking-widest">
-                                                {v.username}: {v.message}
-                                            </div>
-                                            <div className="text-[8px] text-red-400/50 font-mono">{v.timestamp}</div>
-                                        </div>
-                                        <div className="text-[8px] text-red-400 italic">
-                                            {v.duration !== null ? `Away for ${v.duration} seconds.` : "Currently out of focus..."}
-                                        </div>
+                        <div className="space-y-3 text-xs leading-4">
+                            <div className="font-mono rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800 p-3 select-all">
+                                focus.log: editor security stream connected
+                            </div>
+                            <div className="space-y-2">
+                                <div className="font-semibold text-zinc-400 select-none uppercase tracking-wider text-[10px]">Violations</div>
+                                <div className="space-y-2">
+                                    <div className="rounded-lg bg-zinc-900 border border-zinc-800 flex p-2.5 items-center gap-2">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={opponentViolations.some(v => v.type === "CODE_PASTE")} 
+                                            disabled 
+                                            className="accent-emerald-500 rounded border-zinc-800 bg-zinc-950 text-emerald-500 w-4 h-4 cursor-not-allowed" 
+                                        />
+                                        <span className="text-zinc-300">Suspicious paste detected</span>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="h-24 border-2 border-dashed border-white/5 flex items-center justify-center p-4 text-center">
-                                    <span className="text-[8px] uppercase font-bold text-slate-700 tracking-widest leading-relaxed">No security issues detected</span>
+                                    <div className="rounded-lg bg-zinc-900 border border-zinc-800 flex p-2.5 items-center gap-2">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={opponentViolations.some(v => v.type === "TAB_SWITCH")} 
+                                            disabled 
+                                            className="accent-emerald-500 rounded border-zinc-800 bg-zinc-950 text-emerald-500 w-4 h-4 cursor-not-allowed" 
+                                        />
+                                        <span className={opponentViolations.some(v => v.type === "TAB_SWITCH") ? "text-red-500 animate-pulse font-bold" : "text-zinc-300"}>Tab switch during compile</span>
+                                    </div>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
-                </aside>
-            </main>
 
-            {/* PREMIUM FINISH OVERLAY */}
+                    {/* Spectator widgets */}
+                    <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4 flex-1">
+                        <div className="mb-4 select-none">
+                            <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5">
+                                Spectators
+                            </div>
+                            <div className="text-zinc-400 text-xs leading-4">
+                                Active battle spectators
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className="rounded-full bg-zinc-900 border border-zinc-800 w-8 h-8 flex items-center justify-center text-zinc-600 text-[10px] select-none font-bold">
+                                    S{i+1}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            {/* FOOTER ACTION BUTTONS */}
+            <div className="relative z-10 rounded-xl bg-zinc-900 border border-zinc-800 flex px-6 py-4 justify-between items-center select-none mt-2">
+                <div className="text-zinc-400 text-sm leading-5">
+                    Ready to execute the combat solution
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => handleRun("RUN")}
+                        disabled={status === "running"}
+                        className="bg-transparent hover:bg-white/5 cursor-pointer rounded-lg text-neutral-50 text-xs leading-4 border border-zinc-800 px-5 py-2.5 h-10 transition-all flex items-center gap-2 active:scale-95"
+                    >
+                        {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-emerald-500" /> : <Play size={12} fill="currentColor" />} Run Code
+                    </button>
+                    <button
+                        onClick={() => handleRun("SUBMIT")}
+                        disabled={status === "running" || (isCreator && currentBattle?.status !== "ONGOING")}
+                        className="rounded-lg bg-neutral-50 hover:bg-neutral-200 cursor-pointer text-zinc-950 px-5 py-2.5 h-10 font-bold transition-all flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                    >
+                        {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin text-black" /> : <Send size={12} fill="currentColor" />} Submit Solution
+                    </button>
+                </div>
+            </div>
+
+            {/* RESULTS FINISH MODAL */}
             {isFinished && (
                 <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-xl flex items-center justify-center p-8 animate-in fade-in zoom-in duration-500">
-                    <style>{`
-                        @keyframes confetti-fall {
-                            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-                            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-                        }
-                        .confetti {
-                            position: absolute;
-                            width: 10px;
-                            height: 10px;
-                            background: var(--color-primary);
-                            animation: confetti-fall 4s linear infinite;
-                        }
-                        @keyframes pulse-glow {
-                            0%, 100% { filter: drop-shadow(0 0 20px var(--color-primary)); transform: scale(1); }
-                            50% { filter: drop-shadow(0 0 50px var(--color-primary)); transform: scale(1.1); }
-                        }
-                        .winner-trophy {
-                            animation: pulse-glow 2s ease-in-out infinite;
-                        }
-                    `}</style>
-
-                    {/* Confetti Particles for Winner */}
-                    {winner === user?.id && [...Array(40)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="confetti"
-                            style={{
-                                left: `${Math.random() * 100}%`,
-                                animationDelay: `${Math.random() * 5}s`,
-                                backgroundColor: ['#ccff00', '#00ffcc', '#ff00ff', '#ffffff'][Math.floor(Math.random() * 4)],
-                                width: `${Math.random() * 8 + 4}px`,
-                                height: `${Math.random() * 8 + 4}px`,
-                                clipPath: ['circle(50%)', 'polygon(50% 0%, 0% 100%, 100% 100%)', 'none'][Math.floor(Math.random() * 3)]
-                            }}
-                        />
-                    ))}
-
-                    <div className="max-w-lg w-full bg-[var(--color-bg-card)] border border-white/10 p-6 sm:p-10 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "2px" }}>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent opacity-50" />
-
-                        <div className="flex flex-col items-center">
-                            <div className={`mb-6 relative ${winner === user?.id ? 'winner-trophy' : ''}`}>
+                    <div className="max-w-lg w-full bg-zinc-900 border border-white/10 p-6 sm:p-10 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "2px" }}>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-50" />
+                        <div className="flex flex-col items-center text-center">
+                            <div className="mb-6 relative">
                                 <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative z-10">
                                     {winner === user?.id ? (
-                                        <Trophy size={40} className="text-[var(--color-primary)]" />
+                                        <Trophy size={40} className="text-emerald-500 animate-bounce" />
                                     ) : (
-                                        <AlertTriangle size={40} className="text-red-500" />
+                                        <AlertTriangle size={40} className="text-red-500 animate-pulse" />
                                     )}
                                 </div>
-                                <div className={`absolute inset-0 blur-[60px] opacity-20 rounded-full ${winner === user?.id ? 'bg-[var(--color-primary)]' : 'bg-red-600'}`} />
                             </div>
-
-                            <div className="text-[10px] font-black text-[var(--color-primary)] tracking-[0.6em] uppercase mb-2 opacity-70 text-center">
-                                {winner === user?.id ? "Victory!" : "Defeat"}
-                            </div>
-
-                            <h1 className="text-4xl sm:text-5xl font-black text-[var(--color-text-main)] tracking-tighter uppercase mb-2 leading-none text-center">
-                                {winner === user?.id ? "You Won" : "Match Over"}
-                            </h1>
-
-                            <p className="text-[var(--color-text-muted)] text-[10px] font-medium mb-8 uppercase tracking-[0.2em] text-center">
-                                {winner === user?.id
-                                    ? "You solved the problem before your opponent."
-                                    : "You were unable to complete the challenge in time."}
+                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 font-[family:var(--font-heading)]">
+                                {winner === user?.id ? "VICTORY ACHIEVED" : "SIGNAL ABORTED"}
+                            </h2>
+                            <p className="text-neutral-400 text-xs font-medium mb-8 uppercase tracking-[0.2em]">
+                                {winner === user?.id ? "You solved the problem before your opponent." : "You were unable to complete the challenge in time."}
                             </p>
-
-                            {/* MATCH STATS */}
-                            <div className="grid grid-cols-3 gap-4 w-full mb-8 p-4 sm:p-6 bg-white/[0.02] border border-white/5" style={{ borderRadius: "2px" }}>
+                            <div className="grid grid-cols-3 gap-4 w-full mb-8 p-4 sm:p-6 bg-white/[0.02] border border-white/5 rounded-lg select-none">
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[8px] text-slate-600 font-black uppercase mb-1 tracking-widest">Time</span>
-                                    <span className="text-lg text-[var(--color-text-main)] font-mono">{formatElapsed(currentBattle?.startedAt)}</span>
+                                    <span className="text-[8px] text-neutral-500 font-bold uppercase mb-1 tracking-widest">Time</span>
+                                    <span className="text-base text-white font-mono">{formatElapsed(currentBattle?.startedAt)}</span>
                                 </div>
                                 <div className="flex flex-col items-center border-x border-white/5 px-4">
-                                    <span className="text-[8px] text-slate-600 font-black uppercase mb-1 tracking-widest">Accuracy</span>
-                                    <span className="text-lg text-[var(--color-primary)] font-mono">100%</span>
+                                    <span className="text-[8px] text-neutral-500 font-bold uppercase mb-1 tracking-widest">Accuracy</span>
+                                    <span className="text-base text-emerald-500 font-mono">100%</span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[8px] text-slate-600 font-black uppercase mb-1 tracking-widest">Logic</span>
-                                    <span className="text-lg text-[var(--color-text-main)] font-mono">{myProgress.passed}/{myProgress.total || problem.testcases?.length || 10}</span>
+                                    <span className="text-[8px] text-neutral-500 font-bold uppercase mb-1 tracking-widest">Logic</span>
+                                    <span className="text-base text-white font-mono">{myProgress.passed}/{myProgress.total || problem?.testcases?.length || 10}</span>
                                 </div>
                             </div>
-
-                            {/* CODE SURGEON DIAGNOSTICS */}
-                            {/* <div className="w-full mb-8">
-                                                <div className="flex items-center gap-3 mb-4">
-                                                    <div className="h-[1px] flex-1 bg-white/5" />
-                                                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-sm">
-                                                        <Activity size={10} className="text-slate-500" />
-                                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Diagnostic Stream</span>
-                                                    </div>
-                                                    <div className="h-[1px] flex-1 bg-white/5" />
-                                                </div>
-
-                                                {isSurgeonLoading ? (
-                                                    <div className="py-6 flex flex-col items-center gap-3">
-                                                        <Loader2 size={16} className="animate-spin text-slate-700" />
-                                                        <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">Analyzing Logic...</span>
-                                                    </div>
-                                                ) : surgeonReport ? (
-                                                    <div className="p-5 bg-white/[0.01] border border-white/5 relative group overflow-hidden" style={{ borderRadius: "2px" }}>
-                                                        <div className="absolute top-0 left-0 w-0.5 h-full bg-[var(--color-primary)]/20" />
-                                                        <p className="text-[11px] text-[var(--color-text-muted)] font-light leading-relaxed tracking-wide italic font-mono">
-                                                            "{surgeonReport}"
-                                                        </p>
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-center py-2">
-                                                        <button 
-                                                            onClick={() => setIsSurgeonOpen(true)}
-                                                            className="text-[9px] font-black text-[var(--color-primary)] uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto decoration-[var(--color-primary)]/30 underline-offset-4 hover:underline"
-                                                        >
-                                                            <Sparkles size={10} /> Reveal Diagnostic Report
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div> */}
-
-                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
+                            <div className="flex gap-4 w-full">
                                 <button
                                     onClick={() => navigate('/')}
-                                    className="w-full sm:flex-1 py-4 bg-white/5 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-black transition-all"
+                                    className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold uppercase tracking-widest text-[10px] cursor-pointer transition-all"
                                 >
                                     Exit Battle
                                 </button>
-                                {/* {!surgeonReport && (
-                                    <button
-                                        onClick={fetchAISurgeonReport}
-                                        disabled={isSurgeonLoading}
-                                        className="w-full sm:flex-2 px-8 py-4 bg-[var(--color-primary)] text-black font-black uppercase tracking-widest text-[9px] hover:brightness-125 transition-all shadow-[0_0_20px_var(--color-primary)] shadow-opacity-10 flex items-center justify-center gap-2"
-                                    >
-                                        {isSurgeonLoading ? <Loader2 size={12} className="animate-spin" /> : <Activity size={12} />} Process Diagnostic
-                                    </button>
-                                )} */}
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* CONFIRMATION MODAL */}
+            {/* CONFIRMATION FORFEIT MODAL */}
             <AnimatePresence>
                 {showForfeitModal && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+                        className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-sm flex items-center justify-center p-6"
                     >
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="w-full max-w-md bg-[var(--color-bg-card)] border border-white/10 p-10 shadow-2xl relative overflow-hidden"
+                            className="w-full max-w-md bg-zinc-900 border border-white/10 p-10 shadow-2xl relative overflow-hidden"
                             style={{ borderRadius: "2px" }}
                         >
                             <div className="absolute top-0 left-0 w-full h-1 bg-red-600" />
-
-                            <div className="flex items-center gap-4 text-red-500 mb-6">
+                            <div className="flex items-center gap-4 text-red-500 mb-6 select-none">
                                 <AlertTriangle size={24} />
                                 <div className="text-[10px] font-black uppercase tracking-[0.4em]">Signal Termination</div>
                             </div>
-
-                            <h3 className="text-2xl font-black text-[var(--color-text-main)] uppercase tracking-tight mb-4 leading-tight">Abort Match?</h3>
-                            <p className="text-[var(--color-text-muted)] text-xs font-mono leading-relaxed mb-10">
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4 leading-tight">Abort Match?</h3>
+                            <p className="text-neutral-400 text-xs font-mono leading-relaxed mb-10">
                                 This action will result in an immediate forfeit. Your performance metrics will be recorded as a failure for this sector.
-                            </p>
-
+                             </p>
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => setShowForfeitModal(false)}
-                                    className="flex-1 py-4 border border-white/5 text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[10px] hover:text-[var(--color-text-main)] hover:bg-white/5 transition-all"
-                                    style={{ borderRadius: "2px" }}
+                                    className="flex-1 py-4 border border-white/5 text-neutral-400 font-bold uppercase tracking-widest text-[10px] hover:text-white hover:bg-white/5 transition-all cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmForfeit}
                                     disabled={isAborting}
-                                    className="flex-1 py-4 bg-red-600 text-white font-black uppercase tracking-widest text-[10px] hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(255,0,0,0.3)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    style={{ borderRadius: "2px" }}
+                                    className="flex-1 py-4 bg-red-600 hover:bg-red-500 text-white font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                 >
                                     {isAborting ? <Loader2 size={14} className="animate-spin" /> : null}
-                                    {isAborting ? "Aborting..." : "Confirm Abandon"}
+                                    {isAborting ? "Aborting..." : "Confirm Forfeit"}
                                 </button>
                             </div>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-            {/* ANTI-CHEAT VIOLATION OVERLAY */}
+
+            {/* TAB SWITCH SECURITY OVERLAY */}
             <AnimatePresence>
                 {isTabSwitched && !isFinished && (
                     <motion.div
@@ -1537,10 +1309,8 @@ const BattleArena = () => {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-8"
                     >
-                        <div className="absolute inset-0 bg-red-600/5 animate-pulse pointer-events-none" />
-                        <div className="max-w-md w-full bg-[var(--color-bg-card)] border border-red-600/20 p-12 text-center relative overflow-hidden" style={{ borderRadius: "2px" }}>
+                        <div className="max-w-md w-full bg-zinc-900 border border-red-600/20 p-12 text-center relative overflow-hidden" style={{ borderRadius: "2px" }}>
                             <div className="absolute top-0 left-0 w-full h-1 bg-red-600 shadow-[0_0_20px_rgba(255,0,0,0.5)]" />
-
                             <div className="flex flex-col items-center gap-6 mb-8">
                                 <div className="w-20 h-20 bg-red-600/10 border border-red-600/20 rounded-full flex items-center justify-center animate-bounce">
                                     <ShieldAlert size={40} className="text-red-500" />
@@ -1550,20 +1320,12 @@ const BattleArena = () => {
                                     <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Stay in Arena</h2>
                                 </div>
                             </div>
-
-                            <p className="text-[var(--color-text-muted)] text-xs font-mono mb-10 leading-relaxed uppercase tracking-widest">
+                            <p className="text-neutral-400 text-xs font-mono mb-10 leading-relaxed uppercase tracking-widest">
                                 Please stay on this tab to avoid forfeiting the match. Return to the battle to stay in the match.
                             </p>
-
                             <div className="relative">
-                                <div className="text-7xl font-black text-red-600 font-mono mb-4 tabular-nums shadow-red-600/20 drop-shadow-2xl">
-                                    VIOLATION
-                                </div>
-                                <div className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.3em]">Testing Phase: Forfeit Disabled</div>
-                            </div>
-
-                            <div className="mt-8 pt-8 border-t border-white/5 italic text-[10px] text-[var(--color-primary)] uppercase font-black tracking-widest">
-                                AUTOMATIC PENALTY INACTIVE
+                                <div className="text-5xl font-black text-red-600 font-mono mb-4">VIOLATION</div>
+                                <div className="text-[9px] font-bold text-neutral-600 uppercase tracking-[0.3em]">Testing Phase: Forfeit Disabled</div>
                             </div>
                         </div>
                     </motion.div>
