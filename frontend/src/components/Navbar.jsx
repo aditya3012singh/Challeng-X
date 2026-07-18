@@ -141,17 +141,17 @@ const Navbar = () => {
         {/* ACTIONS (Right Side - Authenticated & Theme Controls) */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* THEME TOGGLE */}
-          <button
+          {/* <button
             onClick={toggleTheme}
             className="p-2 text-neutral-400 hover:text-white transition-all cursor-pointer"
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          </button> */}
 
           {isAuthenticated && (
             <>
-              <div className="h-6 w-[1px] bg-white/10 hidden lg:block"></div>
+              {/* <div className="h-6 w-[1px] bg-white/10 hidden lg:block"></div> */}
               
               {/* Notification Bell */}
               <div className="relative">
