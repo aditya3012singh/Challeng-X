@@ -83,12 +83,8 @@ const Navbar = () => {
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-12 h-10 overflow-hidden" style={{ borderRadius: "2px" }}>
-            <img
-              src={logo}
-              alt="ChallengX Logo"
-              className="w-full h-full object-contain scale-[1.5] transition-transform group-hover:scale-[1.6]"
-            />
+          <div className="w-10 h-10 bg-white text-black font-black flex items-center justify-center text-xl transition-all duration-300 group-hover:bg-slate-200" style={{ borderRadius: "2px" }}>
+            X
           </div>
           <div className="flex flex-col justify-center">
             <span className="text-xl font-black tracking-tighter text-[var(--color-text-main)] uppercase leading-none">
@@ -279,12 +275,8 @@ const Navbar = () => {
             >
               <div className="p-6 flex justify-between items-center border-b border-white/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 overflow-hidden" style={{ borderRadius: "2px" }}>
-                    <img
-                      src={logo}
-                      alt="ChallengX Logo"
-                      className="w-full h-full object-contain scale-[1.3]"
-                    />
+                  <div className="w-8 h-8 bg-white text-black font-black flex items-center justify-center text-sm" style={{ borderRadius: "2px" }}>
+                    X
                   </div>
                   <span className="text-xs font-bold tracking-widest text-[var(--color-text-main)] uppercase">Menu</span>
                 </div>
