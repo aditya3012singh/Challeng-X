@@ -6,7 +6,7 @@ import IORedis from "ioredis";
 import GrpcJudgeClient from "../src/integrations/judge/grpcJudgeClient.js";
 import SubmissionService from "../src/modules/submission/submission.service.js";
 import BattleService from "../src/modules/battle/battle.service.js";
-import S3Service from "../src/integrations/s3/s3.service.js";
+import TestcaseCache from "../src/core/cache/testcaseCache.js";
 import UserCache from "../src/core/cache/userCache.js";
 import ProblemCache from "../src/core/cache/problemCache.js";
 import logger from "../src/core/logger/logger.js";
@@ -48,9 +48,10 @@ const worker = new Worker(
         const jobStartTime = Date.now();
         logger.info(`📦 Job ${job.id} picked up — subId=${submissionId} type=${type || "SUBMIT"}`);
 
+        let submission = null;
         try {
             console.time(`Job-${job.id}-init`);
-            const submission = await SubmissionService.getSubmissionWithProblemAndUser(submissionId);
+            submission = await SubmissionService.getSubmissionWithProblemAndUser(submissionId);
             if (!submission) throw new Error("Submission not found");
             if (!submission.problem) throw new Error("Submission has no associated problem");
             console.timeEnd(`Job-${job.id}-init`);
@@ -70,7 +71,7 @@ const worker = new Worker(
             } else {
                 // For SUBMIT, we also pull the massive hidden test cases from S3 / Redis Cache
                 console.time(`Job-${job.id}-fetch-s3`);
-                const cloudTestcases = await S3Service.fetchHiddenTestCases(submission.problem.id);
+                const cloudTestcases = await TestcaseCache.getTestcases(submission.problem.id);
                 // console.log("cloudTestcases", cloudTestcases); // Removed to avoid terminal lag
                 console.timeEnd(`Job-${job.id}-fetch-s3`);
                 // Filter out any db-based cases that are NOT sample cases if we are migrating entirely to S3

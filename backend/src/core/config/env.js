@@ -61,6 +61,7 @@ const envSchema = z.object({
 
   // AI
   GEMINI_API_KEY: z.string().optional(),
+  DISABLE_GEMINI: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

@@ -2,13 +2,11 @@ syntax = "proto3";
 
 package judge;
 
-// Judge Service definition
 service JudgeService {
-  rpc RunCode (CodeExecutionRequest) returns (CodeExecutionResponse) {}
+  rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
 }
 
-// Request message for code execution
-message CodeExecutionRequest {
+message RunCodeRequest {
   string submissionId = 1;
   string language = 2;
   string code = 3;
@@ -16,15 +14,15 @@ message CodeExecutionRequest {
   bool earlyExit = 5;
 }
 
-// Response message for code execution
-message CodeExecutionResponse {
-  repeated TestResult results = 1;
-  string stoppedAt = 2;
-}
-
-// Individual test case result
-message TestResult {
+message TestCaseResult {
   string output = 1;
   string error = 2;
   bool passed = 3;
+}
+
+message RunCodeResponse {
+  repeated TestCaseResult results = 1;
+  int32 stoppedAt = 2;
+  int64 executionTimeMs = 3;
+  string error = 4;
 }

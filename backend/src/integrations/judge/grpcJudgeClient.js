@@ -40,12 +40,12 @@ class GrpcJudgeClient {
         const host = env.JUDGE_GRPC_HOST || "localhost";
         const port = env.JUDGE_GRPC_PORT || 50051;
 
-        this.client = new grpc.Client(
+        const JudgeServiceClient = this.proto.judge.JudgeService;
+        this.client = new JudgeServiceClient(
             `${host}:${port}`,
             grpc.credentials.createInsecure()
         );
 
-        this.judgeService = this.proto.judge.JudgeService;
         this.isReady = true;
 
         logger.info(`[GrpcJudgeClient] Connected to gRPC server at ${host}:${port}`);
@@ -156,14 +156,7 @@ class GrpcJudgeClient {
             const deadline = new Date();
             deadline.setSeconds(deadline.getSeconds() + 30);
 
-            client.makeUnaryRequest(
-                "/judge.JudgeService/RunCode",
-                (err, request) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    return request;
-                },
+            client.RunCode(
                 {
                     submissionId,
                     language,
@@ -171,6 +164,7 @@ class GrpcJudgeClient {
                     inputs,
                     earlyExit,
                 },
+                { deadline },
                 (err, response) => {
                     const executionTimeMs = Date.now() - t0;
 

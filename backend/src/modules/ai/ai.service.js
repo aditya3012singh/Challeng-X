@@ -6,7 +6,8 @@ class AIService {
     constructor() {
         // Trim key to prevent issues with trailing \r or spaces
         const key = env.GEMINI_API_KEY ? env.GEMINI_API_KEY.trim() : null;
-        this.genAI = key ? new GoogleGenerativeAI(key) : null;
+        const disableGemini = env.DISABLE_GEMINI === "true";
+        this.genAI = (key && !disableGemini) ? new GoogleGenerativeAI(key) : null;
     }
 
     async generateHint(problem, currentCode, language) {
@@ -87,7 +88,9 @@ class AIService {
     }
 
     async generateGameMasterComment(type, context) {
-        if (!this.genAI) throw new Error("AI Service missing");
+        if (!this.genAI) {
+            return "Attention players. Focus and proceed.";
+        }
         
         const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
