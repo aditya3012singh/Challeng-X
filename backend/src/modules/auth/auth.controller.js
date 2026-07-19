@@ -10,8 +10,9 @@ import S3Service from "../../integrations/s3/s3.service.js";
 import JwtService from "../../utils/jwt.js";
 import env from "../../core/config/env.js";
 import passport from "passport";
-// ✅ PHASE 1: Import event bus
+// ✅ PHASE 1: Import event bus and types
 import eventBus from "../../core/events/eventBus.js";
+import { EventTypes } from "../../core/events/eventTypes.js";
 import RedisClient from "../../core/cache/redis.client.js";
 
 class AuthController {

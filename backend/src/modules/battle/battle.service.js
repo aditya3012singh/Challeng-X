@@ -1,5 +1,4 @@
-// Controls battle rules:
-
+import crypto from "crypto";
 import RedisClient from "../../core/cache/redis.client.js";
 import Database from "../../core/config/db.js";
 import BattleCode from "../../utils/battleCode.js";
@@ -11,71 +10,66 @@ import env from "../../core/config/env.js";
 // ✅ PHASE 1: Import event bus
 import eventBus from "../../core/events/eventBus.js";
 import { EventTypes } from "../../core/events/eventTypes.js";
-// • Start timer
-// • Assign problem
-// • End match
-// • Decide winner
 
 class BattleService {
   static async createBattleRandomQuestionService(player1Id) {
-    // Get random problem from cache
-    const randomProblem = await ProblemCache.getRandomProblemByDifficulty(null);
+    let randomProblem = await ProblemCache.getRandomProblemByDifficulty(null);
 
     if (!randomProblem) {
-      // Fallback to DB if cache is empty
       const problems = await Database.client.problem.findMany();
       if (problems.length === 0) {
         throw new Error("No problems available");
       }
-      const randomProblemFromDB = problems[Math.floor(Math.random() * problems.length)];
-      
-      // Cache the problem for future use
-      await ProblemCache.cacheProblem(randomProblemFromDB);
-      
-      const battleCode = await BattleCode.generateBattleCode();
-
-      const battle = await Database.client.battle.create({
-        data: {
-          player1Id,
-          problemId: randomProblemFromDB.id,
-          status: "WAITING",
-          battleCode,
-        }
-      });
-
-      // Pre-cache hidden test cases asynchronously to speed up the first submission
-      S3Service.fetchHiddenTestCases(randomProblemFromDB.id).catch(err => 
-        console.error(`[Pre-cache] Failed for problem ${randomProblemFromDB.id}:`, err.message)
-      );
-
-      return battle;
+      randomProblem = problems[Math.floor(Math.random() * problems.length)];
+      await ProblemCache.cacheProblem(randomProblem);
     }
 
+    const battleId = crypto.randomUUID();
     const battleCode = await BattleCode.generateBattleCode();
 
-    const battle = await Database.client.battle.create({
-      data: {
-        player1Id,
-        problemId: randomProblem.id,
-        status: "WAITING",
-        battleCode,
-      }
-    });
+    const battleData = {
+      id: battleId,
+      battleCode,
+      player1Id,
+      problemId: randomProblem.id,
+      status: "WAITING",
+      createdAt: new Date(),
+      problem: randomProblem
+    };
 
-    // Pre-cache hidden test cases asynchronously to speed up the first submission
+    // Cache metadata & 6-digit battleCode lookup in Redis (~2ms)
+    RedisClient.client.set(`battle:meta:${battleId}`, JSON.stringify(battleData), "EX", 86400).catch(() => {});
+    RedisClient.client.set(`battle:code:${battleCode}`, battleId, "EX", 86400).catch(() => {});
+
+    // Pre-cache hidden test cases asynchronously
     S3Service.fetchHiddenTestCases(randomProblem.id).catch(err => 
       console.error(`[Pre-cache] Failed for problem ${randomProblem.id}:`, err.message)
     );
 
-    return battle;
+    // Asynchronously write to PostgreSQL in background with Tier 1 (3x Retries) & Tier 3 (Redis DLQ)
+    (async () => {
+      let attempts = 0;
+      while (attempts < 3) {
+        try {
+          attempts++;
+          await Database.client.battle.create({
+            data: { id: battleId, player1Id, problemId: randomProblem.id, status: "WAITING", battleCode }
+          });
+          return;
+        } catch (err) {
+          if (attempts < 3) await new Promise(res => setTimeout(res, attempts * 1000));
+        }
+      }
+      RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData)).catch(() => {});
+    })();
+
+    return battleData;
   }
 
   static async createBattleWithSelectedQuestionService(player1Id, problemId) {
-    // Get problem from cache
     let problem = await ProblemCache.getProblem(problemId);
     
     if (!problem) {
-      // Fallback to DB if not in cache
       problem = await Database.client.problem.findUnique({
         where: { id: problemId },
         include: { testcases: true, tags: true }
@@ -85,154 +79,150 @@ class BattleService {
         throw new Error("Problem not found");
       }
       
-      // Cache the problem for future use
       await ProblemCache.cacheProblem(problem);
     }
 
+    const battleId = crypto.randomUUID();
     const battleCode = await BattleCode.generateBattleCode();
 
-    const battle = await Database.client.battle.create({
-      data: {
-        player1Id,
-        problemId: problemId,
-        status: "WAITING",
-        battleCode,
-      }
-    });
+    const battleData = {
+      id: battleId,
+      battleCode,
+      player1Id,
+      problemId: problem.id,
+      status: "WAITING",
+      createdAt: new Date(),
+      problem
+    };
 
-    // Pre-cache hidden test cases asynchronously to speed up the first submission
-    S3Service.fetchHiddenTestCases(problemId).catch(err => 
-      console.error(`[Pre-cache] Failed for problem ${problemId}:`, err.message)
+    // Cache metadata & 6-digit battleCode lookup in Redis (~2ms)
+    RedisClient.client.set(`battle:meta:${battleId}`, JSON.stringify(battleData), "EX", 86400).catch(() => {});
+    RedisClient.client.set(`battle:code:${battleCode}`, battleId, "EX", 86400).catch(() => {});
+
+    // Pre-cache hidden test cases asynchronously
+    S3Service.fetchHiddenTestCases(problem.id).catch(err => 
+      console.error(`[Pre-cache] Failed for problem ${problem.id}:`, err.message)
     );
 
-    return battle;
+    // Asynchronously write to PostgreSQL in background with Tier 1 (3x Retries) & Tier 3 (Redis DLQ)
+    (async () => {
+      let attempts = 0;
+      while (attempts < 3) {
+        try {
+          attempts++;
+          await Database.client.battle.create({
+            data: { id: battleId, player1Id, problemId: problem.id, status: "WAITING", battleCode }
+          });
+          return;
+        } catch (err) {
+          if (attempts < 3) await new Promise(res => setTimeout(res, attempts * 1000));
+        }
+      }
+      RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData)).catch(() => {});
+    })();
+
+    return battleData;
   }
 
   static async joinBattleService(battleCode, player2Id) {
+    // 1. Resolve battleId from Redis battleCode lookup (fallback to DB)
+    let battleId = await RedisClient.client.get(`battle:code:${battleCode}`);
+    let battle = null;
 
-    const battleExists = await Database.client.battle.findUnique({
-      where: { battleCode }
-    });
+    if (battleId) {
+      battle = await BattleService.getBattle(battleId).catch(() => null);
+    }
 
-    if (!battleExists) {
+    if (!battle) {
+      battle = await Database.client.battle.findUnique({ where: { battleCode } });
+      if (battle) battleId = battle.id;
+    }
+
+    if (!battle) {
       throw new Error("Battle not available");
     }
 
-    if (battleExists.player1Id === player2Id) {
+    if (battle.player1Id === player2Id) {
       throw new Error("Cannot join your own battle");
     }
 
-    if (battleExists.status !== "WAITING") {
+    if (battle.status !== "WAITING") {
       throw new Error("Battle already started");
     }
 
-    if (battleExists.player2Id) {
+    if (battle.player2Id) {
       throw new Error("Battle already has two players");
     }
 
-    const battle = await Database.client.battle.update({
-      where: { battleCode },
-      data: {
-        player2Id,
-        status: "COUNTDOWN",
-        startedAt: new Date(),
-      }
-    });
+    const startedAt = new Date();
 
-    // Invalidate cached WAITING state so fresh COUNTDOWN state is fetched/cached
-    RedisClient.client.del(`battle:meta:${battle.id}`).catch(() => {});
+    // 2. Immediately update Redis metadata (status: COUNTDOWN)
+    const updatedMeta = {
+      ...battle,
+      player2Id,
+      status: "COUNTDOWN",
+      startedAt
+    };
 
-    // Emit battle_joined event via eventBus
-    eventBus.emitEvent(EventTypes.BATTLE_SOCKET_JOINED, {
-      battleId: battle.id,
-      playerId: player2Id
-    });
+    RedisClient.client.set(`battle:meta:${battleId}`, JSON.stringify(updatedMeta), "EX", 86400).catch(() => {});
 
-    // Emit battle_countdown event via eventBus
-    eventBus.emitEvent(EventTypes.BATTLE_SOCKET_COUNTDOWN, {
-      battleId: battle.id,
-      seconds: 5
-    });
-
-    // ✅ PHASE 3B: Emit BATTLE_STATE_CHANGED event (will be handled by Socket listener)
+    // 3. Emit socket events in 0ms
+    eventBus.emitEvent(EventTypes.BATTLE_SOCKET_JOINED, { battleId, playerId: player2Id });
+    eventBus.emitEvent(EventTypes.BATTLE_SOCKET_COUNTDOWN, { battleId, seconds: 5 });
     eventBus.emitEvent(EventTypes.BATTLE_STATE_CHANGED, {
-      battleId: battle.id,
+      battleId,
       oldState: 'WAITING',
       newState: 'COUNTDOWN',
       metadata: { seconds: 5 }
     });
 
+    // 4. Asynchronously update DB in background
+    Database.client.battle.update({
+      where: { battleCode },
+      data: { player2Id, status: "COUNTDOWN", startedAt }
+    }).catch(err => console.error(`[Async Join DB Write Error] ${err.message}`));
+
+    // 5. Schedule 5s ONGOING transition
     setTimeout(async () => {
       try {
-        await Database.client.battle.update({
-          where: { id: battle.id },
-          data: { status: "ONGOING", startedAt: new Date() }
-        });
-        
-        // Invalidate cached COUNTDOWN state so fresh ONGOING state is fetched/cached
-        RedisClient.client.del(`battle:meta:${battle.id}`).catch(() => {});
-        
-        // ✅ PHASE 3B: Emit BATTLE_STATE_CHANGED event
+        const ongoingMeta = { ...updatedMeta, status: "ONGOING", startedAt: new Date() };
+        RedisClient.client.set(`battle:meta:${battleId}`, JSON.stringify(ongoingMeta), "EX", 86400).catch(() => {});
+
+        Database.client.battle.update({
+          where: { id: battleId },
+          data: { status: "ONGOING", startedAt: ongoingMeta.startedAt }
+        }).catch(err => console.error(`[Async ONGOING DB Write Error] ${err.message}`));
+
         eventBus.emitEvent(EventTypes.BATTLE_STATE_CHANGED, {
-          battleId: battle.id,
+          battleId,
           oldState: 'COUNTDOWN',
           newState: 'ONGOING',
-          metadata: { startedAt: new Date() }
-        });
-        
-        // Emit battle_start event via eventBus
-        eventBus.emitEvent(EventTypes.BATTLE_SOCKET_STARTED, {
-          battleId: battle.id,
-          startedAt: new Date()
+          metadata: { startedAt: ongoingMeta.startedAt }
         });
 
-        // Setup battle timeout (e.g., 30 minutes = 1,800,000 ms)
-        setTimeout(async () => {
-          try {
-            const b = await Database.client.battle.findUnique({ where: { id: battle.id } });
-            if (b && b.status === "ONGOING") {
-              const result = await BattleService.finishBattleService(battle.id, null); // draw
-              if (result) {
-                // Emit battle_timeout event via eventBus
-                eventBus.emitEvent(EventTypes.BATTLE_SOCKET_TIMEOUT, {
-                  battleId: battle.id,
-                  draw: true
-                });
-                
-                // Emit battle_end event via eventBus
-                eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {
-                  battleId: battle.id,
-                  winnerId: null,
-                  draw: true
-                });
-              }
-            }
-          } catch (e) {
-            console.error("Timeout handler error:", e.message);
-          }
-        }, 1800000); // 30 mins
+        eventBus.emitEvent(EventTypes.BATTLE_SOCKET_STARTED, {
+          battleId,
+          startedAt: ongoingMeta.startedAt
+        });
 
         // 👻 Trigger AI Ghost Simulation if player2 is a Ghost
         const ghost = await Database.client.user.findUnique({ 
           where: { id: player2Id },
           select: { username: true }
-        });
+        }).catch(() => null);
+
         if (ghost?.username === "CHALLENGX_GHOST") {
-          const b = await Database.client.battle.findUnique({ 
-            where: { id: battle.id },
-            include: { problem: true }
-          });
-          AISimulatorService.startSimulation(battle.id, player2Id, b.problem.difficulty);
+          AISimulatorService.startSimulation(battleId, player2Id, ongoingMeta.problem?.difficulty || "EASY");
         }
 
         // 🎙️ Live AI Commentary for Spectators
-        BattleService.startCommentaryTimer(battle.id);
-      } catch (e) {
-        console.error("Countdown handler error:", e.message);
+        BattleService.startCommentaryTimer(battleId);
+      } catch (err) {
+        console.error(`[ONGOING Transition Error] ${err.message}`);
       }
     }, 5000);
 
-    return battle;
+    return updatedMeta;
   }
   //         throw new Error("Cannot join your own battle");
   //     }
@@ -258,12 +248,6 @@ class BattleService {
   //       playerId: player2Id
   //     });
 
-  //     emitToBattle(battleId, "battleStarted", {
-  //       startedAt: new Date()
-  //     });
-
-  //     return battle;
-  // }
 
   static async getBattle(battleId, userId = null) {
     const cacheKey = `battle:meta:${battleId}`;
@@ -273,7 +257,7 @@ class BattleService {
         console.log(`⚡ [Redis HIT] getBattle for battleId=${battleId}`);
         const cachedBattle = JSON.parse(cached);
         // Redact hints dynamically per-user
-        if (cachedBattle.problem) {
+        if (cachedBattle.problem && Array.isArray(cachedBattle.problem.hints)) {
           const unlockedIndices = cachedBattle.problem.userHints?.map(uh => uh.hintIndex) || [];
           cachedBattle.problem.hints = cachedBattle.problem.hints.map((h, i) => unlockedIndices.includes(i) ? h : null);
         }
@@ -326,10 +310,7 @@ class BattleService {
               tags: { select: { name: true } },
               userHints: userId ? { where: { 
                 userId,
-                OR: [
-                  { battleId: undefined },
-                  { teamBattleMatchId: battle.teamBattleId ? battle.id : undefined }
-                ]
+                teamBattleMatchId: battleId
               }, select: { hintIndex: true } } : undefined,
               testcases: {
                 where: {
@@ -341,8 +322,8 @@ class BattleService {
               }
             }
           },
-          player1: { select: { id: true, username: true, email: true } },
-          player2: { select: { id: true, username: true, email: true } },
+          team1: { include: { members: { include: { user: true } } } },
+          team2: { include: { members: { include: { user: true } } } },
           teamBattle: true,
         }
       });

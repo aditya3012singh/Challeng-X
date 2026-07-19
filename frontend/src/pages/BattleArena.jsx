@@ -925,42 +925,81 @@ const BattleArena = () => {
 
                     {activeTab === "description" && (
                         <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 custom-scrollbar">
-                            <div className="flex items-center gap-2 select-none">
-                                <span className="rounded-full bg-emerald-500/10 text-emerald-500 border border-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                                    {problem?.difficulty || "HARD"}
-                                </span>
-                                <div className="rounded-full bg-zinc-950 text-zinc-400 text-[10px] border border-zinc-800 px-3 py-1 font-bold uppercase tracking-wider">
-                                    Time Limit: 2s
-                                </div>
-                            </div>
-                            <div className="space-y-3">
-                                <div className="font-[family:var(--font-heading)] font-semibold text-lg leading-7 text-white uppercase tracking-tight">
-                                    {problem?.title || "Problem Description"}
-                                </div>
-                                <div className="text-zinc-300 text-xs sm:text-sm leading-6 font-light">
-                                    {problem?.description}
-                                </div>
-                            </div>
-
-                            {problem?.testcases?.some(tc => tc.isSample) && (
-                                <div className="space-y-4">
-                                    {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
-                                        <div key={i} className="space-y-3">
-                                            <div className="font-[family:var(--font-heading)] font-semibold text-zinc-200 text-xs leading-5 uppercase tracking-wider">
-                                                Sample Input {i + 1}
-                                            </div>
-                                            <pre className="font-mono rounded-xl bg-zinc-950 text-zinc-300 text-[11px] leading-6 border border-zinc-800 p-4 overflow-x-auto">
-                                                {tc.input}
-                                            </pre>
-                                            <div className="font-[family:var(--font-heading)] font-semibold text-zinc-200 text-xs leading-5 uppercase tracking-wider">
-                                                Sample Output {i + 1}
-                                            </div>
-                                            <pre className="font-mono rounded-xl bg-zinc-950 text-emerald-500 text-[11px] leading-6 border border-zinc-800 p-4 overflow-x-auto">
-                                                {tc.output}
-                                            </pre>
+                            {(currentBattle?.status === "WAITING" || !currentBattle?.player2Id) ? (
+                                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6 bg-zinc-950/80 rounded-xl border border-zinc-800/80 my-auto min-h-[350px]">
+                                    <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 animate-pulse">
+                                        <Users size={32} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="text-sm font-bold uppercase tracking-widest text-white font-[family:var(--font-heading)]">
+                                            Awaiting Opponent
                                         </div>
-                                    ))}
+                                        <p className="text-xs text-zinc-400 max-w-xs leading-relaxed font-light">
+                                            The problem details will be revealed once your opponent joins the arena.
+                                        </p>
+                                    </div>
+                                    {currentBattle?.battleCode && (
+                                        <div className="w-full space-y-3 pt-2 max-w-xs">
+                                            <div className="text-[10px] uppercase font-mono tracking-widest text-zinc-500 font-semibold">
+                                                Battle Sync Code
+                                            </div>
+                                            <div className="flex items-center justify-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-xl">
+                                                <span className="font-mono text-2xl font-black tracking-widest text-emerald-400">
+                                                    {currentBattle.battleCode}
+                                                </span>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(currentBattle.battleCode);
+                                                        toast.success("Battle code copied!");
+                                                    }}
+                                                    className="px-3 py-1.5 bg-emerald-500 text-zinc-950 hover:bg-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer"
+                                                >
+                                                    Copy Code
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-2 select-none">
+                                        <span className="rounded-full bg-emerald-500/10 text-emerald-500 border border-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                                            {problem?.difficulty || "HARD"}
+                                        </span>
+                                        <div className="rounded-full bg-zinc-950 text-zinc-400 text-[10px] border border-zinc-800 px-3 py-1 font-bold uppercase tracking-wider">
+                                            Time Limit: 2s
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="font-[family:var(--font-heading)] font-semibold text-lg leading-7 text-white uppercase tracking-tight">
+                                            {problem?.title || "Problem Description"}
+                                        </div>
+                                        <div className="text-zinc-300 text-xs sm:text-sm leading-6 font-light">
+                                            {problem?.description}
+                                        </div>
+                                    </div>
+
+                                    {problem?.testcases?.some(tc => tc.isSample) && (
+                                        <div className="space-y-4">
+                                            {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
+                                                <div key={i} className="space-y-3">
+                                                    <div className="font-[family:var(--font-heading)] font-semibold text-zinc-200 text-xs leading-5 uppercase tracking-wider">
+                                                        Sample Input {i + 1}
+                                                    </div>
+                                                    <pre className="font-mono rounded-xl bg-zinc-950 text-zinc-300 text-[11px] leading-6 border border-zinc-800 p-4 overflow-x-auto">
+                                                        {tc.input}
+                                                    </pre>
+                                                    <div className="font-[family:var(--font-heading)] font-semibold text-zinc-200 text-xs leading-5 uppercase tracking-wider">
+                                                        Sample Output {i + 1}
+                                                    </div>
+                                                    <pre className="font-mono rounded-xl bg-zinc-950 text-emerald-500 text-[11px] leading-6 border border-zinc-800 p-4 overflow-x-auto">
+                                                        {tc.output}
+                                                    </pre>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     )}

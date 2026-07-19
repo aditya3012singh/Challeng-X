@@ -78,23 +78,33 @@ class ProblemCache {
      */
     static async getRandomProblemByDifficulty(difficulty) {
         try {
-            // Use Redis Set for O(1) random selection
-            const randomId = await RedisClient.client.srandmember(`${PROBLEMS_SET}:${difficulty}`);
+            const setKey = (difficulty && difficulty !== "null" && difficulty !== "ALL")
+                ? `${PROBLEMS_SET}:${difficulty}`
+                : PROBLEMS_SET;
+
+            let randomId = await RedisClient.client.srandmember(setKey);
+
+            if (!randomId && setKey !== PROBLEMS_SET) {
+                randomId = await RedisClient.client.srandmember(PROBLEMS_SET);
+            }
             
             if (!randomId) {
                 // Cache miss - fetch from DB
                 recordCacheOperation({ cacheType: 'problem', hit: false });
+                const whereClause = (difficulty && difficulty !== "null" && difficulty !== "ALL") ? { difficulty } : {};
                 const problems = await Database.client.problem.findMany({
-                    where: { difficulty },
-                    select: { id: true }
+                    where: whereClause,
+                    select: { id: true, difficulty: true }
                 });
 
                 if (problems.length === 0) return null;
 
-                // Cache all problems using Set (O(1) random)
+                // Cache problems using Redis Sets
                 const problemIds = problems.map(p => p.id);
-                await RedisClient.client.sadd(`${PROBLEMS_SET}:${difficulty}`, problemIds);
                 await RedisClient.client.sadd(PROBLEMS_SET, problemIds);
+                if (difficulty && difficulty !== "null" && difficulty !== "ALL") {
+                    await RedisClient.client.sadd(`${PROBLEMS_SET}:${difficulty}`, problemIds);
+                }
 
                 // Return random problem
                 return await this.getProblem(problemIds[Math.floor(Math.random() * problemIds.length)]);

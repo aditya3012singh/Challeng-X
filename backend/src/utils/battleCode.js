@@ -1,3 +1,4 @@
+import RedisClient from "../core/cache/redis.client.js";
 import Database from "../core/config/db.js";
 
 /**
@@ -6,31 +7,38 @@ import Database from "../core/config/db.js";
  */
 class BattleCode {
   static async generateBattleCode() {
-  let code;
-  let isUnique = false;
-  let attempts = 0;
-  const maxAttempts = 10;
+    let code;
+    let isUnique = false;
+    let attempts = 0;
+    const maxAttempts = 10;
 
-  while (!isUnique && attempts < maxAttempts) {
-    // Generate random 6-digit code (100000 to 999999)
-    code = Math.floor(100000 + Math.random() * 900000).toString();
+    while (!isUnique && attempts < maxAttempts) {
+      code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Check if code already exists
-    const existing = await Database.client.battle.findUnique({
-      where: { battleCode: code }
-    });
+      // 1. Check Redis first (~1ms)
+      const cachedId = await RedisClient.client.get(`battle:code:${code}`).catch(() => null);
+      if (cachedId) {
+        attempts++;
+        continue;
+      }
 
-    if (!existing) {
-      isUnique = true;
+      // 2. Check DB (with catch for DB outage resilience)
+      try {
+        const existing = await Database.client.battle.findUnique({
+          where: { battleCode: code }
+        });
+        if (!existing) {
+          isUnique = true;
+        }
+      } catch (err) {
+        // If DB is unreachable, Redis check is sufficient
+        isUnique = true;
+      }
+
+      attempts++;
     }
-    attempts++;
-  }
 
-  if (!isUnique) {
-    throw new Error("Failed to generate unique battle code");
-  }
-
-  return code;
+    return code || Math.floor(100000 + Math.random() * 900000).toString();
   }
 }
 
