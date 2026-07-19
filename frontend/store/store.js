@@ -11,6 +11,7 @@ import teamBattleReducer from "./slices/teamBattle.slice";
 import squidGameReducer from "./slices/squidGame.slice";
 import socialReducer from "./slices/social.slice";
 import lobbyReducer from "./slices/lobby.slice";
+import teamLobbyReducer from "./slices/teamLobby.slice";
 import chatReducer from "./slices/chat.slice";
 import notificationReducer from "./slices/notification.slice";
 
@@ -28,6 +29,7 @@ export const store = configureStore({
         teamBattle: teamBattleReducer,
         squidGame: squidGameReducer,
         lobby: lobbyReducer,
+        teamLobby: teamLobbyReducer,
         chat: chatReducer,
         notification: notificationReducer,
     },
