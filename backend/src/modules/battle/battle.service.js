@@ -637,46 +637,49 @@ class BattleService {
   }
 
   static async forfeitBattle(battleId, forfeiterId) {
-    let battle = await Database.client.battle.findUnique({
-      where: { id: battleId },
-      include: { player1: true, player2: true }
-    });
+    // 1. Fetch battle from Redis cache first (fallback to DB)
+    let battle = await BattleService.getBattle(battleId).catch(() => null);
 
-    let isTeamMatch = false;
     if (!battle) {
-      battle = await Database.client.teamBattleMatch.findUnique({
+      battle = await Database.client.battle.findUnique({
         where: { id: battleId },
         include: { player1: true, player2: true }
-      });
-      if (battle) isTeamMatch = true;
+      }).catch(() => null);
     }
 
     if (!battle || battle.status === "FINISHED") {
       return null;
     }
 
-    // Determine the winner (the other person)
+    // Determine the winner (the opponent)
     const winnerId = (battle.player1Id === forfeiterId) ? battle.player2Id : battle.player1Id;
 
-    // If there's no opponent yet (battle is WAITING), just cancel it
-    if (!winnerId) {
-      return await Database.client.battle.update({
-        where: { id: battleId },
-        data: { status: "FINISHED", winnerId: null }
-      });
-    }
+    // 2. Immediately update Redis metadata (status: FINISHED, winnerId)
+    const updatedMeta = {
+      ...battle,
+      status: "FINISHED",
+      winnerId: winnerId || null,
+      endedAt: new Date()
+    };
 
-    // Atomically finish the battle
-    const result = await this.finishBattleService(battleId, winnerId);
+    RedisClient.client.set(`battle:meta:${battleId}`, JSON.stringify(updatedMeta), "EX", 86400).catch(err =>
+      console.error(`[RedisCache] forfeitBattle set error: ${err.message}`)
+    );
 
-    if (result) {
-      // Emit battle_end event via eventBus
-      eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {
-        battleId,
-        winnerId,
-        draw: false
-      });
-    }
+    // 3. Immediately emit battle_end event via WebSockets (0ms wait time for players)
+    eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {
+      battleId,
+      winnerId: winnerId || null,
+      draw: !winnerId
+    });
+
+    // 4. Asynchronously persist to PostgreSQL DB in background with Tier 2 & Tier 3 failsafes
+    this.finishBattleService(battleId, winnerId).catch(err =>
+      console.error(`[Async Forfeit Finish Error] battle ${battleId}:`, err.message)
+    );
+
+    return updatedMeta;
+  }
 
     return result;
   }

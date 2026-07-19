@@ -56,20 +56,22 @@ const matchmakingSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload?.message || "Failed to join queue";
             })
-            // Leave Queue
+            // Leave Queue (Optimistic 0ms UI response)
             .addCase(leaveMatchmaking.pending, (state) => {
-                state.loading = true;
+                state.inQueue = false;
+                state.loading = false;
+                state.difficulty = null;
             })
             .addCase(leaveMatchmaking.fulfilled, (state) => {
                 state.loading = false;
                 state.inQueue = false;
                 state.difficulty = null;
-                state.queueSize = 0;
-                state.waitTime = 0;
+                state.error = null;
             })
             .addCase(leaveMatchmaking.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload?.message || "Failed to leave queue";
+                state.inQueue = false;
+                state.difficulty = null;
             })
             // Get Queue Status
             .addCase(getQueueStatus.fulfilled, (state, action) => {

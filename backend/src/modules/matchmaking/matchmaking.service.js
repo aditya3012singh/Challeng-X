@@ -50,7 +50,7 @@ class MatchmakingService {
       await MatchmakingService.leaveQueue(userId);
     }
 
-    const username = user?.username || user?.name || "Player";
+    const username = user?.username || user?.name || user?.email?.split('@')[0] || `User_${userId.substring(0, 6)}`;
 
     // Store user in queue with metadata
     const queueData = {
@@ -160,7 +160,14 @@ static async leaveQueue(userId) {
       return null;
     }
 
-    logger.info(`[Matchmaking] Match found: ${currentPlayer.username || "Player 1"} vs ${opponentData.username || "Player 2"}`);
+    const p1Name = currentPlayer.username && currentPlayer.username !== "Player" 
+      ? currentPlayer.username 
+      : `User_${currentPlayer.userId.substring(0, 6)}`;
+    const p2Name = opponentData.username && opponentData.username !== "Player" 
+      ? opponentData.username 
+      : `User_${opponentData.userId.substring(0, 6)}`;
+
+    logger.info(`[Matchmaking] Match found: ${p1Name} (${currentPlayer.userId}) vs ${p2Name} (${opponentData.userId})`);
 
     // Create battle
     await MatchmakingService.createMatchedBattle(currentPlayer, opponentData, difficulty);
