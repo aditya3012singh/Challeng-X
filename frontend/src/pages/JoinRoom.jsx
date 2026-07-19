@@ -60,19 +60,26 @@ const JoinRoom = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--color-bg-dark)] flex items-center justify-center px-4 relative">
-            {/* MINIMALIST BACKGROUND DECOR */}
-            <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--color-primary)] opacity-[0.02] blur-[150px] rounded-full"></div>
+        <div className="min-h-screen bg-zinc-950 text-neutral-50 flex items-center justify-center px-4 relative overflow-hidden">
+            {/* AMBIENT BACKGROUND SYSTEM */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <img
+                    alt="Dark code editor"
+                    className="object-cover opacity-[0.03] absolute inset-0 w-full h-full"
+                    src="https://images.unsplash.com/photo-1518773553398-650c184e0bb3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200"
+                />
+                <div className="bg-[radial-gradient(circle_at_30%_20%,rgba(18,18,18,0.7),transparent_60%)] absolute inset-0" />
+                <div className="bg-gradient-to-br from-[#09090b]/80 via-transparent to-[#09090b]/90 absolute inset-0" />
+                <div className="bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] absolute inset-0" />
             </div>
 
-            <div className="premium-card w-full max-w-md p-16 text-center shadow-2xl relative z-10" style={{ borderRadius: "2px" }}>
-                <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">Battle Protocol</div>
+            <div className="w-full max-w-md p-16 text-center shadow-[0_10px_30px_rgba(0,0,0,0.35)] rounded-2xl bg-neutral-900 border border-zinc-800 relative z-10">
+                <div className="text-[10px] font-bold tracking-[0.6em] text-neutral-400 uppercase mb-6">Battle Protocol</div>
 
-                <h1 className="text-5xl font-black text-[var(--color-text-main)] mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
+                <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase font-[family:var(--font-heading)]">
                     Join Room
                 </h1>
-                <p className="text-[var(--color-text-muted)] text-sm font-light mb-12">
+                <p className="text-[#a1a1a1] text-sm font-light mb-12">
                     Enter the synchronization code to join the arena.
                 </p>
 
@@ -88,8 +95,7 @@ const JoinRoom = () => {
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={handlePaste}
                                 autoFocus={index === 0}
-                                className="w-10 h-14 text-center text-4xl font-mono bg-white/[0.02] border border-white/5 text-[var(--color-text-main)] focus:outline-none focus:border-[var(--color-primary)]/40 transition-all"
-                                style={{ borderRadius: "2px" }}
+                                className="w-10 h-14 text-center text-4xl font-mono bg-zinc-950 border border-zinc-800 text-neutral-50 focus:outline-none focus:border-white/20 transition-all rounded-lg"
                                 maxLength={1}
                             />
                         ))}
@@ -98,8 +104,7 @@ const JoinRoom = () => {
                     <button
                         type="submit"
                         disabled={loading || code.join("").length !== 6}
-                        className="w-full py-5 bg-[var(--color-primary)] text-black font-bold uppercase tracking-[0.2em] text-xs disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white transition-all transform active:scale-95 shadow-xl"
-                        style={{ borderRadius: "2px" }}
+                        className="w-full py-5 bg-neutral-200 text-neutral-900 font-bold uppercase tracking-[0.2em] text-xs disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white transition-all transform active:scale-95 shadow-xl rounded-xl cursor-pointer"
                     >
                         {loading ? "Initializing..." : "Establish Connection →"}
                     </button>
