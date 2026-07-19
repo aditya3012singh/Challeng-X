@@ -131,13 +131,20 @@ const BattleArena = () => {
         };
     }, [battleId, dispatch]); // socket removed from deps to prevent re-runs
     useEffect(() => {
-        if (currentBattle?.startedAt && currentBattle?.status === "ONGOING") {
-            const start = new Date(currentBattle.startedAt).getTime();
-            const now = new Date().getTime();
-            const elapsed = Math.floor((now - start) / 1000);
-            const remaining = Math.max(0, 1800 - elapsed);
-            setTimeLeft(remaining);
-            setTimerActive(true);
+        if (currentBattle) {
+            if (currentBattle.status === "FINISHED") {
+                setIsFinished(true);
+                setWinner(currentBattle.winnerId);
+                setStatus("finished");
+                setTimerActive(false);
+            } else if (currentBattle.startedAt && currentBattle.status === "ONGOING") {
+                const start = new Date(currentBattle.startedAt).getTime();
+                const now = new Date().getTime();
+                const elapsed = Math.floor((now - start) / 1000);
+                const remaining = Math.max(0, 1800 - elapsed);
+                setTimeLeft(remaining);
+                setTimerActive(true);
+            }
         }
     }, [currentBattle]);
 
@@ -1191,15 +1198,15 @@ const BattleArena = () => {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => handleRun("RUN")}
-                        disabled={status === "running"}
-                        className="bg-transparent hover:bg-white/5 cursor-pointer rounded-lg text-neutral-50 text-xs leading-4 border border-zinc-800 px-5 py-2.5 h-10 transition-all flex items-center gap-2 active:scale-95"
+                        disabled={status === "running" || isFinished || currentBattle?.status === "FINISHED"}
+                        className="bg-transparent hover:bg-white/5 cursor-pointer rounded-lg text-neutral-50 text-xs leading-4 border border-zinc-800 px-5 py-2.5 h-10 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-emerald-500" /> : <Play size={12} fill="currentColor" />} Run Code
                     </button>
                     <button
                         onClick={() => handleRun("SUBMIT")}
-                        disabled={status === "running" || (isCreator && currentBattle?.status !== "ONGOING")}
-                        className="rounded-lg bg-neutral-50 hover:bg-neutral-200 cursor-pointer text-zinc-950 px-5 py-2.5 h-10 font-bold transition-all flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                        disabled={status === "running" || isFinished || currentBattle?.status === "FINISHED" || (isCreator && currentBattle?.status !== "ONGOING")}
+                        className="rounded-lg bg-neutral-50 hover:bg-neutral-200 cursor-pointer text-zinc-950 px-5 py-2.5 h-10 font-bold transition-all flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin text-black" /> : <Send size={12} fill="currentColor" />} Submit Solution
                     </button>

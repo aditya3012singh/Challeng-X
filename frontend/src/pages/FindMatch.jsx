@@ -111,12 +111,12 @@ export const FindMatch = () => {
         };
     }, [inQueue, matchFound, dispatch]);
 
-    // Navigate to battle when match is found after 5 seconds
+    // Navigate to battle when match is found after 1.5 seconds
     useEffect(() => {
         if (matchFound && battleId) {
             const timer = setTimeout(() => {
                 navigate(`/battle/${battleId}/ide`);
-            }, 5000);
+            }, 1500);
             return () => clearTimeout(timer);
         }
     }, [matchFound, battleId, navigate]);

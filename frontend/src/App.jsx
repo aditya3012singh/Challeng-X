@@ -162,21 +162,8 @@ function App() {
     }
   }, [isAuthenticated, profileLoading, location.pathname, navigate]);
 
-  // Determine if we should show the global "Synchronizing Node..." loader
-  // We only show it for protected/landing routes while profile is fetching
-  const isAuthRoute = location.pathname === "/login";
-  const shouldBlockUI = profileLoading && !isAuthRoute;
-
-  if (shouldBlockUI) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-dark)]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
-          <div className="text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-[0.4em] font-mono">Connecting...</div>
-        </div>
-      </div>
-    );
-  }
+  // Non-blocking UI: background profile synchronization should not block app rendering
+  const shouldBlockUI = false;
 
   return (
     <ThemeProvider>
