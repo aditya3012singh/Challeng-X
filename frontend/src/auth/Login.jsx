@@ -178,9 +178,9 @@ export default function Login() {
 
             {/* Error Message Box */}
             {error && (
-              <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-lg text-xs text-red-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                <span>Auth Failed — {error.message || error}</span>
+              <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-lg text-xs text-red-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
+                <span>{typeof error === 'object' ? (error.message || error.error || "Invalid email or password") : error}</span>
               </div>
             )}
 

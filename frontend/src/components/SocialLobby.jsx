@@ -148,9 +148,9 @@ const SocialLobby = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen, activeChatId, dispatch]);
 
-    if (!isAuthenticated) return null;
+    if (!isAuthenticated || !user) return null;
 
-    const isLeader = currentLobby ? currentLobby.leaderId === user.id : true;
+    const isLeader = currentLobby ? currentLobby.leaderId === user?.id : true;
     const teamSize = currentLobby?.members.length || 1;
 
     return (
@@ -212,7 +212,7 @@ const SocialLobby = () => {
 
                         <div className="grid grid-cols-5 gap-2 mb-4">
                             {/* Current Members */}
-                            {(currentLobby?.members || [{ id: user.id, username: user.username, profilePic: user.profilePic }]).map((m) => (
+                            {(currentLobby?.members || (user ? [{ id: user.id, username: user.username, profilePic: user.profilePic }] : [])).map((m) => (
                                 <div key={m.id} className="relative group/member">
                                     <div className={`w-10 h-10 rounded-lg bg-[var(--color-bg-card)] border-2 ${m.id === currentLobby?.leaderId ? 'border-[var(--color-primary)]' : 'border-[#333]'} overflow-hidden`}>
                                         {m.profilePic ? (

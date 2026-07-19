@@ -9,7 +9,7 @@ export const login = createAsyncThunk(
             const res = await api.post("/auth/login", {email, password});
             return res.data;
         }catch(err){
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { message: "Invalid email or password" });
         }
     }
 )
@@ -21,7 +21,7 @@ export const register = createAsyncThunk(
             const res = await api.post("/auth/register", {username, email, password});
             return res.data;
         }catch(err){
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { message: "Registration failed" });
         }
     }
 )

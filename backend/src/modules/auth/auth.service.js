@@ -18,6 +18,10 @@ class AuthService {
       throw new Error("Account locked. Try later.");
     }
 
+    if (!user.password) {
+      throw new Error("This account was created via Google/GitHub. Please log in using Google or GitHub.");
+    }
+
     const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
