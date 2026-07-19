@@ -12,7 +12,7 @@ import env from "../../core/config/env.js";
 import passport from "passport";
 // ✅ PHASE 1: Import event bus
 import eventBus from "../../core/events/eventBus.js";
-import { EventTypes } from "../../core/events/eventTypes.js";
+import RedisClient from "../../core/cache/redis.client.js";
 
 class AuthController {
     static async login(req, res) {
@@ -117,6 +117,19 @@ class AuthController {
     static async getProfile(req, res) {
         try {
             const userId = req.user.id;
+            const cacheKey = `user:full_profile:${userId}`;
+
+            try {
+                const cached = await RedisClient.client.get(cacheKey);
+                if (cached) {
+                    console.log(`⚡ [Redis HIT] getProfile for userId=${userId}`);
+                    return res.json(JSON.parse(cached));
+                }
+                console.log(`🐢 [Redis MISS] getProfile for userId=${userId} - Fetching from DB`);
+            } catch (err) {
+                console.error(`[RedisCache] getProfile cache read error: ${err.message}`);
+            }
+
             const user = await Database.client.user.findUnique({
                 where: { id: userId },
                 select: {
@@ -175,12 +188,21 @@ class AuthController {
             }
 
             const { password, ...userWithoutPassword } = user;
-            res.json({ 
+            const responseData = { 
                 user: { 
                     ...userWithoutPassword, 
                     hasPassword: !!password
                 } 
-            });
+            };
+
+            try {
+                await RedisClient.client.set(cacheKey, JSON.stringify(responseData), "EX", 3600); // 1 Hour TTL
+                console.log(`💾 [Redis SET] Cached full profile for userId=${userId}`);
+            } catch (err) {
+                console.error(`[RedisCache] getProfile cache set error: ${err.message}`);
+            }
+
+            res.json(responseData);
         } catch (error) {
             console.error("Get profile error:", error);
             res.status(500).json({ message: "Failed to fetch profile" });
@@ -307,6 +329,8 @@ class AuthController {
                     twitter: true
                 }
             });
+
+            await RedisClient.client.del(`user:full_profile:${userId}`).catch(() => {});
 
             res.json({ message: "Profile updated successfully", user: updatedUser });
         } catch (error) {

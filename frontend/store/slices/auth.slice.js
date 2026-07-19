@@ -1,12 +1,21 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { login, register, logoutUser, fetchUserProfile, refreshAccessToken, getPublicProfile, updateUserProfile } from "../api/auth.thunk";
 
+const savedUser = (() => {
+    try {
+        const cached = localStorage.getItem("user");
+        return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+        return null;
+    }
+})();
+
 const initialState = {
-    user: null,
+    user: savedUser,
     loading: false,
     error: null,
-    isAuthenticated: false,
-    profileLoading: true,
+    isAuthenticated: !!savedUser,
+    profileLoading: !savedUser,
     publicProfile: null,
     publicProfileLoading: false,
     publicProfileError: null,
@@ -41,6 +50,9 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload.user;
+                if (action.payload.user) {
+                    try { localStorage.setItem("user", JSON.stringify(action.payload.user)); } catch (e) {}
+                }
                 if (action.payload.accessToken) {
                     localStorage.setItem("accessToken", action.payload.accessToken);
                 }
@@ -66,6 +78,9 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload.user;
+                if (action.payload.user) {
+                    try { localStorage.setItem("user", JSON.stringify(action.payload.user)); } catch (e) {}
+                }
                 if (action.payload.accessToken) {
                     localStorage.setItem("accessToken", action.payload.accessToken);
                 }
@@ -88,6 +103,7 @@ const authSlice = createSlice({
                 state.isAuthenticated = false;
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
+                localStorage.removeItem("user");
                 state.error = null;
             })
             .addCase(logoutUser.rejected, (state, action) => {
@@ -97,22 +113,30 @@ const authSlice = createSlice({
                 state.isAuthenticated = false;
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
+                localStorage.removeItem("user");
             })
             // Fetch Profile
             .addCase(fetchUserProfile.pending, (state) => {
-                state.profileLoading = true;
+                // If user is already hydrated from localStorage, keep profileLoading false
+                if (!state.user) {
+                    state.profileLoading = true;
+                }
                 state.error = null;
             })
             .addCase(fetchUserProfile.fulfilled, (state, action) => {
                 state.profileLoading = false;
                 state.user = action.payload.user;
                 state.isAuthenticated = true;
+                if (action.payload.user) {
+                    try { localStorage.setItem("user", JSON.stringify(action.payload.user)); } catch (e) {}
+                }
                 state.error = null;
             })
             .addCase(fetchUserProfile.rejected, (state, action) => {
                 state.profileLoading = false;
                 state.isAuthenticated = false;
                 state.user = null;
+                localStorage.removeItem("user");
             })
             // Refresh Token
             .addCase(refreshAccessToken.fulfilled, (state, action) => {

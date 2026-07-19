@@ -139,6 +139,9 @@ class BattleService {
       }
     });
 
+    // Invalidate cached WAITING state so fresh COUNTDOWN state is fetched/cached
+    RedisClient.client.del(`battle:meta:${battle.id}`).catch(() => {});
+
     // Emit battle_joined event via eventBus
     eventBus.emitEvent(EventTypes.BATTLE_SOCKET_JOINED, {
       battleId: battle.id,
@@ -165,6 +168,9 @@ class BattleService {
           where: { id: battle.id },
           data: { status: "ONGOING", startedAt: new Date() }
         });
+        
+        // Invalidate cached COUNTDOWN state so fresh ONGOING state is fetched/cached
+        RedisClient.client.del(`battle:meta:${battle.id}`).catch(() => {});
         
         // ✅ PHASE 3B: Emit BATTLE_STATE_CHANGED event
         eventBus.emitEvent(EventTypes.BATTLE_STATE_CHANGED, {
@@ -260,6 +266,25 @@ class BattleService {
   // }
 
   static async getBattle(battleId, userId = null) {
+    const cacheKey = `battle:meta:${battleId}`;
+    try {
+      const cached = await RedisClient.client.get(cacheKey);
+      if (cached) {
+        console.log(`⚡ [Redis HIT] getBattle for battleId=${battleId}`);
+        const cachedBattle = JSON.parse(cached);
+        // Redact hints dynamically per-user
+        if (cachedBattle.problem) {
+          const unlockedIndices = cachedBattle.problem.userHints?.map(uh => uh.hintIndex) || [];
+          cachedBattle.problem.hints = cachedBattle.problem.hints.map((h, i) => unlockedIndices.includes(i) ? h : null);
+        }
+        return cachedBattle;
+      } else {
+        console.log(`🐢 [Redis MISS] getBattle for battleId=${battleId} - Fetching from DB`);
+      }
+    } catch (err) {
+      console.error(`[RedisCache] getBattle cache read error: ${err.message}`);
+    }
+
     let battle = await Database.client.battle.findUnique({
       where: { id: battleId },
       include: {
@@ -350,13 +375,24 @@ class BattleService {
       else if (battle.player2 && battle.player2.id === battle.winnerId) winner = battle.player2;
     }
 
-    return {
+    const result = {
       ...battle,
       player1: battle.player1,
       player2: battle.player2,
       winner,
       isTeamMatch,
     };
+
+    if (result) {
+      try {
+        await RedisClient.client.set(cacheKey, JSON.stringify(result), "EX", 86400); // 24 Hours TTL for all statuses
+        console.log(`💾 [Redis SET] Cached metadata for battleId=${battleId} (status=${result.status})`);
+      } catch (err) {
+        console.error(`[RedisCache] getBattle cache set error: ${err.message}`);
+      }
+    }
+
+    return result;
   }
 
   static async getLiveBattlesService() {
@@ -444,28 +480,59 @@ class BattleService {
         if (battleResult) isTeamMatch = true;
       }
 
+      // 🛡️ Tier 2: Upsert Failsafe if DB row was missing/failed during creation
+      if (!battleResult) {
+        const cachedMeta = await RedisClient.client.get(`battle:meta:${battleId}`);
+        if (cachedMeta) {
+          const cached = JSON.parse(cachedMeta);
+          console.log(`🛡️ [Tier 2 Upsert Failsafe] Creating missing battle ${battleId} directly as FINISHED in DB`);
+          battleResult = await Database.client.battle.upsert({
+            where: { id: battleId },
+            create: {
+              id: battleId,
+              battleCode: cached.battleCode || battleId.substring(0, 6),
+              player1Id: cached.player1Id || cached.player1?.id,
+              player2Id: cached.player2Id || cached.player2?.id,
+              problemId: cached.problemId || cached.problem?.id,
+              status: "FINISHED",
+              startedAt: cached.startedAt ? new Date(cached.startedAt) : new Date(),
+              endedAt: new Date(),
+              winnerId: winnerId || null
+            },
+            update: {
+              status: "FINISHED",
+              endedAt: new Date(),
+              winnerId: winnerId || null
+            },
+            include: { player1: true, player2: true }
+          });
+        }
+      }
+
       if (!battleResult) return null;
 
-      if (isTeamMatch) {
-        battleResult = await Database.client.teamBattleMatch.update({
-          where: { id: battleId, status: "ONGOING" },
-          data: {
-            status: "FINISHED",
-            completedAt: new Date(),
-            winnerId,
-          },
-          include: { player1: true, player2: true }
-        });
-      } else {
-        battleResult = await Database.client.battle.update({
-          where: { id: battleId, status: "ONGOING" },
-          data: {
-            status: "FINISHED",
-            endedAt: new Date(),
-            winnerId,
-          },
-          include: { player1: true, player2: true }
-        });
+      if (battleResult.status !== "FINISHED") {
+        if (isTeamMatch) {
+          battleResult = await Database.client.teamBattleMatch.update({
+            where: { id: battleId },
+            data: {
+              status: "FINISHED",
+              completedAt: new Date(),
+              winnerId,
+            },
+            include: { player1: true, player2: true }
+          });
+        } else {
+          battleResult = await Database.client.battle.update({
+            where: { id: battleId },
+            data: {
+              status: "FINISHED",
+              endedAt: new Date(),
+              winnerId,
+            },
+            include: { player1: true, player2: true }
+          });
+        }
       }
 
       // 👻 Stop AI Simulation if it was active
@@ -495,13 +562,13 @@ class BattleService {
         });
       }
 
-      // ✅ PHASE 3B: Removed RankingService call - now handled by Profile listener
       // Perform background tasks (cache flush)
       (async () => {
         try {
-          // ✅ PHASE 4: Removed RewardService call - now handled by Reward listener
-          // Reward granting is triggered by BATTLE_FINISHED event
           await RedisClient.client.del("problems:all");
+          await RedisClient.client.del(`battle:meta:${battleId}`);
+          // Pre-warm the cache with the finished battle metadata
+          BattleService.getBattle(battleId).catch(() => {});
           console.log(`✅ ${isTeamMatch ? 'Team ' : ''}Battle Finish: ${battleId} (Winner: ${winnerId})`);
         } catch (err) {
           console.error(`❌ Background task error for battle ${battleId}:`, err.message);
@@ -510,7 +577,16 @@ class BattleService {
 
       return battleResult;
     } catch (error) {
-      console.log(`ℹ️ Battle ${battleId} already finished or record missing. Ignoring winner ${winnerId}.`);
+      console.error(`🚨 [Tier 3 Redis DLQ] DB update failed for battle ${battleId}: ${error.message}. Pushing to DLQ queue...`);
+      try {
+        await RedisClient.client.rpush("battle:dlq:failed_persists", JSON.stringify({
+          battleId,
+          winnerId,
+          timestamp: Date.now()
+        }));
+      } catch (dlqErr) {
+        console.error(`❌ [DLQ Fatal] Could not write to Redis DLQ: ${dlqErr.message}`);
+      }
       return null;
     }
   }
@@ -545,6 +621,8 @@ class BattleService {
         await UserCache.invalidateUser(p2Id);
 
         await RedisClient.client.del("problems:all");
+        await RedisClient.client.del(`battle:meta:${battleId}`);
+        BattleService.getBattle(battleId).catch(() => {});
         // Emit battle_end event via eventBus
         eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {
           battleId,
@@ -700,6 +778,45 @@ class BattleService {
         console.error("AI Commentary Error:", err.message);
       }
     }, 45000); // Every 45 seconds
+  }
+
+  /**
+   * Tier 3 DLQ Worker: Drains and replays failed DB writes from Redis Dead-Letter Queues
+   */
+  static async replayFailedPersists() {
+    try {
+      // 1. Replay failed creations
+      let creationItem = await RedisClient.client.lpop("battle:dlq:failed_creations");
+      while (creationItem) {
+        const data = JSON.parse(creationItem);
+        console.log(`🔄 [DLQ Replay] Retrying DB creation for battleId=${data.id}`);
+        await Database.client.battle.upsert({
+          where: { id: data.id },
+          create: {
+            id: data.id,
+            player1Id: data.player1Id,
+            player2Id: data.player2Id,
+            problemId: data.problemId,
+            status: data.status || "ONGOING",
+            startedAt: new Date(data.startedAt),
+            battleCode: data.battleCode
+          },
+          update: {}
+        });
+        creationItem = await RedisClient.client.lpop("battle:dlq:failed_creations");
+      }
+
+      // 2. Replay failed completions
+      let persistItem = await RedisClient.client.lpop("battle:dlq:failed_persists");
+      while (persistItem) {
+        const data = JSON.parse(persistItem);
+        console.log(`🔄 [DLQ Replay] Retrying DB completion for battleId=${data.battleId}`);
+        await BattleService.finishBattleService(data.battleId, data.winnerId);
+        persistItem = await RedisClient.client.lpop("battle:dlq:failed_persists");
+      }
+    } catch (err) {
+      console.error(`[DLQ Replay Worker] Execution warning: ${err.message}`);
+    }
   }
 }
 

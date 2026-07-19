@@ -243,6 +243,16 @@ class ServerApp {
         logger.error('Failed to collect queue metrics:', error);
       }
     }, 30000); // Update every 30 seconds
+
+    // Periodically drain Redis Dead-Letter Queues (DLQ) every 60 seconds
+    setInterval(async () => {
+      try {
+        const { default: BattleService } = await import("./modules/battle/battle.service.js");
+        await BattleService.replayFailedPersists();
+      } catch (dlqErr) {
+        logger.error("[DLQ Replay] Interval error:", dlqErr.message);
+      }
+    }, 60000);
   }
 }
 

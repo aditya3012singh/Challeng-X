@@ -1,5 +1,4 @@
-// Matchmaking service - finds opponents for battles
-
+import crypto from "crypto";
 import RedisClient from "../../core/cache/redis.client.js";
 import env from "../../core/config/env.js";
 import Database from "../../core/config/db.js";
@@ -51,10 +50,12 @@ class MatchmakingService {
       await MatchmakingService.leaveQueue(userId);
     }
 
+    const username = user?.username || user?.name || "Player";
+
     // Store user in queue with metadata
     const queueData = {
       userId,
-      username: user.username,
+      username,
       rankPoints,
       difficulty,
       socketId,
@@ -76,7 +77,7 @@ class MatchmakingService {
       userId
     );
 
-    logger.info(`[Matchmaking] User ${user.username} (${userId}) joined ${difficulty} queue with rank ${rankPoints}`);
+    logger.info(`[Matchmaking] User ${username} (${userId}) joined ${difficulty} queue with rank ${rankPoints}`);
 
     // Try to find a match immediately
     await MatchmakingService.findMatch(userId, difficulty);
@@ -159,7 +160,7 @@ static async leaveQueue(userId) {
       return null;
     }
 
-    logger.info(`[Matchmaking] Match found: ${currentPlayer.username} vs ${opponentData.username}`);
+    logger.info(`[Matchmaking] Match found: ${currentPlayer.username || "Player 1"} vs ${opponentData.username || "Player 2"}`);
 
     // Create battle
     await MatchmakingService.createMatchedBattle(currentPlayer, opponentData, difficulty);
@@ -179,9 +180,9 @@ static async leaveQueue(userId) {
     ]);
 
     // Get random problem of specified difficulty from cache
-    const randomProblem = await ProblemCache.getRandomProblemByDifficulty(difficulty);
+    let selectedProblem = await ProblemCache.getRandomProblemByDifficulty(difficulty);
 
-    if (!randomProblem) {
+    if (!selectedProblem) {
       // Fallback to DB if cache is empty
       const problems = await Database.client.problem.findMany({
         where: { difficulty }
@@ -198,117 +199,113 @@ static async leaveQueue(userId) {
         return;
       }
 
-      const randomProblemFromDB = problems[Math.floor(Math.random() * problems.length)];
-      
-      // Cache the problem for future use
-      await ProblemCache.cacheProblem(randomProblemFromDB);
-      
-      const battleCode = await BattleCode.generateBattleCode();
-
-      // Create battle with both players
-      const battle = await Database.client.battle.create({
-        data: {
-          player1Id: player1.userId,
-          player2Id: player2.userId,
-          problemId: randomProblemFromDB.id,
-          status: "ONGOING",
-          startedAt: new Date(),
-          battleCode
-        },
-        include: {
-          problem: {
-            select: {
-              id: true,
-              title: true,
-              difficulty: true,
-              description: true,
-              timeLimitMs: true
-            }
-          }
-        }
-      });
-      
-      // Pre-cache hidden test cases asynchronously to speed up the first submission
-      S3Service.fetchHiddenTestCases(randomProblemFromDB.id).catch(err => 
-        console.error(`[Pre-cache] Matchmaking failed for problem ${randomProblemFromDB.id}:`, err.message)
-      );
-      
-      // Notify both players via user-specific rooms (more stable than socket IDs)
-      const user1Room = `user_${player1.userId}`;
-      logger.info(`[Matchmaking] Emitting match_found to room: ${user1Room}`);
-      SocketEmitter.io?.to(user1Room).emit("match_found", {
-        battleId: battle.id,
-        battleCode: battle.battleCode,
-        opponent: player2.username,
-        problem: battle.problem
-      });
-    
-      // For ghost matches, player2.socketId/userId might be system-level, but we follow the same pattern
-      if (player2.userId && player2.userId !== 'ghost') {
-          const user2Room = `user_${player2.userId}`;
-          SocketEmitter.io?.to(user2Room).emit("match_found", {
-            battleId: battle.id,
-            battleCode: battle.battleCode,
-            opponent: player1.username,
-            problem: battle.problem
-          });
-      }
-
-      return battle;
+      selectedProblem = problems[Math.floor(Math.random() * problems.length)];
+      await ProblemCache.cacheProblem(selectedProblem);
     }
 
+    const battleId = crypto.randomUUID();
     const battleCode = await BattleCode.generateBattleCode();
+    const startedAt = new Date();
 
-    // Create battle with both players
-    const battle = await Database.client.battle.create({
-      data: {
-        player1Id: player1.userId,
-        player2Id: player2.userId,
-        problemId: randomProblem.id,
-        status: "ONGOING",
-        startedAt: new Date(),
-        battleCode
-      },
-      include: {
-        problem: {
-          select: {
-            id: true,
-            title: true,
-            difficulty: true,
-            description: true,
-            timeLimitMs: true
-          }
-        }
-      }
-    });
-    
-    // Pre-cache hidden test cases asynchronously to speed up the first submission
-    S3Service.fetchHiddenTestCases(randomProblem.id).catch(err => 
-      console.error(`[Pre-cache] Matchmaking failed for problem ${randomProblem.id}:`, err.message)
+    const problemMetadata = {
+      id: selectedProblem.id,
+      title: selectedProblem.title,
+      difficulty: selectedProblem.difficulty,
+      description: selectedProblem.description,
+      timeLimitMs: selectedProblem.timeLimitMs,
+      hints: selectedProblem.hints || [],
+      testcases: selectedProblem.testcases || []
+    };
+
+    const battleData = {
+      id: battleId,
+      battleCode,
+      player1Id: player1.userId,
+      player2Id: player2.userId,
+      problemId: selectedProblem.id,
+      status: "ONGOING",
+      startedAt,
+      problem: problemMetadata,
+      player1: { id: player1.userId, username: player1.username },
+      player2: { id: player2.userId, username: player2.username }
+    };
+
+    // 1. Immediately cache battle metadata in Redis (0ms)
+    RedisClient.client.set(`battle:meta:${battleId}`, JSON.stringify(battleData), "EX", 86400).catch(err =>
+      console.error(`[RedisCache] createMatchedBattle set error: ${err.message}`)
     );
-    
-    // Notify both players via user-specific rooms (more stable than socket IDs)
+
+    // 2. Pre-cache hidden test cases asynchronously
+    S3Service.fetchHiddenTestCases(selectedProblem.id).catch(err => 
+      console.error(`[Pre-cache] Matchmaking failed for problem ${selectedProblem.id}:`, err.message)
+    );
+
+    // 3. Instantly notify both players via WebSockets (0ms wait time)
     const user1Room = `user_${player1.userId}`;
-    logger.info(`[Matchmaking] Emitting match_found to room: ${user1Room}`);
-    SocketEmitter.io?.to(user1Room).emit("match_found", {
-      battleId: battle.id,
-      battleCode: battle.battleCode,
+    logger.info(`[Matchmaking] Emitting match_found to room: ${user1Room} and socket: ${player1.socketId}`);
+    const payload1 = {
+      battleId,
+      battleCode,
       opponent: player2.username,
-      problem: battle.problem
-    });
-  
-    // For ghost matches, player2.socketId/userId might be system-level, but we follow the same pattern
+      problem: problemMetadata
+    };
+    SocketEmitter.io?.to(user1Room).emit("match_found", payload1);
+    if (player1.socketId) SocketEmitter.io?.to(player1.socketId).emit("match_found", payload1);
+
     if (player2.userId && player2.userId !== 'ghost') {
-        const user2Room = `user_${player2.userId}`;
-        SocketEmitter.io?.to(user2Room).emit("match_found", {
-          battleId: battle.id,
-          battleCode: battle.battleCode,
-          opponent: player1.username,
-          problem: battle.problem
-        });
+      const user2Room = `user_${player2.userId}`;
+      const payload2 = {
+        battleId,
+        battleCode,
+        opponent: player1.username,
+        problem: problemMetadata
+      };
+      SocketEmitter.io?.to(user2Room).emit("match_found", payload2);
+      if (player2.socketId) SocketEmitter.io?.to(player2.socketId).emit("match_found", payload2);
     }
 
-    return battle;
+    // 4. Asynchronously persist to PostgreSQL in background with Tier 1 (3x Retries) & Tier 3 (Redis DLQ)
+    MatchmakingService.persistBattleWithRetry(battleData).catch(() => {});
+
+    return battleData;
+  }
+
+  /**
+   * Tier 1 (3x Retries) & Tier 3 (Redis DLQ) Failsafe for Battle Creation
+   */
+  static async persistBattleWithRetry(battleData, maxRetries = 3) {
+    let attempts = 0;
+    while (attempts < maxRetries) {
+      try {
+        attempts++;
+        await Database.client.battle.create({
+          data: {
+            id: battleData.id,
+            player1Id: battleData.player1Id,
+            player2Id: battleData.player2Id,
+            problemId: battleData.problemId,
+            status: "ONGOING",
+            startedAt: battleData.startedAt,
+            battleCode: battleData.battleCode
+          }
+        });
+        logger.info(`✅ [Tier 1 DB Write Success] Battle ${battleData.id} persisted to PostgreSQL (Attempt ${attempts})`);
+        return;
+      } catch (err) {
+        logger.warn(`⚠️ [Tier 1 DB Write Warning] Attempt ${attempts}/${maxRetries} failed for battle ${battleData.id}: ${err.message}`);
+        if (attempts < maxRetries) {
+          await new Promise(res => setTimeout(res, attempts * 1000));
+        }
+      }
+    }
+
+    // Tier 3: All 3 retries failed -> Push to Redis Dead-Letter Queue (DLQ)
+    try {
+      await RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData));
+      logger.error(`🚨 [Tier 3 Redis DLQ] Pushed battle creation ${battleData.id} to DLQ (battle:dlq:failed_creations)`);
+    } catch (dlqErr) {
+      logger.error(`❌ [DLQ Fatal] Failed to push battle ${battleData.id} to Redis DLQ: ${dlqErr.message}`);
+    }
   }
 
   /**
