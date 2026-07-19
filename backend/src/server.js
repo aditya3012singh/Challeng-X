@@ -177,6 +177,10 @@ class ServerApp {
         logger.info("[WarmUp] No active battles/contests — skipping testcase warm-up");
       }
 
+      // 4. Leaderboard ZSET — warm global ranking ZSET
+      const { default: LeaderboardService } = await import("./modules/leaderboard/leaderboard.service.js");
+      await LeaderboardService.warmUpZSet();
+
       logger.info(`✅ All caches warmed up in ${Date.now() - t0}ms`);
     } catch (error) {
       logger.error("❌ Cache warm-up failed:", error);

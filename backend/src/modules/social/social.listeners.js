@@ -37,13 +37,19 @@ export async function handleBattleFinished(payload) {
 
         // Update winner stats (only if there is a winner — not a draw)
         if (winnerId) {
-            await Database.client.user.update({
+            const winner = await Database.client.user.update({
                 where: { id: winnerId },
                 data: {
                     rankPoints: { increment: 30 },
                     wins: { increment: 1 }
-                }
+                },
+                select: { id: true, rankPoints: true }
             });
+
+            try {
+                const { default: LeaderboardService } = await import('../leaderboard/leaderboard.service.js');
+                LeaderboardService.updateUserRank(winner.id, winner.rankPoints).catch(() => {});
+            } catch (zErr) {}
 
             eventBus.emitEvent(EventTypes.USER_RANK_UPDATED, {
                 userId: winnerId,
@@ -56,13 +62,19 @@ export async function handleBattleFinished(payload) {
 
         // Update loser stats (only if there is a loser — not a draw)
         if (loserId) {
-            await Database.client.user.update({
+            const loser = await Database.client.user.update({
                 where: { id: loserId },
                 data: {
                     rankPoints: { decrement: 20 },
                     losses: { increment: 1 }
-                }
+                },
+                select: { id: true, rankPoints: true }
             });
+
+            try {
+                const { default: LeaderboardService } = await import('../leaderboard/leaderboard.service.js');
+                LeaderboardService.updateUserRank(loser.id, loser.rankPoints).catch(() => {});
+            } catch (zErr) {}
 
             eventBus.emitEvent(EventTypes.USER_RANK_UPDATED, {
                 userId: loserId,
