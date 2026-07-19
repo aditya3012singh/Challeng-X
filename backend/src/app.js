@@ -23,6 +23,7 @@ import LeaderboardRoutes from "./modules/leaderboard/leaderboard.routes.js";
 import MatchmakingRoutes from "./modules/matchmaking/matchmaking.routes.js";
 import TeamRoutes from "./modules/team/team.routes.js";
 import TeamBattleRoutes from "./modules/team/teamBattle.routes.js";
+import teamLobbyRoutes from "./modules/team/teamLobby.routes.js";
 import SquidGameRoutes from "./modules/squidGame/squidGame.routes.js";
 import ContestRoutes from "./modules/contest/contest.routes.js";
 import SocialRoutes from "./modules/social/social.routes.js";
@@ -78,6 +79,7 @@ class App {
     app.use("/api/matchmaking", MatchmakingRoutes.createRouter());
     app.use("/api/team", TeamRoutes.createRouter());
     app.use("/api/team-battle", TeamBattleRoutes.createRouter());
+    app.use("/api/team-battle/lobby", teamLobbyRoutes);
     app.use("/api/squid-game", SquidGameRoutes.createRouter());
     app.use("/api/contest", ContestRoutes.createRouter());
 

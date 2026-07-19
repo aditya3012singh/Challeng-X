@@ -543,13 +543,22 @@ class BattleService {
         });
       }
 
-      // Perform background tasks (cache flush)
+      // Perform background tasks (cache flush & team score updates)
       (async () => {
         try {
+          const cachedMeta = await RedisClient.client.get(`battle:meta:${battleId}`);
+          if (cachedMeta) {
+            const cached = JSON.parse(cachedMeta);
+            if (cached.battleCode) {
+              try {
+                const { default: TeamLobbyService } = await import("../team/teamLobby.service.js");
+                TeamLobbyService.updateSubMatchResultService(cached.battleCode, battleId, winnerId).catch(() => {});
+              } catch (tlErr) {}
+            }
+          }
+
           await RedisClient.client.del("problems:all");
           await RedisClient.client.del(`battle:meta:${battleId}`);
-          // Pre-warm the cache with the finished battle metadata
-          BattleService.getBattle(battleId).catch(() => {});
           console.log(`✅ ${isTeamMatch ? 'Team ' : ''}Battle Finish: ${battleId} (Winner: ${winnerId})`);
         } catch (err) {
           console.error(`❌ Background task error for battle ${battleId}:`, err.message);
