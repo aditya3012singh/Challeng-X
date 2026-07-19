@@ -189,7 +189,7 @@ export const FindMatch = () => {
                 <div className="bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] absolute inset-0" />
             </div>
 
-            <div className="relative max-w-4xl w-full z-10">
+            <div className="relative max-w-[1140px] w-full z-10">
 
                 {matchFound || (battleId && opponent) ? (
                     // Match Found Screen - PRE-COMBAT DUEL HUD
@@ -432,59 +432,155 @@ export const FindMatch = () => {
                     </div>
                 ) : (
                     // Selection Screen - PREMIUM
-                    <div className="premium-card p-8 sm:p-16 lg:p-20 relative overflow-hidden" style={{ borderRadius: "2px" }}>
-                        <div className="text-[10px] font-bold tracking-[0.6em] text-[var(--color-primary)] uppercase mb-6">
-                            {currentLobby?.mode === 'TEAM' ? "Squad Mission" : "Find a Match"}
-                        </div>
-                        <h1 className="text-4xl sm:text-6xl font-black text-[var(--color-text-main)] mb-12 tracking-tighter uppercase font-[family:var(--font-heading)]">
-                            {currentLobby?.mode === 'TEAM' ? "Deploy Squad" : "Enter Arena"}
-                        </h1>
-
-                        <div className="mb-12 sm:mb-20">
-                            <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.4em] mb-8 sm:mb-10 text-center">
-                                Choose Difficulty
-                            </label>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {["EASY", "MEDIUM", "HARD"].map((diff) => (
-                                    <button
-                                        key={diff}
-                                        onClick={() => setSelectedDifficulty(diff)}
-                                        className={`p-6 sm:p-8 border transition-all duration-300 relative group overflow-hidden ${selectedDifficulty === diff
-                                            ? "border-[var(--color-primary)] bg-white/[0.02] text-[var(--color-text-main)]"
-                                            : "border-white/5 bg-transparent text-slate-600 hover:border-white/20 hover:text-[var(--color-text-muted)]"
-                                            }`}
-                                        style={{ borderRadius: "2px" }}
-                                    >
-                                        <div className="relative z-10 text-center">
-                                            <h3 className="text-lg font-black uppercase tracking-widest mb-2">{diff}</h3>
-                                            <p className="text-[9px] font-bold tracking-widest opacity-60">
-                                                {diff === "EASY" && "Recruit"}
-                                                {diff === "MEDIUM" && "Standard"}
-                                                {diff === "HARD" && "Veteran"}
-                                            </p>
+                    <div className="flex px-4 sm:px-8 py-12 justify-center items-center flex-1">
+                        <div className="grid max-w-[1140px] grid-cols-1 lg:grid-cols-2 gap-12 w-full text-left">
+                            
+                            {/* Left Side: Stats & Description */}
+                            <div className="flex flex-col justify-center gap-8">
+                                <div className="space-y-4">
+                                    <div className="inline-flex font-semibold uppercase rounded-full bg-neutral-900 text-[#a1a1a1] text-[10px] tracking-[5.6px] border border-zinc-800 px-4 py-2 items-center gap-2 select-none self-start">
+                                        <Sparkles className="size-3 text-neutral-200" />
+                                        Match Center
+                                    </div>
+                                    <div className="space-y-4">
+                                        <h1 className="max-w-[560px] font-semibold text-neutral-50 text-4xl sm:text-5xl leading-tight sm:leading-12 tracking-tight">
+                                            Find your next coding battle
+                                        </h1>
+                                        <p className="max-w-[520px] text-[#a1a1a1] text-base leading-7">
+                                            Choose a difficulty, then jump into a random opponent
+                                            match and get routed straight into your battle screen.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="shadow-[0_20px_60px_rgba(0,0,0,0.35)] rounded-2xl bg-neutral-900 border border-zinc-800 p-5">
+                                        <div className="text-[#a1a1a1] flex items-center gap-2">
+                                            <Zap className="size-4 text-neutral-200" />
+                                            <span className="uppercase text-xs leading-4 tracking-[4.8px]">
+                                                Fast queue
+                                            </span>
                                         </div>
+                                        <div className="font-semibold text-neutral-50 text-2xl leading-8 mt-4 font-mono">
+                                            12s
+                                        </div>
+                                        <div className="text-[#a1a1a1] text-sm leading-5 mt-1">
+                                            Average wait
+                                        </div>
+                                    </div>
+                                    <div className="shadow-[0_20px_60px_rgba(0,0,0,0.35)] rounded-2xl bg-neutral-900 border border-zinc-800 p-5">
+                                        <div className="text-[#a1a1a1] flex items-center gap-2">
+                                            <Trophy className="size-4 text-neutral-200" />
+                                            <span className="uppercase text-xs leading-4 tracking-[4.8px]">
+                                                Balanced
+                                            </span>
+                                        </div>
+                                        <div className="font-semibold text-neutral-50 text-2xl leading-8 mt-4 font-mono">
+                                            1v1
+                                        </div>
+                                        <div className="text-[#a1a1a1] text-sm leading-5 mt-1">
+                                            Ranked pairing
+                                        </div>
+                                    </div>
+                                    <div className="shadow-[0_20px_60px_rgba(0,0,0,0.35)] rounded-2xl bg-neutral-900 border border-zinc-800 p-5">
+                                        <div className="text-[#a1a1a1] flex items-center gap-2">
+                                            <Target className="size-4 text-neutral-200" />
+                                            <span className="uppercase text-xs leading-4 tracking-[4.8px]">
+                                                Ready
+                                            </span>
+                                        </div>
+                                        <div className="font-semibold text-neutral-50 text-2xl leading-8 mt-4">
+                                            Live
+                                        </div>
+                                        <div className="text-[#a1a1a1] text-sm leading-5 mt-1">
+                                            Instant start
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Right Side: Matchmaking selection card */}
+                            <div className="flex justify-center items-center">
+                                <div className="max-w-[520px] backdrop-blur-xl shadow-[0_30px_80px_rgba(0,0,0,0.45)] bg-neutral-900 border border-zinc-800 p-8 flex flex-col gap-6 w-full rounded-2xl">
+                                    <div className="text-center flex flex-col gap-2">
+                                        <div className="size-12 rounded-2xl bg-neutral-950/70 text-neutral-200 border border-zinc-800 flex mx-auto mb-2 justify-center items-center">
+                                            <Target className="size-5" />
+                                        </div>
+                                        <h2 className="font-semibold text-neutral-50 text-3xl leading-9 tracking-tight">
+                                            Matchmaking
+                                        </h2>
+                                        <p className="text-[#a1a1a1]">
+                                            Select a difficulty and find a random opponent.
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="flex flex-col gap-6">
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center select-none">
+                                                <span className="font-semibold uppercase text-[#a1a1a1] text-xs leading-4 tracking-[4.8px]">
+                                                    Question difficulty
+                                                </span>
+                                                <span className="font-medium rounded-full bg-neutral-950/60 text-neutral-50 text-xs leading-4 border border-zinc-800 px-3 py-1">
+                                                    {selectedDifficulty}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-3 rounded-2xl bg-neutral-950/60 border border-zinc-800 p-2 gap-2 w-full h-auto select-none">
+                                                {["EASY", "MEDIUM", "HARD"].map((diff) => (
+                                                    <button
+                                                        key={diff}
+                                                        onClick={() => setSelectedDifficulty(diff)}
+                                                        className={`font-medium rounded-xl text-sm leading-5 px-4 py-3 cursor-pointer transition-all ${
+                                                            selectedDifficulty === diff
+                                                                ? "bg-neutral-200 text-neutral-900"
+                                                                : "text-[#a1a1a1] hover:text-white"
+                                                        }`}
+                                                    >
+                                                        {diff.charAt(0) + diff.slice(1).toLowerCase()}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="rounded-2xl bg-neutral-950/50 border border-zinc-800 p-5">
+                                            <div className="flex items-start gap-4">
+                                                <div className="size-11 rounded-xl bg-neutral-800 text-neutral-50 flex justify-center items-center shrink-0">
+                                                    <Clock className="size-5" />
+                                                </div>
+                                                <div className="space-y-1 flex-1 text-left">
+                                                    <div className="flex justify-between items-center gap-4">
+                                                        <h3 className="font-semibold text-neutral-50 text-lg leading-7">
+                                                            Random match
+                                                        </h3>
+                                                        <span className="uppercase text-[#a1a1a1] text-xs leading-4 tracking-[4.8px]">
+                                                            Auto route
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[#a1a1a1] text-sm leading-6">
+                                                        We’ll pair you with a suitable opponent and take
+                                                        you directly to Screen 3.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {error && (
+                                        <div className="border border-red-500/20 bg-red-500/5 text-red-500 p-4 text-[10px] font-bold uppercase tracking-widest text-center animate-pulse" style={{ borderRadius: "2px" }}>
+                                            ⚠ Connection Error: {error}
+                                        </div>
+                                    )}
+                                    
+                                    <button 
+                                        onClick={handleJoinQueue}
+                                        disabled={loading || !connected}
+                                        className="shadow-[0_18px_40px_rgba(255,255,255,0.08)] rounded-2xl bg-neutral-200 hover:bg-white text-neutral-900 w-full h-14 font-semibold uppercase flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 disabled:opacity-50"
+                                    >
+                                        <Zap className="size-4" />
+                                        {!connected ? "Connecting..." : loading ? "Searching..." : "Find random match"}
                                     </button>
-                                ))}
+                                </div>
                             </div>
                         </div>
-
-                        {error && (
-                            <div className="border border-red-500/20 bg-red-500/5 text-red-500 p-6 mb-12 text-[10px] font-bold uppercase tracking-widest text-center" style={{ borderRadius: "2px" }}>
-                                ⚠ Connection Error: {error}
-                            </div>
-                        )}
-
-                        <button
-                            onClick={handleJoinQueue}
-                            disabled={loading || !connected}
-                            className={`w-full py-6 font-black text-xs uppercase tracking-[0.4em] transition-all transform active:scale-95 shadow-2xl ${(loading || !connected)
-                                ? "bg-slate-800 text-[var(--color-text-muted)] cursor-not-allowed opacity-50"
-                                : "bg-[var(--color-primary)] text-black hover:bg-white"
-                                }`}
-                            style={{ borderRadius: "2px" }}
-                        >
-                            {!connected ? "Connecting..." : loading ? "Searching..." : "Find Match →"}
-                        </button>
                     </div>
                 )}
             </div>
