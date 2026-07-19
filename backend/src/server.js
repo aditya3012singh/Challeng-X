@@ -35,7 +35,7 @@ class ServerApp {
     if (redisUrl || env.REDIS_HOST) {
       // 🛡️ Assign to static property to prevent GC
       this.subscriber = redisUrl
-        ? new Redis(redisUrl, { maxRetriesPerRequest: null, retryStrategy: (t) => Math.min(t * 50, 2000) })
+        ? new Redis(redisUrl, { ...redisConnectOptions, maxRetriesPerRequest: null })
         : new Redis(redisConnectOptions);
 
       this.subscriber.on("connect", () => {

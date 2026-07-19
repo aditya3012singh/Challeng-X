@@ -681,9 +681,6 @@ class BattleService {
     return updatedMeta;
   }
 
-    return result;
-  }
-
   static async getRemainingAttempts(battleId, userId) {
     const battle = await Database.client.battle.findUnique({
       where: { id: battleId },

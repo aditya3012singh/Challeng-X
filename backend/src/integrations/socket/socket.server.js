@@ -74,7 +74,7 @@ class SocketServer {
                 };
 
                 const pubClient = env.REDIS_URL
-                    ? new Redis(env.REDIS_URL, { maxRetriesPerRequest: null })
+                    ? new Redis(env.REDIS_URL, { ...redisConfig, maxRetriesPerRequest: null })
                     : new Redis(redisConfig);
 
                 const subClient = pubClient.duplicate();
