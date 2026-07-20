@@ -3,26 +3,26 @@ import logger from "../../utils/logger.js";
 
 // Language configuration
 const LANGUAGE_CONFIG = {
-    java: {
-        image: 'codearena-java',
-        runnerCmd: ['python3', '-u', '/runners/java_runner.py'],
-    },
-    cpp: {
-        image: 'codearena-cpp',
-        runnerCmd: ['python3', '-u', '/runners/cpp_runner.py'],
-    },
+    // java: {
+    //     image: 'codearena-java',
+    //     runnerCmd: ['python3', '-u', '/runners/java_runner.py'],
+    // },
+    // cpp: {
+    //     image: 'codearena-cpp',
+    //     runnerCmd: ['python3', '-u', '/runners/cpp_runner.py'],
+    // },
     python: {
         image: 'codearena-python',
         runnerCmd: ['python3', '-u', '/runners/python_runner.py'],
     },
-    c: {
-        image: 'codearena-c',
-        runnerCmd: ['python3', '-u', '/runners/c_runner.py'],
-    },
-    javascript: {
-        image: 'codearena-js',
-        runnerCmd: ['node', '/runners/js_runner.mjs'],
-    },
+    // c: {
+    //     image: 'codearena-c',
+    //     runnerCmd: ['python3', '-u', '/runners/c_runner.py'],
+    // },
+    // javascript: {
+    //     image: 'codearena-js',
+    //     runnerCmd: ['node', '/runners/js_runner.mjs'],
+    // },
 };
 
 // Container pools per language
