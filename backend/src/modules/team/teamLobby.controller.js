@@ -3,7 +3,7 @@ import TeamLobbyService from "./teamLobby.service.js";
 class TeamLobbyController {
   static async createLobby(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.user?.id || req.user?.userId;
       const { teamSize, difficulty } = req.body;
 
       const lobby = await TeamLobbyService.createLobbyService(userId, teamSize, difficulty);
@@ -28,7 +28,7 @@ class TeamLobbyController {
 
   static async joinLobby(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.user?.id || req.user?.userId;
       const { roomCode } = req.body;
 
       const lobby = await TeamLobbyService.joinLobbyService(userId, roomCode?.toUpperCase());
@@ -40,7 +40,7 @@ class TeamLobbyController {
 
   static async switchTeam(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.user?.id || req.user?.userId;
       const { roomCode, targetTeam } = req.body; // targetTeam = "ALPHA" | "BRAVO"
 
       const lobby = await TeamLobbyService.switchTeamService(userId, roomCode?.toUpperCase(), targetTeam);
@@ -52,7 +52,7 @@ class TeamLobbyController {
 
   static async toggleReady(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.user?.id || req.user?.userId;
       const { roomCode } = req.body;
 
       const lobby = await TeamLobbyService.toggleReadyService(userId, roomCode?.toUpperCase());
@@ -64,7 +64,7 @@ class TeamLobbyController {
 
   static async leaveLobby(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.user?.id || req.user?.userId;
       const { roomCode } = req.body;
 
       const lobby = await TeamLobbyService.leaveLobbyService(userId, roomCode?.toUpperCase());
@@ -76,7 +76,7 @@ class TeamLobbyController {
 
   static async startBattle(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.user?.id || req.user?.userId;
       const { roomCode } = req.body;
 
       const lobby = await TeamLobbyService.startTeamBattleService(userId, roomCode?.toUpperCase());

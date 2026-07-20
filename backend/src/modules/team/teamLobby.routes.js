@@ -1,11 +1,11 @@
 import { Router } from "express";
 import TeamLobbyController from "./teamLobby.controller.js";
-import authMiddleware from "../../api/middleware/auth.middleware.js";
+import AuthMiddleware from "./auth.middleware.js";
 
 const router = Router();
 
 // Apply auth middleware to all team lobby routes
-router.use(authMiddleware);
+router.use(AuthMiddleware.handle);
 
 router.post("/create", TeamLobbyController.createLobby);
 router.get("/:roomCode", TeamLobbyController.getLobby);
