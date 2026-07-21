@@ -11,18 +11,19 @@ const api = axios.create({
 
 // Request interceptor - useful for logging in development
 api.interceptors.request.use(
+
   (config) => {
     // Log requests in development
     if (import.meta.env.DEV) {
       console.log(`📤 ${config.method.toUpperCase()} ${config.url}`);
     }
-    
+
     const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Cookies are automatically sent via withCredentials: true
+    // Cookies are automatically sent via withCredentials: true //
     return config;
   },
   (error) => {
@@ -103,9 +104,9 @@ api.interceptors.response.use(
         // 🛡️ GUEST ACCESS GUARD: Do NOT redirect if on a guest-allowed public route
         if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
           const PUBLIC_ROUTES = ['/', '/login', '/leaderboard', '/live', '/contests'];
-          const isPublicRoute = PUBLIC_ROUTES.includes(window.location.pathname) || 
-                               window.location.pathname.startsWith('/battle/') || 
-                               window.location.pathname.startsWith('/spectate/');
+          const isPublicRoute = PUBLIC_ROUTES.includes(window.location.pathname) ||
+            window.location.pathname.startsWith('/battle/') ||
+            window.location.pathname.startsWith('/spectate/');
 
           if (!isPublicRoute) {
             window.location.href = '/login';
