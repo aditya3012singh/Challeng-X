@@ -7,7 +7,7 @@ services:
     dockerContext: ./backend
     plan: free
     region: singapore # Choose your region (oregon, frankfurt, singapore)
-    startCommand: sh -c "npx prisma migrate deploy || true; npm start"
+    dockerCommand: sh -c "npx prisma migrate deploy || true; npm start"
     envVars:
       - key: NODE_ENV
         value: production
@@ -41,7 +41,7 @@ services:
     dockerContext: ./backend
     plan: free
     region: singapore
-    startCommand: npm run worker:prod
+    dockerCommand: npm run worker:prod
     envVars:
       - key: NODE_ENV
         value: production
