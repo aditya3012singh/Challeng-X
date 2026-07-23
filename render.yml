@@ -1,0 +1,60 @@
+services:
+  # 1. Main API Backend (Web Service)
+  - type: web
+    name: codearena-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: singapore # Choose your region (oregon, frankfurt, singapore)
+    startCommand: sh -c "npx prisma migrate deploy || true; npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false # Set in Render UI
+      - key: JWT_ACCESS_SECRET
+        sync: false # Set in Render UI
+      - key: JWT_REFRESH_SECRET
+        sync: false # Set in Render UI
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: codearena-redis
+          property: connectionString
+      - key: FRONTEND_URL
+        value: https://code-arena-survival-wars.vercel.app
+      - key: ALLOWED_ORIGINS
+        value: https://code-arena-survival-wars.vercel.app,http://localhost:3000
+      - key: JUDGE_SERVICE_HOST
+        value: your-external-judge-ip.com # Point to your external EC2 Judge!
+      - key: JUDGE_SERVICE_PORT
+        value: "50051"
+
+  # 2. BullMQ Background Worker
+  - type: worker
+    name: codearena-worker
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: singapore
+    startCommand: npm run worker:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: codearena-redis
+          property: connectionString
+
+  # 3. Redis Instance
+  - type: redis
+    name: codearena-redis
+    plan: free
+    ipAllowList: [] # Internal access only
