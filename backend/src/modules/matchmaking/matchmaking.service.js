@@ -79,8 +79,8 @@ class MatchmakingService {
 
     logger.info(`[Matchmaking] User ${username} (${userId}) joined ${difficulty} queue with rank ${rankPoints}`);
 
-    // Try to find a match immediately
-    await MatchmakingService.findMatch(userId, difficulty);
+    // Try to find a match immediately (now handled by background ticker)
+    // await MatchmakingService.findMatch(userId, difficulty);
 
     return { message: "Added to queue", queueData };
   }
@@ -387,6 +387,335 @@ static async leaveQueue(userId) {
 //     
 //     return battle;
 //   }
+
+  static startMatchmakingTicker(io) {
+    logger.info("🟢 Starting Matchmaking Background Ticker (every 3 seconds)");
+    setInterval(async () => {
+      try {
+        await MatchmakingService.tickMatchmaking(io);
+      } catch (err) {
+        logger.error(`[Matchmaking Ticker Error] ${err.message}`);
+      }
+    }, 3000);
+  }
+
+  static async tickMatchmaking(io) {
+    const difficulties = ["EASY", "MEDIUM", "HARD"];
+    for (const diff of difficulties) {
+      const queueKey = `${MATCHMAKING_QUEUE}:${diff}`;
+      
+      // Get all player IDs in this difficulty queue
+      const playerIds = await RedisClient.client.zrange(queueKey, 0, -1);
+      if (playerIds.length < 2) continue;
+
+      // Fetch active player metadata from Redis
+      const players = [];
+      for (const id of playerIds) {
+        // If player is locked in a proposal, skip them
+        const activeProposal = await RedisClient.client.get(`matchmaking:user:${id}:proposal`);
+        if (activeProposal) continue;
+
+        const dataStr = await RedisClient.client.get(`matchmaking:user:${id}`);
+        if (dataStr) {
+          players.push(JSON.parse(dataStr));
+        } else {
+          // Stale entry, cleanup from queue
+          await RedisClient.client.zrem(queueKey, id);
+        }
+      }
+
+      // Sort players by wait time descending (longest waiting has smaller joinedAt timestamp)
+      players.sort((a, b) => a.joinedAt - b.joinedAt);
+
+      const matchedUserIds = new Set();
+
+      for (let i = 0; i < players.length; i++) {
+        const p1 = players[i];
+        if (matchedUserIds.has(p1.userId)) continue;
+
+        // Calculate dynamic range based on wait time of p1
+        const waitTimeSeconds = Math.floor((Date.now() - p1.joinedAt) / 1000);
+        const eloThreshold = Math.min(100 + Math.floor(waitTimeSeconds / 5) * 100, 2000);
+
+        // Find a suitable opponent
+        let bestOpponent = null;
+        for (let j = i + 1; j < players.length; j++) {
+          const p2 = players[j];
+          if (matchedUserIds.has(p2.userId)) continue;
+
+          // Check lobbyId (can't match if in the same lobby)
+          if (p1.lobbyId && p1.lobbyId === p2.lobbyId) continue;
+
+          // Check rank points difference
+          const diffElo = Math.abs(p1.rankPoints - p2.rankPoints);
+          if (diffElo <= eloThreshold) {
+            bestOpponent = p2;
+            break;
+          }
+        }
+
+        if (bestOpponent) {
+          matchedUserIds.add(p1.userId);
+          matchedUserIds.add(bestOpponent.userId);
+
+          // Trigger match proposal!
+          try {
+            await MatchmakingService.proposeMatch(io, p1, bestOpponent, diff);
+          } catch (err) {
+            logger.error(`[Matchmaking Propose Match Error] for ${p1.userId} and ${bestOpponent.userId}: ${err.message}`);
+          }
+        }
+      }
+    }
+
+    // Also broadcast queue metrics to active sockets
+    await MatchmakingService.broadcastQueueMetrics(io);
+  }
+
+  static async proposeMatch(io, p1, p2, difficulty) {
+    const proposalId = crypto.randomUUID();
+    const proposal = {
+      id: proposalId,
+      player1: p1,
+      player2: p2,
+      difficulty,
+      p1Accepted: false,
+      p2Accepted: false,
+      expiresAt: Date.now() + 10000 // 10 seconds acceptance window
+    };
+
+    // Save proposal to Redis (expire after 30 seconds for safety)
+    await RedisClient.client.set(`matchmaking:proposal:${proposalId}`, JSON.stringify(proposal), "EX", 30);
+
+    // Set players' state to locked in proposal
+    await RedisClient.client.set(`matchmaking:user:${p1.userId}:proposal`, proposalId, "EX", 30);
+    await RedisClient.client.set(`matchmaking:user:${p2.userId}:proposal`, proposalId, "EX", 30);
+
+    // Remove players from sorted queues temporarily so they don't match with others
+    const queueKey = `${MATCHMAKING_QUEUE}:${difficulty}`;
+    await Promise.all([
+      RedisClient.client.zrem(queueKey, p1.userId),
+      RedisClient.client.zrem(queueKey, p2.userId)
+    ]);
+
+    logger.info(`[Matchmaking] Proposing match ${proposalId} between ${p1.username} and ${p2.username}`);
+
+    // Emit match_proposed socket event to both players
+    const socketServer = io || SocketEmitter.io;
+    if (socketServer) {
+      socketServer.to(`user_${p1.userId}`).emit("match_proposed", {
+        proposalId,
+        opponent: p2.username,
+        timeout: 10
+      });
+
+      socketServer.to(`user_${p2.userId}`).emit("match_proposed", {
+        proposalId,
+        opponent: p1.username,
+        timeout: 10
+      });
+    }
+
+    // Start 10 seconds timeout block
+    setTimeout(async () => {
+      try {
+        await MatchmakingService.handleProposalTimeout(socketServer, proposalId);
+      } catch (err) {
+        logger.error(`[Proposal Timeout Error] ${err.message}`);
+      }
+    }, 10000);
+  }
+
+  static async acceptMatch(userId, proposalId) {
+    const proposalStr = await RedisClient.client.get(`matchmaking:proposal:${proposalId}`);
+    if (!proposalStr) {
+      throw new Error("Match proposal expired or not found");
+    }
+
+    const proposal = JSON.parse(proposalStr);
+    
+    if (proposal.player1.userId === userId) {
+      proposal.p1Accepted = true;
+    } else if (proposal.player2.userId === userId) {
+      proposal.p2Accepted = true;
+    } else {
+      throw new Error("Unauthorized to accept this proposal");
+    }
+
+    // Save updated proposal
+    await RedisClient.client.set(`matchmaking:proposal:${proposalId}`, JSON.stringify(proposal), "EX", 30);
+
+    const socketServer = SocketEmitter.io;
+    const otherUserId = proposal.player1.userId === userId ? proposal.player2.userId : proposal.player1.userId;
+    if (socketServer) {
+      socketServer.to(`user_${otherUserId}`).emit("opponent_accepted", { proposalId });
+    }
+
+    // Check if both accepted
+    if (proposal.p1Accepted && proposal.p2Accepted) {
+      // Both accepted! Clean up and launch battle!
+      await RedisClient.client.del(`matchmaking:proposal:${proposalId}`);
+      await RedisClient.client.del(`matchmaking:user:${proposal.player1.userId}:proposal`);
+      await RedisClient.client.del(`matchmaking:user:${proposal.player2.userId}:proposal`);
+      
+      // Clean up search session keys
+      await RedisClient.client.del(`matchmaking:user:${proposal.player1.userId}`);
+      await RedisClient.client.del(`matchmaking:user:${proposal.player2.userId}`);
+
+      // Create Battle
+      await MatchmakingService.createMatchedBattle(proposal.player1, proposal.player2, proposal.difficulty);
+    }
+
+    return { message: "Match accepted", proposal };
+  }
+
+  static async declineMatch(userId, proposalId) {
+    const proposalStr = await RedisClient.client.get(`matchmaking:proposal:${proposalId}`);
+    if (!proposalStr) {
+      return { message: "Proposal already resolved or expired" };
+    }
+
+    const proposal = JSON.parse(proposalStr);
+    await MatchmakingService.cancelProposal(SocketEmitter.io, proposal, userId); // userId declined
+    return { message: "Match declined" };
+  }
+
+  static async cancelProposal(io, proposal, declinerUserId) {
+    // Delete proposal keys
+    await RedisClient.client.del(`matchmaking:proposal:${proposal.id}`);
+    await RedisClient.client.del(`matchmaking:user:${proposal.player1.userId}:proposal`);
+    await RedisClient.client.del(`matchmaking:user:${proposal.player2.userId}:proposal`);
+
+    const socketServer = io || SocketEmitter.io;
+
+    // Handle Declining Player
+    if (declinerUserId) {
+      await MatchmakingService.leaveQueue(declinerUserId);
+      if (socketServer) {
+        socketServer.to(`user_${declinerUserId}`).emit("match_declined_by_you");
+      }
+    }
+
+    // Handle Accepting / AFK Player (Priority Re-Queueing!)
+    const activePlayer = proposal.player1.userId === declinerUserId ? proposal.player2 : proposal.player1;
+    const declinerPlayer = proposal.player1.userId === declinerUserId ? proposal.player1 : proposal.player2;
+
+    // Put the active player back in queue
+    const queueKey = `${MATCHMAKING_QUEUE}:${proposal.difficulty}`;
+    
+    const userMetaStr = await RedisClient.client.get(`matchmaking:user:${activePlayer.userId}`);
+    if (userMetaStr) {
+      await RedisClient.client.zadd(queueKey, activePlayer.rankPoints, activePlayer.userId);
+      logger.info(`🔄 [Matchmaking] Player ${activePlayer.username} PRIORITY RE-QUEUED (Opponent declined/AFK)`);
+      
+      if (socketServer) {
+        socketServer.to(`user_${activePlayer.userId}`).emit("match_cancelled", {
+          reason: declinerUserId ? `${declinerPlayer.username} declined the match.` : "Match acceptance timed out.",
+          reQueued: true
+        });
+      }
+    }
+  }
+
+  static async handleProposalTimeout(io, proposalId) {
+    const proposalStr = await RedisClient.client.get(`matchmaking:proposal:${proposalId}`);
+    if (!proposalStr) return; // Already resolved
+
+    const proposal = JSON.parse(proposalStr);
+    const socketServer = io || SocketEmitter.io;
+
+    logger.info(`⏰ [Matchmaking] Match Proposal ${proposalId} timed out. Resolving...`);
+
+    if (!proposal.p1Accepted && !proposal.p2Accepted) {
+      // Both AFK, remove both from queue
+      await RedisClient.client.del(`matchmaking:proposal:${proposalId}`);
+      await RedisClient.client.del(`matchmaking:user:${proposal.player1.userId}:proposal`);
+      await RedisClient.client.del(`matchmaking:user:${proposal.player2.userId}:proposal`);
+      await MatchmakingService.leaveQueue(proposal.player1.userId);
+      await MatchmakingService.leaveQueue(proposal.player2.userId);
+      if (socketServer) {
+        socketServer.to(`user_${proposal.player1.userId}`).emit("match_timeout");
+        socketServer.to(`user_${proposal.player2.userId}`).emit("match_timeout");
+      }
+      return;
+    }
+
+    let declinerUserId = null;
+    if (!proposal.p1Accepted) {
+      declinerUserId = proposal.player1.userId;
+    } else if (!proposal.p2Accepted) {
+      declinerUserId = proposal.player2.userId;
+    }
+
+    await MatchmakingService.cancelProposal(socketServer, proposal, declinerUserId);
+  }
+
+  static async broadcastQueueMetrics(io) {
+    try {
+      const easyCount = await RedisClient.client.zcard(`${MATCHMAKING_QUEUE}:EASY`);
+      const mediumCount = await RedisClient.client.zcard(`${MATCHMAKING_QUEUE}:MEDIUM`);
+      const hardCount = await RedisClient.client.zcard(`${MATCHMAKING_QUEUE}:HARD`);
+
+      const payload = {
+        EASY: easyCount,
+        MEDIUM: mediumCount,
+        HARD: hardCount,
+        timestamp: Date.now()
+      };
+
+      const socketServer = io || SocketEmitter.io;
+      if (socketServer) {
+        socketServer.emit("queue_metrics_broadcast", payload);
+      }
+    } catch (err) {
+      logger.error(`[Queue Metrics Broadcast Error] ${err.message}`);
+    }
+  }
+
+  static async getGlobalActivityFeed() {
+    const cacheKey = "matchmaking:activity_feed_cache";
+    try {
+      // 1. Try hitting Redis cache first
+      const cached = await RedisClient.client.get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+
+      // 2. Fetch from DB on miss
+      const battles = await Database.client.battle.findMany({
+        where: { status: "FINISHED" },
+        take: 10,
+        orderBy: { endedAt: "desc" },
+        include: {
+          player1: { select: { username: true } },
+          player2: { select: { username: true } },
+          problem: { select: { title: true, difficulty: true } }
+        }
+      });
+      
+      const formattedFeed = battles.map(b => {
+        const p1Name = b.player1?.username || "Unknown";
+        const p2Name = b.player2?.username || "Unknown";
+        const diff = b.problem?.difficulty ? b.problem.difficulty.toLowerCase() : "standard";
+        
+        if (!b.winnerId) {
+          return `${p1Name} and ${p2Name} drew in a ${diff} match!`;
+        }
+        
+        const winnerName = b.winnerId === b.player1Id ? p1Name : p2Name;
+        const loserName = b.winnerId === b.player1Id ? p2Name : p1Name;
+        return `${winnerName} defeated ${loserName} in a ${diff} match!`;
+      });
+
+      // 3. Cache the formatted feed in Redis for 5 minutes (300 seconds)
+      await RedisClient.client.set(cacheKey, JSON.stringify(formattedFeed), "EX", 300);
+
+      return formattedFeed;
+    } catch (err) {
+      logger.error(`[getGlobalActivityFeed Error] ${err.message}`);
+      return [];
+    }
+  }
 }
 
 export default MatchmakingService;

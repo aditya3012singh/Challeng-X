@@ -13,6 +13,9 @@ class MatchmakingRoutes {
 		router.post("/join", AuthMiddleware.handle, MatchmakingController.joinQueueController);
 		router.post("/leave", AuthMiddleware.handle, MatchmakingController.leaveQueueController);
 		router.get("/status", AuthMiddleware.handle, MatchmakingController.getQueueStatusController);
+		router.post("/accept", AuthMiddleware.handle, MatchmakingController.acceptMatchController);
+		router.post("/decline", AuthMiddleware.handle, MatchmakingController.declineMatchController);
+		router.get("/activity-feed", AuthMiddleware.handle, MatchmakingController.getActivityFeedController);
 
 		return router;
 	}

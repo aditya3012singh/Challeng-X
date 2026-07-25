@@ -61,6 +61,47 @@ static async leaveQueueController(req, res) {
         res.status(500).json({ message: error.message });
     }
     }
+
+    static async acceptMatchController(req, res) {
+        const userId = req.user.id;
+        const { proposalId } = req.body;
+
+        if (!proposalId) {
+            return res.status(400).json({ message: "Proposal ID is required" });
+        }
+
+        try {
+            const result = await MatchmakingService.acceptMatch(userId, proposalId);
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    static async declineMatchController(req, res) {
+        const userId = req.user.id;
+        const { proposalId } = req.body;
+
+        if (!proposalId) {
+            return res.status(400).json({ message: "Proposal ID is required" });
+        }
+
+        try {
+            const result = await MatchmakingService.declineMatch(userId, proposalId);
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    static async getActivityFeedController(req, res) {
+        try {
+            const feed = await MatchmakingService.getGlobalActivityFeed();
+            res.status(200).json(feed);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 export default MatchmakingController;

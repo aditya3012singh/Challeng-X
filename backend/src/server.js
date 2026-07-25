@@ -127,6 +127,11 @@ class ServerApp {
     SocketEmitter.setIo(this.io);
     this.setupRedisSubscriber(this.io);
 
+    // Start background matchmaking ticker (sweeps every 3 seconds)
+    import("./modules/matchmaking/matchmaking.service.js").then(m => {
+      m.default.startMatchmakingTicker(this.io);
+    }).catch(err => logger.error("Matchmaking ticker start error:", err));
+
     // Initialize Squid Game socket handlers
     SquidGameSocket.initializeSquidGameSocket(this.io);
 

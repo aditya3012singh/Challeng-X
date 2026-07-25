@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getSocket, isSocketConnected } from "../../lib/socket";
@@ -21,15 +21,20 @@ import {
   SkipForward 
 } from "lucide-react";
 import axios from "../../lib/axios";
-import { queryClient } from "../lib/queryClient";
 
 export const FindMatch = () => {
     const [selectedDifficulty, setSelectedDifficulty] = useState("MEDIUM");
     const [connected, setConnected] = useState(isSocketConnected());
     const [queueSeconds, setQueueSeconds] = useState(0);
-    const [acceptCountdown, setAcceptCountdown] = useState(5);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const [localQueueSize, setLocalQueueSize] = useState(0);
+    const [proposalData, setProposalData] = useState(null);
+    const [accepted, setAccepted] = useState(false);
+    const [opponentAccepted, setOpponentAccepted] = useState(false);
+    const [proposalCountdown, setProposalCountdown] = useState(10);
+    const [activityFeed, setActivityFeed] = useState([]);
 
     const { currentLobby } = useSelector((state) => state.lobby);
     const { user } = useSelector((state) => state.auth);
@@ -37,10 +42,48 @@ export const FindMatch = () => {
         (state) => state.matchmaking
     );
 
+    // Fetch Global Activity Feed on mount and set up periodic refresh
+    useEffect(() => {
+        const fetchActivityFeed = async () => {
+            try {
+                const response = await axios.get("/matchmaking/activity-feed");
+                setActivityFeed(response.data || []);
+            } catch (err) {
+                console.error("Failed to fetch matchmaking activity feed:", err);
+            }
+        };
+        fetchActivityFeed();
+        const interval = setInterval(fetchActivityFeed, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleLeaveQueue = useCallback(async () => {
+        try {
+            await dispatch(leaveMatchmaking()).unwrap();
+        } catch (err) {
+            console.error("Leave queue error:", err);
+        }
+    }, [dispatch]);
+
+    const handleJoinQueue = useCallback(async () => {
+        const socket = getSocket();
+        try {
+            await dispatch(joinMatchmaking({
+                difficulty: selectedDifficulty,
+                socketId: socket.id,
+                lobbyId: currentLobby?.id
+            })).unwrap();
+        } catch (err) {
+            console.error("Join queue error:", err);
+        }
+    }, [dispatch, selectedDifficulty, currentLobby]);
+
     // Sync restored difficulty from store to local state
     useEffect(() => {
         if (restoredDifficulty) {
-            setSelectedDifficulty(restoredDifficulty);
+            Promise.resolve().then(() => {
+                setSelectedDifficulty(restoredDifficulty);
+            });
         }
     }, [restoredDifficulty]);
 
@@ -48,31 +91,21 @@ export const FindMatch = () => {
     useEffect(() => {
         let timer;
         if (inQueue && !matchFound) {
-            setQueueSeconds(0);
+            Promise.resolve().then(() => {
+                setQueueSeconds(0);
+            });
             timer = setInterval(() => {
                 setQueueSeconds((prev) => prev + 1);
             }, 1000);
         } else {
-            setQueueSeconds(0);
+            Promise.resolve().then(() => {
+                setQueueSeconds(0);
+            });
         }
         return () => {
             if (timer) clearInterval(timer);
         };
     }, [inQueue, matchFound]);
-
-    // Accept Match Countdown (5s)
-    useEffect(() => {
-        let timer;
-        if (matchFound && battleId) {
-            setAcceptCountdown(5);
-            timer = setInterval(() => {
-                setAcceptCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-            }, 1000);
-        }
-        return () => {
-            if (timer) clearInterval(timer);
-        };
-    }, [matchFound, battleId]);
 
     useEffect(() => {
         const socket = getSocket();
@@ -83,10 +116,60 @@ export const FindMatch = () => {
         socket.on("connect", onConnect);
         socket.on("disconnect", onDisconnect);
 
-        // Listen for match found
+        // Listen for matchmaking broadcast metrics
+        socket.on("queue_metrics_broadcast", (data) => {
+            if (data && data[selectedDifficulty] !== undefined) {
+                setLocalQueueSize(data[selectedDifficulty]);
+            }
+        });
+
+        // Listen for match proposed (Ready Check phase)
+        socket.on("match_proposed", (data) => {
+            console.log("Match proposed!", data);
+            setProposalData(data);
+            setAccepted(false);
+            setOpponentAccepted(false);
+            setProposalCountdown(data.timeout || 10);
+            toast.success("Match proposed! Accept or Decline now.");
+        });
+
+        // Listen for opponent accept status
+        socket.on("opponent_accepted", (data) => {
+            console.log("Opponent accepted match proposal", data);
+            setOpponentAccepted(true);
+        });
+
+        // Listen for match cancelled/declined
+        socket.on("match_cancelled", (data) => {
+            console.log("Match proposal cancelled", data);
+            toast.error(data.reason || "Opponent declined or timed out.");
+            setProposalData(null);
+            setAccepted(false);
+            setOpponentAccepted(false);
+        });
+
+        socket.on("match_timeout", () => {
+            toast.error("Match acceptance timed out. You have been removed from the queue.");
+            dispatch(resetMatchmaking());
+            setProposalData(null);
+            setAccepted(false);
+            setOpponentAccepted(false);
+        });
+
+        socket.on("match_declined_by_you", () => {
+            toast.success("You declined the match and left the queue.");
+            dispatch(resetMatchmaking());
+            setProposalData(null);
+            setAccepted(false);
+            setOpponentAccepted(false);
+        });
+
+        // Listen for match found (starts the battle)
         socket.on("match_found", (data) => {
             console.log("Match found!", data);
             dispatch(setMatchFound(data));
+            setProposalData(null);
+            toast.success("Both players accepted! Launching battle...");
         });
 
         socket.on("matchmakingError", (data) => {
@@ -94,22 +177,19 @@ export const FindMatch = () => {
             handleLeaveQueue();
         });
 
-        // Poll queue status every 2 seconds when in queue (using query invalidation)
-        let statusInterval;
-        if (inQueue && !matchFound) {
-            statusInterval = setInterval(() => {
-                queryClient.invalidateQueries({ queryKey: ['queueStatus'] });
-            }, 2000);
-        }
-
         return () => {
             socket.off("connect", onConnect);
             socket.off("disconnect", onDisconnect);
+            socket.off("queue_metrics_broadcast");
+            socket.off("match_proposed");
+            socket.off("opponent_accepted");
+            socket.off("match_cancelled");
+            socket.off("match_timeout");
+            socket.off("match_declined_by_you");
             socket.off("match_found");
             socket.off("matchmakingError");
-            if (statusInterval) clearInterval(statusInterval);
         };
-    }, [inQueue, matchFound, dispatch]);
+    }, [inQueue, matchFound, dispatch, selectedDifficulty, handleLeaveQueue]);
 
     // Navigate to battle when match is found after 1.5 seconds
     useEffect(() => {
@@ -121,24 +201,41 @@ export const FindMatch = () => {
         }
     }, [matchFound, battleId, navigate]);
 
-    const handleJoinQueue = async () => {
-        const socket = getSocket();
+    // Proposal Countdown Timer
+    useEffect(() => {
+        let timer;
+        if (proposalData && proposalCountdown > 0) {
+            timer = setInterval(() => {
+                setProposalCountdown((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => {
+            if (timer) clearInterval(timer);
+        };
+    }, [proposalData, proposalCountdown]);
+
+
+
+    const handleAcceptMatch = async () => {
+        if (!proposalData) return;
+        setAccepted(true);
         try {
-            await dispatch(joinMatchmaking({
-                difficulty: selectedDifficulty,
-                socketId: socket.id,
-                lobbyId: currentLobby?.id
-            })).unwrap();
+            await axios.post("/matchmaking/accept", { proposalId: proposalData.proposalId });
+            toast.success("Waiting for opponent...");
         } catch (err) {
-            console.error("Join queue error:", err);
+            console.error("Accept match error:", err);
+            toast.error(err.response?.data?.message || "Failed to accept match");
+            setAccepted(false);
         }
     };
 
-    const handleLeaveQueue = async () => {
+    const handleDeclineMatch = async () => {
+        if (!proposalData) return;
         try {
-            await dispatch(leaveMatchmaking()).unwrap();
+            await axios.post("/matchmaking/decline", { proposalId: proposalData.proposalId });
         } catch (err) {
-            console.error("Leave queue error:", err);
+            console.error("Decline match error:", err);
+            toast.error(err.response?.data?.message || "Failed to decline match");
         }
     };
 
@@ -191,7 +288,7 @@ export const FindMatch = () => {
 
             <div className="relative max-w-[1140px] w-full z-10">
 
-                {matchFound || (battleId && opponent) ? (
+                {proposalData || matchFound || (battleId && opponent) ? (
                     // Match Found Screen - PRE-COMBAT DUEL HUD
                     <div className="relative z-10 flex p-4 sm:p-12 flex-col justify-center items-center gap-8 h-full">
                         
@@ -200,11 +297,11 @@ export const FindMatch = () => {
                             <div className="backdrop-blur-md rounded-full bg-neutral-900/60 border border-white/5 flex px-4 py-1.5 items-center gap-2">
                                 <Swords className="size-4 text-emerald-500 animate-pulse" />
                                 <span className="font-medium uppercase text-neutral-400 text-xs tracking-[4.8px]">
-                                    Match Found
+                                    {matchFound ? "Match Ready" : "Match Proposed"}
                                 </span>
                             </div>
                             <h1 className="font-[family:var(--font-heading)] font-bold text-3xl sm:text-4xl tracking-tight text-white uppercase mt-2">
-                                A Worthy Opponent Awaits
+                                {matchFound ? "Entering Arena..." : "Worthy Opponent Found"}
                             </h1>
                             <p className="text-neutral-400 text-xs sm:text-sm tracking-wider">
                                 Ranked 1v1 · Algorithms & Data Structures ({selectedDifficulty})
@@ -238,6 +335,11 @@ export const FindMatch = () => {
                                         <Shield className="size-3" />
                                         {getPlayerLeague(user?.rankPoints)}
                                     </span>
+                                    {proposalData && (
+                                        <span className={`text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-neutral-800 text-neutral-400 border border-white/5'}`}>
+                                            {accepted ? "ACCEPTED" : "WAITING"}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="border-t border-white/5 flex pt-3 flex-col items-center gap-1 w-full">
                                     <span className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">
@@ -279,12 +381,17 @@ export const FindMatch = () => {
                                 </div>
                                 <div className="flex flex-col items-center gap-2">
                                     <span className="font-[family:var(--font-heading)] font-bold text-xl text-white truncate max-w-[180px]">
-                                        {opponent || "Opponent"}
+                                        {proposalData ? proposalData.opponent : opponent || "Opponent"}
                                     </span>
                                     <span className="rounded-full bg-red-500/10 text-red-500 border border-red-500/20 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
                                         <Crown className="size-3" />
                                         {getPlayerLeague((user?.rankPoints || 1000) + 15)}
                                     </span>
+                                    {proposalData && (
+                                        <span className={`text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full ${opponentAccepted ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-neutral-800 text-neutral-400 border border-white/5'}`}>
+                                            {opponentAccepted ? "ACCEPTED" : "WAITING"}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="border-t border-white/5 flex pt-3 flex-col items-center gap-1 w-full">
                                     <span className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">
@@ -307,12 +414,12 @@ export const FindMatch = () => {
                         {/* Accept Countdown Ring */}
                         <div className="flex flex-col items-center gap-2 select-none">
                             <span className="text-neutral-400 text-[10px] font-bold uppercase tracking-[4px]">
-                                Accept Match
+                                {matchFound ? "Arena Preparing" : "Accept Match"}
                             </span>
                             <div className="relative w-24 h-24 backdrop-blur-md rounded-full bg-neutral-900/60 border-2 border-white/10 flex justify-center items-center">
                                 <div className="bg-[radial-gradient(circle,rgba(16,185,129,0.1),transparent_70%)] rounded-full absolute inset-0 animate-pulse" />
                                 <span className="relative font-mono font-black text-emerald-500 text-4xl shadow-emerald-500/20">
-                                    {acceptCountdown}
+                                    {matchFound ? <Loader className="animate-spin size-8 text-emerald-500" /> : proposalCountdown}
                                 </span>
                             </div>
                         </div>
@@ -320,15 +427,17 @@ export const FindMatch = () => {
                         {/* Accept / Decline CTA Buttons */}
                         <div className="max-w-[480px] flex gap-4 w-full mt-2">
                             <button
-                                onClick={() => navigate(`/battle/${battleId}/ide`)}
-                                className="font-[family:var(--font-heading)] font-semibold rounded-xl text-base bg-neutral-100 hover:bg-neutral-200 text-neutral-900 flex-1 py-3 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                                onClick={handleAcceptMatch}
+                                disabled={accepted || matchFound}
+                                className="font-[family:var(--font-heading)] font-semibold rounded-xl text-base bg-neutral-100 hover:bg-neutral-200 text-neutral-900 flex-1 py-3 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
                             >
                                 <Check className="size-4" />
-                                Accept
+                                {accepted ? "Accepted" : "Accept"}
                             </button>
                             <button
-                                onClick={handleLeaveQueue}
-                                className="font-[family:var(--font-heading)] bg-transparent hover:bg-white/5 font-semibold rounded-xl text-base border-2 border-white/5 text-white flex-1 py-3 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                                onClick={handleDeclineMatch}
+                                disabled={matchFound}
+                                className="font-[family:var(--font-heading)] bg-transparent hover:bg-white/5 font-semibold rounded-xl text-base border-2 border-white/5 text-white flex-1 py-3 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
                             >
                                 <X className="size-4" />
                                 Decline
@@ -386,7 +495,7 @@ export const FindMatch = () => {
                                             Players currently searching
                                         </div>
                                         <div className="font-[family:var(--font-heading)] font-black text-white text-[32px] mt-3">
-                                            {queueSize || "12,408"}
+                                            {localQueueSize || queueSize || "1"}
                                         </div>
                                         <div className="text-emerald-500 text-xs flex mt-2 items-center gap-2">
                                             <Zap className="size-4" />
@@ -580,6 +689,39 @@ export const FindMatch = () => {
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Global Activity Feed Ticker */}
+                            {activityFeed && activityFeed.length > 0 && (
+                                <div className="mt-12 w-full backdrop-blur-md rounded-2xl bg-neutral-900/30 border border-white/5 p-4 overflow-hidden relative">
+                                    <style>{`
+                                        @keyframes marquee {
+                                            0% { transform: translateX(0%); }
+                                            100% { transform: translateX(-50%); }
+                                        }
+                                    `}</style>
+                                    <div className="flex items-center gap-4">
+                                        <span className="font-mono text-emerald-500 text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-md shrink-0 flex items-center gap-1.5 animate-pulse">
+                                            <Flame className="size-3.5" />
+                                            Live Feed
+                                        </span>
+                                        <div className="relative flex flex-1 items-center overflow-hidden h-6">
+                                            <div className="flex gap-12 whitespace-nowrap animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused]">
+                                                {activityFeed.map((item, idx) => (
+                                                    <span key={idx} className="text-neutral-400 font-mono text-xs flex items-center gap-2">
+                                                        <span className="text-emerald-500">●</span> {item}
+                                                    </span>
+                                                ))}
+                                                {/* Duplicate items for seamless infinite scroll */}
+                                                {activityFeed.map((item, idx) => (
+                                                    <span key={`dup-${idx}`} className="text-neutral-400 font-mono text-xs flex items-center gap-2">
+                                                        <span className="text-emerald-500">●</span> {item}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

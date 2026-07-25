@@ -559,6 +559,7 @@ class BattleService {
 
           await RedisClient.client.del("problems:all");
           await RedisClient.client.del(`battle:meta:${battleId}`);
+          await RedisClient.client.del("matchmaking:activity_feed_cache");
           console.log(`✅ ${isTeamMatch ? 'Team ' : ''}Battle Finish: ${battleId} (Winner: ${winnerId})`);
         } catch (err) {
           console.error(`❌ Background task error for battle ${battleId}:`, err.message);
@@ -612,6 +613,7 @@ class BattleService {
 
         await RedisClient.client.del("problems:all");
         await RedisClient.client.del(`battle:meta:${battleId}`);
+        await RedisClient.client.del("matchmaking:activity_feed_cache");
         BattleService.getBattle(battleId).catch(() => {});
         // Emit battle_end event via eventBus
         eventBus.emitEvent(EventTypes.BATTLE_SOCKET_END, {
