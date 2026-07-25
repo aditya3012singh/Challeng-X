@@ -206,14 +206,14 @@ class BattleService {
         });
 
         // 👻 Trigger AI Ghost Simulation if player2 is a Ghost
-        const ghost = await Database.client.user.findUnique({ 
-          where: { id: player2Id },
-          select: { username: true }
-        }).catch(() => null);
-
-        if (ghost?.username === "CHALLENGX_GHOST") {
-          AISimulatorService.startSimulation(battleId, player2Id, ongoingMeta.problem?.difficulty || "EASY");
-        }
+        // const ghost = await Database.client.user.findUnique({ 
+        //   where: { id: player2Id },
+        //   select: { username: true }
+        // }).catch(() => null);
+        // 
+        // if (ghost?.username === "CHALLENGX_GHOST") {
+        //   AISimulatorService.startSimulation(battleId, player2Id, ongoingMeta.problem?.difficulty || "EASY");
+        // }
 
         // 🎙️ Live AI Commentary for Spectators
         BattleService.startCommentaryTimer(battleId);

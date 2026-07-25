@@ -142,24 +142,24 @@ export const FindMatch = () => {
         }
     };
 
-    const handleSpawnGhost = async () => {
-        const userId = user?.id;
-        if (!userId) {
-            toast.error("User identification failed");
-            return;
-        }
-
-        try {
-            const response = await axios.post("/ai/spawn-ghost", {
-                userId,
-                difficulty: selectedDifficulty
-            });
-            toast.success("AI Ghost Summoned: Entering Arena");
-        } catch (err) {
-            console.error("Spawn ghost error:", err);
-            toast.error("Failed to summon ghost");
-        }
-    };
+    // const handleSpawnGhost = async () => {
+    //     const userId = user?.id;
+    //     if (!userId) {
+    //         toast.error("User identification failed");
+    //         return;
+    //     }
+    // 
+    //     try {
+    //         const response = await axios.post("/ai/spawn-ghost", {
+    //             userId,
+    //             difficulty: selectedDifficulty
+    //         });
+    //         toast.success("AI Ghost Summoned: Entering Arena");
+    //     } catch (err) {
+    //         console.error("Spawn ghost error:", err);
+    //         toast.error("Failed to summon ghost");
+    //     }
+    // };
 
     const formatTime = (ms) => {
         const seconds = Math.floor(ms / 1000);
@@ -411,7 +411,7 @@ export const FindMatch = () => {
 
                         {/* Summon Ghost & Cancel Search actions */}
                         <div className="flex flex-col gap-4 items-center pb-2">
-                            {waitTime > 10000 && (
+                            {/* {waitTime > 10000 && (
                                 <button
                                     onClick={handleSpawnGhost}
                                     className="group flex items-center justify-center gap-3 px-6 py-3 bg-[#18181b] hover:bg-neutral-800 text-white border border-white/5 transition-all text-[10px] font-black uppercase tracking-[0.2em]"
@@ -420,7 +420,7 @@ export const FindMatch = () => {
                                     <Sparkles size={14} className="text-emerald-500 group-hover:animate-pulse" />
                                     <span>Summon Ghost Opponent</span>
                                 </button>
-                            )}
+                            )} */}
                             <button 
                                 onClick={handleLeaveQueue}
                                 className="bg-transparent hover:bg-red-500/10 font-[family:var(--font-heading)] font-semibold shadow-2xl rounded-xl text-neutral-50 text-[13px] border border-red-500/30 border-solid px-8 py-3.5 flex items-center justify-center cursor-pointer transition-all active:scale-95"

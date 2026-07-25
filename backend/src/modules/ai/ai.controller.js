@@ -45,26 +45,26 @@ class AIController {
         }
     }
 
-    async spawnGhost(req, res, next) {
-        try {
-            const { userId, difficulty } = req.body;
-            
-            if (!userId || !difficulty) {
-                return res.status(400).json({ message: "User ID and difficulty are required" });
-            }
-
-            const MatchmakingService = (await import("../services/matchmaking.service.js")).default;
-            const battle = await MatchmakingService.spawnGhostMatch(userId, difficulty);
-
-            res.status(200).json({ 
-                message: "Ghost match spawned",
-                battleId: battle.id,
-                battleCode: battle.battleCode
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
+//     async spawnGhost(req, res, next) {
+//         try {
+//             const { userId, difficulty } = req.body;
+//             
+//             if (!userId || !difficulty) {
+//                 return res.status(400).json({ message: "User ID and difficulty are required" });
+//             }
+// 
+//             const MatchmakingService = (await import("../services/matchmaking.service.js")).default;
+//             const battle = await MatchmakingService.spawnGhostMatch(userId, difficulty);
+// 
+//             res.status(200).json({ 
+//                 message: "Ghost match spawned",
+//                 battleId: battle.id,
+//                 battleCode: battle.battleCode
+//             });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
 
     async generateAIProblem(req, res, next) {
         try {
