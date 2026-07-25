@@ -32,7 +32,7 @@ class ProblemCache {
             recordCacheOperation({ cacheType: 'problem', hit: false });
             const lockKey = `${LOCK_PREFIX}${problemId}`;
             const lock = await RedisClient.client.set(lockKey, '1', 'NX', 'EX', LOCK_TTL);
-            
+
             if (lock) {
                 // We got the lock - fetch from DB
                 try {
@@ -87,7 +87,7 @@ class ProblemCache {
             if (!randomId && setKey !== PROBLEMS_SET) {
                 randomId = await RedisClient.client.srandmember(PROBLEMS_SET);
             }
-            
+
             if (!randomId) {
                 // Cache miss - fetch from DB
                 recordCacheOperation({ cacheType: 'problem', hit: false });
@@ -133,9 +133,9 @@ class ProblemCache {
                 constraints: problem.constraints,
                 difficulty: problem.difficulty,
                 timeLimitMs: problem.timeLimitMs,
-                tags: (problem.tags || []).map(tag => tag.name)
-                // NOTE: Testcases are NOT included here to save memory
-                // They are cached separately in TestcaseCache when needed
+                tags: (problem.tags || []).map(tag => tag.name),
+                // Cache sample/public test cases directly with the question details to prevent DB queries during match initialization
+                testcases: problem.testcases || []
             };
 
             // Delete any existing key with potential wrong type (old List-based data)
@@ -188,7 +188,7 @@ class ProblemCache {
             await RedisClient.client.del(`${PROBLEM_PREFIX}${problemId}`);
             // Remove from Sets
             await RedisClient.client.srem(PROBLEMS_SET, problemId);
-            
+
             // Get difficulty from cache
             const cached = await RedisClient.client.get(`${PROBLEM_PREFIX}${problemId}`);
             if (cached) {
@@ -300,14 +300,14 @@ class ProblemCache {
         try {
             await RedisClient.client.del(`${PROBLEM_PREFIX}${problemId}`);
             await RedisClient.client.srem(PROBLEMS_SET, problemId);
-            
+
             // Get difficulty from cache
             const cached = await RedisClient.client.get(`${PROBLEM_PREFIX}${problemId}`);
             if (cached) {
                 const problemData = JSON.parse(cached);
                 await RedisClient.client.srem(`${PROBLEMS_SET}:${problemData.difficulty}`, problemId);
             }
-            
+
             logger.debug(`[ProblemCache] Invalidated problem ${problemId}`);
         } catch (error) {
             logger.error(`[ProblemCache] Error invalidating problem ${problemId}:`, error);

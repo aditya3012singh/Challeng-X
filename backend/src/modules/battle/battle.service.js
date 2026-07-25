@@ -256,6 +256,28 @@ class BattleService {
       if (cached) {
         console.log(`⚡ [Redis HIT] getBattle for battleId=${battleId}`);
         const cachedBattle = JSON.parse(cached);
+        
+        // If problem is present but testcases are missing/empty, load them from DB
+        if (cachedBattle.problem && (!cachedBattle.problem.testcases || cachedBattle.problem.testcases.length === 0)) {
+          try {
+            const sampleTestcases = await Database.client.testCase.findMany({
+              where: {
+                problemId: cachedBattle.problem.id,
+                OR: [
+                  { isHidden: false },
+                  { isSample: true }
+                ]
+              }
+            });
+            cachedBattle.problem.testcases = sampleTestcases;
+            // Write back updated metadata to Redis
+            await RedisClient.client.set(cacheKey, JSON.stringify(cachedBattle), "EX", 86400);
+            console.log(`💾 [Redis HEAL] Restored ${sampleTestcases.length} sample testcases for battleId=${battleId}`);
+          } catch (dbErr) {
+            console.error(`[RedisCache] getBattle cache heal error: ${dbErr.message}`);
+          }
+        }
+
         // Redact hints dynamically per-user
         if (cachedBattle.problem && Array.isArray(cachedBattle.problem.hints)) {
           const unlockedIndices = cachedBattle.problem.userHints?.map(uh => uh.hintIndex) || [];

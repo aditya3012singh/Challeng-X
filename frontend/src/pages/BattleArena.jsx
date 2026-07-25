@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Editor from "@monaco-editor/react";
 import {
-    Zap, Terminal, Clock, Shield, ChevronLeft,
+    Zap, Terminal, Clock, Shield, ChevronLeft, FileText,
     Activity, Play, Send, X, Trophy, AlertTriangle,
     Monitor, Cpu, Globe, Rocket, Power, Target, Check, ShieldAlert, Code, Sparkles,
     ChevronUp, ChevronDown, ChevronRight, MousePointer2, Loader2, Users, Swords
@@ -20,6 +20,8 @@ import { toast } from "react-hot-toast";
 import ShareModal from "../components/common/ShareModal";
 import CyberMentorModal from "../components/common/CyberMentorModal";
 import CodeSurgeonModal from "../components/common/CodeSurgeonModal";
+import PanelLayout from "../components/common/PanelLayout";
+import { LayoutProvider, useLayout } from "../context/LayoutContext";
 import axios from "../../lib/axios";
 
 const LANGUAGES = {
@@ -63,12 +65,8 @@ const BattleArena = () => {
     const [testResults, setTestResults] = useState([]); // Array of { input, expected, actual, passed, error }
     const [pendingSubmissionId, setPendingSubmissionId] = useState(null);
 
-    // Multi-panel focus
-    const [activeTab, setActiveTab] = useState("description"); // description, console
-    const [sidebarWidth, setSidebarWidth] = useState(400); // px
-    const [isResizing, setIsResizing] = useState(false);
-    const [rightSidebarWidth, setRightSidebarWidth] = useState(350); // px
-    const [isResizingRight, setIsResizingRight] = useState(false);
+    // Layout context state
+    const { activeTabs, selectTab } = useLayout();
 
     // Timer state
     // Timer state
@@ -235,43 +233,7 @@ const BattleArena = () => {
         }
     };
 
-    // Resize logic
-    const startResizing = useCallback((e) => {
-        setIsResizing(true);
-    }, []);
 
-    const stopResizing = useCallback(() => {
-        setIsResizing(false);
-        setIsResizingRight(false);
-    }, []);
-
-    const resize = useCallback((e) => {
-        if (isResizing) {
-            const newWidth = e.clientX;
-            if (newWidth > 200 && newWidth < window.innerWidth * 0.45) {
-                setSidebarWidth(newWidth);
-            }
-        }
-        if (isResizingRight) {
-            const newWidth = window.innerWidth - e.clientX;
-            if (newWidth > 200 && newWidth < window.innerWidth * 0.45) {
-                setRightSidebarWidth(newWidth);
-            }
-        }
-    }, [isResizing, isResizingRight]);
-
-    const startResizingRight = useCallback((e) => {
-        setIsResizingRight(true);
-    }, []);
-
-    useEffect(() => {
-        window.addEventListener("mousemove", resize);
-        window.addEventListener("mouseup", stopResizing);
-        return () => {
-            window.removeEventListener("mousemove", resize);
-            window.removeEventListener("mouseup", stopResizing);
-        };
-    }, [resize, stopResizing]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -346,7 +308,7 @@ const BattleArena = () => {
                 const isMe = data.userId === myEffectiveId;
                 if (isMe) {
                     setStatus("result");
-                    setActiveTab("console");
+                    selectTab("bottom", "console");
 
                     if (data.type === "SUBMIT" && data.status === "FAILED") {
                         setTestResults([{
@@ -726,11 +688,7 @@ const BattleArena = () => {
 
         setStatus("running");
         setRunningAction(type);
-        if (isMobile) {
-            setTimeout(() => {
-                setMobileTab("console");
-            }, 300);
-        }
+        selectTab("bottom", "console");
         setMessage(type === "RUN" ? "Running tests..." : "Submitting code...");
         setMyProgress({ passed: 0, total: 100 }); // Reset visual progress
 
@@ -840,419 +798,520 @@ const BattleArena = () => {
         );
     }
 
-    return (
-        <div className="min-h-screen bg-zinc-950 text-neutral-50 flex p-6 sm:p-8 flex-col gap-6 overflow-y-auto selection:bg-white selection:text-black">
-            
-            {/* AMBIENT BACKGROUND SYSTEM */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-                <img
-                    alt="Dark code editor"
-                    className="object-cover opacity-[0.02] absolute inset-0 w-full h-full"
-                    src="https://images.unsplash.com/photo-1518773553398-650c184e0bb3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200"
-                />
-                <div className="bg-[radial-gradient(circle_at_30%_20%,rgba(18,18,18,0.7),transparent_60%)] absolute inset-0" />
-                <div className="bg-[linear-gradient(rgba(255,255,255,0.005)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.005)_1px,transparent_1px)] bg-[size:40px_40px] absolute inset-0" />
-            </div>
-
-            {/* HEADER BAR */}
-            <div className="relative z-10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] rounded-xl bg-zinc-900 border border-zinc-800 flex px-6 py-4 justify-between items-center select-none">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate('/')} className="rounded-xl bg-zinc-950 border border-zinc-800 flex justify-center items-center w-11 h-11 cursor-pointer hover:bg-zinc-900 text-emerald-500 hover:text-white transition-all">
-                        <Swords className="size-5" />
-                    </button>
-                    <div className="space-y-1 text-left">
-                        <div className="font-[family:var(--font-heading)] font-semibold text-xl leading-7 tracking-tight">
-                            ChallengX Combat IDE Arena
-                        </div>
-                        <div className="text-zinc-400 text-xs leading-4">
-                            Room code: <span className="font-mono text-white select-all">{currentBattle?.battleCode}</span> · Matte Black Developer Arena
-                        </div>
+    // --- TOP PANEL ---
+    const renderTopPanel = () => (
+        <div className="flex-1 flex items-center justify-between h-full select-none relative">
+            <div className="flex items-center gap-4">
+                <button onClick={() => navigate('/')} className="rounded-xl bg-zinc-950 border border-zinc-800 flex justify-center items-center w-10 h-10 cursor-pointer hover:bg-zinc-900 text-emerald-500 hover:text-white transition-all">
+                    <Swords className="size-4.5" />
+                </button>
+                <div className="space-y-0.5 text-left">
+                    <div className="font-[family:var(--font-heading)] font-semibold text-base leading-5 tracking-tight">
+                        ChallengX Combat IDE Arena
                     </div>
-                </div>
-                <div className="font-medium text-zinc-400 text-xs leading-4 flex items-center gap-3">
-                    <button
-                        onClick={handleForfeit}
-                        className="rounded-full bg-red-950 hover:bg-red-900 text-red-500 border border-red-900/40 px-3 py-1 cursor-pointer transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider"
-                    >
-                        Abandon
-                    </button>
-                    <div className="rounded-full bg-zinc-950 border border-zinc-800 px-3 py-1 animate-pulse font-mono text-[10px] uppercase font-bold tracking-wider">
-                        Time Left: {formatTime(timeLeft)}
-                    </div>
-                    <div className="rounded-full bg-zinc-950 text-emerald-500 border border-zinc-800 px-3 py-1 font-bold text-[10px] uppercase tracking-wider">
-                        Live Match
+                    <div className="text-zinc-400 text-[10px] leading-3">
+                        Room code: <span className="font-mono text-white select-all">{currentBattle?.battleCode}</span> · Matte Black Developer Arena
                     </div>
                 </div>
             </div>
 
-            {/* THREE-COLUMN ARENA GRID */}
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)_300px] flex-1 gap-6">
-                
-                {/* Column 1: Tabs & Problem details (280px) */}
-                <div className="shadow-[0_10px_30px_rgba(0,0,0,0.28)] rounded-xl bg-zinc-900 border border-zinc-800 flex p-6 flex-col gap-6 text-left">
-                    <div className="grid grid-cols-3 rounded-lg bg-zinc-950 p-1 gap-1 w-full h-auto select-none">
-                        <button
-                            onClick={() => setActiveTab("description")}
-                            className={`border-transparent rounded-lg text-[10px] sm:text-xs leading-4 p-2 cursor-pointer transition-all ${
-                                activeTab === "description"
-                                    ? "bg-zinc-900 text-white font-bold border border-zinc-800"
-                                    : "text-zinc-400 hover:text-white bg-transparent"
-                            }`}
-                        >
-                            Problem
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("console")}
-                            className={`border-transparent rounded-lg text-[10px] sm:text-xs leading-4 p-2 cursor-pointer transition-all ${
-                                activeTab === "console"
-                                    ? "bg-zinc-900 text-white font-bold border border-zinc-800"
-                                    : "text-zinc-400 hover:text-white bg-transparent"
-                            }`}
-                        >
-                            Console
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("leaderboard")}
-                            className={`border-transparent rounded-lg text-[10px] sm:text-xs leading-4 p-2 cursor-pointer transition-all ${
-                                activeTab === "leaderboard"
-                                    ? "bg-zinc-900 text-white font-bold border border-zinc-800"
-                                    : "text-zinc-400 hover:text-white bg-transparent"
-                            }`}
-                        >
-                            Standing
-                        </button>
-                    </div>
+            {/* Centered Code Execution Deck */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3 z-[99]">
+                <button
+                    onClick={() => handleRun("RUN")}
+                    disabled={status === "running" || isFinished || currentBattle?.status === "FINISHED"}
+                    className="bg-zinc-950 hover:bg-zinc-900 cursor-pointer rounded-lg text-neutral-50 text-[10px] leading-3 border border-zinc-850 px-4 py-2.5 h-9 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {runningAction === "RUN" ? <Loader2 size={10} className="animate-spin text-emerald-500" /> : <Play size={10} fill="currentColor" />} Run Code
+                </button>
+                <button
+                    onClick={() => handleRun("SUBMIT")}
+                    disabled={status === "running" || isFinished || currentBattle?.status === "FINISHED" || (isCreator && currentBattle?.status !== "ONGOING")}
+                    className="rounded-lg bg-neutral-50 hover:bg-neutral-200 cursor-pointer text-zinc-950 px-4 py-2.5 h-9 font-bold text-[10px] leading-3 transition-all flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {runningAction === "SUBMIT" ? <Loader2 size={10} className="animate-spin text-black" /> : <Send size={10} fill="currentColor" />} Submit Solution
+                </button>
+            </div>
 
-                    {activeTab === "description" && (
-                        <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 custom-scrollbar">
-                            {(currentBattle?.status === "WAITING" || !currentBattle?.player2Id) ? (
-                                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6 bg-zinc-950/80 rounded-xl border border-zinc-800/80 my-auto min-h-[350px]">
-                                    <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 animate-pulse">
-                                        <Users size={32} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="text-sm font-bold uppercase tracking-widest text-white font-[family:var(--font-heading)]">
-                                            Awaiting Opponent
-                                        </div>
-                                        <p className="text-xs text-zinc-400 max-w-xs leading-relaxed font-light">
-                                            The problem details will be revealed once your opponent joins the arena.
-                                        </p>
-                                    </div>
-                                    {currentBattle?.battleCode && (
-                                        <div className="w-full space-y-3 pt-2 max-w-xs">
-                                            <div className="text-[10px] uppercase font-mono tracking-widest text-zinc-500 font-semibold">
-                                                Battle Sync Code
-                                            </div>
-                                            <div className="flex items-center justify-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-xl">
-                                                <span className="font-mono text-2xl font-black tracking-widest text-emerald-400">
-                                                    {currentBattle.battleCode}
-                                                </span>
-                                                <button
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText(currentBattle.battleCode);
-                                                        toast.success("Battle code copied!");
-                                                    }}
-                                                    className="px-3 py-1.5 bg-emerald-500 text-zinc-950 hover:bg-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer"
-                                                >
-                                                    Copy Code
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="flex items-center gap-2 select-none">
-                                        <span className="rounded-full bg-emerald-500/10 text-emerald-500 border border-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                                            {problem?.difficulty || "HARD"}
-                                        </span>
-                                        <div className="rounded-full bg-zinc-950 text-zinc-400 text-[10px] border border-zinc-800 px-3 py-1 font-bold uppercase tracking-wider">
-                                            Time Limit: 2s
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <div className="font-[family:var(--font-heading)] font-semibold text-lg leading-7 text-white uppercase tracking-tight">
-                                            {problem?.title || "Problem Description"}
-                                        </div>
-                                        <div className="text-zinc-300 text-xs sm:text-sm leading-6 font-light">
-                                            {problem?.description}
-                                        </div>
-                                    </div>
-
-                                    {problem?.testcases?.some(tc => tc.isSample) && (
-                                        <div className="space-y-4">
-                                            {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
-                                                <div key={i} className="space-y-3">
-                                                    <div className="font-[family:var(--font-heading)] font-semibold text-zinc-200 text-xs leading-5 uppercase tracking-wider">
-                                                        Sample Input {i + 1}
-                                                    </div>
-                                                    <pre className="font-mono rounded-xl bg-zinc-950 text-zinc-300 text-[11px] leading-6 border border-zinc-800 p-4 overflow-x-auto">
-                                                        {tc.input}
-                                                    </pre>
-                                                    <div className="font-[family:var(--font-heading)] font-semibold text-zinc-200 text-xs leading-5 uppercase tracking-wider">
-                                                        Sample Output {i + 1}
-                                                    </div>
-                                                    <pre className="font-mono rounded-xl bg-zinc-950 text-emerald-500 text-[11px] leading-6 border border-zinc-800 p-4 overflow-x-auto">
-                                                        {tc.output}
-                                                    </pre>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === "console" && (
-                        <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                            {renderConsole()}
-                        </div>
-                    )}
-
-                    {activeTab === "leaderboard" && (
-                        <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 custom-scrollbar text-xs">
-                            <div className="space-y-4">
-                                <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5 uppercase tracking-wider text-neutral-400">Live Standing</div>
-                                <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800 flex justify-between items-center">
-                                    <span className="text-white font-bold">{opponent?.username || "Player A"}</span>
-                                    <span className="font-mono text-emerald-500">{myProgress.passed}/{myProgress.total || problem?.testcases?.length || 10}</span>
-                                </div>
-                                <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800 flex justify-between items-center">
-                                    <span className="text-zinc-400">{opponent?.username || "Player B"}</span>
-                                    <span className="font-mono text-amber-500">{opponentProgress.passed}/{opponentProgress.total || problem?.testcases?.length || 10}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+            <div className="font-medium text-zinc-400 text-xs leading-4 flex items-center gap-3">
+                <div className="rounded-full bg-zinc-950 border border-zinc-800 px-3 py-1 animate-pulse font-mono text-[9px] uppercase font-bold tracking-wider">
+                    Time Left: {formatTime(timeLeft)}
                 </div>
-
-                {/* Column 2: Code Editor panel (flex-1) */}
-                <div className="shadow-[0_10px_30px_rgba(0,0,0,0.28)] rounded-xl bg-zinc-900 border border-zinc-800 flex p-6 flex-col gap-4">
-                    {/* Control Deck Header */}
-                    <div className="rounded-xl bg-zinc-950 border border-zinc-800 flex px-4 py-3 justify-between items-center gap-3 select-none">
-                        <div className="flex items-center gap-3">
-                            <div className="space-y-0.5 text-left">
-                                <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5 text-white">
-                                    Editor Control Deck
-                                </div>
-                                <div className="text-zinc-400 text-xs leading-4">
-                                    Monaco-style Combat coding
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <select
-                                value={language}
-                                onChange={handleLanguageChange}
-                                className="rounded-lg bg-zinc-900 text-neutral-50 text-xs leading-4 border border-zinc-800 px-3 py-1.5 outline-none cursor-pointer focus:border-white/10"
-                            >
-                                {Object.keys(LANGUAGES).map(lang => (
-                                    <option key={lang} value={lang}>{lang}</option>
-                                ))}
-                            </select>
-                            <button
-                                onClick={() => setCode(LANGUAGES[language].defaultCode)}
-                                className="bg-transparent hover:bg-white/5 rounded-lg text-neutral-50 text-xs leading-4 border border-zinc-800 px-4 py-1.5 cursor-pointer transition-all active:scale-95"
-                            >
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Monaco Editor Wrapper */}
-                    <div className="min-h-[500px] rounded-xl bg-zinc-950 border border-zinc-800 flex flex-1 overflow-hidden relative">
-                        <Editor
-                            height="100%"
-                            theme="vs-dark"
-                            language={LANGUAGES[language].monaco}
-                            value={code}
-                            onChange={(val) => setCode(val)}
-                            onMount={(editor) => {
-                                editorRef.current = editor;
-                            }}
-                            options={{
-                                minimap: { enabled: false },
-                                fontSize: 13,
-                                fontFamily: "Fira Code, monospace",
-                                scrollBeyondLastLine: false,
-                                automaticLayout: true,
-                                padding: { top: 16 },
-                                renderLineHighlight: "none"
-                            }}
-                        />
-                    </div>
-
-                    {/* Console HUD Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 rounded-xl bg-zinc-950 border border-zinc-800 p-3 gap-3 text-left">
-                        <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-3">
-                            <div className="font-semibold text-zinc-400 text-xs leading-4 mb-2 select-none uppercase tracking-wider">
-                                Custom Input
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Paste test case"
-                                className="font-mono bg-zinc-950 text-neutral-50 text-xs border border-zinc-800 rounded-lg w-full px-3 py-2 outline-none focus:border-white/20"
-                            />
-                        </div>
-                        <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-3">
-                            <div className="font-semibold text-zinc-400 text-xs leading-4 mb-2 select-none uppercase tracking-wider">
-                                Test Output
-                            </div>
-                            <div className="font-mono rounded-md bg-zinc-950 text-emerald-500 text-xs border border-zinc-800 p-3 select-all">
-                                {status === "running" ? "COMPILING..." : (testResults.length > 0 ? "PASSED · " + myProgress.passed + "/" + myProgress.total + " cases matched" : "IDLE")}
-                            </div>
-                        </div>
-                        <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-3">
-                            <div className="font-semibold text-zinc-400 text-xs leading-4 mb-2 select-none uppercase tracking-wider">
-                                Console Logs
-                            </div>
-                            <div className="font-mono rounded-md bg-zinc-950 text-zinc-300 text-[10px] border border-zinc-800 p-3">
-                                {message || "[arena] ready for compile"}
-                            </div>
-                        </div>
-                    </div>
+                <div className="rounded-full bg-zinc-950 text-emerald-500 border border-zinc-800 px-3 py-1 font-bold text-[9px] uppercase tracking-wider">
+                    Live Match
                 </div>
+            </div>
+        </div>
+    );
 
-                {/* Column 3: Combat stats, Anti-Cheat, Spectators (300px) */}
-                <div className="shadow-[0_10px_30px_rgba(0,0,0,0.28)] rounded-xl bg-zinc-900 border border-zinc-800 flex p-6 flex-col gap-6 text-left">
-                    
-                    {/* Combat Progress Tracker */}
-                    <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
-                        <div className="flex mb-4 justify-between items-center select-none">
-                            <div>
-                                <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5">
-                                    Combat Tracker
+    // Helper to render problem description with inline bold formatting
+    const renderDescriptionText = (text) => {
+        if (!text) return null;
+        const blocks = text.split(/\n+/);
+        return blocks.map((block, idx) => {
+            const trimmed = block.trim();
+            if (!trimmed) return null;
+            if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
+                const headerText = trimmed.replace(/\*\*/g, "");
+                return (
+                    <div key={idx} className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mt-5 mb-1.5 select-none">
+                        {headerText}
+                    </div>
+                );
+            }
+            if (trimmed.includes("**")) {
+                const parts = trimmed.split("**");
+                return (
+                    <div key={idx} className="text-[12px] sm:text-[13px] leading-6 text-zinc-300 font-light select-text whitespace-pre-wrap mb-3">
+                        {parts.map((part, pIdx) => {
+                            if (pIdx % 2 === 1) {
+                                return <strong key={pIdx} className="font-bold text-white text-[10px] uppercase tracking-wider block mt-4 mb-1">{part}</strong>;
+                            }
+                            return part;
+                        })}
+                    </div>
+                );
+            }
+            return (
+                <p key={idx} className="text-[12px] sm:text-[13px] leading-6 text-zinc-300 font-light select-text whitespace-pre-wrap mb-3">
+                    {trimmed}
+                </p>
+            );
+        });
+    };
+
+    // --- LEFT PANEL ---
+    const renderLeftPanel = () => (
+        <div className="flex-1 flex flex-col p-4 overflow-hidden h-full text-left gap-4 bg-zinc-900/40 select-none">
+            <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-2.5 mb-1 text-[10px] uppercase font-bold tracking-wider text-zinc-450">
+                <FileText size={13} className="text-emerald-500" />
+                <span>Problem details</span>
+            </div>
+            <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 custom-scrollbar">
+                {(currentBattle?.status === "WAITING" || !currentBattle?.player2Id) ? (
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6 bg-zinc-950/80 rounded-xl border border-zinc-800/80 my-auto min-h-[300px]">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 animate-pulse">
+                            <Users size={24} />
+                        </div>
+                        <div className="space-y-2">
+                            <div className="text-xs font-bold uppercase tracking-widest text-white font-[family:var(--font-heading)]">
+                                Awaiting Opponent
+                            </div>
+                            <p className="text-[10px] text-zinc-400 max-w-xs leading-relaxed font-light">
+                                The problem details will be revealed once your opponent joins the arena.
+                            </p>
+                        </div>
+                        {currentBattle?.battleCode && (
+                            <div className="w-full space-y-3 pt-2 max-w-xs">
+                                <div className="text-[9px] uppercase font-mono tracking-widest text-zinc-500 font-semibold">
+                                    Battle Sync Code
                                 </div>
-                                <div className="text-zinc-400 text-xs leading-4">
-                                    Real-time case compilation
+                                <div className="flex items-center justify-center gap-3 p-2 bg-zinc-900 border border-zinc-855 rounded-xl">
+                                    <span className="font-mono text-xl font-black tracking-widest text-emerald-400">
+                                        {currentBattle.battleCode}
+                                    </span>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(currentBattle.battleCode);
+                                            toast.success("Battle code copied!");
+                                        }}
+                                        className="px-2 py-1 bg-emerald-500 text-zinc-950 hover:bg-emerald-400 text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer"
+                                    >
+                                        Copy
+                                    </button>
                                 </div>
                             </div>
-                            <span className="rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-bold border border-zinc-800 px-2 py-0.5 uppercase tracking-wider animate-pulse">
-                                Live
+                        )}
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex items-center gap-2 select-none">
+                            <span className="rounded-full bg-emerald-500/10 text-emerald-500 border border-zinc-800 px-3 py-1 text-[9px] font-bold uppercase tracking-wider">
+                                {problem?.difficulty || "HARD"}
                             </span>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <div className="text-xs leading-4 flex justify-between items-center">
-                                    <span className="text-white font-bold">{user?.username || "Player Alpha"}</span>
-                                    <span className="text-emerald-500 font-mono font-bold">{myProgress.passed}/{myProgress.total || problem?.testcases?.length || 10} passed</span>
-                                </div>
-                                <div className="rounded-full bg-zinc-800 h-2 overflow-hidden">
-                                    <div 
-                                        className="rounded-full bg-emerald-500 h-full transition-all duration-500" 
-                                        style={{ width: `${(myProgress.passed / (myProgress.total || 1)) * 100}%` }}
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="text-xs leading-4 flex justify-between items-center">
-                                    <span className="text-zinc-400 font-bold">{opponent?.username || "Player Omega"}</span>
-                                    <span className="text-amber-500 font-mono font-bold">{opponentProgress.passed}/{opponentProgress.total || problem?.testcases?.length || 10} passed</span>
-                                </div>
-                                <div className="rounded-full bg-zinc-800 h-2 overflow-hidden">
-                                    <div 
-                                        className="rounded-full bg-amber-500 h-full transition-all duration-500" 
-                                        style={{ width: `${(opponentProgress.passed / (opponentProgress.total || 1)) * 100}%` }}
-                                    />
-                                </div>
+                            <div className="rounded-full bg-zinc-950 text-zinc-400 text-[9px] border border-zinc-800 px-3 py-1 font-bold uppercase tracking-wider">
+                                Time Limit: 2s
                             </div>
                         </div>
-                    </div>
+                        <div className="space-y-3">
+                            <div className="font-[family:var(--font-heading)] font-black text-lg text-white uppercase tracking-tight">
+                                {problem?.title || "Problem Description"}
+                            </div>
+                            <div className="space-y-1">
+                                {renderDescriptionText(problem?.description)}
+                            </div>
+                        </div>
 
-                    {/* Anti-Cheat violation details */}
-                    <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
-                        <div className="flex mb-4 justify-between items-center select-none">
-                            <div>
-                                <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5">
-                                    Anti-Cheat Panel
+                        {problem?.constraints && (
+                            <div className="space-y-2 mt-4 pt-4 border-t border-zinc-800/40">
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-450">
+                                    Constraints
                                 </div>
-                                <div className="text-zinc-400 text-xs leading-4">
-                                    Integrity monitor active
+                                <pre className="font-mono rounded-xl bg-zinc-950/60 text-zinc-300 text-[11px] leading-5 border border-zinc-800/60 p-3 overflow-x-auto whitespace-pre-wrap select-text">
+                                    {problem.constraints}
+                                </pre>
+                            </div>
+                        )}
+
+                        {problem?.testcases?.some(tc => tc.isSample) && (
+                            <div className="space-y-5 pt-4 border-t border-zinc-800/40">
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-455 mb-1">
+                                    Examples
                                 </div>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer select-none">
-                                <input type="checkbox" defaultChecked className="sr-only peer" />
-                                <div className="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                            </label>
-                        </div>
-                        <div className="space-y-3 text-xs leading-4">
-                            <div className="font-mono rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800 p-3 select-all">
-                                focus.log: editor security stream connected
-                            </div>
-                            <div className="space-y-2">
-                                <div className="font-semibold text-zinc-400 select-none uppercase tracking-wider text-[10px]">Violations</div>
-                                <div className="space-y-2">
-                                    <div className="rounded-lg bg-zinc-900 border border-zinc-800 flex p-2.5 items-center gap-2">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={opponentViolations.some(v => v.type === "CODE_PASTE")} 
-                                            disabled 
-                                            className="accent-emerald-500 rounded border-zinc-800 bg-zinc-950 text-emerald-500 w-4 h-4 cursor-not-allowed" 
-                                        />
-                                        <span className="text-zinc-300">Suspicious paste detected</span>
+                                {problem.testcases.filter(tc => tc.isSample).map((tc, i) => (
+                                    <div key={i} className="space-y-3 bg-zinc-950/40 border border-zinc-800/60 rounded-xl p-4">
+                                        <div className="text-[11px] font-bold text-white select-none">
+                                            Example {i + 1}:
+                                        </div>
+                                        <div className="space-y-3 font-mono text-xs">
+                                            <div className="flex flex-col gap-1.5 text-left">
+                                                <span className="text-[9px] uppercase font-bold tracking-wider text-zinc-500 select-none">Input</span>
+                                                <pre className="text-zinc-300 p-2.5 bg-zinc-950 border border-zinc-850 rounded-lg overflow-x-auto select-text font-medium leading-relaxed">{tc.input.trim()}</pre>
+                                            </div>
+                                            <div className="flex flex-col gap-1.5 text-left">
+                                                <span className="text-[9px] uppercase font-bold tracking-wider text-zinc-500 select-none">Output</span>
+                                                <pre className="text-emerald-400 p-2.5 bg-zinc-950 border border-zinc-855 rounded-lg overflow-x-auto select-text font-medium leading-relaxed">{tc.output.trim()}</pre>
+                                            </div>
+                                            {tc.explanation && (
+                                                <div className="flex flex-col gap-1.5 text-left">
+                                                    <span className="text-[9px] uppercase font-bold tracking-wider text-zinc-500 select-none">Explanation</span>
+                                                    <p className="text-zinc-400 text-xs font-sans leading-5 pl-1 select-text">{tc.explanation}</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="rounded-lg bg-zinc-900 border border-zinc-800 flex p-2.5 items-center gap-2">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={opponentViolations.some(v => v.type === "TAB_SWITCH")} 
-                                            disabled 
-                                            className="accent-emerald-500 rounded border-zinc-800 bg-zinc-950 text-emerald-500 w-4 h-4 cursor-not-allowed" 
-                                        />
-                                        <span className={opponentViolations.some(v => v.type === "TAB_SWITCH") ? "text-red-500 animate-pulse font-bold" : "text-zinc-300"}>Tab switch during compile</span>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Spectator widgets */}
-                    <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4 flex-1">
-                        <div className="mb-4 select-none">
-                            <div className="font-[family:var(--font-heading)] font-semibold text-sm leading-5">
-                                Spectators
-                            </div>
-                            <div className="text-zinc-400 text-xs leading-4">
-                                Active battle spectators
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {[...Array(6)].map((_, i) => (
-                                <div key={i} className="rounded-full bg-zinc-900 border border-zinc-800 w-8 h-8 flex items-center justify-center text-zinc-600 text-[10px] select-none font-bold">
-                                    S{i+1}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                </div>
-
+                        )}
+                    </>
+                )}
             </div>
+        </div>
+    );
 
-            {/* FOOTER ACTION BUTTONS */}
-            <div className="relative z-10 rounded-xl bg-zinc-900 border border-zinc-800 flex px-6 py-4 justify-between items-center select-none mt-2">
-                <div className="text-zinc-400 text-sm leading-5">
-                    Ready to execute the combat solution
+    const renderEditorPanel = () => (
+        <div className="flex-1 flex p-4 flex-col gap-4 overflow-hidden h-full bg-zinc-950 select-none">
+            <div className="rounded-xl bg-zinc-900 border border-zinc-800 flex px-4 py-2.5 justify-between items-center gap-3 select-none">
+                <div className="flex items-center gap-3">
+                    <div className="space-y-0.5 text-left">
+                        <div className="font-[family:var(--font-heading)] font-semibold text-xs leading-4 text-white">
+                            Editor Control Deck
+                        </div>
+                        <div className="text-zinc-450 text-[10px] leading-3">
+                            Monaco-style Combat coding
+                        </div>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => handleRun("RUN")}
-                        disabled={status === "running" || isFinished || currentBattle?.status === "FINISHED"}
-                        className="bg-transparent hover:bg-white/5 cursor-pointer rounded-lg text-neutral-50 text-xs leading-4 border border-zinc-800 px-5 py-2.5 h-10 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    <select
+                        value={language}
+                        onChange={handleLanguageChange}
+                        className="rounded-lg bg-zinc-950 text-neutral-50 text-[11px] leading-3 border border-zinc-800 px-3 py-1 outline-none cursor-pointer focus:border-white/10"
                     >
-                        {runningAction === "RUN" ? <Loader2 size={12} className="animate-spin text-emerald-500" /> : <Play size={12} fill="currentColor" />} Run Code
-                    </button>
+                        {Object.keys(LANGUAGES).map(lang => (
+                            <option key={lang} value={lang}>{lang}</option>
+                        ))}
+                    </select>
                     <button
-                        onClick={() => handleRun("SUBMIT")}
-                        disabled={status === "running" || isFinished || currentBattle?.status === "FINISHED" || (isCreator && currentBattle?.status !== "ONGOING")}
-                        className="rounded-lg bg-neutral-50 hover:bg-neutral-200 cursor-pointer text-zinc-950 px-5 py-2.5 h-10 font-bold transition-all flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)] disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setCode(LANGUAGES[language].defaultCode)}
+                        className="bg-transparent hover:bg-white/5 rounded-lg text-neutral-50 text-[10px] leading-3 border border-zinc-800 px-3 py-1 cursor-pointer transition-all active:scale-95"
                     >
-                        {runningAction === "SUBMIT" ? <Loader2 size={12} className="animate-spin text-black" /> : <Send size={12} fill="currentColor" />} Submit Solution
+                        Reset
                     </button>
                 </div>
             </div>
+            <div className="flex-1 rounded-xl bg-zinc-950 border border-zinc-800 flex overflow-hidden relative">
+                <Editor
+                    height="100%"
+                    theme="vs-dark"
+                    language={LANGUAGES[language].monaco}
+                    value={code}
+                    onChange={(val) => setCode(val)}
+                    onMount={(editor) => {
+                        editorRef.current = editor;
+                    }}
+                    options={{
+                        minimap: { enabled: false },
+                        fontSize: 13,
+                        fontFamily: "Fira Code, monospace",
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true,
+                        padding: { top: 16 },
+                        renderLineHighlight: "none"
+                    }}
+                />
+            </div>
+        </div>
+    );
 
-            {/* RESULTS FINISH MODAL */}
+    // --- RIGHT SIDE SUB-COMPONENTS ---
+    const renderCombatTracker = () => (
+        <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
+            <div className="flex mb-3 justify-between items-center select-none">
+                <div>
+                    <div className="font-[family:var(--font-heading)] font-semibold text-xs leading-4">
+                        Combat Tracker
+                    </div>
+                    <div className="text-zinc-400 text-[10px] leading-3">
+                        Real-time compilation
+                    </div>
+                </div>
+                <span className="rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-bold border border-zinc-800 px-2 py-0.5 uppercase tracking-wider animate-pulse">
+                    Live
+                </span>
+            </div>
+            <div className="space-y-3">
+                <div className="space-y-1">
+                    <div className="text-[10px] leading-4 flex justify-between items-center">
+                        <span className="text-white font-bold">{player1?.username || "Player Alpha"}</span>
+                        <span className="text-emerald-500 font-mono font-bold">{myProgress.passed}/{myProgress.total || problem?.testcases?.length || 10} passed</span>
+                    </div>
+                    <div className="rounded-full bg-zinc-800 h-1.5 overflow-hidden">
+                        <div 
+                            className="rounded-full bg-emerald-500 h-full transition-all duration-500" 
+                            style={{ width: `${(myProgress.passed / (myProgress.total || 1)) * 100}%` }}
+                        />
+                    </div>
+                </div>
+                <div className="space-y-1">
+                    <div className="text-[10px] leading-4 flex justify-between items-center">
+                        <span className="text-zinc-400 font-bold">{player2?.username || "Player Omega"}</span>
+                        <span className="text-amber-500 font-mono font-bold">{opponentProgress.passed}/{opponentProgress.total || problem?.testcases?.length || 10} passed</span>
+                    </div>
+                    <div className="rounded-full bg-zinc-800 h-1.5 overflow-hidden">
+                        <div 
+                            className="rounded-full bg-amber-500 h-full transition-all duration-500" 
+                            style={{ width: `${(opponentProgress.passed / (opponentProgress.total || 1)) * 100}%` }}
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderAntiCheat = () => (
+        <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
+            <div className="flex mb-3 justify-between items-center select-none">
+                <div>
+                    <div className="font-[family:var(--font-heading)] font-semibold text-xs leading-4">
+                        Anti-Cheat Panel
+                    </div>
+                    <div className="text-zinc-400 text-[10px] leading-3">
+                        Integrity active
+                    </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer select-none">
+                    <input type="checkbox" defaultChecked className="sr-only peer" />
+                    <div className="w-8 h-4.5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+            </div>
+            <div className="space-y-2 text-[10px] leading-4">
+                <div className="font-mono rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800 p-2.5 select-all">
+                    focus.log: integrity active
+                </div>
+                <div className="space-y-1.5">
+                    <div className="font-semibold text-zinc-400 select-none uppercase tracking-wider text-[8px]">Violations</div>
+                    <div className="space-y-1">
+                        <div className="rounded-lg bg-zinc-900 border border-zinc-850 flex p-2 items-center gap-2">
+                            <input 
+                                type="checkbox" 
+                                checked={opponentViolations.some(v => v.type === "CODE_PASTE")} 
+                                disabled 
+                                className="accent-emerald-500 rounded border-zinc-800 bg-zinc-950 text-emerald-500 w-3.5 h-3.5 cursor-not-allowed" 
+                            />
+                            <span className="text-zinc-400">Suspicious paste</span>
+                        </div>
+                        <div className="rounded-lg bg-zinc-900 border border-zinc-850 flex p-2 items-center gap-2">
+                            <input 
+                                type="checkbox" 
+                                checked={opponentViolations.some(v => v.type === "TAB_SWITCH")} 
+                                disabled 
+                                className="accent-emerald-500 rounded border-zinc-800 bg-zinc-950 text-emerald-500 w-3.5 h-3.5 cursor-not-allowed" 
+                            />
+                            <span className={opponentViolations.some(v => v.type === "TAB_SWITCH") ? "text-red-500 animate-pulse font-bold" : "text-zinc-400"}>Tab switch compiler</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderLiveStanding = () => (
+        <div className="space-y-3">
+            <div className="font-[family:var(--font-heading)] font-semibold text-xs leading-4 uppercase tracking-wider text-neutral-400 pb-2 border-b border-zinc-800/80 mb-2">Live Standing</div>
+            <div className="space-y-3">
+                <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800 flex justify-between items-center">
+                    <span className="text-white font-bold">{player1?.username || "Player A"}</span>
+                    <span className="font-mono text-emerald-500">{myProgress.passed}/{myProgress.total || problem?.testcases?.length || 10}</span>
+                </div>
+                <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-800 flex justify-between items-center">
+                    <span className="text-zinc-400">{player2?.username || "Player B"}</span>
+                    <span className="font-mono text-amber-500">{opponentProgress.passed}/{opponentProgress.total || problem?.testcases?.length || 10}</span>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderSpectatorsList = () => (
+        <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
+            <div className="mb-3 select-none">
+                <div className="font-[family:var(--font-heading)] font-semibold text-xs leading-4">
+                    Spectators
+                </div>
+                <div className="text-zinc-400 text-[10px] leading-3">
+                    Active viewers
+                </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+                {[...Array(6)].map((_, i) => (
+                    <div key={i} className="rounded-full bg-zinc-900 border border-zinc-800 w-7 h-7 flex items-center justify-center text-zinc-500 text-[9px] select-none font-bold">
+                        S{i+1}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderAIMentor = () => (
+        <div className="space-y-4">
+            <div className="font-[family:var(--font-heading)] font-semibold text-xs leading-4 uppercase tracking-wider text-emerald-450 border-b border-zinc-800 pb-2 mb-2 flex items-center gap-2">
+                <Sparkles size={13} className="text-emerald-400 animate-pulse" />
+                <span>AI Mentor Insights</span>
+            </div>
+            <button
+                onClick={fetchAIHint}
+                className="w-full py-3 bg-emerald-500 text-zinc-950 font-bold uppercase tracking-widest text-[9px] rounded-lg transition-all hover:bg-emerald-400 active:scale-95 cursor-pointer"
+            >
+                Request AI Hint
+            </button>
+            <button
+                onClick={fetchAISurgeonReport}
+                className="w-full py-3 bg-zinc-850 hover:bg-zinc-800 text-white font-bold uppercase tracking-widest text-[9px] rounded-lg transition-all active:scale-95 cursor-pointer"
+            >
+                Generate Code Surgeon Report
+            </button>
+            {aiHint && (
+                <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-850 text-[11px] leading-5 text-zinc-300 font-light max-h-[220px] overflow-y-auto custom-scrollbar">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-1.5">Last AI Hint:</div>
+                    {aiHint}
+                </div>
+            )}
+            {surgeonReport && (
+                <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-855 text-[11px] leading-5 text-zinc-300 font-light max-h-[220px] overflow-y-auto custom-scrollbar">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-1.5">Code Surgeon Diagnostic:</div>
+                    {surgeonReport}
+                </div>
+            )}
+        </div>
+    );
+
+    // --- RIGHT PANEL (Two-Two Combo layout) ---
+    const renderRightPanel = () => {
+        const activeRight = activeTabs.right;
+
+        // Combo 1: Battle + Security (Combat & Integrity Deck)
+        if (activeRight === "battle" || activeRight === "security") {
+            return (
+                <div className="flex-1 flex flex-col h-full bg-zinc-900/40 select-none overflow-hidden text-left">
+                    <div className="flex items-center gap-2 border-b border-zinc-800/80 px-4 py-3 text-[10px] uppercase font-bold tracking-wider text-zinc-400 bg-zinc-950/20 select-none">
+                        <Swords size={12} className="text-emerald-500" />
+                        <span>Combat & Integrity Deck</span>
+                    </div>
+                    <div className="flex-1 flex flex-col divide-y divide-zinc-800/40 overflow-y-auto custom-scrollbar">
+                        <div className="p-4 shrink-0">
+                            {renderCombatTracker()}
+                        </div>
+                        <div className="p-4 shrink-0">
+                            {renderAntiCheat()}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Combo 2: Stats + Spectators (Standings & Spectators)
+        if (activeRight === "stats" || activeRight === "spectators") {
+            return (
+                <div className="flex-1 flex flex-col h-full bg-zinc-900/40 select-none overflow-hidden text-left">
+                    <div className="flex items-center gap-2 border-b border-zinc-800/80 px-4 py-3 text-[10px] uppercase font-bold tracking-wider text-zinc-400 bg-zinc-950/20 select-none">
+                        <Activity size={12} className="text-emerald-500" />
+                        <span>Standings & Spectators</span>
+                    </div>
+                    <div className="flex-1 flex flex-col divide-y divide-zinc-800/40 overflow-y-auto custom-scrollbar">
+                        <div className="p-4 shrink-0">
+                            {renderLiveStanding()}
+                        </div>
+                        <div className="p-4 shrink-0">
+                            {renderSpectatorsList()}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Single 3: AI Mentor Insights
+        if (activeRight === "ai") {
+            return (
+                <div className="flex-1 flex flex-col h-full bg-zinc-900/40 select-none overflow-hidden text-left">
+                    <div className="flex items-center gap-2 border-b border-zinc-800/80 px-4 py-3 text-[10px] uppercase font-bold tracking-wider text-zinc-400 bg-zinc-950/20 select-none">
+                        <Sparkles size={12} className="text-emerald-400 animate-pulse" />
+                        <span>AI Mentor Insights</span>
+                    </div>
+                    <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+                        {renderAIMentor()}
+                    </div>
+                </div>
+            );
+        }
+
+        return null;
+    };
+
+    const renderBottomPanel = () => (
+        <div className="flex-1 flex flex-col p-4 gap-3 bg-zinc-900/90 overflow-hidden h-full select-none">
+            {/* Console HUD Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 rounded-xl bg-zinc-950 border border-zinc-800 p-2.5 gap-2.5 text-left h-full">
+                <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-2.5">
+                    <div className="font-semibold text-zinc-450 text-[9px] leading-3 mb-1.5 select-none uppercase tracking-wider">
+                        Custom Input
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Paste test case"
+                        className="font-mono bg-zinc-950 text-neutral-50 text-[10px] border border-zinc-800 rounded-lg w-full px-2.5 py-1.5 outline-none focus:border-white/20"
+                    />
+                </div>
+                <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-2.5">
+                    <div className="font-semibold text-zinc-450 text-[9px] leading-3 mb-1.5 select-none uppercase tracking-wider">
+                        Test Output
+                    </div>
+                    <div className="font-mono rounded-md bg-zinc-950 text-emerald-500 text-[10px] border border-zinc-800 px-2.5 py-1.5 select-all overflow-hidden text-ellipsis whitespace-nowrap">
+                        {status === "running" ? "COMPILING..." : (testResults.length > 0 ? "PASSED · " + myProgress.passed + "/" + myProgress.total + " cases" : "IDLE")}
+                    </div>
+                </div>
+                <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-2.5">
+                    <div className="font-semibold text-zinc-455 text-[9px] leading-3 mb-1.5 select-none uppercase tracking-wider">
+                        Console Logs
+                    </div>
+                    <div className="font-mono rounded-md bg-zinc-950 text-zinc-300 text-[9px] border border-zinc-800 px-2.5 py-1.5 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {message || "[arena] ready for compile"}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <>
+            <PanelLayout
+                topPanel={renderTopPanel()}
+                leftPanel={renderLeftPanel()}
+                editorPanel={renderEditorPanel()}
+                rightPanel={renderRightPanel()}
+                bottomPanel={renderBottomPanel()}
+                bottomStatusText={status === "running" ? "COMPILING..." : (testResults.length > 0 ? "PASSED · " + myProgress.passed + "/" + myProgress.total + " cases" : (message || "Console HUD"))}
+                onAbandon={handleForfeit}
+            />
             {isFinished && (
                 <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-xl flex items-center justify-center p-8 animate-in fade-in zoom-in duration-500">
                     <div className="max-w-lg w-full bg-zinc-900 border border-white/10 p-6 sm:p-10 relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]" style={{ borderRadius: "2px" }}>
@@ -1406,8 +1465,12 @@ const BattleArena = () => {
                 report={surgeonReport}
                 isLoading={isSurgeonLoading}
             />
-        </div>
+        </>
     );
 };
 
-export default BattleArena;
+export default () => (
+    <LayoutProvider>
+        <BattleArena />
+    </LayoutProvider>
+);
