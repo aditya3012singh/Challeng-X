@@ -1,5 +1,6 @@
 import RedisClient from "./redis.client.js";
 import Database from "../../core/config/db.js";
+import DBWrapper from "../../core/config/db.wrapper.js";
 import logger from "../../core/logger/logger.js";
 import { recordCacheOperation } from "../../core/metrics/prometheus.js";
 
@@ -30,29 +31,31 @@ class UserCache {
 
             // Cache miss - fetch from DB
             recordCacheOperation({ cacheType: 'user', hit: false });
-            const user = await Database.client.user.findUnique({
-                where: { id: userId },
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    rankPoints: true,
-                    profilePic: true,
-                    wins: true,
-                    losses: true,
-                    cyberCores: true,
-                    country: true,
-                    region: true,
-                    linkedin: true,
-                    github: true,
-                    leetcode: true,
-                    codeforces: true,
-                    hackerrank: true,
-                    gfg: true,
-                    twitter: true,
-                    instagram: true
-                }
-            });
+            const user = await DBWrapper.execute("userCacheGetUser", (db) =>
+                db.user.findUnique({
+                    where: { id: userId },
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        rankPoints: true,
+                        profilePic: true,
+                        wins: true,
+                        losses: true,
+                        cyberCores: true,
+                        country: true,
+                        region: true,
+                        linkedin: true,
+                        github: true,
+                        leetcode: true,
+                        codeforces: true,
+                        hackerrank: true,
+                        gfg: true,
+                        twitter: true,
+                        instagram: true
+                    }
+                })
+            );
 
             if (user) {
                 await this.cacheUser(user);
@@ -299,30 +302,32 @@ class UserCache {
             let errorCount = 0;
 
             while (true) {
-                const users = await Database.client.user.findMany({
-                    skip,
-                    take: PAGE_SIZE,
-                    select: {
-                        id: true,
-                        username: true,
-                        email: true,
-                        rankPoints: true,
-                        profilePic: true,
-                        wins: true,
-                        losses: true,
-                        cyberCores: true,
-                        country: true,
-                        region: true,
-                        linkedin: true,
-                        github: true,
-                        leetcode: true,
-                        codeforces: true,
-                        hackerrank: true,
-                        gfg: true,
-                        twitter: true,
-                        instagram: true
-                    }
-                });
+                const users = await DBWrapper.execute("userCacheWarmUp", (db) =>
+                    db.user.findMany({
+                        skip,
+                        take: PAGE_SIZE,
+                        select: {
+                            id: true,
+                            username: true,
+                            email: true,
+                            rankPoints: true,
+                            profilePic: true,
+                            wins: true,
+                            losses: true,
+                            cyberCores: true,
+                            country: true,
+                            region: true,
+                            linkedin: true,
+                            github: true,
+                            leetcode: true,
+                            codeforces: true,
+                            hackerrank: true,
+                            gfg: true,
+                            twitter: true,
+                            instagram: true
+                        }
+                    })
+                );
 
                 if (users.length === 0) break;
 

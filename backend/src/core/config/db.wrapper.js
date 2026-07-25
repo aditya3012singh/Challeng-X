@@ -88,6 +88,8 @@ class DBWrapper {
             const customErr = new Error(`Conflict: Unique constraint failed on fields (${fields})`);
             customErr.statusCode = 409;
             customErr.code = "UNIQUE_CONSTRAINT_VIOLATION";
+            customErr.meta = err.meta;
+            customErr.originalCode = err.code;
             return customErr;
         }
 

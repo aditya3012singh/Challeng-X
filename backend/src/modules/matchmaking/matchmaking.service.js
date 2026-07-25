@@ -2,6 +2,7 @@ import crypto from "crypto";
 import RedisClient from "../../core/cache/redis.client.js";
 import env from "../../core/config/env.js";
 import Database from "../../core/config/db.js";
+import DBWrapper from "../../core/config/db.wrapper.js";
 import BattleCode from "../../utils/battleCode.js";
 import SocketEmitter from "../../core/config/socket.js";
 import S3Service from "../../integrations/s3/s3.service.js";
@@ -30,10 +31,12 @@ class MatchmakingService {
 
     if (!user) {
       // Fallback to DB if not in cache
-      user = await Database.client.user.findUnique({
-        where: { id: userId },
-        select: { rankPoints: true, username: true }
-      });
+      user = await DBWrapper.execute("joinQueueGetUser", (db) =>
+        db.user.findUnique({
+          where: { id: userId },
+          select: { rankPoints: true, username: true }
+        })
+      );
 
       if (!user) {
         throw new Error("User not found");
@@ -284,12 +287,10 @@ class MatchmakingService {
   /**
    * Tier 1 (3x Retries) & Tier 3 (Redis DLQ) Failsafe for Battle Creation
    */
-  static async persistBattleWithRetry(battleData, maxRetries = 3) {
-    let attempts = 0;
-    while (attempts < maxRetries) {
-      try {
-        attempts++;
-        await Database.client.battle.create({
+  static async persistBattleWithRetry(battleData) {
+    try {
+      await DBWrapper.execute("persistBattleMatchmaking", (db) =>
+        db.battle.create({
           data: {
             id: battleData.id,
             player1Id: battleData.player1Id,
@@ -299,23 +300,18 @@ class MatchmakingService {
             startedAt: battleData.startedAt,
             battleCode: battleData.battleCode
           }
-        });
-        logger.info(`✅ [Tier 1 DB Write Success] Battle ${battleData.id} persisted to PostgreSQL (Attempt ${attempts})`);
-        return;
-      } catch (err) {
-        logger.warn(`⚠️ [Tier 1 DB Write Warning] Attempt ${attempts}/${maxRetries} failed for battle ${battleData.id}: ${err.message}`);
-        if (attempts < maxRetries) {
-          await new Promise(res => setTimeout(res, attempts * 1000));
-        }
+        })
+      );
+      logger.info(`✅ [Background DB Persist Success] Battle ${battleData.id} persisted to PostgreSQL`);
+    } catch (err) {
+      logger.error(`❌ [Background DB Persist Failed] Pushing battle ${battleData.id} to Redis DLQ: ${err.message}`);
+      // Tier 3: Push to Redis Dead-Letter Queue (DLQ)
+      try {
+        await RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData));
+        logger.error(`🚨 [Tier 3 Redis DLQ] Pushed battle creation ${battleData.id} to DLQ (battle:dlq:failed_creations)`);
+      } catch (dlqErr) {
+        logger.error(`❌ [DLQ Fatal] Failed to push battle ${battleData.id} to Redis DLQ: ${dlqErr.message}`);
       }
-    }
-
-    // Tier 3: All 3 retries failed -> Push to Redis Dead-Letter Queue (DLQ)
-    try {
-      await RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData));
-      logger.error(`🚨 [Tier 3 Redis DLQ] Pushed battle creation ${battleData.id} to DLQ (battle:dlq:failed_creations)`);
-    } catch (dlqErr) {
-      logger.error(`❌ [DLQ Fatal] Failed to push battle ${battleData.id} to Redis DLQ: ${dlqErr.message}`);
     }
   }
 
@@ -702,16 +698,18 @@ class MatchmakingService {
       }
 
       // 2. Fetch from DB on miss
-      const battles = await Database.client.battle.findMany({
-        where: { status: "FINISHED" },
-        take: 10,
-        orderBy: { endedAt: "desc" },
-        include: {
-          player1: { select: { username: true } },
-          player2: { select: { username: true } },
-          problem: { select: { title: true, difficulty: true } }
-        }
-      });
+      const battles = await DBWrapper.execute("getGlobalActivityFeed", (db) =>
+        db.battle.findMany({
+          where: { status: "FINISHED" },
+          take: 10,
+          orderBy: { endedAt: "desc" },
+          include: {
+            player1: { select: { username: true } },
+            player2: { select: { username: true } },
+            problem: { select: { title: true, difficulty: true } }
+          }
+        })
+      );
 
       const formattedFeed = battles.map(b => {
         const p1Name = b.player1?.username || "Unknown";

@@ -1,4 +1,5 @@
 import Database from "../../core/config/db.js";
+import DBWrapper from "../../core/config/db.wrapper.js";
 import bcrypt from "bcrypt";
 import JwtService from "../../utils/jwt.js";
 import crypto from "crypto";
@@ -10,7 +11,9 @@ const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
 class AuthService {
   static async loginService(email, password) {
 
-    const user = await Database.client.user.findUnique({ where: { email } });
+    const user = await DBWrapper.execute("authLoginGetUser", (db) =>
+      db.user.findUnique({ where: { email } })
+    );
     if (!user) throw new Error("Invalid credentials");
 
     // 🔒 account locked
@@ -25,24 +28,28 @@ class AuthService {
     const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
-      await Database.client.user.update({
-        where: { id: user.id },
-        data: {
-          failedLoginCount: { increment: 1 },
-          lockUntil:
-            user.failedLoginCount + 1 >= MAX_ATTEMPTS
-              ? new Date(Date.now() + LOCK_TIME)
-              : null,
-        },
-      });
+      await DBWrapper.execute("authLoginIncrementFailedAttempts", (db) =>
+        db.user.update({
+          where: { id: user.id },
+          data: {
+            failedLoginCount: { increment: 1 },
+            lockUntil:
+              user.failedLoginCount + 1 >= MAX_ATTEMPTS
+                ? new Date(Date.now() + LOCK_TIME)
+                : null,
+          },
+        })
+      );
       throw new Error("Invalid credentials");
     }
 
     // ✅ reset failures
-    await Database.client.user.update({
-      where: { id: user.id },
-      data: { failedLoginCount: 0, lockUntil: null },
-    });
+    await DBWrapper.execute("authLoginResetFailedAttempts", (db) =>
+      db.user.update({
+        where: { id: user.id },
+        data: { failedLoginCount: 0, lockUntil: null },
+      })
+    );
 
     const accessToken = JwtService.generateAccessToken({
       id: user.id,
@@ -54,10 +61,12 @@ class AuthService {
     // 🔁 token rotation (store hash)
     const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
 
-    await Database.client.user.update({
-      where: { id: user.id },
-      data: { refreshTokenHash },
-    });
+    await DBWrapper.execute("authLoginSetRefreshToken", (db) =>
+      db.user.update({
+        where: { id: user.id },
+        data: { refreshTokenHash },
+      })
+    );
 
     return { accessToken, refreshToken, user };
   }
@@ -66,14 +75,16 @@ class AuthService {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const user = await Database.client.user.create({
-        data: {
-          email,
-          username,
-          password: hashedPassword,
-          role: "USER", // 👈 enforce default
-        },
-      });
+      const user = await DBWrapper.execute("authRegisterCreateUser", (db) =>
+        db.user.create({
+          data: {
+            email,
+            username,
+            password: hashedPassword,
+            role: "USER", // 👈 enforce default
+          },
+        })
+      );
 
       // Issuing tokens for auto-login
       const accessToken = JwtService.generateAccessToken({
@@ -84,10 +95,12 @@ class AuthService {
       const refreshToken = JwtService.generateRefreshToken({ id: user.id });
       const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
 
-      await Database.client.user.update({
-        where: { id: user.id },
-        data: { refreshTokenHash },
-      });
+      await DBWrapper.execute("authRegisterSetRefreshToken", (db) =>
+        db.user.update({
+          where: { id: user.id },
+          data: { refreshTokenHash },
+        })
+      );
 
       return {
         message: "Registration successful",
@@ -102,7 +115,7 @@ class AuthService {
       };
     } catch (error) {
       // Prisma unique constraint error
-      if (error.code === "P2002") {
+      if (error.code === "P2002" || error.originalCode === "P2002" || error.code === "UNIQUE_CONSTRAINT_VIOLATION") {
         const target = error.meta?.target || [];
         const isEmail = target.includes("email");
         const isUsername = target.includes("username");
@@ -130,9 +143,11 @@ class AuthService {
       return res.sendStatus(401);
     }
 
-    const user = await Database.client.user.findUnique({
-      where: { id: payload.id },
-    });
+    const user = await DBWrapper.execute("authRefreshGetUser", (db) =>
+      db.user.findUnique({
+        where: { id: payload.id },
+      })
+    );
 
     if (!user || !user.refreshTokenHash) {
       return res.sendStatus(403);
@@ -146,13 +161,15 @@ class AuthService {
 
     if (!tokenMatches) {
       // 🔥 Token reuse detected
-      await Database.client.user.update({
-        where: { id: user.id },
-        data: {
-          refreshTokenHash: null,
-          tokenVersion: { increment: 1 }, // invalidate ALL tokens
-        },
-      });
+      await DBWrapper.execute("authRefreshRevokeOnReuse", (db) =>
+        db.user.update({
+          where: { id: user.id },
+          data: {
+            refreshTokenHash: null,
+            tokenVersion: { increment: 1 }, // invalidate ALL tokens
+          },
+        })
+      );
 
       return res.status(403).json({
         message: "Refresh token reuse detected. Session revoked.",
@@ -172,10 +189,12 @@ class AuthService {
 
     const newHash = await bcrypt.hash(newRefreshToken, 10);
 
-    await Database.client.user.update({
-      where: { id: user.id },
-      data: { refreshTokenHash: newHash },
-    });
+    await DBWrapper.execute("authRefreshSetNewToken", (db) =>
+      db.user.update({
+        where: { id: user.id },
+        data: { refreshTokenHash: newHash },
+      })
+    );
 
     const { default: CookieOptions } = await import("../../utils/cookies.js");
 
@@ -185,7 +204,9 @@ class AuthService {
       .json({ message: "Token refreshed", accessToken: newAccessToken });
   }
   static async forgotPasswordService(email) {
-    const user = await Database.client.user.findUnique({ where: { email } });
+    const user = await DBWrapper.execute("authForgotGetUser", (db) =>
+      db.user.findUnique({ where: { email } })
+    );
     if (!user) {
       // Return a success message anyway so we don't leak registered emails
       return { message: "If an account with that email exists, a reset link has been sent." };
@@ -201,13 +222,15 @@ class AuthService {
     const tokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
     // Save token and expiry
-    await Database.client.user.update({
-      where: { email },
-      data: {
-        resetPasswordToken: hashedToken,
-        resetPasswordExpires: tokenExpiry,
-      },
-    });
+    await DBWrapper.execute("authForgotSetResetToken", (db) =>
+      db.user.update({
+        where: { email },
+        data: {
+          resetPasswordToken: hashedToken,
+          resetPasswordExpires: tokenExpiry,
+        },
+      })
+    );
 
     // Mock Email Service - Logging to Console for Development
     console.log(`\n======================================================`);
@@ -229,12 +252,14 @@ class AuthService {
     // Re-hash the provided token to compare with DB
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-    const user = await Database.client.user.findFirst({
-      where: {
-        resetPasswordToken: hashedToken,
-        resetPasswordExpires: { gte: new Date() }, // ensure it hasn't expired
-      },
-    });
+    const user = await DBWrapper.execute("authResetGetByToken", (db) =>
+      db.user.findFirst({
+        where: {
+          resetPasswordToken: hashedToken,
+          resetPasswordExpires: { gte: new Date() }, // ensure it hasn't expired
+        },
+      })
+    );
 
     if (!user) {
       throw new Error("Token is invalid or has expired");
@@ -244,14 +269,16 @@ class AuthService {
     const newHashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update password and clear the reset fields
-    await Database.client.user.update({
-      where: { id: user.id },
-      data: {
-        password: newHashedPassword,
-        resetPasswordToken: null,
-        resetPasswordExpires: null,
-      },
-    });
+    await DBWrapper.execute("authResetUpdatePassword", (db) =>
+      db.user.update({
+        where: { id: user.id },
+        data: {
+          password: newHashedPassword,
+          resetPasswordToken: null,
+          resetPasswordExpires: null,
+        },
+      })
+    );
 
     return { message: "Password has been successfully reset" };
   }

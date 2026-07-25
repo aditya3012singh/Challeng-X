@@ -1,22 +1,23 @@
 import crypto from "crypto";
 import RedisClient from "../../core/cache/redis.client.js";
 import Database from "../../core/config/db.js";
+import DBWrapper from "../../core/config/db.wrapper.js";
 import BattleCode from "../../utils/battleCode.js";
 import S3Service from "../../integrations/s3/s3.service.js";
 import ProblemCache from "../../core/cache/problemCache.js";
 import AISimulatorService from "../ai/ai.simulator.js";
 import AIService from "../ai/ai.service.js";
 import env from "../../core/config/env.js";
-// ✅ PHASE 1: Import event bus
 import eventBus from "../../core/events/eventBus.js";
 import { EventTypes } from "../../core/events/eventTypes.js";
+import logger from "../../core/logger/logger.js";
 
 class BattleService {
   static async createBattleRandomQuestionService(player1Id) {
     let randomProblem = await ProblemCache.getRandomProblemByDifficulty(null);
 
     if (!randomProblem) {
-      const problems = await Database.client.problem.findMany();
+      const problems = await DBWrapper.execute("getRandomFallbackProblems", (db) => db.problem.findMany());
       if (problems.length === 0) {
         throw new Error("No problems available");
       }
@@ -46,21 +47,18 @@ class BattleService {
       console.error(`[Pre-cache] Failed for problem ${randomProblem.id}:`, err.message)
     );
 
-    // Asynchronously write to PostgreSQL in background with Tier 1 (3x Retries) & Tier 3 (Redis DLQ)
+    // Asynchronously write to PostgreSQL in background with DBWrapper and Tier 3 (Redis DLQ) Failsafe
     (async () => {
-      let attempts = 0;
-      while (attempts < 3) {
-        try {
-          attempts++;
-          await Database.client.battle.create({
+      try {
+        await DBWrapper.execute("createBattleRandomQuestion", (db) =>
+          db.battle.create({
             data: { id: battleId, player1Id, problemId: randomProblem.id, status: "WAITING", battleCode }
-          });
-          return;
-        } catch (err) {
-          if (attempts < 3) await new Promise(res => setTimeout(res, attempts * 1000));
-        }
+          })
+        );
+      } catch (err) {
+        logger.error(`❌ [Background DB Persist Failed] Pushing battle ${battleId} to Redis DLQ: ${err.message}`);
+        RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData)).catch(() => {});
       }
-      RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData)).catch(() => {});
     })();
 
     return battleData;
@@ -70,10 +68,12 @@ class BattleService {
     let problem = await ProblemCache.getProblem(problemId);
     
     if (!problem) {
-      problem = await Database.client.problem.findUnique({
-        where: { id: problemId },
-        include: { testcases: true, tags: true }
-      });
+      problem = await DBWrapper.execute("getSelectedProblem", (db) =>
+        db.problem.findUnique({
+          where: { id: problemId },
+          include: { testcases: true, tags: true }
+        })
+      );
       
       if (!problem) {
         throw new Error("Problem not found");
@@ -104,21 +104,18 @@ class BattleService {
       console.error(`[Pre-cache] Failed for problem ${problem.id}:`, err.message)
     );
 
-    // Asynchronously write to PostgreSQL in background with Tier 1 (3x Retries) & Tier 3 (Redis DLQ)
+    // Asynchronously write to PostgreSQL in background with DBWrapper and Tier 3 (Redis DLQ) Failsafe
     (async () => {
-      let attempts = 0;
-      while (attempts < 3) {
-        try {
-          attempts++;
-          await Database.client.battle.create({
+      try {
+        await DBWrapper.execute("createBattleSelectedQuestion", (db) =>
+          db.battle.create({
             data: { id: battleId, player1Id, problemId: problem.id, status: "WAITING", battleCode }
-          });
-          return;
-        } catch (err) {
-          if (attempts < 3) await new Promise(res => setTimeout(res, attempts * 1000));
-        }
+          })
+        );
+      } catch (err) {
+        logger.error(`❌ [Background DB Persist Failed] Pushing battle ${battleId} to Redis DLQ: ${err.message}`);
+        RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData)).catch(() => {});
       }
-      RedisClient.client.rpush("battle:dlq:failed_creations", JSON.stringify(battleData)).catch(() => {});
     })();
 
     return battleData;
@@ -134,7 +131,9 @@ class BattleService {
     }
 
     if (!battle) {
-      battle = await Database.client.battle.findUnique({ where: { battleCode } });
+      battle = await DBWrapper.execute("joinBattleGetBattleByCode", (db) =>
+        db.battle.findUnique({ where: { battleCode } })
+      );
       if (battle) battleId = battle.id;
     }
 
@@ -177,10 +176,12 @@ class BattleService {
     });
 
     // 4. Asynchronously update DB in background
-    Database.client.battle.update({
-      where: { battleCode },
-      data: { player2Id, status: "COUNTDOWN", startedAt }
-    }).catch(err => console.error(`[Async Join DB Write Error] ${err.message}`));
+    DBWrapper.execute("asyncJoinBattle", (db) =>
+      db.battle.update({
+        where: { battleCode },
+        data: { player2Id, status: "COUNTDOWN", startedAt }
+      })
+    ).catch(err => console.error(`[Async Join DB Write Error] ${err.message}`));
 
     // 5. Schedule 5s ONGOING transition
     setTimeout(async () => {
@@ -188,10 +189,12 @@ class BattleService {
         const ongoingMeta = { ...updatedMeta, status: "ONGOING", startedAt: new Date() };
         RedisClient.client.set(`battle:meta:${battleId}`, JSON.stringify(ongoingMeta), "EX", 86400).catch(() => {});
 
-        Database.client.battle.update({
-          where: { id: battleId },
-          data: { status: "ONGOING", startedAt: ongoingMeta.startedAt }
-        }).catch(err => console.error(`[Async ONGOING DB Write Error] ${err.message}`));
+        DBWrapper.execute("asyncOngoingTransition", (db) =>
+          db.battle.update({
+            where: { id: battleId },
+            data: { status: "ONGOING", startedAt: ongoingMeta.startedAt }
+          })
+        ).catch(err => console.error(`[Async ONGOING DB Write Error] ${err.message}`));
 
         eventBus.emitEvent(EventTypes.BATTLE_STATE_CHANGED, {
           battleId,
@@ -260,15 +263,17 @@ class BattleService {
         // If problem is present but testcases are missing/empty, load them from DB
         if (cachedBattle.problem && (!cachedBattle.problem.testcases || cachedBattle.problem.testcases.length === 0)) {
           try {
-            const sampleTestcases = await Database.client.testCase.findMany({
-              where: {
-                problemId: cachedBattle.problem.id,
-                OR: [
-                  { isHidden: false },
-                  { isSample: true }
-                ]
-              }
-            });
+            const sampleTestcases = await DBWrapper.execute("getBattleHealSampleTestcases", (db) =>
+              db.testCase.findMany({
+                where: {
+                  problemId: cachedBattle.problem.id,
+                  OR: [
+                    { isHidden: false },
+                    { isSample: true }
+                  ]
+                }
+              })
+            );
             cachedBattle.problem.testcases = sampleTestcases;
             // Write back updated metadata to Redis
             await RedisClient.client.set(cacheKey, JSON.stringify(cachedBattle), "EX", 86400);
@@ -291,38 +296,8 @@ class BattleService {
       console.error(`[RedisCache] getBattle cache read error: ${err.message}`);
     }
 
-    let battle = await Database.client.battle.findUnique({
-      where: { id: battleId },
-      include: {
-        problem: {
-          select: {
-            id: true, title: true, difficulty: true, description: true, timeLimitMs: true,
-            hints: true,
-            tags: { select: { name: true } },
-            userHints: userId ? { where: { 
-              userId,
-              battleId: battleId
-            }, select: { hintIndex: true } } : undefined,
-            testcases: {
-              where: {
-                OR: [
-                  { isHidden: false },
-                  { isSample: true }
-                ]
-              }
-            }
-          }
-        },
-        player1: { select: { id: true, username: true, email: true } },
-        player2: { select: { id: true, username: true, email: true } },
-      }
-    });
-
-    let isTeamMatch = false;
-
-    // If not found in 1v1 Battle, check TeamBattleMatch
-    if (!battle) {
-      const teamMatch = await Database.client.teamBattleMatch.findUnique({
+    let battle = await DBWrapper.execute("getBattleById", (db) =>
+      db.battle.findUnique({
         where: { id: battleId },
         include: {
           problem: {
@@ -332,7 +307,7 @@ class BattleService {
               tags: { select: { name: true } },
               userHints: userId ? { where: { 
                 userId,
-                teamBattleMatchId: battleId
+                battleId: battleId
               }, select: { hintIndex: true } } : undefined,
               testcases: {
                 where: {
@@ -344,11 +319,45 @@ class BattleService {
               }
             }
           },
-          team1: { include: { members: { include: { user: true } } } },
-          team2: { include: { members: { include: { user: true } } } },
-          teamBattle: true,
+          player1: { select: { id: true, username: true, email: true } },
+          player2: { select: { id: true, username: true, email: true } },
         }
-      });
+      })
+    );
+
+    let isTeamMatch = false;
+
+    // If not found in 1v1 Battle, check TeamBattleMatch
+    if (!battle) {
+      const teamMatch = await DBWrapper.execute("getBattleTeamMatchById", (db) =>
+        db.teamBattleMatch.findUnique({
+          where: { id: battleId },
+          include: {
+            problem: {
+              select: {
+                id: true, title: true, difficulty: true, description: true, timeLimitMs: true,
+                hints: true,
+                tags: { select: { name: true } },
+                userHints: userId ? { where: { 
+                  userId,
+                  teamBattleMatchId: battleId
+                }, select: { hintIndex: true } } : undefined,
+                testcases: {
+                  where: {
+                    OR: [
+                      { isHidden: false },
+                      { isSample: true }
+                    ]
+                  }
+                }
+              }
+            },
+            team1: { include: { members: { include: { user: true } } } },
+            team2: { include: { members: { include: { user: true } } } },
+            teamBattle: true,
+          }
+        })
+      );
 
       if (teamMatch) {
         isTeamMatch = true;
@@ -400,43 +409,49 @@ class BattleService {
 
   static async getLiveBattlesService() {
     // Fetch all currently active battles for the live spectator directory
-    const liveBattles = await Database.client.battle.findMany({
-      where: {
-        OR: [
-          { status: "ONGOING" },
-          { status: "COUNTDOWN" }
-        ]
-      },
-      orderBy: {
-        startedAt: "desc"
-      },
-      take: 20, // Limit to 20 most recent active battles to prevent payload bloat
-      include: {
-        problem: {
-          select: { title: true, difficulty: true }
+    const liveBattles = await DBWrapper.execute("getLiveBattles", (db) =>
+      db.battle.findMany({
+        where: {
+          OR: [
+            { status: "ONGOING" },
+            { status: "COUNTDOWN" }
+          ]
         },
-        player1: {
-          select: { id: true, username: true }
+        orderBy: {
+          startedAt: "desc"
         },
-        player2: {
-          select: { id: true, username: true }
+        take: 20, // Limit to 20 most recent active battles to prevent payload bloat
+        include: {
+          problem: {
+            select: { title: true, difficulty: true }
+          },
+          player1: {
+            select: { id: true, username: true }
+          },
+          player2: {
+            select: { id: true, username: true }
+          }
         }
-      }
-    });
+      })
+    );
 
     return liveBattles;
   }
 
   static async incrementBattleAttempt(battleId, userId) {
-    let battle = await Database.client.battle.findUnique({
-      where: { id: battleId }
-    });
+    let battle = await DBWrapper.execute("incrementAttemptGetBattle", (db) =>
+      db.battle.findUnique({
+        where: { id: battleId }
+      })
+    );
 
     let isTeamMatch = false;
     if (!battle) {
-      battle = await Database.client.teamBattleMatch.findUnique({
-        where: { id: battleId }
-      });
+      battle = await DBWrapper.execute("incrementAttemptGetTeamMatch", (db) =>
+        db.teamBattleMatch.findUnique({
+          where: { id: battleId }
+        })
+      );
       if (battle) isTeamMatch = true;
     }
 
@@ -451,15 +466,19 @@ class BattleService {
 
     let updatedBattle;
     if (isTeamMatch) {
-      updatedBattle = await Database.client.teamBattleMatch.update({
-        where: { id: battleId },
-        data,
-      });
+      updatedBattle = await DBWrapper.execute("incrementAttemptUpdateTeamMatch", (db) =>
+        db.teamBattleMatch.update({
+          where: { id: battleId },
+          data,
+        })
+      );
     } else {
-      updatedBattle = await Database.client.battle.update({
-        where: { id: battleId },
-        data,
-      });
+      updatedBattle = await DBWrapper.execute("incrementAttemptUpdateBattle", (db) =>
+        db.battle.update({
+          where: { id: battleId },
+          data,
+        })
+      );
     }
 
     // Notify listeners about the attempt update via eventBus
@@ -475,11 +494,15 @@ class BattleService {
   static async finishBattleService(battleId, winnerId) {
     try {
       // Try Battle first
-      let battleResult = await Database.client.battle.findUnique({ where: { id: battleId } });
+      let battleResult = await DBWrapper.execute("finishBattleGetBattle", (db) =>
+        db.battle.findUnique({ where: { id: battleId } })
+      );
       let isTeamMatch = false;
       
       if (!battleResult) {
-        battleResult = await Database.client.teamBattleMatch.findUnique({ where: { id: battleId } });
+        battleResult = await DBWrapper.execute("finishBattleGetTeamMatch", (db) =>
+          db.teamBattleMatch.findUnique({ where: { id: battleId } })
+        );
         if (battleResult) isTeamMatch = true;
       }
 
@@ -489,26 +512,28 @@ class BattleService {
         if (cachedMeta) {
           const cached = JSON.parse(cachedMeta);
           console.log(`🛡️ [Tier 2 Upsert Failsafe] Creating missing battle ${battleId} directly as FINISHED in DB`);
-          battleResult = await Database.client.battle.upsert({
-            where: { id: battleId },
-            create: {
-              id: battleId,
-              battleCode: cached.battleCode || battleId.substring(0, 6),
-              player1Id: cached.player1Id || cached.player1?.id,
-              player2Id: cached.player2Id || cached.player2?.id,
-              problemId: cached.problemId || cached.problem?.id,
-              status: "FINISHED",
-              startedAt: cached.startedAt ? new Date(cached.startedAt) : new Date(),
-              endedAt: new Date(),
-              winnerId: winnerId || null
-            },
-            update: {
-              status: "FINISHED",
-              endedAt: new Date(),
-              winnerId: winnerId || null
-            },
-            include: { player1: true, player2: true }
-          });
+          battleResult = await DBWrapper.execute("finishBattleUpsertFailsafe", (db) =>
+            db.battle.upsert({
+              where: { id: battleId },
+              create: {
+                id: battleId,
+                battleCode: cached.battleCode || battleId.substring(0, 6),
+                player1Id: cached.player1Id || cached.player1?.id,
+                player2Id: cached.player2Id || cached.player2?.id,
+                problemId: cached.problemId || cached.problem?.id,
+                status: "FINISHED",
+                startedAt: cached.startedAt ? new Date(cached.startedAt) : new Date(),
+                endedAt: new Date(),
+                winnerId: winnerId || null
+              },
+              update: {
+                status: "FINISHED",
+                endedAt: new Date(),
+                winnerId: winnerId || null
+              },
+              include: { player1: true, player2: true }
+            })
+          );
         }
       }
 
@@ -516,25 +541,29 @@ class BattleService {
 
       if (battleResult.status !== "FINISHED") {
         if (isTeamMatch) {
-          battleResult = await Database.client.teamBattleMatch.update({
-            where: { id: battleId },
-            data: {
-              status: "FINISHED",
-              completedAt: new Date(),
-              winnerId,
-            },
-            include: { player1: true, player2: true }
-          });
+          battleResult = await DBWrapper.execute("finishBattleUpdateTeamMatch", (db) =>
+            db.teamBattleMatch.update({
+              where: { id: battleId },
+              data: {
+                status: "FINISHED",
+                completedAt: new Date(),
+                winnerId,
+              },
+              include: { player1: true, player2: true }
+            })
+          );
         } else {
-          battleResult = await Database.client.battle.update({
-            where: { id: battleId },
-            data: {
-              status: "FINISHED",
-              endedAt: new Date(),
-              winnerId,
-            },
-            include: { player1: true, player2: true }
-          });
+          battleResult = await DBWrapper.execute("finishBattleUpdateBattle", (db) =>
+            db.battle.update({
+              where: { id: battleId },
+              data: {
+                status: "FINISHED",
+                endedAt: new Date(),
+                winnerId,
+              },
+              include: { player1: true, player2: true }
+            })
+          );
         }
       }
 
@@ -548,10 +577,12 @@ class BattleService {
           : null;
 
         // Get problem details for event
-        const battle = await Database.client.battle.findUnique({
-          where: { id: battleId },
-          include: { problem: true }
-        });
+        const battle = await DBWrapper.execute("finishBattleGetProblemInfo", (db) =>
+          db.battle.findUnique({
+            where: { id: battleId },
+            include: { problem: true }
+          })
+        );
 
         eventBus.emitEvent(EventTypes.BATTLE_FINISHED, {
           battleId,
@@ -607,26 +638,30 @@ class BattleService {
   static async handleDoubleFailure(battleId, p1Id, p2Id) {
     console.log(`💀 Double failure in battle ${battleId}. Ending with penalties...`);
 
-    await Database.client.battle.update({
-      where: { id: battleId },
-      data: {
-        status: "FINISHED",
-        endedAt: new Date(),
-        winnerId: null // No winner
-      }
-    });
+    await DBWrapper.execute("doubleFailureUpdateBattle", (db) =>
+      db.battle.update({
+        where: { id: battleId },
+        data: {
+          status: "FINISHED",
+          endedAt: new Date(),
+          winnerId: null // No winner
+        }
+      })
+    );
 
     // Apply penalties to BOTH players
     (async () => {
       try {
         // Custom ranking reduction for double failure
-        await Database.client.user.updateMany({
-          where: { id: { in: [p1Id, p2Id] } },
-          data: {
-            rankPoints: { decrement: 50 },
-            losses: { increment: 1 }
-          }
-        });
+        await DBWrapper.execute("doubleFailureUserPenalties", (db) =>
+          db.user.updateMany({
+            where: { id: { in: [p1Id, p2Id] } },
+            data: {
+              rankPoints: { decrement: 50 },
+              losses: { increment: 1 }
+            }
+          })
+        );
 
         // ✅ Invalidate cache for both players so stale rankPoints aren't served
         const { default: UserCache } = await import("../../core/cache/userCache.js");
@@ -655,10 +690,12 @@ class BattleService {
     let battle = await BattleService.getBattle(battleId).catch(() => null);
 
     if (!battle) {
-      battle = await Database.client.battle.findUnique({
-        where: { id: battleId },
-        include: { player1: true, player2: true }
-      }).catch(() => null);
+      battle = await DBWrapper.execute("forfeitGetBattle", (db) =>
+        db.battle.findUnique({
+          where: { id: battleId },
+          include: { player1: true, player2: true }
+        })
+      ).catch(() => null);
     }
 
     if (!battle || battle.status === "FINISHED") {
@@ -696,10 +733,12 @@ class BattleService {
   }
 
   static async getRemainingAttempts(battleId, userId) {
-    const battle = await Database.client.battle.findUnique({
-      where: { id: battleId },
-      select: { player1Id: true, player2Id: true, attemptsPlayer1: true, attemptsPlayer2: true }
-    });
+    const battle = await DBWrapper.execute("getRemainingAttempts", (db) =>
+      db.battle.findUnique({
+        where: { id: battleId },
+        select: { player1Id: true, player2Id: true, attemptsPlayer1: true, attemptsPlayer2: true }
+      })
+    );
     if (!battle) return 10;
     const used = battle.player1Id === userId ? battle.attemptsPlayer1 : battle.attemptsPlayer2;
     return Math.max(0, 10 - used);
@@ -708,44 +747,48 @@ class BattleService {
   static async getBattleHistory(userId, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
-    const battles = await Database.client.battle.findMany({
-      where: {
-        OR: [
-          { player1Id: userId },
-          { player2Id: userId }
-        ],
-        status: "FINISHED"
-      },
-      skip,
-      take: limit,
-      orderBy: {
-        endedAt: "desc"
-      },
-      include: {
-        problem: {
-          select: {
-            title: true,
-            difficulty: true
+    const battles = await DBWrapper.execute("getBattleHistoryData", (db) =>
+      db.battle.findMany({
+        where: {
+          OR: [
+            { player1Id: userId },
+            { player2Id: userId }
+          ],
+          status: "FINISHED"
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          endedAt: "desc"
+        },
+        include: {
+          problem: {
+            select: {
+              title: true,
+              difficulty: true
+            }
+          },
+          player1: {
+            select: { username: true }
+          },
+          player2: {
+            select: { username: true }
           }
-        },
-        player1: {
-          select: { username: true }
-        },
-        player2: {
-          select: { username: true }
         }
-      }
-    });
+      })
+    );
 
-    const total = await Database.client.battle.count({
-      where: {
-        OR: [
-          { player1Id: userId },
-          { player2Id: userId }
-        ],
-        status: "FINISHED"
-      }
-    });
+    const total = await DBWrapper.execute("getBattleHistoryCount", (db) =>
+      db.battle.count({
+        where: {
+          OR: [
+            { player1Id: userId },
+            { player2Id: userId }
+          ],
+          status: "FINISHED"
+        }
+      })
+    );
 
     return {
       data: battles,
@@ -758,10 +801,12 @@ class BattleService {
   static async startCommentaryTimer(battleId) {
     const interval = setInterval(async () => {
       try {
-        const battle = await Database.client.battle.findUnique({
-          where: { id: battleId },
-          include: { player1: true, player2: true, problem: true }
-        });
+        const battle = await DBWrapper.execute("commentaryGetBattle", (db) =>
+          db.battle.findUnique({
+            where: { id: battleId },
+            include: { player1: true, player2: true, problem: true }
+          })
+        );
 
         if (!battle || battle.status !== "ONGOING") {
           clearInterval(interval);
@@ -769,12 +814,16 @@ class BattleService {
         }
 
         // Get current progress for both players
-        const p1Progress = await Database.client.submission.count({ 
-          where: { battleId, userId: battle.player1Id, status: "PASSED" } 
-        });
-        const p2Progress = await Database.client.submission.count({ 
-          where: { battleId, userId: battle.player2Id, status: "PASSED" } 
-        });
+        const p1Progress = await DBWrapper.execute("commentaryP1Progress", (db) =>
+          db.submission.count({ 
+            where: { battleId, userId: battle.player1Id, status: "PASSED" } 
+          })
+        );
+        const p2Progress = await DBWrapper.execute("commentaryP2Progress", (db) =>
+          db.submission.count({ 
+            where: { battleId, userId: battle.player2Id, status: "PASSED" } 
+          })
+        );
 
         const commentary = await AIService.generateLiveComment(
           { username: battle.player1.username, progress: p1Progress },
@@ -804,19 +853,21 @@ class BattleService {
       while (creationItem) {
         const data = JSON.parse(creationItem);
         console.log(`🔄 [DLQ Replay] Retrying DB creation for battleId=${data.id}`);
-        await Database.client.battle.upsert({
-          where: { id: data.id },
-          create: {
-            id: data.id,
-            player1Id: data.player1Id,
-            player2Id: data.player2Id,
-            problemId: data.problemId,
-            status: data.status || "ONGOING",
-            startedAt: new Date(data.startedAt),
-            battleCode: data.battleCode
-          },
-          update: {}
-        });
+        await DBWrapper.execute("replayFailedPersistsCreation", (db) =>
+          db.battle.upsert({
+            where: { id: data.id },
+            create: {
+              id: data.id,
+              player1Id: data.player1Id,
+              player2Id: data.player2Id,
+              problemId: data.problemId,
+              status: data.status || "ONGOING",
+              startedAt: new Date(data.startedAt),
+              battleCode: data.battleCode
+            },
+            update: {}
+          })
+        );
         creationItem = await RedisClient.client.lpop("battle:dlq:failed_creations");
       }
 
