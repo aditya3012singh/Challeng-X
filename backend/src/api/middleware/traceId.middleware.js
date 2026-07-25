@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import structuredLogger from '../../core/logger/structuredLogger.js';
+import { contextStorage } from '../../core/logger/context.js';
 
 /**
  * Trace ID Middleware
@@ -21,9 +22,6 @@ export function traceIdMiddleware(req, res, next) {
     // Attach to response headers
     res.setHeader('X-Trace-ID', traceId);
     
-    // Store in structured logger
-    structuredLogger.setTraceId(req.id || traceId, traceId);
-    
     // Log request start
     const startTime = Date.now();
     structuredLogger.logRequestStart(traceId, req.method, req.path, {
@@ -41,14 +39,13 @@ export function traceIdMiddleware(req, res, next) {
             contentLength: res.get('content-length')
         });
         
-        // Clear trace ID from storage
-        structuredLogger.clearTraceId(req.id || traceId);
-        
         // Call original end
         originalEnd.apply(res, args);
     };
     
-    next();
+    contextStorage.run({ traceId }, () => {
+        next();
+    });
 }
 
 /**
@@ -59,7 +56,7 @@ export function traceIdMiddleware(req, res, next) {
  */
 export async function withTraceId(traceId, fn) {
     try {
-        return await fn(traceId);
+        return await contextStorage.run({ traceId }, () => fn(traceId));
     } catch (error) {
         structuredLogger.logError(traceId, 'Error in traced function', error);
         throw error;

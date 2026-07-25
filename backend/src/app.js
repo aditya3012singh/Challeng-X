@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import morgan from "morgan";
 import helmet from "helmet";
 import passport from "passport";
 import env from "./core/config/env.js";
@@ -48,7 +47,6 @@ class App {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
-    app.use(morgan("dev"));
 
     // ✅ PHASE 6: Add trace ID middleware for observability
     app.use(traceIdMiddleware);

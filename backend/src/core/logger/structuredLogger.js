@@ -1,4 +1,5 @@
 import logger from './logger.js';
+import { contextStorage } from './context.js';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -6,70 +7,35 @@ import { v4 as uuidv4 } from 'uuid';
  * Phase 6: Enhanced observability with trace IDs and structured logging
  * 
  * Features:
- * - Trace ID propagation across requests, events, and workers
- * - Structured logging with consistent format
- * - Context-aware logging
- * - Performance metrics logging
+ * - Trace ID propagation across requests, events, and workers using AsyncLocalStorage
+ * - Structured logging with flat Winston format
+ * - Context-aware logging without manual parameter passing
  */
 class StructuredLogger {
-    constructor() {
-        this.traceIdMap = new Map(); // Store trace IDs per request/context
-    }
-
     /**
-     * Generate or get trace ID for current context
-     * @param {string} existingTraceId
+     * Get trace ID for the current context (resolves dynamically from AsyncLocalStorage)
      * @returns {string}
      */
-    getOrCreateTraceId(existingTraceId) {
-        if (existingTraceId) {
-            return existingTraceId;
-        }
-        return `trace_${uuidv4()}`;
+    getTraceId() {
+        return contextStorage.getStore()?.traceId || 'system';
     }
 
     /**
-     * Store trace ID in context
-     * @param {string} contextId
-     * @param {string} traceId
-     */
-    setTraceId(contextId, traceId) {
-        this.traceIdMap.set(contextId, traceId);
-    }
-
-    /**
-     * Get trace ID from context
-     * @param {string} contextId
-     * @returns {string}
-     */
-    getTraceId(contextId) {
-        return this.traceIdMap.get(contextId);
-    }
-
-    /**
-     * Clear trace ID from context
-     * @param {string} contextId
-     */
-    clearTraceId(contextId) {
-        this.traceIdMap.delete(contextId);
-    }
-
-    /**
-     * Log with structured format
+     * Log with structured flat format
      * @param {string} level
      * @param {string} message
      * @param {object} metadata
      */
     log(level, message, metadata = {}) {
-        const structuredLog = {
-            timestamp: new Date().toISOString(),
-            level: level.toUpperCase(),
+        const traceId = metadata.traceId || this.getTraceId();
+        
+        logger.log({
+            level,
             message,
+            traceId,
+            timestamp: new Date().toISOString(),
             ...metadata
-        };
-
-        // Log to Winston logger
-        logger[level](JSON.stringify(structuredLog));
+        });
     }
 
     /**
@@ -116,11 +82,11 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logRequestStart(traceId, method, path, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('REQUEST_START', {
-            traceId,
+            traceId: activeTrace,
             method,
             path,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -133,11 +99,11 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logRequestEnd(traceId, statusCode, duration, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('REQUEST_END', {
-            traceId,
+            traceId: activeTrace,
             statusCode,
             durationMs: duration,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -150,11 +116,11 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logEventEmitted(traceId, eventName, eventId, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('EVENT_EMITTED', {
-            traceId,
+            traceId: activeTrace,
             eventName,
             eventId,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -167,11 +133,11 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logEventReceived(traceId, eventName, eventId, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('EVENT_RECEIVED', {
-            traceId,
+            traceId: activeTrace,
             eventName,
             eventId,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -185,12 +151,12 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logListenerExecution(traceId, eventName, listenerName, duration, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('LISTENER_EXECUTED', {
-            traceId,
+            traceId: activeTrace,
             eventName,
             listenerName,
             durationMs: duration,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -203,11 +169,11 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logJobQueued(traceId, jobId, jobName, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('JOB_QUEUED', {
-            traceId,
+            traceId: activeTrace,
             jobId,
             jobName,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -220,11 +186,11 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logJobStarted(traceId, jobId, jobName, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('JOB_STARTED', {
-            traceId,
+            traceId: activeTrace,
             jobId,
             jobName,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -238,12 +204,12 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logJobCompleted(traceId, jobId, jobName, duration, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('JOB_COMPLETED', {
-            traceId,
+            traceId: activeTrace,
             jobId,
             jobName,
             durationMs: duration,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -257,12 +223,12 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logJobFailed(traceId, jobId, jobName, error, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.error('JOB_FAILED', {
-            traceId,
+            traceId: activeTrace,
             jobId,
             jobName,
             error,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -275,11 +241,11 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logError(traceId, message, error, metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.error(message, {
-            traceId,
+            traceId: activeTrace,
             error: error.message,
             stack: error.stack,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -293,12 +259,12 @@ class StructuredLogger {
      * @param {object} metadata
      */
     logMetric(traceId, metricName, value, unit = 'ms', metadata = {}) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('METRIC', {
-            traceId,
+            traceId: activeTrace,
             metricName,
             value,
             unit,
-            timestamp: new Date().toISOString(),
             ...metadata
         });
     }
@@ -309,16 +275,16 @@ class StructuredLogger {
      * @param {Array} chain
      */
     logEventFlowChain(traceId, chain) {
+        const activeTrace = traceId || this.getTraceId();
         this.info('EVENT_FLOW_CHAIN', {
-            traceId,
+            traceId: activeTrace,
             chain: chain.map(step => ({
                 step: step.step,
                 service: step.service,
                 duration: step.duration,
                 timestamp: step.timestamp
             })),
-            totalDuration: chain.reduce((sum, step) => sum + (step.duration || 0), 0),
-            timestamp: new Date().toISOString()
+            totalDuration: chain.reduce((sum, step) => sum + (step.duration || 0), 0)
         });
     }
 }

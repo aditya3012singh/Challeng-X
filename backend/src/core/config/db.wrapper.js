@@ -1,14 +1,16 @@
 import Database from "./db.js";
-import logger from "../logger/logger.js";
+import structuredLogger from "../logger/structuredLogger.js";
+import { recordDbQuery, recordDbTransaction, recordDbError } from "../metrics/prometheus.js";
 
 /**
  * DBWrapper
  * Centralized DB transaction and single-query executor.
- * Intercepts slow queries, automates deadlock/serialization retries, and maps raw database errors.
+ * Intercepts slow queries, automates deadlock/serialization retries, maps raw database errors,
+ * propagates Trace ID context automatically, and logs Prometheus metrics.
  */
 class DBWrapper {
     /**
-     * Executes a single database query with performance logging and error mapping.
+     * Executes a single database query with performance logging, Prometheus telemetry, and error mapping.
      * @param {string} queryName - Descriptive name for logging / tracing
      * @param {function} queryFn - Callback function receiving db client and returning a promise
      * @returns {Promise<any>}
@@ -18,14 +20,28 @@ class DBWrapper {
         try {
             const result = await queryFn(Database.client);
             const duration = Date.now() - start;
+            
+            // Record success metrics
+            recordDbQuery(queryName, "success", duration);
+            
             if (duration > 200) {
-                logger.warn(`🐢 [DB Slow Query] ${queryName} took ${duration}ms`);
+                structuredLogger.warn(`🐢 [DB Slow Query] ${queryName} took ${duration}ms`, { queryName, durationMs: duration });
             } else {
-                logger.debug(`[DB Query] ${queryName} took ${duration}ms`);
+                structuredLogger.debug(`[DB Query] ${queryName} took ${duration}ms`, { queryName, durationMs: duration });
             }
             return result;
         } catch (err) {
-            logger.error(`❌ [DB Query Error] ${queryName} failed: ${err.message}`);
+            const duration = Date.now() - start;
+            
+            // Record error metrics
+            recordDbQuery(queryName, "error", duration);
+            recordDbError(queryName, err.code || "unknown");
+            
+            structuredLogger.error(`❌ [DB Query Error] ${queryName} failed: ${err.message}`, {
+                queryName,
+                durationMs: duration,
+                errorCode: err.code
+            });
             throw this.mapError(err);
         }
     }
@@ -47,28 +63,48 @@ class DBWrapper {
                     return await txFn(tx);
                 });
                 const duration = Date.now() - start;
+                
+                // Record success metrics
+                recordDbTransaction(txName, "success", duration);
+                
                 if (duration > 500) {
-                    logger.warn(`🐢 [DB Slow Transaction] ${txName} took ${duration}ms`);
+                    structuredLogger.warn(`🐢 [DB Slow Transaction] ${txName} took ${duration}ms`, { txName, durationMs: duration });
                 } else {
-                    logger.debug(`[DB Transaction] ${txName} completed in ${duration}ms`);
+                    structuredLogger.debug(`[DB Transaction] ${txName} completed in ${duration}ms`, { txName, durationMs: duration });
                 }
                 return result;
             } catch (err) {
+                const duration = Date.now() - start;
+                
                 // Check if the error is a retryable transient database error:
                 // Prisma Code P2034: Transaction failed due to write conflict or deadlock
-                // Or standard PostgreSQL deadlock messages
+                // Or standard PostgreSQL deadlock/serialization messages
                 const isRetryable = err.code === "P2034" || 
                                     (err.message && err.message.toLowerCase().includes("deadlock")) ||
                                     (err.message && err.message.toLowerCase().includes("conflict"));
 
                 if (isRetryable && attempt < maxRetries) {
                     const backoff = attempt * 150; // Exponential backoff: 150ms, 300ms...
-                    logger.warn(`🔄 [DB Conflict] ${txName} failed (Attempt ${attempt}/${maxRetries}). Retrying in ${backoff}ms...`);
+                    structuredLogger.warn(`🔄 [DB Conflict] ${txName} failed (Attempt ${attempt}/${maxRetries}). Retrying in ${backoff}ms...`, {
+                        txName,
+                        attempt,
+                        backoffMs: backoff,
+                        errorCode: err.code
+                    });
                     await new Promise(res => setTimeout(res, backoff));
                     continue;
                 }
                 
-                logger.error(`❌ [DB Transaction Failure] ${txName} failed: ${err.message}`);
+                // Record final error metrics
+                recordDbTransaction(txName, "error", duration);
+                recordDbError(txName, err.code || "unknown");
+                
+                structuredLogger.error(`❌ [DB Transaction Failure] ${txName} failed: ${err.message}`, {
+                    txName,
+                    attempt,
+                    durationMs: duration,
+                    errorCode: err.code
+                });
                 throw this.mapError(err);
             }
         }
@@ -98,6 +134,8 @@ class DBWrapper {
             const customErr = new Error(`Not Found: Database record does not exist.`);
             customErr.statusCode = 404;
             customErr.code = "RECORD_NOT_FOUND";
+            customErr.meta = err.meta;
+            customErr.originalCode = err.code;
             return customErr;
         }
 
@@ -106,6 +144,8 @@ class DBWrapper {
             const customErr = new Error(`Bad Request: Foreign key constraint violation.`);
             customErr.statusCode = 400;
             customErr.code = "FOREIGN_KEY_VIOLATION";
+            customErr.meta = err.meta;
+            customErr.originalCode = err.code;
             return customErr;
         }
 

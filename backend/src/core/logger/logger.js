@@ -18,7 +18,11 @@ const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
   winston.format.printf(
-    ({ timestamp, level, message, stack }) => `${timestamp} ${level}: ${message} ${stack || ""}`
+    ({ timestamp, level, message, traceId, stack, ...meta }) => {
+      const traceString = traceId ? `[${traceId}] ` : "";
+      const metaString = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : "";
+      return `${timestamp} ${level}: ${traceString}${message}${metaString} ${stack || ""}`;
+    }
   )
 );
 
@@ -31,7 +35,7 @@ const logger = winston.createLogger({
   transports: [
     // Console log for development / PM2 tracking
     new winston.transports.Console({
-      format: consoleFormat,
+      format: logFormat,
     }),
 
     // Rotate standard application logs daily (keeps 14 days)
