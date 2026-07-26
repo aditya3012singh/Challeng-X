@@ -11,6 +11,8 @@ import { metricsMiddleware } from "./api/middleware/metrics.middleware.js";
 import { metricsToPrometheus } from "./core/metrics/prometheus.js";
 import metricsCollector from "./core/metrics/metricsCollector.js";
 import healthCheckService from "./core/health/healthCheck.js";
+import responseMiddleware from "./api/middleware/response.middleware.js";
+import timeoutMiddleware from "./api/middleware/timeout.middleware.js";
 
 // Routes
 import AuthRoutes from "./modules/auth/auth.routes.js";
@@ -50,6 +52,12 @@ class App {
 
     // ✅ PHASE 6: Add trace ID middleware for observability
     app.use(traceIdMiddleware);
+
+    // ⚡ Unified Response Formatting helper
+    app.use(responseMiddleware);
+
+    // ⏱️ Global request timeout guard (15 seconds)
+    app.use(timeoutMiddleware(15000));
 
     // ✅ PHASE 1A: Add Prometheus metrics middleware
     app.use(metricsMiddleware);
