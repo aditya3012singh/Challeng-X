@@ -1,5 +1,6 @@
 import RedisClient from "../../core/cache/redis.client.js";
 import Database from "../../core/config/db.js";
+import DBWrapper from "../../core/config/db.wrapper.js";
 import UserCache from "../../core/cache/userCache.js";
 
 const GLOBAL_ZSET_KEY = "leaderboard:global:zset";
@@ -11,11 +12,13 @@ class LeaderboardService {
   static async warmUpZSet() {
     try {
       console.log("🏆 [LeaderboardService] Warming up global Redis ZSET...");
-      const topUsers = await Database.client.user.findMany({
-        take: 1000,
-        orderBy: [{ rankPoints: "desc" }, { wins: "desc" }],
-        select: { id: true, rankPoints: true }
-      });
+      const topUsers = await DBWrapper.execute("leaderboardWarmUpZSet", (db) =>
+        db.user.findMany({
+          take: 1000,
+          orderBy: [{ rankPoints: "desc" }, { wins: "desc" }],
+          select: { id: true, rankPoints: true }
+        })
+      );
 
       if (topUsers.length === 0) return;
 
@@ -96,26 +99,30 @@ class LeaderboardService {
     let where = {};
 
     if (filter === 'REGIONAL' && userId) {
-      const user = await Database.client.user.findUnique({
-        where: { id: userId },
-        select: { region: true, country: true }
-      });
+      const user = await DBWrapper.execute("leaderboardGetUserRegion", (db) =>
+        db.user.findUnique({
+          where: { id: userId },
+          select: { region: true, country: true }
+        })
+      );
       if (user?.region) {
         where.region = user.region;
       } else if (user?.country) {
         where.country = user.country;
       }
     } else if (filter === 'FRIENDS' && userId) {
-      const friendships = await Database.client.friendRequest.findMany({
-        where: {
-          status: 'ACCEPTED',
-          OR: [
-            { senderId: userId },
-            { receiverId: userId }
-          ]
-        },
-        select: { senderId: true, receiverId: true }
-      });
+      const friendships = await DBWrapper.execute("leaderboardGetFriendships", (db) =>
+        db.friendRequest.findMany({
+          where: {
+            status: 'ACCEPTED',
+            OR: [
+              { senderId: userId },
+              { receiverId: userId }
+            ]
+          },
+          select: { senderId: true, receiverId: true }
+        })
+      );
 
       const friendIds = friendships.flatMap(f => [f.senderId, f.receiverId]);
       const uniqueFriendIds = [...new Set([...friendIds, userId])];
@@ -123,26 +130,30 @@ class LeaderboardService {
     }
 
     const [users, total] = await Promise.all([
-      Database.client.user.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: [
-          { rankPoints: "desc" },
-          { wins: "desc" }
-        ],
-        select: {
-          id: true,
-          username: true,
-          rankPoints: true,
-          wins: true,
-          losses: true,
-          profilePic: true,
-          country: true,
-          region: true
-        }
-      }),
-      Database.client.user.count({ where })
+      DBWrapper.execute("leaderboardGetUsersPaginated", (db) =>
+        db.user.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: [
+            { rankPoints: "desc" },
+            { wins: "desc" }
+          ],
+          select: {
+            id: true,
+            username: true,
+            rankPoints: true,
+            wins: true,
+            losses: true,
+            profilePic: true,
+            country: true,
+            region: true
+          }
+        })
+      ),
+      DBWrapper.execute("leaderboardCountUsers", (db) =>
+        db.user.count({ where })
+      )
     ]);
 
     // Populate ZSET if GLOBAL query ran against DB
