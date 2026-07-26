@@ -198,9 +198,11 @@ class MatchmakingService {
 
     if (!selectedProblem) {
       // Fallback to DB if cache is empty
-      const problems = await Database.client.problem.findMany({
-        where: { difficulty }
-      });
+      const problems = await DBWrapper.execute("matchmakingGetProblemFallback", (db) =>
+        db.problem.findMany({
+          where: { difficulty }
+        })
+      );
 
       if (problems.length === 0) {
         // Notify players - no problems available
@@ -736,4 +738,4 @@ class MatchmakingService {
   }
 }
 
-export default MatchmakingService;
+export default MatchmakingService;  
