@@ -5,43 +5,34 @@
 import SubmissionOrchestrator from "./submission.orchestrator.js";
 
 class SubmissionController {
-  static async submitCode(req, res, next) {
-    try {
+  static async submitCode(req, res) {
+    const { code, language, battleId, problemId, contestId } = req.validated.body;
+    const userId = req.user.id; // from auth middleware
 
-      const { code, language, battleId, problemId, contestId } = req.body;
+    const result = await SubmissionOrchestrator.processSubmission({
+      userId,
+      battleId,
+      problemId,
+      contestId,
+      code,
+      language,
+      status: "QUEUED"
+    });
 
-      const userId = req.user.id; // from auth middleware
-
-      const result = await SubmissionOrchestrator.processSubmission({
-        userId,
-        battleId,
-        problemId,
-        contestId,
-        code,
-        language,
-        status: "QUEUED"
-      });
-
-      res.status(200).json(result);
-
-    } catch (err) {
-      next(err);
-    }
+    res.status(200).json(result);
   }
 
-  static async getSubmissionStatus(req, res, next) {
-    try {
-      const { id } = req.params;
-      const result = await SubmissionOrchestrator.getSubmissionById(id);
+  static async getSubmissionStatus(req, res) {
+    const { id } = req.params;
+    const result = await SubmissionOrchestrator.getSubmissionById(id);
 
-      if (!result) {
-        return res.status(404).json({ error: "Submission not found" });
-      }
-
-      res.status(200).json(result);
-    } catch (err) {
-      next(err);
+    if (!result) {
+      const err = new Error("Submission not found");
+      err.statusCode = 404;
+      throw err;
     }
+    
+    res.status(200).json(result);
   }
 }
 
