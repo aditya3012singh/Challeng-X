@@ -20,7 +20,7 @@ export class WarmContainer {
         this._proc = spawn("docker", [
             "run",
             "-i",
-            "--memory", "512m",
+            "--memory", env.CONTAINER_MEMORY_LIMIT || "256m",
             "--pids-limit", "512",
             "--cpus", "2.0",
             "-v", `${env.CODEARENA_RUNNERS_PATH}:/runners:ro`,

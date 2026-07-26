@@ -12,6 +12,9 @@ export default {
     // Logging
     LOG_LEVEL: process.env.LOG_LEVEL || 'info',
 
+    // Container memory limit
+    CONTAINER_MEMORY_LIMIT: process.env.CONTAINER_MEMORY_LIMIT || '256m',
+
     // Runners Path on Host (for Docker-out-of-Docker sibling mounts)
     CODEARENA_RUNNERS_PATH: process.env.CODEARENA_RUNNERS_PATH || '/runners',
 };
