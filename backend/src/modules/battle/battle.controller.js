@@ -7,140 +7,109 @@ import BattleService from "./battle.service.js";
 import SubmissionOrchestrator from "../submission/submission.orchestrator.js";
 
 class BattleController {
-    static async createBattleRandomQuestionController(req, res, next) {
+    static async createBattleRandomQuestionController(req, res) {
         const userId = req.user.id;
-        try {
-            const battle = await BattleService.createBattleRandomQuestionService(userId);
-            // console.log("Created battle with random question:", battle);
-            res.status(201).json(battle);
-        } catch (error) {
-            next(error);
-        }
+        const battle = await BattleService.createBattleRandomQuestionService(userId);
+        res.status(201).json(battle);
     }
 
-    static async createBattleWithSelectedQuestionController(req, res, next) {
+    static async createBattleWithSelectedQuestionController(req, res) {
         const userId = req.user.id;
-        const { problemId } = req.body;
-        try {
-            const battle = await BattleService.createBattleWithSelectedQuestionService(userId, problemId);
-            //  console.log("Created battle with selected question:", battle);
-            res.status(201).json(battle);
-        } catch (error) {
-            next(error);
-        }
+        const { problemId } = req.validated.body;
+        const battle = await BattleService.createBattleWithSelectedQuestionService(userId, problemId);
+        res.status(201).json(battle);
     }
 
-    static async joinBattleController(req, res, next) {
+    static async joinBattleController(req, res) {
         const userId = req.user.id;
-        const { battleCode } = req.body;
-        try {
-            const battle = await BattleService.joinBattleService(battleCode, userId);
-            res.status(200).json(battle);
-        } catch (error) {
-            next(error);
-        }
+        const { battleCode } = req.validated.body;
+        const battle = await BattleService.joinBattleService(battleCode, userId);
+        res.status(200).json(battle);
     }
 
-    static async getBattleController(req, res, next) {
+    static async getBattleController(req, res) {
         const { battleId } = req.params;
         const userId = req.user?.id;
-        try {
-            const battle = await BattleService.getBattle(battleId, userId);
-            // Attach myUserId for frontend convenience
-            res.status(200).json({ ...battle, myUserId: userId });
-        } catch (error) {
-            next(error);
-        }
+        const battle = await BattleService.getBattle(battleId, userId);
+        res.status(200).json({ ...battle, myUserId: userId });
     }
 
-    static async getLiveBattlesController(req, res, next) {
-        try {
-            const liveBattles = await BattleService.getLiveBattlesService();
-            res.status(200).json(liveBattles);
-        } catch (error) {
-            next(error);
-        }
+    static async getLiveBattlesController(req, res) {
+        const liveBattles = await BattleService.getLiveBattlesService();
+        res.status(200).json(liveBattles);
     }
 
-    static async submitBattleCodeController(req, res, next) {
+    static async submitBattleCodeController(req, res) {
         const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000";
         const userId = req.user?.id || GUEST_USER_ID;
         const { battleId } = req.params;
-        const { code, language, type } = req.body; // type: "RUN" or "SUBMIT"
+        const { code, language, type } = req.validated.body; // type: "RUN" or "SUBMIT"
 
         // Auth guard for submission
         if (!req.user && type === "SUBMIT") {
-            return res.status(401).json({ message: "Authentication required for final submission" });
+            const err = new Error("Authentication required for final submission");
+            err.statusCode = 401;
+            throw err;
         }
 
-        try {
-            const battle = await BattleService.getBattle(battleId, userId);
+        const battle = await BattleService.getBattle(battleId, userId);
 
-            if (!battle) {
-                return res.status(404).json({ message: "Battle not found" });
-            }
-
-            if (battle.status === "FINISHED") {
-                return res.status(400).json({ message: "Battle has already ended" });
-            }
-
-            // Allow submission if battle is WAITING or ONGOING
-            if (battle.status !== "ONGOING" && battle.status !== "WAITING") {
-                return res.status(400).json({ message: "Battle not active" });
-            }
-
-            const submissionResult = await SubmissionOrchestrator.processSubmission({
-                userId,
-                problemId: battle.problemId,
-                code,
-                language,
-                battleId,
-                squidGameId: null,
-                type: type || "SUBMIT"
-            });
-
-            // Battle finish is handled asynchronously by the worker via socket event.
-            // No synchronous finishBattleService call here.
-            res.status(200).json(submissionResult);
-        } catch (error) {
-            console.error("Submit battle code error:", error);
-            next(error);
+        if (!battle) {
+            const err = new Error("Battle not found");
+            err.statusCode = 404;
+            throw err;
         }
+
+        if (battle.status === "FINISHED") {
+            const err = new Error("Battle has already ended");
+            err.statusCode = 400;
+            throw err;
+        }
+
+        // Allow submission if battle is WAITING or ONGOING
+        if (battle.status !== "ONGOING" && battle.status !== "WAITING") {
+            const err = new Error("Battle not active");
+            err.statusCode = 400;
+            throw err;
+        }
+
+        const submissionResult = await SubmissionOrchestrator.processSubmission({
+            userId,
+            problemId: battle.problemId,
+            code,
+            language,
+            battleId,
+            squidGameId: null,
+            type: type || "SUBMIT"
+        });
+
+        res.status(200).json(submissionResult);
     }
 
-    static async forfeitBattleController(req, res, next) {
+    static async forfeitBattleController(req, res) {
         const userId = req.user.id;
         const { battleId } = req.params;
 
-        try {
-            const result = await BattleService.forfeitBattle(battleId, userId);
-            if (!result) {
-                return res.status(400).json({ message: "Battle could not be forfeited (might already be finished)" });
-            }
-            res.status(200).json({ message: "Battle forfeited successfully", battle: result });
-        } catch (error) {
-            console.error("Forfeit battle error:", error);
-            next(error);
+        const result = await BattleService.forfeitBattle(battleId, userId);
+        if (!result) {
+            const err = new Error("Battle could not be forfeited (might already be finished)");
+            err.statusCode = 400;
+            throw err;
         }
+        res.status(200).json({ message: "Battle forfeited successfully", battle: result });
     }
 
-    static async battleHistory(req, res, next) {
-
+    static async battleHistory(req, res) {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        try {
-            const history = await BattleService.getBattleHistory(
-                req.user.id,
-                page,
-                limit
-            );
+        const history = await BattleService.getBattleHistory(
+            req.user.id,
+            page,
+            limit
+        );
 
-            res.json(history);
-
-        } catch (err) {
-            next(err);
-        }
+        res.json(history);
     }
 }
 
