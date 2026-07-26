@@ -1,4 +1,4 @@
-import logger from "../../core/logger/logger.js";
+import structuredLogger from "../../core/logger/structuredLogger.js";
 
 /**
  * Centralized Error Handler Middleware
@@ -7,12 +7,37 @@ import logger from "../../core/logger/logger.js";
  * to the client by sending a generic 500 message for unhandled exceptions.
  */
 const errorHandler = (err, req, res, next) => {
-    // Log the actual error to the server console so developers can debug
-    logger.error(`[❌ ERROR] ${req.method} ${req.originalUrl}`);
-    logger.error(err.stack || err.message || err);
+    let statusCode = err.statusCode || 500;
+    let message = err.message || "An error occurred";
 
-    // If it's a known operational error with a specific status code (e.g. from validation)
-    const statusCode = err.statusCode || 500;
+    // 🛡️ Map Prisma database errors to clean client response codes
+    if (err.code) {
+        switch (err.code) {
+            case "P2002": // Unique constraint failed (e.g. duplicate username or email)
+                statusCode = 409;
+                const target = err.meta?.target ? ` (${err.meta.target.join(", ")})` : "";
+                message = `A record with this unique field already exists${target}.`;
+                break;
+            case "P2025": // Record to update/delete/find not found
+                statusCode = 404;
+                message = "The requested record was not found.";
+                break;
+            case "P2003": // Foreign key constraint failed
+                statusCode = 400;
+                message = "Database relationship integrity violation.";
+                break;
+            default:
+                break;
+        }
+    }
+
+    // 📊 Log the error structured with its traceId automatically bound via AsyncLocalStorage
+    structuredLogger.error(`[❌ ERROR] ${req.method} ${req.originalUrl}`, {
+        errorMessage: err.message,
+        errorStack: err.stack,
+        prismaCode: err.code,
+        statusCode
+    });
 
     if (statusCode === 500) {
         // Hide the actual error details from the client for 500s
@@ -22,10 +47,10 @@ const errorHandler = (err, req, res, next) => {
         });
     }
 
-    // Allow 4xx errors (like 400 Bad Request, 401 Unauthorized) to pass their messages
+    // Allow 4xx/operational errors to pass their messages safely to the client
     return res.status(statusCode).json({
         success: false,
-        message: err.message || "An error occurred"
+        message
     });
 };
 
