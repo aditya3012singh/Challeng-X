@@ -25,8 +25,7 @@ class AuthController {
         res
             .cookie("accessToken", accessToken, CookieOptions.accessCookieOptions)
             .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
-            .json({
-                message: "Login successful",
+            .ok({
                 accessToken,
                 user: {
                     id: user.id,
@@ -34,7 +33,7 @@ class AuthController {
                     email: user.email,
                     role: user.role
                 }
-            });
+            }, "Login successful");
 
         // ✅ Emit event
         eventBus.emitEvent(EventTypes.USER_AUTHENTICATED, {
@@ -50,11 +49,9 @@ class AuthController {
         const { accessToken, refreshToken, user, message } = await AuthService.registerService(email, username, password);
 
         res
-            .status(201)
             .cookie("accessToken", accessToken, CookieOptions.accessCookieOptions)
             .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
-            .json({
-                message,
+            .created({
                 accessToken,
                 user: {
                     id: user.id,
@@ -62,7 +59,7 @@ class AuthController {
                     email: user.email,
                     role: user.role
                 }
-            });
+            }, message);
     }
 
     static async logout(req, res) {
@@ -81,7 +78,7 @@ class AuthController {
         res
             .clearCookie("accessToken", CookieOptions.accessCookieOptions)
             .clearCookie("refreshToken", CookieOptions.refreshCookieOptions)
-            .json({ message: "Logout successful" });
+            .ok({}, "Logout successful");
     }
 
     static async getProfile(req, res) {
@@ -91,7 +88,7 @@ class AuthController {
         try {
             const cached = await RedisClient.client.get(cacheKey);
             if (cached) {
-                return res.json(JSON.parse(cached));
+                return res.status(200).json(JSON.parse(cached));
             }
         } catch (err) {
             // Cache hit failure is handled silently
@@ -166,13 +163,19 @@ class AuthController {
             } 
         };
 
+        const resultBody = {
+            success: true,
+            message: "Profile fetched successfully",
+            data: responseData
+        };
+
         try {
-            await RedisClient.client.set(cacheKey, JSON.stringify(responseData), "EX", 3600); // 1 Hour TTL
+            await RedisClient.client.set(cacheKey, JSON.stringify(resultBody), "EX", 3600); // 1 Hour TTL
         } catch (err) {
             // Cache write failure is handled silently
         }
 
-        res.json(responseData);
+        res.ok(responseData, "Profile fetched successfully");
     }
 
     static async refreshToken(req, res) {
@@ -245,13 +248,13 @@ class AuthController {
         const totalBattles = user.wins + user.losses;
         const winRate = totalBattles > 0 ? ((user.wins / totalBattles) * 100).toFixed(2) : 0;
 
-        res.json({
+        res.ok({
             user: {
                 ...user,
                 totalBattles,
                 winRate: parseFloat(winRate)
             }
-        });
+        }, "Public profile fetched successfully");
     }
     static async updateProfile(req, res) {
         const userId = req.user.id;
@@ -294,7 +297,7 @@ class AuthController {
 
         await RedisClient.client.del(`user:full_profile:${userId}`).catch(() => {});
 
-        res.json({ message: "Profile updated successfully", user: updatedUser });
+        res.ok({ user: updatedUser }, "Profile updated successfully");
     }
 
     static async getProfileUploadUrl(req, res) {
@@ -312,12 +315,12 @@ class AuthController {
 
         const { uploadUrl, fileUrl } = await S3Service.getPresignedUrl(key, fileType);
 
-        res.json({ uploadUrl, fileUrl });
+        res.ok({ uploadUrl, fileUrl }, "Upload URL generated successfully");
     }
     static async forgotPassword(req, res) {
         const { email } = req.validated.body;
         const result = await AuthService.forgotPasswordService(email);
-        res.json(result);
+        res.ok(result, "Reset instructions processed");
     }
 
     static async resetPassword(req, res) {
@@ -333,7 +336,7 @@ class AuthController {
         }
 
         const result = await AuthService.resetPasswordService(token, newPassword);
-        res.json(result);
+        res.ok(result, "Password reset successfully");
     }
 
     static async socialAuthCallback(req, res) {
@@ -425,7 +428,7 @@ class AuthController {
             })
         );
 
-        res.json({ message: "Password updated successfully" });
+        res.ok({}, "Password updated successfully");
     }
 }
 

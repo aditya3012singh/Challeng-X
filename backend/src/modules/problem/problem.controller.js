@@ -9,7 +9,7 @@ import { parsePagination, createPaginationMeta } from "../../core/pagination/pag
 class ProblemController {
     static async createProblem(req, res) {
         const problem = await ProblemService.createProblemService(req.validated.body);
-        return res.status(201).json({ message: "Problem created successfully", problem });
+        res.created(problem, "Problem created successfully");
     }
 
     static async getAllProblems(req, res) {
@@ -38,11 +38,10 @@ class ProblemController {
             })
         );
 
-        return res.status(200).json({ 
-            message: "Problems fetched successfully", 
-            data: problems,
+        res.ok({ 
+            problems,
             meta: createPaginationMeta(total, page, limit)
-        });
+        }, "Problems fetched successfully");
     }
 
     static async getProblemById(req, res) {
@@ -65,14 +64,13 @@ class ProblemController {
 
         const { hints, userHints, ...securedProblem } = problem;
 
-        return res.status(200).json({ 
-            message: "Problem fetched successfully", 
+        res.ok({ 
             problem: {
                 ...securedProblem,
                 hints: securedHints,
                 totalHints: hints.length
             } 
-        });
+        }, "Problem fetched successfully");
     }
 
     static async unlockHint(req, res) {
@@ -81,7 +79,8 @@ class ProblemController {
         const userId = req.user.id;
 
         const result = await ProblemService.unlockHintService(userId, problemId, hintIndex, battleId);
-        return res.status(200).json(result);
+        const { message: hintMsg, ...data } = result;
+        res.ok(data, hintMsg || "Hint unlocked successfully");
     }
 
     static async getPersonalizedAIHint(req, res) {
@@ -131,11 +130,10 @@ class ProblemController {
             })
         );
 
-        return res.status(200).json({
-            message: "AI Mentor has analyzed your code stream.",
+        res.ok({
             hint,
             remainingCores: user.cyberCores - MENTOR_COST
-        });
+        }, "AI Mentor has analyzed your code stream.");
     }
 }
 

@@ -10,7 +10,7 @@ class LeaderboardController {
         const userId = req.user?.id;
 
         const leaderboard = await LeaderboardService.getLeaderboard(page, limit, filter, userId);
-        res.json(leaderboard);
+        res.ok(leaderboard, "Leaderboard fetched successfully");
     }
 }
 

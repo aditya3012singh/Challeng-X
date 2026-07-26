@@ -10,33 +10,33 @@ class BattleController {
     static async createBattleRandomQuestionController(req, res) {
         const userId = req.user.id;
         const battle = await BattleService.createBattleRandomQuestionService(userId);
-        res.status(201).json(battle);
+        res.created(battle, "Random battle created successfully");
     }
 
     static async createBattleWithSelectedQuestionController(req, res) {
         const userId = req.user.id;
         const { problemId } = req.validated.body;
         const battle = await BattleService.createBattleWithSelectedQuestionService(userId, problemId);
-        res.status(201).json(battle);
+        res.created(battle, "Selected question battle created successfully");
     }
 
     static async joinBattleController(req, res) {
         const userId = req.user.id;
         const { battleCode } = req.validated.body;
         const battle = await BattleService.joinBattleService(battleCode, userId);
-        res.status(200).json(battle);
+        res.ok(battle, "Joined battle successfully");
     }
 
     static async getBattleController(req, res) {
         const { battleId } = req.params;
         const userId = req.user?.id;
         const battle = await BattleService.getBattle(battleId, userId);
-        res.status(200).json({ ...battle, myUserId: userId });
+        res.ok({ ...battle, myUserId: userId }, "Battle details fetched successfully");
     }
 
     static async getLiveBattlesController(req, res) {
         const liveBattles = await BattleService.getLiveBattlesService();
-        res.status(200).json(liveBattles);
+        res.ok(liveBattles, "Live battles fetched successfully");
     }
 
     static async submitBattleCodeController(req, res) {
@@ -83,7 +83,7 @@ class BattleController {
             type: type || "SUBMIT"
         });
 
-        res.status(200).json(submissionResult);
+        res.ok(submissionResult, "Battle code submitted successfully");
     }
 
     static async forfeitBattleController(req, res) {
@@ -96,7 +96,7 @@ class BattleController {
             err.statusCode = 400;
             throw err;
         }
-        res.status(200).json({ message: "Battle forfeited successfully", battle: result });
+        res.ok({ battle: result }, "Battle forfeited successfully");
     }
 
     static async battleHistory(req, res) {
@@ -109,7 +109,7 @@ class BattleController {
             limit
         );
 
-        res.json(history);
+        res.ok(history, "Battle history fetched successfully");
     }
 }
 

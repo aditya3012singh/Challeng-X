@@ -8,20 +8,20 @@ class MatchmakingController {
         const { difficulty, socketId, lobbyId } = req.validated.body;
 
         const result = await MatchmakingService.joinQueue(userId, difficulty, socketId, lobbyId);
-        res.status(200).json(result);
+        res.ok(result, "Joined matchmaking queue successfully");
     }
 
     static async leaveQueueController(req, res) {
         const userId = req.user.id;
         try {
             const result = await MatchmakingService.leaveQueue(userId);
-            return res.status(200).json(result);
+            return res.ok(result, "Left matchmaking queue successfully");
         } catch (error) {
             // If user is already not in the queue, return success
             if (error.message === "Not in queue") {
-                return res.status(200).json({
+                return res.ok({
                     message: "User already not in queue"
-                });
+                }, "User already not in queue");
             }
             throw error;
         }
@@ -30,7 +30,7 @@ class MatchmakingController {
     static async getQueueStatusController(req, res) {
         const userId = req.user.id;
         const status = await MatchmakingService.getQueueStatus(userId);
-        res.status(200).json(status);
+        res.ok(status, "Queue status fetched successfully");
     }
 
     static async acceptMatchController(req, res) {
@@ -38,7 +38,7 @@ class MatchmakingController {
         const { proposalId } = req.validated.body;
 
         const result = await MatchmakingService.acceptMatch(userId, proposalId);
-        res.status(200).json(result);
+        res.ok(result, "Match accepted");
     }
 
     static async declineMatchController(req, res) {
@@ -46,12 +46,12 @@ class MatchmakingController {
         const { proposalId } = req.validated.body;
 
         const result = await MatchmakingService.declineMatch(userId, proposalId);
-        res.status(200).json(result);
+        res.ok(result, "Match declined");
     }
 
     static async getActivityFeedController(req, res) {
         const feed = await MatchmakingService.getGlobalActivityFeed();
-        res.status(200).json(feed);
+        res.ok(feed, "Activity feed fetched successfully");
     }
 }
 

@@ -8,11 +8,10 @@ class NotificationController {
         const notifications = await NotificationService.getNotifications(userId, limit, offset);
         const unreadCount = await NotificationService.getUnreadCount(userId);
         
-        res.json({
-            message: "Notifications fetched successfully",
+        res.ok({
             notifications,
             unreadCount
-        });
+        }, "Notifications fetched successfully");
     }
 
     static async markAsRead(req, res) {
@@ -20,13 +19,13 @@ class NotificationController {
         const userId = req.user.id;
         
         await NotificationService.markAsRead(id, userId);
-        res.json({ message: "Notification marked as read" });
+        res.ok({}, "Notification marked as read");
     }
 
     static async markAllAsRead(req, res) {
         const userId = req.user.id;
         await NotificationService.markAllAsRead(userId);
-        res.json({ message: "All notifications marked as read" });
+        res.ok({}, "All notifications marked as read");
     }
 
     static async deleteNotification(req, res) {
@@ -34,7 +33,7 @@ class NotificationController {
         const userId = req.user.id;
         
         await NotificationService.deleteNotification(id, userId);
-        res.json({ message: "Notification deleted" });
+        res.ok({}, "Notification deleted");
     }
 }
 

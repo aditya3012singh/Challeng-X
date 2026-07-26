@@ -19,7 +19,7 @@ class SubmissionController {
       status: "QUEUED"
     });
 
-    res.status(200).json(result);
+    res.ok(result, "Code submission accepted and queued");
   }
 
   static async getSubmissionStatus(req, res) {
@@ -31,8 +31,8 @@ class SubmissionController {
       err.statusCode = 404;
       throw err;
     }
-    
-    res.status(200).json(result);
+
+    res.ok(result, "Submission details fetched successfully");
   }
 }
 
