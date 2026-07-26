@@ -3,149 +3,139 @@
 // • Fetch details
 
 import ProblemService from "./problem.service.js";
-import TestcaseService from "../testcase/testcase.service.js";
-import ProblemSchema from "./problem.schema.js";
-import Database from "../../core/config/db.js";
+import DBWrapper from "../../core/config/db.wrapper.js";
 import { parsePagination, createPaginationMeta } from "../../core/pagination/pagination.utils.js";
 
 class ProblemController {
     static async createProblem(req, res) {
-        const validation = ProblemSchema.createProblemSchema.safeParse(req.body);
-        if (!validation.success) {
-            return res.status(400).json({ errors: validation.error.errors });
-        }
-        try {
-            const problem = await ProblemService.createProblemService(validation.data);
-            return res.status(201).json({ message: "Problem created successfully", problem: problem });
-        } catch (error) {
-            console.error("Error creating problem:", error);
-            return res.status(500).json({ message: "Internal server error" });
-        }
+        const problem = await ProblemService.createProblemService(req.validated.body);
+        return res.status(201).json({ message: "Problem created successfully", problem });
     }
 
     static async getAllProblems(req, res) {
-        try {
-            // Parse pagination parameters
-            const pagination = parsePagination(req, { defaultLimit: 20, maxLimit: 100 });
-            const { page, limit, offset } = pagination;
-            
-            // Parse difficulty filter from query params
-            const { difficulty } = req.query;
-            const whereClause = difficulty && ['EASY', 'MEDIUM', 'HARD'].includes(difficulty.toUpperCase())
-                ? { difficulty: difficulty.toUpperCase() }
-                : {};
+        // Parse pagination parameters
+        const pagination = parsePagination(req, { defaultLimit: 20, maxLimit: 100 });
+        const { page, limit, offset } = pagination;
+        
+        // Parse difficulty filter from query params
+        const { difficulty } = req.query;
+        const whereClause = difficulty && ['EASY', 'MEDIUM', 'HARD'].includes(difficulty.toUpperCase())
+            ? { difficulty: difficulty.toUpperCase() }
+            : {};
 
-            // Get total count with filters applied
-            const total = await Database.client.problem.count({ where: whereClause });
+        // Get total count with filters applied
+        const total = await DBWrapper.execute("problemCountAllFiltered", (db) =>
+            db.problem.count({ where: whereClause })
+        );
 
-            // Get paginated problems with filters applied
-            const problems = await Database.client.problem.findMany({
+        // Get paginated problems with filters applied
+        const problems = await DBWrapper.execute("problemGetManyFiltered", (db) =>
+            db.problem.findMany({
                 where: whereClause,
                 skip: offset,
                 take: limit,
                 orderBy: { createdAt: 'desc' }
-            });
+            })
+        );
 
-            return res.status(200).json({ 
-                message: "Problems fetched successfully", 
-                data: problems,
-                meta: createPaginationMeta(total, page, limit)
-            });
-        } catch (error) {
-            console.error("Error fetching problems:", error);
-            return res.status(500).json({ message: "Internal server error" });
-        }
+        return res.status(200).json({ 
+            message: "Problems fetched successfully", 
+            data: problems,
+            meta: createPaginationMeta(total, page, limit)
+        });
     }
 
     static async getProblemById(req, res) {
         const { id: problemId } = req.params;
         const userId = req.user?.id;
         const { battleId, teamBattleMatchId } = req.query;
-        try {
-            const problem = await ProblemService.getProblemByIdService(problemId, userId, battleId, teamBattleMatchId);
-            if (!problem) {
-                return res.status(404).json({ message: "Problem not found" });
-            }
 
-            // Hide hints that are not unlocked
-            const unlockedIndexes = (problem.userHints || []).map(uh => uh.hintIndex);
-            const securedHints = problem.hints.map((hint, index) => {
-                return unlockedIndexes.includes(index) ? hint : null;
-            });
-
-            const { hints, userHints, ...securedProblem } = problem;
-
-            return res.status(200).json({ 
-                message: "Problem fetched successfully", 
-                problem: {
-                    ...securedProblem,
-                    hints: securedHints,
-                    totalHints: hints.length
-                } 
-            });
-        } catch (error) {
-            console.error("Error fetching problem:", error);
-            return res.status(500).json({ message: "Internal server error" });
+        const problem = await ProblemService.getProblemByIdService(problemId, userId, battleId, teamBattleMatchId);
+        if (!problem) {
+            const err = new Error("Problem not found");
+            err.statusCode = 404;
+            throw err;
         }
+
+        // Hide hints that are not unlocked
+        const unlockedIndexes = (problem.userHints || []).map(uh => uh.hintIndex);
+        const securedHints = problem.hints.map((hint, index) => {
+            return unlockedIndexes.includes(index) ? hint : null;
+        });
+
+        const { hints, userHints, ...securedProblem } = problem;
+
+        return res.status(200).json({ 
+            message: "Problem fetched successfully", 
+            problem: {
+                ...securedProblem,
+                hints: securedHints,
+                totalHints: hints.length
+            } 
+        });
     }
 
     static async unlockHint(req, res) {
         const { id: problemId } = req.params;
-        const { hintIndex, battleId } = req.body;
+        const { hintIndex, battleId } = req.validated.body;
         const userId = req.user.id;
 
-        if (hintIndex === undefined || hintIndex < 0 || hintIndex > 2) {
-            return res.status(400).json({ message: "Invalid hint index. Must be 0, 1, or 2." });
-        }
-
-        try {
-            const result = await ProblemService.unlockHintService(userId, problemId, hintIndex, battleId);
-            return res.status(200).json(result);
-        } catch (error) {
-            console.error("Error unlocking hint:", error);
-            return res.status(400).json({ message: error.message || "Failed to unlock hint" });
-        }
+        const result = await ProblemService.unlockHintService(userId, problemId, hintIndex, battleId);
+        return res.status(200).json(result);
     }
 
     static async getPersonalizedAIHint(req, res) {
         const { id: problemId } = req.params;
-        const { currentCode, language } = req.body;
+        const { currentCode, language } = req.validated.body;
         const userId = req.user.id;
 
-        try {
-            // 1. Check balance (AI Mentor costs more, e.g., 15)
-            const MENTOR_COST = 15;
-            const user = await Database.client.user.findUnique({
+        // 1. Check balance (AI Mentor costs more, e.g., 15)
+        const MENTOR_COST = 15;
+        const user = await DBWrapper.execute("problemGetAIHintUserCores", (db) =>
+            db.user.findUnique({
                 where: { id: userId },
                 select: { cyberCores: true, username: true }
-            });
+            })
+        );
 
-            if (user.cyberCores < MENTOR_COST) {
-                return res.status(400).json({ message: `Insufficient Cyber-Cores. Need ${MENTOR_COST} Cores for AI Mentor.` });
-            }
+        if (user.cyberCores < MENTOR_COST) {
+            const err = new Error(`Insufficient Cyber-Cores. Need ${MENTOR_COST} Cores for AI Mentor.`);
+            err.statusCode = 400;
+            throw err;
+        }
 
-            // 2. Get problem details
-            const problem = await ProblemService.getProblemByIdService(problemId);
-            
-            // 3. Generate AI Hint
+        // 2. Get problem details
+        const problem = await ProblemService.getProblemByIdService(problemId);
+        if (!problem) {
+            const err = new Error("Problem not found");
+            err.statusCode = 404;
+            throw err;
+        }
+        
+        // 3. Generate AI Hint
+        let hint;
+        try {
             const AIService = (await import("../ai/ai.service.js")).default;
-            const hint = await AIService.generateHint(problem, currentCode, language);
+            hint = await AIService.generateHint(problem, currentCode, language);
+        } catch (aiErr) {
+            const err = new Error("AI Mentor connection lost. Try again later.");
+            err.statusCode = 502; // Bad Gateway
+            throw err;
+        }
 
-            // 4. Deduct coins
-            await Database.client.user.update({
+        // 4. Deduct coins
+        await DBWrapper.execute("problemDeductCoresForAIHint", (db) =>
+            db.user.update({
                 where: { id: userId },
                 data: { cyberCores: { decrement: MENTOR_COST } }
-            });
+            })
+        );
 
-            return res.status(200).json({
-                message: "AI Mentor has analyzed your code stream.",
-                hint,
-                remainingCores: user.cyberCores - MENTOR_COST
-            });
-        } catch (error) {
-            console.error("AI Mentor error:", error);
-            return res.status(500).json({ message: "AI Mentor connection lost. Try again later." });
-        }
+        return res.status(200).json({
+            message: "AI Mentor has analyzed your code stream.",
+            hint,
+            remainingCores: user.cyberCores - MENTOR_COST
+        });
     }
 }
 

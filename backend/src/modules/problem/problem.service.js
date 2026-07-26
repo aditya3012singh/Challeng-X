@@ -1,20 +1,21 @@
-
 // create problems service
 
 import RedisClient from "../../core/cache/redis.client.js";
 import Database from "../../core/config/db.js";
+import DBWrapper from "../../core/config/db.wrapper.js";
 
 class ProblemService {
     static async createProblemService(data) {
-        const problem = await Database.client.problem.create({
-            data: {
-                title: data.title,
-                description: data.description,
-                difficulty: data.difficulty,
-                timeLimitMs: data.timeLimitMs || 2000,
-                // memoryLimitMb: data.memoryLimitMb || 256,
-            }
-        })
+        const problem = await DBWrapper.execute("problemCreate", (db) =>
+            db.problem.create({
+                data: {
+                    title: data.title,
+                    description: data.description,
+                    difficulty: data.difficulty,
+                    timeLimitMs: data.timeLimitMs || 2000,
+                }
+            })
+        );
         await RedisClient.client.del("problems:all");
         return problem;
     }
@@ -23,24 +24,25 @@ class ProblemService {
         const key = "problems:all";
 
         const cached = await RedisClient.client.get(key);
-
         if (cached) {
             return JSON.parse(cached);
         }
 
-        const problems = await Database.client.problem.findMany({
-            select: {
-                id: true,
-                title: true,
-                difficulty: true,
-                tags: { select: { name: true } }
-            }
-        });
+        const problems = await DBWrapper.execute("problemGetAll", (db) =>
+            db.problem.findMany({
+                select: {
+                    id: true,
+                    title: true,
+                    difficulty: true,
+                    tags: { select: { name: true } }
+                }
+            })
+        );
         await RedisClient.client.set(key, JSON.stringify(problems), 'EX', 3600);
         return problems;
     }
 
-    static async getProblemByIdService(problemId, userId = null) {
+    static async getProblemByIdService(problemId, userId = null, battleId = null, teamBattleMatchId = null) {
         const key = userId ? `problem:${problemId}:${userId}` : `problem:${problemId}`;
 
         const cached = await RedisClient.client.get(key);
@@ -48,34 +50,35 @@ class ProblemService {
             return JSON.parse(cached);
         }
 
-        const problem = await Database.client.problem.findUnique({
-            where: { id: problemId },
-            include: {
-                tags: { select: { name: true } },
-                testcases: {
-                    where: {
-                        OR: [
-                            { isHidden: false },
-                            { isSample: true }
-                        ]
-                    }
-                },
-                tags: true,
-                userHints: (userId && (battleId || teamBattleMatchId)) ? {
-                    where: { 
-                        userId,
-                        OR: [
-                            { battleId: battleId || undefined },
-                            { teamBattleMatchId: teamBattleMatchId || undefined }
-                        ]
+        const problem = await DBWrapper.execute("problemGetById", (db) =>
+            db.problem.findUnique({
+                where: { id: problemId },
+                include: {
+                    tags: { select: { name: true } },
+                    testcases: {
+                        where: {
+                            OR: [
+                                { isHidden: false },
+                                { isSample: true }
+                            ]
+                        }
                     },
-                    select: { hintIndex: true }
-                } : undefined
-            }
-        });
+                    userHints: (userId && (battleId || teamBattleMatchId)) ? {
+                        where: { 
+                            userId,
+                            OR: [
+                                { battleId: battleId || undefined },
+                                { teamBattleMatchId: teamBattleMatchId || undefined }
+                            ]
+                        },
+                        select: { hintIndex: true }
+                    } : undefined
+                }
+            })
+        );
 
         if (problem && userId) {
-            const unlockedIndices = problem.userHints.map(uh => uh.hintIndex);
+            const unlockedIndices = (problem.userHints || []).map(uh => uh.hintIndex);
             problem.hints = problem.hints.map((h, i) => unlockedIndices.includes(i) ? h : null);
         } else if (problem) {
             // For guests or when no userId is provided, hide all hints
@@ -89,9 +92,13 @@ class ProblemService {
     }
 
     static async unlockHintService(userId, problemId, hintIndex, battleId = null) {
-        if (hintIndex < 0 || hintIndex > 2) throw new Error("Invalid hint index");
+        if (hintIndex < 0 || hintIndex > 2) {
+            const err = new Error("Invalid hint index");
+            err.statusCode = 400;
+            throw err;
+        }
 
-        return await Database.client.$transaction(async (tx) => {
+        return await DBWrapper.transaction("problemUnlockHintTx", async (tx) => {
             // Determine match type
             let bId = null;
             let tbmId = null;
@@ -122,7 +129,9 @@ class ProblemService {
 
             const HINT_COST = 5;
             if (user.cyberCores < HINT_COST) {
-                throw new Error("Insufficient Cyber-Cores. Transmit failed.");
+                const err = new Error("Insufficient Cyber-Cores. Transmit failed.");
+                err.statusCode = 400;
+                throw err;
             }
 
             // 3. Perform transaction
@@ -158,22 +167,26 @@ class ProblemService {
     }
 
     static async getUnlockedHintsService(userId, problemId, battleId = null, teamBattleMatchId = null) {
-        const unlocked = await Database.client.userHint.findMany({
-            where: {
-                userId,
-                problemId,
-                OR: [
-                    { battleId: battleId || null },
-                    { teamBattleMatchId: teamBattleMatchId || null }
-                ]
-            },
-            select: { hintIndex: true }
-        });
+        const unlocked = await DBWrapper.execute("problemGetUnlockedHints", (db) =>
+            db.userHint.findMany({
+                where: {
+                    userId,
+                    problemId,
+                    OR: [
+                        { battleId: battleId || null },
+                        { teamBattleMatchId: teamBattleMatchId || null }
+                    ]
+                },
+                select: { hintIndex: true }
+            })
+        );
 
-        const problem = await Database.client.problem.findUnique({
-            where: { id: problemId },
-            select: { hints: true }
-        });
+        const problem = await DBWrapper.execute("problemGetHintsForUnlocked", (db) =>
+            db.problem.findUnique({
+                where: { id: problemId },
+                select: { hints: true }
+            })
+        );
 
         const result = [null, null, null];
         unlocked.forEach(u => {

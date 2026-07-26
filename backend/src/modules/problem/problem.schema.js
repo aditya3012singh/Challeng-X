@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 class ProblemSchema {
@@ -9,7 +8,16 @@ class ProblemSchema {
             errorMap: () => ({ message: "Difficulty must be either EASY, MEDIUM, or HARD" }),
         }),
         timeLimitMs: z.number().min(1, "Time limit must be at least 1 ms").optional(),
-        // memoryLimitMb: z.number().min(1, "Memory limit must be at least 1 MB").optional(),
+    });
+
+    static unlockHintSchema = z.object({
+        hintIndex: z.number().min(0).max(2, "Invalid hint index. Must be 0, 1, or 2."),
+        battleId: z.string().uuid("Invalid battle ID format").optional(),
+    });
+
+    static personalizedAIHintSchema = z.object({
+        currentCode: z.string().min(1, "Code cannot be empty"),
+        language: z.string().min(1, "Language is required"),
     });
 }
 
