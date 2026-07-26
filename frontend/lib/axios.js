@@ -55,6 +55,19 @@ const processQueue = (error, token = null) => {
 
 api.interceptors.response.use(
   (response) => {
+    if (response.data && response.data.success === true && response.data.data !== undefined) {
+      const originalData = response.data.data;
+      if (originalData && typeof originalData === "object") {
+        if (!Array.isArray(originalData)) {
+          originalData.success = response.data.success;
+          originalData.message = response.data.message;
+        } else {
+          Object.defineProperty(originalData, 'success', { value: response.data.success, enumerable: false, writable: true });
+          Object.defineProperty(originalData, 'message', { value: response.data.message, enumerable: false, writable: true });
+        }
+      }
+      response.data = originalData;
+    }
     return response;
   },
   async (error) => {
