@@ -1,34 +1,33 @@
-// POST /register
-// POST /login
-
 import express from "express";
 import AuthController from "./auth.controller.js";
 import AuthMiddleware from "./auth.middleware.js";
 import passport from "passport";
-// import { authLimiter } from "../middlewares/rateLimit.middleware.js";
+import asyncWrapper from "../../api/middleware/asyncWrapper.middleware.js";
+import validateRequest from "../../api/middleware/validateRequest.middleware.js";
+import AuthSchema from "./auth.schema.js";
 
 class AuthRoutes {
 	static createRouter() {
 		const router = express.Router();
 
 		// 🔐 Auth routes (Protected against brute-force credential stuffing)
-		router.post("/login", AuthController.login);
-		router.post("/register", AuthController.Register);
-		router.post("/logout", AuthMiddleware.handle, AuthController.logout);
-		router.get("/profile", AuthMiddleware.handle, AuthController.getProfile);
-		router.put("/profile", AuthMiddleware.handle, AuthController.updateProfile);
-		router.post("/change-password", AuthMiddleware.handle, AuthController.changePassword);
-		router.post("/refresh", AuthController.refreshToken);
+		router.post("/login", validateRequest(AuthSchema.loginSchema), asyncWrapper(AuthController.login));
+		router.post("/register", validateRequest(AuthSchema.registerSchema), asyncWrapper(AuthController.Register));
+		router.post("/logout", AuthMiddleware.handle, asyncWrapper(AuthController.logout));
+		router.get("/profile", AuthMiddleware.handle, asyncWrapper(AuthController.getProfile));
+		router.put("/profile", AuthMiddleware.handle, asyncWrapper(AuthController.updateProfile));
+		router.post("/change-password", AuthMiddleware.handle, validateRequest(AuthSchema.changePasswordSchema), asyncWrapper(AuthController.changePassword));
+		router.post("/refresh", asyncWrapper(AuthController.refreshToken));
 
 		// 🖼️ Get presigned URL for profile picture upload
-		router.get("/profile/upload-url", AuthMiddleware.handle, AuthController.getProfileUploadUrl);
+		router.get("/profile/upload-url", AuthMiddleware.handle, asyncWrapper(AuthController.getProfileUploadUrl));
 
 		// 👤 Public profile route (no auth required)
-		router.get("/user/:username", AuthController.getPublicProfile);
+		router.get("/user/:username", asyncWrapper(AuthController.getPublicProfile));
 
 		// 🔑 Password Reset Routes
-		router.post("/forgot-password", AuthController.forgotPassword);
-		router.post("/reset-password/:token", AuthController.resetPassword);
+		router.post("/forgot-password", validateRequest(AuthSchema.forgotPasswordSchema), asyncWrapper(AuthController.forgotPassword));
+		router.post("/reset-password/:token", asyncWrapper(AuthController.resetPassword));
 
 		// 🌐 Social Login Routes
 		router.get("/google", (req, res, next) => {

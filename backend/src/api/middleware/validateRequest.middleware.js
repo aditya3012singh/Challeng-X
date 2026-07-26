@@ -11,13 +11,26 @@ import { ZodError } from "zod";
  */
 const validateRequest = (schema) => (req, res, next) => {
     try {
-        const validated = schema.parse({
-            body: req.body,
-            query: req.query,
-            params: req.params,
-        });
+        // Detect if schema expects the full request object { body, query, params } or is flat
+        const shape = schema.shape || {};
+        const hasTopLevelKeys = Object.keys(shape).some(key => ["body", "query", "params"].includes(key));
         
-        req.validated = validated;
+        if (hasTopLevelKeys) {
+            const validated = schema.parse({
+                body: req.body,
+                query: req.query,
+                params: req.params,
+            });
+            req.validated = validated;
+            if (validated.body !== undefined) req.body = validated.body;
+            if (validated.query !== undefined) req.query = validated.query;
+            if (validated.params !== undefined) req.params = validated.params;
+        } else {
+            const validatedBody = schema.parse(req.body);
+            req.validated = { body: validatedBody };
+            req.body = validatedBody;
+        }
+        
         next();
     } catch (error) {
         if (error instanceof ZodError) {

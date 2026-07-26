@@ -14,15 +14,23 @@ class AuthService {
     const user = await DBWrapper.execute("authLoginGetUser", (db) =>
       db.user.findUnique({ where: { email } })
     );
-    if (!user) throw new Error("Invalid credentials");
+    if (!user) {
+      const err = new Error("Invalid credentials");
+      err.statusCode = 401;
+      throw err;
+    }
 
     // 🔒 account locked
     if (user.lockUntil && user.lockUntil > new Date()) {
-      throw new Error("Account locked. Try later.");
+      const err = new Error("Account locked. Try later.");
+      err.statusCode = 403;
+      throw err;
     }
 
     if (!user.password) {
-      throw new Error("This account was created via Google/GitHub. Please log in using Google or GitHub.");
+      const err = new Error("This account was created via Google/GitHub. Please log in using Google or GitHub.");
+      err.statusCode = 400;
+      throw err;
     }
 
     const isValid = await bcrypt.compare(password, user.password);
@@ -40,7 +48,9 @@ class AuthService {
           },
         })
       );
-      throw new Error("Invalid credentials");
+      const err = new Error("Invalid credentials");
+      err.statusCode = 401;
+      throw err;
     }
 
     // ✅ reset failures
@@ -262,7 +272,9 @@ class AuthService {
     );
 
     if (!user) {
-      throw new Error("Token is invalid or has expired");
+      const err = new Error("Token is invalid or has expired");
+      err.statusCode = 400;
+      throw err;
     }
 
     // Hash the new password
