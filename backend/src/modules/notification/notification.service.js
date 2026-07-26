@@ -1,23 +1,24 @@
 import Database from "../../core/config/db.js";
+import DBWrapper from "../../core/config/db.wrapper.js";
 import logger from "../../core/logger/logger.js";
-
-const prisma = Database.client;
 
 class NotificationService {
     static async createNotification(userId, { type, title, message, link }) {
         const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000";
         if (!userId || userId === GUEST_USER_ID || userId === 'guest') return null;
         try {
-            const notification = await prisma.notification.create({
-                data: {
-                    userId,
-                    type,
-                    title,
-                    message,
-                    link,
-                    isRead: false
-                }
-            });
+            const notification = await DBWrapper.execute("notificationCreate", (db) =>
+                db.notification.create({
+                    data: {
+                        userId,
+                        type,
+                        title,
+                        message,
+                        link,
+                        isRead: false
+                    }
+                })
+            );
 
             // Emit to user private room if online
             // Dynamic import to avoid circular dependency
@@ -41,41 +42,51 @@ class NotificationService {
     }
 
     static async getNotifications(userId, limit = 20, offset = 0) {
-        return prisma.notification.findMany({
-            where: { userId },
-            orderBy: { createdAt: "desc" },
-            take: Number(limit),
-            skip: Number(offset)
-        });
+        return DBWrapper.execute("notificationGetMany", (db) =>
+            db.notification.findMany({
+                where: { userId },
+                orderBy: { createdAt: "desc" },
+                take: Number(limit),
+                skip: Number(offset)
+            })
+        );
     }
 
     static async markAsRead(notificationId, userId) {
-        return prisma.notification.updateMany({
-            where: { 
-                id: notificationId, 
-                userId // Security: Ensure user owns notification
-            },
-            data: { isRead: true }
-        });
+        return DBWrapper.execute("notificationMarkAsRead", (db) =>
+            db.notification.updateMany({
+                where: { 
+                    id: notificationId, 
+                    userId // Security: Ensure user owns notification
+                },
+                data: { isRead: true }
+            })
+        );
     }
 
     static async markAllAsRead(userId) {
-        return prisma.notification.updateMany({
-            where: { userId, isRead: false },
-            data: { isRead: true }
-        });
+        return DBWrapper.execute("notificationMarkAllAsRead", (db) =>
+            db.notification.updateMany({
+                where: { userId, isRead: false },
+                data: { isRead: true }
+            })
+        );
     }
 
     static async getUnreadCount(userId) {
-        return prisma.notification.count({
-            where: { userId, isRead: false }
-        });
+        return DBWrapper.execute("notificationGetUnreadCount", (db) =>
+            db.notification.count({
+                where: { userId, isRead: false }
+            })
+        );
     }
 
     static async deleteNotification(notificationId, userId) {
-        return prisma.notification.deleteMany({
-            where: { id: notificationId, userId }
-        });
+        return DBWrapper.execute("notificationDelete", (db) =>
+            db.notification.deleteMany({
+                where: { id: notificationId, userId }
+            })
+        );
     }
 }
 
