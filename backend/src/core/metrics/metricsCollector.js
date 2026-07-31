@@ -112,7 +112,7 @@ class MetricsCollector {
             this.metrics.jobs.byType[jobName] = { queued: 0, completed: 0, failed: 0 };
         }
         this.metrics.jobs.byType[jobName].completed++;
-        this.metrics.timings.jobProcessing.push(duration);
+        this.pushTiming('jobProcessing', duration);
     }
 
     /**
@@ -153,7 +153,7 @@ class MetricsCollector {
         }
         this.metrics.requests.byPath[path]++;
 
-        this.metrics.timings.requestProcessing.push(duration);
+        this.pushTiming('requestProcessing', duration);
     }
 
     /**
@@ -173,12 +173,10 @@ class MetricsCollector {
             this.metrics.listeners.byName[listenerName] = { executed: 0, failed: 0 };
         }
         this.metrics.listeners.byName[listenerName].executed++;
-        
         if (failed) {
             this.metrics.listeners.byName[listenerName].failed++;
         }
-
-        this.metrics.timings.listenerExecution.push(duration);
+        this.pushTiming('listenerExecution', duration);
     }
 
     /**
@@ -191,6 +189,19 @@ class MetricsCollector {
             this.metrics.errors.byType[errorType] = 0;
         }
         this.metrics.errors.byType[errorType]++;
+    }
+
+    /**
+     * Push timing helper with a rolling window cap to prevent memory leaks
+     */
+    pushTiming(arrayName, duration) {
+        const arr = this.metrics.timings[arrayName];
+        if (arr) {
+            arr.push(duration);
+            if (arr.length > 1000) {
+                arr.shift();
+            }
+        }
     }
 
     /**

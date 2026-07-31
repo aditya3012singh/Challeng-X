@@ -1,4 +1,4 @@
-import { recordApiRequest } from '../../core/metrics/prometheus.js';
+import { recordApiRequest } from '../../core/metrics/index.js';
 import structuredLogger from '../../core/logger/structuredLogger.js';
 
 /**

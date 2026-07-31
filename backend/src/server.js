@@ -10,7 +10,7 @@ import Redis from "ioredis";
 import UserCache from "./core/cache/userCache.js";
 import ProblemCache from "./core/cache/problemCache.js";
 import TestcaseCache from "./core/cache/testcaseCache.js";
-import { updateQueueDepth } from "./core/metrics/prometheus.js";
+import { updateQueueDepth } from "./core/metrics/index.js";
 import { submissionQueue } from "./core/queue/submission.queue.js";
 
 

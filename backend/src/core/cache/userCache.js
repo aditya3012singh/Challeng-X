@@ -2,7 +2,7 @@ import RedisClient from "./redis.client.js";
 import Database from "../../core/config/db.js";
 import DBWrapper from "../../core/config/db.wrapper.js";
 import logger from "../../core/logger/logger.js";
-import { recordCacheOperation } from "../../core/metrics/prometheus.js";
+import { recordCacheOperation } from "../../core/metrics/index.js";
 
 const ONLINE_USERS_SET = "online_users";
 const PRESENCE_PREFIX = "presence:";

@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import env from "../../core/config/env.js";
 import logger from "../../core/logger/logger.js";
-import { recordGrpcRequest, recordJudgeExecution } from "../../core/metrics/prometheus.js";
+import { recordGrpcRequest, recordJudgeExecution } from "../../core/metrics/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

@@ -1,6 +1,6 @@
 import RedisClient from "../cache/redis.client.js";
 import logger from "../logger/logger.js";
-import { recordCacheOperation } from "../../core/metrics/prometheus.js";
+import { recordCacheOperation } from "../../core/metrics/index.js";
 
 const CACHE_PREFIX = "response:";
 const CACHE_TTL = 300; // 5 minutes default

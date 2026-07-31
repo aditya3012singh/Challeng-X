@@ -1,6 +1,6 @@
 import Database from "./db.js";
 import structuredLogger from "../logger/structuredLogger.js";
-import { recordDbQuery, recordDbTransaction, recordDbError } from "../metrics/prometheus.js";
+import { recordDbQuery, recordDbTransaction, recordDbError } from "../metrics/index.js";
 
 /**
  * DBWrapper
@@ -16,32 +16,9 @@ class DBWrapper {
      * @returns {Promise<any>}
      */
     static async execute(queryName, queryFn) {
-        const start = Date.now();
         try {
-            const result = await queryFn(Database.client);
-            const duration = Date.now() - start;
-            
-            // Record success metrics
-            recordDbQuery(queryName, "success", duration);
-            
-            if (duration > 200) {
-                structuredLogger.warn(`🐢 [DB Slow Query] ${queryName} took ${duration}ms`, { queryName, durationMs: duration });
-            } else {
-                structuredLogger.debug(`[DB Query] ${queryName} took ${duration}ms`, { queryName, durationMs: duration });
-            }
-            return result;
+            return await queryFn(Database.client);
         } catch (err) {
-            const duration = Date.now() - start;
-            
-            // Record error metrics
-            recordDbQuery(queryName, "error", duration);
-            recordDbError(queryName, err.code || "unknown");
-            
-            structuredLogger.error(`❌ [DB Query Error] ${queryName} failed: ${err.message}`, {
-                queryName,
-                durationMs: duration,
-                errorCode: err.code
-            });
             throw this.mapError(err);
         }
     }

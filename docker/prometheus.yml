@@ -30,7 +30,7 @@ scrape_configs:
   # Worker Process (if exposed on separate port)
   - job_name: 'worker'
     static_configs:
-      - targets: ['localhost:4001']
+      - targets: ['localhost:4000']
     metrics_path: '/metrics'
     scrape_interval: 30s
     scrape_timeout: 10s

@@ -8,7 +8,7 @@ import { rateLimit } from "express-rate-limit";
 import logger from "./core/logger/logger.js";
 import { traceIdMiddleware } from "./api/middleware/traceId.middleware.js";
 import { metricsMiddleware } from "./api/middleware/metrics.middleware.js";
-import { metricsToPrometheus } from "./core/metrics/prometheus.js";
+import { metricsToPrometheus } from "./core/metrics/index.js";
 import metricsCollector from "./core/metrics/metricsCollector.js";
 import healthCheckService from "./core/health/healthCheck.js";
 import responseMiddleware from "./api/middleware/response.middleware.js";

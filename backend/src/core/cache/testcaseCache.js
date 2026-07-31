@@ -2,7 +2,7 @@ import RedisClient from "./redis.client.js";
 import Database from "../../core/config/db.js";
 import S3Service from "../../integrations/s3/s3.service.js";
 import logger from "../../core/logger/logger.js";
-import { recordCacheOperation } from "../../core/metrics/prometheus.js";
+import { recordCacheOperation } from "../../core/metrics/index.js";
 
 const TESTCASE_PREFIX = "testcases:cached:";
 const TESTCASE_TTL = 86400; // 24 hours
