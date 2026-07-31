@@ -1,5 +1,5 @@
 import { recordApiRequest } from '../../core/metrics/prometheus.js';
-import logger from '../../core/logger/logger.js';
+import structuredLogger from '../../core/logger/structuredLogger.js';
 
 /**
  * Express middleware to record API metrics
@@ -26,7 +26,7 @@ export function metricsMiddleware(req, res, next) {
         duration
       });
     } catch (error) {
-      logger.error('Failed to record API metrics', {
+      structuredLogger.error('Failed to record API metrics', {
         error: error.message,
         endpoint,
         method: req.method
