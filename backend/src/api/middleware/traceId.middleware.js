@@ -13,18 +13,26 @@ import { contextStorage } from '../../core/logger/context.js';
  * - Log request start and end with trace ID
  */
 export function traceIdMiddleware(req, res, next) {
-    // Get or create trace ID
-    const traceId = req.headers['x-trace-id'] || `trace_${uuidv4()}`;
+    // Trace ID: parse from W3C traceparent or x-trace-id header, fallback to 32-character hex UUID
+    const traceparent = req.headers['traceparent'];
+    const parts = traceparent?.split('-');
+    const incomingTraceId = req.headers['x-trace-id'] || (parts?.length === 4 ? parts[1] : undefined);
+    
+    const traceId = incomingTraceId || uuidv4().replace(/-/g, '');
+    const requestId = `req_${uuidv4().replace(/-/g, '')}`;
     
     // Attach to request
     req.traceId = traceId;
+    req.requestId = requestId;
     
     // Attach to response headers
     res.setHeader('X-Trace-ID', traceId);
+    res.setHeader('X-Request-ID', requestId);
     
     // Log request start
     const startTime = Date.now();
     structuredLogger.logRequestStart(traceId, req.method, req.path, {
+        requestId,
         ip: req.ip,
         userAgent: req.get('user-agent')
     });
@@ -36,6 +44,7 @@ export function traceIdMiddleware(req, res, next) {
         
         // Log request end
         structuredLogger.logRequestEnd(traceId, res.statusCode, duration, {
+            requestId,
             contentLength: res.get('content-length')
         });
         
@@ -43,7 +52,7 @@ export function traceIdMiddleware(req, res, next) {
         originalEnd.apply(res, args);
     };
     
-    contextStorage.run({ traceId }, () => {
+    contextStorage.run({ traceId, requestId }, () => {
         next();
     });
 }

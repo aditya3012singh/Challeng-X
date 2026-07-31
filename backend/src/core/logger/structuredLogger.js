@@ -27,12 +27,15 @@ class StructuredLogger {
      * @param {object} metadata
      */
     log(level, message, metadata = {}) {
-        const traceId = metadata.traceId || this.getTraceId();
+        const store = contextStorage.getStore();
+        const traceId = metadata.traceId || store?.traceId || 'system';
+        const requestId = metadata.requestId || store?.requestId;
         
         logger.log({
             level,
             message,
             traceId,
+            ...(requestId ? { requestId } : {}),
             timestamp: new Date().toISOString(),
             ...metadata
         });
