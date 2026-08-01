@@ -1,6 +1,7 @@
 import { S3Client, GetObjectCommand, PutObjectCommand, NoSuchKey } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import RedisClient from "../../core/cache/redis.client.js";
+import structuredLogger from "../../core/logger/structuredLogger.js";
 
 const s3Config = {
     region: process.env.S3_REGION || "auto",
@@ -61,10 +62,17 @@ class S3Service {
 
         } catch (error) {
             if (error instanceof NoSuchKey) {
-                console.warn(`[S3Service] No hidden testcases found in blanket ${BUCKET_NAME} for problem ${problemId}. Falling back to empty array.`);
+                structuredLogger.warn(`[S3Service] No hidden testcases found in S3 bucket for problem`, {
+                    bucket: BUCKET_NAME,
+                    problemId
+                });
                 return [];
             }
-            console.error(`[S3Service] Failed to fetch testcases from S3:`, error.message);
+            structuredLogger.error(`[S3Service] Failed to fetch testcases from S3`, {
+                bucket: BUCKET_NAME,
+                problemId,
+                error: error.message
+            });
             // If S3 fails (e.g., credentials missing during dev), fail open with an empty array.
             // This prevents the whole queue from locking if a bucket dies.
             return [];
@@ -88,7 +96,11 @@ class S3Service {
         });
 
         await s3Client.send(command);
-        console.log(`[S3Service] Uploaded ${testcasesArray.length} hidden cases to s3://${BUCKET_NAME}/${objectKey}`);
+        structuredLogger.info(`[S3Service] Uploaded hidden cases to S3`, {
+            bucket: BUCKET_NAME,
+            objectKey,
+            count: testcasesArray.length
+        });
 
         // Invalidate cache
         await RedisClient.client.del(`testcases:hidden:${problemId}`);
