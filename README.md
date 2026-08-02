@@ -1,7 +1,7 @@
 # ChallengX 🚀
 
 **ChallengX** is a high-octane, real-time competitive programming platform designed for developers to face off in head-to-head coding battles, run team-based wars, and spectate live matches. Built using a decoupled, event-driven microservices architecture, ChallengX delivers isolated sandboxed code execution, real-time state synchronization, and AI-powered performance diagnostics.
-
+   
 ---
 
 ## 🌟 Core Features (Current Focus)
